@@ -1,4 +1,5 @@
 #!/bin/sh
+# $Id: prep_test.sh,v 1.2 2006/12/14 10:30:12 adiakin Exp $
 if [ -e "convert.pl" ]; then
     echo "coping script...."
     cp convert.pl test/;
