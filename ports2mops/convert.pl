@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: convert.pl,v 1.2 2006/12/14 09:48:12 adiakin Exp $
+# $Id: convert.pl,v 1.3 2006/12/14 10:24:23 adiakin Exp $
 
 my $MAKEFILE = 'Makefile';
 my $DESCRIPTION = 'pkg-descr';
@@ -138,17 +138,17 @@ sub main
 	$line =~ s/__m_email__/$INFO{'maint'}/g;
 
 
-# 	if ( $line =~ m/__@files__|(\w+)|/ && $no_file == 0 ) {
-# 	  # begin dump of file list
-# 	  my $element = $1;
-# 	  my $element_start_tag = "<" . $1 . ">";
-# 	  my $element_end_tag = "</" . $1 . ">\n";
-# 	  my $temp = '';
-# 	  foreach $f ( @files ) {
-# 	    $temp += $element_start_tag . $f . $element_end_tag;
-# 	  }
-# 	  $line =~ s/__@files__|$element|/$temp/g;
-# 	} 
+ 	if ( $line =~ m/__@files__|(\w+)|/ && $no_file == 0 ) {
+ 	  # begin dump of file list
+ 	  my $element = $1;
+ 	  my $element_start_tag = "<" . $1 . ">";
+ 	  my $element_end_tag = "</" . $1 . ">\n";
+ 	  my $temp = '';
+ 	  foreach $f ( @files ) {
+ 	    $temp += $element_start_tag . $f . $element_end_tag;
+ 	  }
+ 	  $line =~ s/__@files__|$element|/$temp/g;
+ 	} 
 
 	print DEST $line;
     }
