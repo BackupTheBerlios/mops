@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: convert.pl,v 1.3 2006/12/14 10:24:23 adiakin Exp $
+# $Id: convert.pl,v 1.4 2006/12/15 12:36:00 adiakin Exp $
 
 my $MAKEFILE = 'Makefile';
 my $DESCRIPTION = 'pkg-descr';
@@ -128,29 +128,39 @@ sub main
     
     @ff = <OUT>;
     foreach $line ( @ff ) {
-	$line =~ s/__name__/$INFO{'p_name'}/g;
-	$line =~ s/__version__/$INFO{'p_version'}/g;
-	$line =~ s/__arch__/$INFO{'arch'}/g;
-	$line =~ s/__buid__/$INFO{'p_patch_level'}/g;
-	$line =~ s/__short_descr__/$INFO{'comment'}/g;
-	$line =~ s/__description__/$INFO{'descr'}/g;
-	$line =~ s/__m_name__/$INFO{'m_name'}/g;
-	$line =~ s/__m_email__/$INFO{'maint'}/g;
+		$line =~ s/__name__/$INFO{'p_name'}/g;
+		$line =~ s/__version__/$INFO{'p_version'}/g;
+		$line =~ s/__arch__/$INFO{'arch'}/g;
+		$line =~ s/__buid__/$INFO{'p_patch_level'}/g;
+		$line =~ s/__short_descr__/$INFO{'comment'}/g;
+		$line =~ s/__description__/$INFO{'descr'}/g;
+		$line =~ s/__m_name__/$INFO{'m_name'}/g;
+		$line =~ s/__m_email__/$INFO{'maint'}/g;
 
 
- 	if ( $line =~ m/__@files__|(\w+)|/ && $no_file == 0 ) {
- 	  # begin dump of file list
- 	  my $element = $1;
- 	  my $element_start_tag = "<" . $1 . ">";
- 	  my $element_end_tag = "</" . $1 . ">\n";
- 	  my $temp = '';
- 	  foreach $f ( @files ) {
- 	    $temp += $element_start_tag . $f . $element_end_tag;
- 	  }
- 	  $line =~ s/__@files__|$element|/$temp/g;
- 	} 
+ 		if ( $line =~ m/__files__/ && $no_file == 0 ) {
+			print "line was $line\n";
+			#$line =~ m/|(\w+)|/g;
+	 		# begin dump of file list
+			$t = $1;
+			$t = "file";
+			print "element = $t\n";
+ 			my $element = $t;
+	 	  	my $element_start_tag = "<" . $t . ">";
+ 		    my $element_end_tag = "</" . $t . ">\n";
+		    my $temp = '';
+		
+	  		foreach $f ( @files ) {
+				print "processing $f...\n";
+ 	  			$temp .= "\t\t" . $element_start_tag . $f . $element_end_tag;
+			}
+			print "temp line:\n$temp\n";
+			$line =~ s/__files__/$temp/g;
+			$no_file = 1;
+ 		} 
 
-	print DEST $line;
+
+		print DEST $line;
     }
     
     close DEST;

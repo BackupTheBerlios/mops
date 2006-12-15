@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	$Id: template.xml,v 1.1 2006/12/14 09:22:43 adiakin Exp $
+	$Id: template.xml,v 1.2 2006/12/15 12:36:00 adiakin Exp $
 -->
 <package>
     <name>__name__</name>
@@ -9,22 +9,18 @@
     <build>__buid__</build>
     <short_description>__short_descr__</short_description>
     <description>
-	__description__
+		__description__
     </description>
     <changelog>
     </changelog>
     <maintainer>
-	<name>__m_name__</name>
-	<email>__m_email__</email>
+		<name>__m_name__</name>
+		<email>__m_email__</email>
     </maintainer>
     <md5></md5>
     <dependencies>
     </dependencies>
     <files-list>
-	__@files__
+		__files__
     </files-list>
-    <file-name>
-	<file></file>
-	<path></path>
-    </file-name>
 </package>
