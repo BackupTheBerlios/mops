@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	$Id: conf.xml,v 1.1 2006/12/15 09:40:40 adiakin Exp $
+-->
+<config>
+	<name>test_package</name>
+	<version>0.1</version>
+	<arch>noarch</arch>
+	<build>1</build>
+	<short_description>Test package for extended MOPSLinux packaging system</short_description>
+	<description>
+		This test package describes how the new extended MOPSLinux packaging system works.
+		His structure shows new functions and package design.
+		New packaging system provides full compatibility with Slackware pkgtools, it means
+		that you can either install any (except tbz) new-type packages on old, pure slackware 
+		system, and any	old-format package can be installed in new packaging system.
+	</description>
+	<changelog>
+		29.11.2006 (0.1)
+		Initial release
+	</changelog>
+	<packager>
+		<name>AiX</name>
+		<email>i27249@gmail.com</email>
+	</packager>
+	<md5>3d2678a67s8f3</md5>
+	<dependencies>
+		<dep condition=">=">
+			<name>mopslinux_packaging_system</name>
+			<version>0.1</version>
+		</dep>
+		<dep condition="!">
+			<name>pkgtools</name>
+		</dep>
+	</dependencies>
+	<suggests>
+		<suggest condition="=">
+			<name>kmopsget</name>
+			<version>0.1</version>
+		</suggest>
+	</suggests>
+	<tags>
+		<tag>testing</tag>
+		<tag>development</tag>
+	</tags>
+	<fileName>
+		test.tgz
+	</fileName>
+</config>
