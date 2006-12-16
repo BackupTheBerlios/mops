@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-	$Id: template.xml,v 1.2 2006/12/15 12:36:00 adiakin Exp $
+	$Id: template.xml,v 1.3 2006/12/16 17:29:57 i27249 Exp $
 -->
 <package>
-    <name>__name__</name>
-    <version>__version__</version>
-    <arch>__arch__</arch>
-    <build>__buid__</build>
-    <short_description>__short_descr__</short_description>
-    <description>
-		__description__
-    </description>
-    <changelog>
-    </changelog>
-    <maintainer>
+	<name>__name__</name>
+	<version>__version__</version>
+	<arch>__arch__</arch>
+	<build>__build__</build>
+	<short_description>__short_description__</short_description>
+	<description>
+	    __description__
+	</description>
+	<changelog>
+	    __changelog__
+	</changelog>
+	<maintainer>
 		<name>__m_name__</name>
 		<email>__m_email__</email>
-    </maintainer>
-    <md5></md5>
-    <dependencies>
-    </dependencies>
-    <files-list>
-		__files__
-    </files-list>
+	</maintainer>
+	<dependencies>
+		<dep>
+			<name>__dep_name__</name>
+			<condition>__dep_condition__</condition>
+			<version>__dep_version__</version>
+		</dep>
+	</dependencies>
+	<suggests>
+		<suggest>
+			<name>__suggest_name__</name>
+			<condition>__suggest_condition__</condition>
+			<version>__suggest_version__</version>
+		</suggest>
+	</suggests>
+	<tags>
+		<tag>__tag__</tag>
+	</tags>
 </package>
