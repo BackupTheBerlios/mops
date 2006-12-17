@@ -1,10 +1,9 @@
 #!/usr/bin/perl
-# $Id: convert.pl,v 1.5 2006/12/17 19:25:35 adiakin Exp $
+# $Id: convert.pl,v 1.6 2006/12/17 20:14:18 adiakin Exp $
 
 my $MAKEFILE = 'Makefile';
 my $DESCRIPTION = 'pkg-descr';
 my $FILESLIST	= 'pkg-plist';
-my $G_DEBUG = 1;
 my $no_file = 0;
 
 # global hash for pkg_info
