@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# $Id: convert.pl,v 1.4 2006/12/15 12:36:00 adiakin Exp $
+# $Id: convert.pl,v 1.5 2006/12/17 19:25:35 adiakin Exp $
 
 my $MAKEFILE = 'Makefile';
 my $DESCRIPTION = 'pkg-descr';
@@ -13,6 +13,7 @@ my %INFO;
 $INFO{'arch'} = 'i386';
 $INFO{'m_name'} = 'Some Author...';
 my @files = ();
+my @s_deps = ();
 
 sub read_makefile {
     open(MK, $MAKEFILE) or die "Cannot open Makefile!";
@@ -52,6 +53,13 @@ sub read_makefile {
 	    $INFO{'maint'} = $n;
 	    print('maintainer = ' . $n . "\n");
 	}
+
+	if ( $line =~ m/CATEGORIES\?=(.*)/g ) {
+		$n = $1;
+		$n =~ s/^\s+//g;
+		$INFO{'cat'} = $n;
+		print("cat = " . $n . "\n");
+	}
 	
 	if ( $line =~ m/COMMENT\?=(.*)/g ) {
 	    $n = $1;
@@ -59,9 +67,23 @@ sub read_makefile {
 	    $INFO{'comment'} = $n;
 	    print('comment = ' . $n . "\n");
 	}
+
+	&read_deps( $line );
 	
 	
     }
+}
+
+sub read_deps {
+  my $l = $_[0];
+  if ( $l =~ m/USE_(.*)?=\syes/g ) {
+    push( @s_deps, $1);
+  }
+  
+  if ( $l =~ m/WITH_(.*)?=\syes/g ) {
+    push( @s_deps, $1);
+  }
+  
 }
 
 sub read_description_file {
