@@ -2,7 +2,9 @@
 	MOPSLinux packaging system    
 	    installpkg-ng
 	New generation of installpkg :-)
-	This tool ONLY can install concrete local file
+	This tool ONLY can install concrete local file, but in real it can do more :-) 
+	
+	$Id: installpkg-ng.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
 				    **/
 
 

@@ -3,6 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
+ *	$Id: sql_pool.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
  ************************************************************************************/
 
 /** Very important function! Run it before any usage of database. If it fails (and returns false), it means that database contains serious errors (or just empty, 

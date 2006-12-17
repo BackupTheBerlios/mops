@@ -1,3 +1,9 @@
+/*
+    Dependency and suggestions conditions conversion
+    $Id: conditions.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
 #include "conditions.h"
 
 int condition2int(string condition)

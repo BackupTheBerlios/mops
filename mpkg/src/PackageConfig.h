@@ -4,6 +4,8 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
+ *	$Id: PackageConfig.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ *
  * **********************************************************/
 
 

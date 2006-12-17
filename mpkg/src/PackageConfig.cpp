@@ -1,3 +1,8 @@
+/*
+* XML parser of package config
+* $Id: PackageConfig.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
 #include "PackageConfig.h"
 #include "debug.h"
 using namespace std;

@@ -1,3 +1,11 @@
+/*
+Local package installation functions
+
+$Id: local_package.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
+
 #include "local_package.h"
 
 

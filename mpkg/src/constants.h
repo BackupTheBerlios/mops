@@ -1,3 +1,8 @@
+/* Miscellaneous constants
+    $Id: constants.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 

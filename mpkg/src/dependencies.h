@@ -1,3 +1,9 @@
+/* Dependency tracking - header
+$Id: dependencies.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
+
 #ifndef DEPENDENCIES_H_
 #define DEPENDENCIES_H_
 

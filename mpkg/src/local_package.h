@@ -1,3 +1,9 @@
+/*
+Local package installation functions
+$Id: local_package.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
 #ifndef LOCAL_PACKAGE_H_
 #define LOCAL_PACKAGE_H_
 

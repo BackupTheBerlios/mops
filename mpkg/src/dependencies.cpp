@@ -1,3 +1,8 @@
+/* Dependency tracking
+$Id: dependencies.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+*/
+
+
 #include "dependencies.h"
 #include "debug.h"
 PACKAGE_LIST* DependencyTracker::get_install_list()
