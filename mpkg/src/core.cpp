@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ *	$Id: core.cpp,v 1.3 2006/12/18 16:50:53 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -222,21 +222,28 @@ RESULT add_filelist_record(string package_id, FILE_LIST *filelist)
 // Adds location list linked to package_id
 RESULT add_locationlist_record(string package_id, LOCATION_LIST *locationlist)
 {
+	debug("ADDING LOCATION LIST");
 	string sql_query;
 	sql_query.clear();
 	string serv_id;
 	for (int i=0;i<locationlist->size();i++)
 	{
+		debug("Adding location #"+IntToStr(i));
 		if (!locationlist->get_location(i)->get_server()->IsEmpty())
 		{
-			add_server_record(locationlist->get_location(i)->get_server());
-		}
-		sql_query+="insert into locations values (NULL, '"+\
+			debug("Adding SERVER");
+			serv_id=IntToStr(add_server_record(locationlist->get_location(i)->get_server()));
+			sql_query+="insert into locations values (NULL, '"+\
 			    package_id+T+\
 			    serv_id+T+\
 			    locationlist->get_location(i)->get_path()+"');";
-	}	
-	RESULT ret=sql_exec(sql_query);
+		}
+		else debug("Location incomplete, cannot add");
+
+	}
+	RESULT ret=1;
+	if (sql_query.empty()) debug ("No valid locations found");
+	else ret=sql_exec(sql_query);
 	return ret;
 }
 
@@ -254,9 +261,10 @@ RESULT add_server_record(SERVER *server)
 			   server->get_priority()+"');";
 		ret=sql_exec(sql_query);
 		server_id=get_last_id("servers","server_id");
+		debug("--------------------------------------------------------------->>>SERVER ID="+server_id+"<------------------------------------------------");
 		if (!server->get_tags()->IsEmpty() && server_id!="0") add_server_taglist_record(server_id, server->get_tags());
 	}
-	return ret;
+	return atoi(server_id.c_str());
 }
 
 RESULT add_server_taglist_record (string server_id, SERVER_TAG_LIST *server_tag_list)
@@ -442,11 +450,13 @@ RESULT get_package(string package_id, PACKAGE *package, bool GetExtraInfo)
 	package->set_filename(table[id+14]);
 	if (GetExtraInfo)
 	{
+		debug("EXTRACTING EXTRA INFO");
 		get_filelist(package_id, package->get_files());
 		get_locationlist(package_id, package->get_locations());
 		get_dependencylist(package_id, package->get_dependencies());
 		get_taglist(package_id, package->get_tags());
 	}
+	else debug ("SKIPPING EXTRA INFO");
 	sqlite3_free_table(table);
 	return 0;
 }
@@ -678,8 +688,10 @@ RESULT get_locationlist(string package_id, LOCATION_LIST *location_list)
 	int cols;
 	string sql_query="select servers_server_id location_path from locations where packages_package_id="+package_id+";";
 	get_sql_table(&sql_query, &table, &rows, &cols);
+	debug("Locations found: "+IntToStr(rows));
 	if (rows!=0)
 	{
+		debug("EXTRACTING SERVER");
 		for (int i=2;i<=rows*cols; i=i+2)
 		{
 			get_server(table[i], &server);

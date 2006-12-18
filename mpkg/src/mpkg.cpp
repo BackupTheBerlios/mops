@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.4 2006/12/18 16:50:53 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -37,10 +37,16 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 	LOCATION_LIST new_locations;
 	get_package(pkg_id, &db_package, true);
 	package->set_id(atoi(pkg_id.c_str()));
+	debug("------------->Package locations: "+IntToStr(package->get_locations()->size()));
+	debug("------------->DB Package locations: "+IntToStr(db_package.get_locations()->size()));
+
+
 	for (int j=0; j<package->get_locations()->size(); j++)
 	{
+		debug("J cycle");
 		for (int i=0; i<db_package.get_locations()->size(); i++)
 		{
+			debug("I cycle");
 			if (package->get_locations()->get_location(j)->get_server()!=db_package.get_locations()->get_location(i)->get_server() || \
 					package->get_locations()->get_location(j)->get_path()!=db_package.get_locations()->get_location(i)->get_path())
 			{
