@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+$Id: local_package.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
 */
 
 
@@ -177,6 +177,7 @@ int LocalPackage::get_size()
 int LocalPackage::set_additional_data()
 {
 	LOCATION location;
+	SERVER server;
 	location.set_local();
 	string pwd_t=get_tmp_file();
 	string pwd="pwd > "+pwd_t;
@@ -189,6 +190,8 @@ int LocalPackage::set_additional_data()
 	debug("Local location: "+ffname);
 	ffname=fstr;
 	ffname+="/";
+	server.set_url("file://");
+	location.set_server(server);
 	location.set_path(ffname);
 	data.get_locations()->add(location);
 	return 0;

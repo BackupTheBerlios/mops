@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+$Id: dependencies.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
 */
 
 
@@ -22,10 +22,13 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 
 void DependencyTracker::PrintFailure(PACKAGE* package)
 {
+	string dep_type;
 	for (int i=0; i<package->get_dependencies()->size();i++)
 	{
-		printf("[%s]: requires %s %s %s, result: %s\n", \
+		dep_type=package->get_dependencies()->get_dependency(i)->get_type();
+		printf("[%s]: %s %s %s %s, result: %s\n", \
 				package->get_name().c_str(), \
+				dep_type.c_str(), \
 				package->get_dependencies()->get_dependency(i)->get_package_name().c_str(), \
 				package->get_dependencies()->get_dependency(i)->get_vcondition().c_str(), \
 				package->get_dependencies()->get_dependency(i)->get_package_version().c_str(), \

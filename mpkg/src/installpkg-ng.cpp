@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
 				    **/
 
 
@@ -45,12 +45,13 @@ int main (int argc, char **argv)
 				 // установить
 		if (CheckDatabaseIntegrity())
 		{
+			mpkgDatabase db;
 			lp.data.set_status(PKGSTATUS_AVAILABLE);
-			add_package_record(&lp.data);
+			db.emerge_to_db(&lp.data);
 			DependencyTracker DepTracker;
 			DepTracker.merge(&lp.data);
 
-			printf("Next packages will install:\n");
+			printf("Next packages will INSTALL:\n");
 			for (int i=0;i<DepTracker.get_install_list()->size();i++)
 			{
 				printf("%s\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str());
@@ -71,7 +72,6 @@ int main (int argc, char **argv)
 			}
 			
 			DepTracker.commitToDb();
-			mpkgDatabase db;
 			db.commit_actions();
 
 		}

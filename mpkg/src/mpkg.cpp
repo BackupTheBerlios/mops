@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -13,6 +13,47 @@ mpkgDatabase::mpkgDatabase()
 	CheckDatabaseIntegrity();
 }
 mpkgDatabase::~mpkgDatabase(){}
+
+int mpkgDatabase::emerge_to_db(PACKAGE *package)
+{
+	debug("mpkgDatabase::emerge_to_db()");
+	string pkg_id;
+	pkg_id=get_package_id(package);
+	if (pkg_id=="0")
+	{
+		debug ("Package is new, adding to database");
+		add_package_record(package);
+		return 0;
+	}
+	if (pkg_id=="ERROR")
+	{
+		debug("Database error, cannot emerge");
+		return 1;
+	}
+	// Раз пакет уже в базе (и в единственном числе - а иначе и быть не должно), сравниваем данные.
+	// В случае необходимости, добавляем location.
+	debug ("Package is already in database, updating locations if needed");
+	PACKAGE db_package;
+	LOCATION_LIST new_locations;
+	get_package(pkg_id, &db_package, true);
+	package->set_id(atoi(pkg_id.c_str()));
+	for (int j=0; j<package->get_locations()->size(); j++)
+	{
+		for (int i=0; i<db_package.get_locations()->size(); i++)
+		{
+			if (package->get_locations()->get_location(j)->get_server()!=db_package.get_locations()->get_location(i)->get_server() || \
+					package->get_locations()->get_location(j)->get_path()!=db_package.get_locations()->get_location(i)->get_path())
+			{
+				debug("----------------->new location<--------------------");
+				new_locations.add(*package->get_locations()->get_location(j));
+			}
+		}
+	}
+	if (!new_locations.IsEmpty()) add_locationlist_record(pkg_id, &new_locations);
+	else debug ("no new locations");
+	return 0;
+}
+
 
 string mpkgDatabase::get_file_md5(string filename)
 {
