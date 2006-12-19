@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.3 2006/12/19 17:29:09 i27249 Exp $
  ************************************************************************************/
 
 /** Very important function! Run it before any usage of database. If it fails (and returns false), it means that database contains serious errors (or just empty, 
@@ -40,8 +40,10 @@ bool CheckDatabaseIntegrity()
 
 RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
+#ifdef _SQL_DEBUG_
 	debug("get_sql_table:");
 	debug(*sql_query);
+#endif
 	sqlite3 *db;
 	char *errmsg=0;
 	int sql_return;
@@ -65,10 +67,11 @@ RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 
 RESULT sql_exec (string sql_query)
 {
-	debug("sql_exec:");
 	string transaction="begin transaction; "+sql_query+" commit transaction;";
 	sql_query=transaction;
-	debug(sql_query);
+#ifdef _SQL_DEBUG_
+	debug("sql_exec: "+sql_query);
+#endif
 	sqlite3 *db;
 	char *sql_errmsg=0;
 	int sql_return;

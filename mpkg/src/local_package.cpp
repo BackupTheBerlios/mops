@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
+$Id: local_package.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
 */
 
 
@@ -186,10 +186,31 @@ int LocalPackage::set_additional_data()
 	char fstr[40000];
 	fscanf(_pt, "%s", &fstr);
 	fclose(_pt);
+	string fpath;
+	string fname;
+	int fname_start;
+	for(int i=data.get_filename().length()-1;i>=0 && data.get_filename()[i]!='/'; i--)
+	{
+		fname_start=i;
+	}
+	if (fname_start!=1)
+	{
+
+		for (int i=0;i<fname_start;i++)
+		{
+			fpath+=data.get_filename()[i];
+		}
+		for (int i=fname_start;i<data.get_filename().length();i++)
+		{
+			fname+=data.get_filename()[i];
+		}
+	}
+	debug("filename: "+fname);
 	string ffname;
-	debug("Local location: "+ffname);
 	ffname=fstr;
-	ffname+="/";
+	ffname+="/"+fpath;
+	debug("file path: "+ffname);
+	data.set_filename(fname);
 	server.set_url("file://");
 	location.set_server(server);
 	location.set_path(ffname);

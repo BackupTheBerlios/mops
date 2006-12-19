@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+	$Id: dataunits.cpp,v 1.3 2006/12/19 17:29:09 i27249 Exp $
 */
 
 
@@ -125,17 +125,19 @@ int SERVER::get_type()
 	string tmp;
 	int i;
 	i=0;
+	debug("get_type()");
 	while (i<server_url.length() && \
-			tmp!="file://" || \
+			(tmp!="file://" || \
 			tmp!="cache://" || \
 			tmp!="cdrom://" || \
 			tmp!="http://" || \
 			tmp!="ftp://" || \
 			tmp!="smb://" || \
-			tmp!="https://" \
+			tmp!="https://") \
 	      )
 	{
 		tmp+=server_url[i];
+		debug(tmp);
 		i++;
 	}
 	debug("Server type: "+tmp);

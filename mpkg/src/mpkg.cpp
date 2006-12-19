@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.4 2006/12/18 16:50:53 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.5 2006/12/19 17:29:09 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -96,10 +96,15 @@ void mpkgDatabase::commit_actions()
 	// Second: installing required packages
 	PACKAGE_LIST install_list;
 	get_packagelist("select * from packages where package_status='"+IntToStr(PKGSTATUS_INSTALL)+"';", &install_list);
+	debug("Calling FETCH");
+	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
+
 	for (int i=0; i<install_list.size(); i++)
 	{
+		debug("Fetching package #"+IntToStr(i+1)+" with "+IntToStr(install_list.get_package(i)->get_locations()->size())+" locations");
 		fetch_package(install_list.get_package(i));
 	}
+	debug("Calling INSTALL");
 	for (int i=0;i<install_list.size();i++)
 	{
 		install_package(install_list.get_package(i));
@@ -135,7 +140,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		// TODO: многопотоковая загрузка с равноприоритетных серверов.
 
 	// Step 1. Checking for local copy of file (filesystem or cache)
-
+	debug("INIT/Fetching...");
 	LOCATION_LIST locationlist; 	// Sorted location list
 	LOCATION location;
 	int min_priority; int min_priority_id; int prev_min;
@@ -147,6 +152,8 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 	string _fname;
 	string _sys;
 	FILE *_ftmp;
+	debug("Package has "+IntToStr(package->get_locations()->size())+" locations");
+	debug("Sorting...");
 
 
 
@@ -167,6 +174,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		}
 		prev_min=min_priority;
 	}
+	debug("Sorted. We have got "+IntToStr(locationlist.size())+" locations sorted.");
 
 #ifdef ENABLE_DEBUG
 	for (int i=0; i<locationlist.size();i++)
@@ -176,12 +184,15 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 #endif
 	for (int i=0; i<locationlist.size(); i++) // First, searching local file servers.
 	{
+		debug("Searching file sources");
 		if (locationlist.get_location(i)->get_server()->get_type()==SRV_FILE)
 		{
+			debug("TYPE=SRV_FILE, checking file existance");
 			// Checking file existance
 			string _fname;
 			string _sys;
 			_fname=locationlist.get_location(i)->get_path()+package->get_filename();
+			debug("_fname="+_fname);
 			_ftmp=fopen(_fname.c_str(),"r");
 			if (_ftmp)
 			{
@@ -192,7 +203,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				{
 					debug("md5 ok");
 					_sys="ln -s "+_fname+" "+SYS_CACHE;
-					debug("Creating symlink: "+_sys);
+					debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Creating symlink: "+_sys);
 					system(_sys.c_str());
 					return 0; // File successfully delivered thru symlink, we can exit function now
 				}
@@ -269,8 +280,15 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
+	string sys;
+	debug("calling extract");
+	string sys_cache=SYS_CACHE;
+	string sys_root=SYS_ROOT;
+	sys="(cd "+sys_root+"; tar zxvf "+sys_cache+package->get_filename()+" --exclude install)";
+	system(sys.c_str());
+
 	set_status(IntToStr(package->get_id()), PKGSTATUS_INSTALLED);
-	debug("********************************\n*                                   *\n*     Package installed sussessfully     *\n********************************");
+	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 }
 
 int mpkgDatabase::remove_package(PACKAGE* package)

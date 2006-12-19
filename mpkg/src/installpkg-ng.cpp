@@ -4,97 +4,80 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
 				    **/
 
 
 #include "local_package.h"
 #include "debug.h"
 #include "mpkg.h"
-int main (int argc, char **argv)
+
+int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	if (argc!=2)
+	printf("Preparing to install package %s", fname.c_str());
+	// Part 0. Check if file exists.
+	debug("opening file...");
+	FILE* _f=fopen(fname.c_str(),"r");
+	if (_f)
 	{
-		printf("usage: %s [package_file]\n[debug: argc is %d]\n", argv[0], argc);
+		debug("File opened successfully, so it exists");
+		fclose(_f);
+		debug("File closed.");
+	}
+	else
+	{
+		printf("Error: file %s not found. Cannot install package %s\n", fname.c_str());
 		return 1;
 	}
+	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker
+	LocalPackage lp(fname);
+	lp.injectFile(); 
+	lp.data.set_status(PKGSTATUS_AVAILABLE);
+	db->emerge_to_db(&lp.data);
+	DepTracker->merge(&lp.data);
+	return 0;
 	
+}
+
+int main (int argc, char **argv)
+{
+	if (argc<2)
+	{
+		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s [package_file] [package_file] \n[debug: argc is %d]\n", argv[0], argc);
+		return 1;
+	}
+	mpkgDatabase db;
+	DependencyTracker DepTracker;
 	string action=argv[0]; // We will depend on installpkg or removepkg to decide what to do
-	string fname=argv[1];
-	if (true)
+	string fname;
+	for (int i=1;i<argc;i++)
 	{
-		// Part 0. Check if file exists.
-		debug("opening file...");
-		FILE* _f=fopen(fname.c_str(),"r");
-		if (_f)
-		{
-			debug("File opened successfully, so it exists");
-			fclose(_f);
-			debug("File closed.");
-		}
-		else
-		{
-			printf("Error: file %s not found.\n", fname.c_str());
-			return 1;
-		}
-
-		// Part 1. Extracts all information from file and fill the package structure
-
-		LocalPackage lp(fname);
-		lp.injectFile(); // После этого, впринципе можно считать что файл всосан полностью - осталось только добавить его в базу данных и непосредственно 
-				 // установить
-		if (CheckDatabaseIntegrity())
-		{
-			mpkgDatabase db;
-			lp.data.set_status(PKGSTATUS_AVAILABLE);
-			db.emerge_to_db(&lp.data);
-			DependencyTracker DepTracker;
-			DepTracker.merge(&lp.data);
-
-			printf("Next packages will INSTALL:\n");
-			for (int i=0;i<DepTracker.get_install_list()->size();i++)
-			{
-				printf("%s\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str());
-				DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
-			}
-		
-			printf("Next packages will REMOVE:\n");
-			for (int i=0;i<DepTracker.get_remove_list()->size();i++)
-			{
-				DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
-				printf("%s", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
-			}
-			printf("Next packages is BROKEN:\n");
-			for (int i=0;i<DepTracker.get_failure_list()->size();i++)
-			{
-				DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
-				printf("%s", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
-			}
-			
-			DepTracker.commitToDb();
-			db.commit_actions();
-
-		}
-
-
-		/*		PhysicallyInstall(merge.install_list);		*/
-		/*		PhysicallyRemove(merge.remove_list);
-		 *		PhysicallyUpdate(merge.update_list);
-		 *
-		 */
-		return 0;
+		fname=argv[i];
+		install(fname, &db, &DepTracker);
 	}
 	
-	/*if (action=="removepkg")
+	printf("Next packages will INSTALL:\n");
+	for (int i=0;i<DepTracker.get_install_list()->size();i++)
 	{
-	    printf("Removing still not implemented\n");
-	
+		printf("%s\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str());
+		DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
 	}
-	if (action!="installpkg" && action!="removepkg")
+	
+	printf("Next packages will REMOVE:\n");
+	for (int i=0;i<DepTracker.get_remove_list()->size();i++)
 	{
-	    printf("Error: the program should be named \"installpkg\" to install packages and \"removepkg\" to remove them.\n");
+		DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
+		printf("%s", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
 	}
-	*/
 	
+	printf("Next packages is BROKEN:\n");
+	for (int i=0;i<DepTracker.get_failure_list()->size();i++)
+	{
+		DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
+		printf("%s", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
+	}
+
+	DepTracker.commitToDb();
+	db.commit_actions();
 	return 0;
 }

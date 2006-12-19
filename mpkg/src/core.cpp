@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.3 2006/12/18 16:50:53 i27249 Exp $
+ *	$Id: core.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -502,7 +502,7 @@ RESULT get_packagelist (string query, PACKAGE_LIST *packagelist)
 		get_locationlist(package_id, package.get_locations());
 		get_dependencylist(package_id, package.get_dependencies());
 		get_taglist(package_id, package.get_tags());
-		
+		debug("get_packagelist: got package with "+IntToStr(package.get_locations()->size())+" locations...");
 		packagelist->add(package);
 	}
 	sqlite3_free_table(table);
@@ -656,23 +656,30 @@ RESULT get_server_tag_list(string server_id, SERVER_TAG_LIST *server_tag_list)
 
 RESULT get_server(string server_id, SERVER *server)
 {
+	debug("core: get_server");
 	get_server_tag_list(server_id, server->get_tags());
 
 	char **table;
 	int rows;
 	int cols;
-	string sql_query="select server_url server_priority from servers where server_id="+server_id+";";
+	string sql_query="select * from servers where server_id="+server_id+";";
 	get_sql_table(&sql_query, &table, &rows, &cols);
 	if (rows==1)
 	{
-		server->set_url(table[2]);
-		server->set_priority(table[3]);
+		server->set_id(atoi(table[3]));
+		server->set_url(table[4]);
+		server->set_priority(table[5]);
 	}
 	else
 	{
+		debug("No server with this ID found. Returning an \"empty\" server - setting server ID to 0");
+		server->set_id(0);
 		sqlite3_free_table(table);
 		return 1; //ERROR: either server not found in DB, or there are multiple servers with same id
 	}
+
+	// Going next - filling server tags. TODO
+
 	sqlite3_free_table(table);
 	return 0;
 }
@@ -686,18 +693,38 @@ RESULT get_locationlist(string package_id, LOCATION_LIST *location_list)
 	char **table;
 	int rows;
 	int cols;
-	string sql_query="select servers_server_id location_path from locations where packages_package_id="+package_id+";";
+	debug("Package ID="+package_id);
+	string sql_query="select * from locations where packages_package_id='"+package_id+"';";
 	get_sql_table(&sql_query, &table, &rows, &cols);
-	debug("Locations found: "+IntToStr(rows));
+	debug("Locations found: "+IntToStr(rows)+"/"+IntToStr(cols));
 	if (rows!=0)
 	{
-		debug("EXTRACTING SERVER");
-		for (int i=2;i<=rows*cols; i=i+2)
+		string a=table[0];
+		string b=table[1];
+		string c;
+		string d;
+		debug("\n\n");
+		for (int i=0; i<8;i++)
+			printf("%s|",table[i]);
+		printf("\n\n");
+		debug("EXTRACTING SERVER, "+a+" | "+b);
+		for (int i=4;i<(rows+1)*cols; i=i+cols)
 		{
-			get_server(table[i], &server);
+			a=table[i];
+			b=table[i+1];
+			c=table[i+2];
+			d=table[i+3];
+			debug("Location ID: "+a+", Package ID: "+b+", Server ID: "+c+", Path: "+d);
+			location.set_id(atoi(a.c_str()));
+			debug("Location ID set.");
+			get_server(c, &server);
+			debug("Got server");
 			location.set_server(server);
-			location.set_path(table[i+1]);
+			debug("Set server");
+			location.set_path(d);
+			debug("Set path");
 			location_list->add(location);
+			debug("LOCATION ADDED");
 		}
 	}
 	else
@@ -705,6 +732,7 @@ RESULT get_locationlist(string package_id, LOCATION_LIST *location_list)
 		sqlite3_free_table(table);
 		return 1;
 	}
+	debug("[GET_LOCATIONLIST::] Returning "+IntToStr(location_list->size())+" locations");
 	sqlite3_free_table(table);
 	return 0;
 }
