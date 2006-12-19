@@ -1,14 +1,32 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.3 2006/12/19 17:29:09 i27249 Exp $
+# $Id: Makefile,v 1.4 2006/12/19 21:19:54 adiakin Exp $
 #
 
+CC=gcc
+CXX=g++
+CFLAGS=-c -Wall -std=c99 -g
+CXXFLAGS=-c -g
+LDFLAGS=-lsqlite3
 
-all: xmlParser.h xmlParser.cpp PackageConfig.h PackageConfig.cpp installpkg-ng.cpp local_package.cpp
-	g++ -O2 -lsqlite3 -o installpkg-ng \
-			xmlParser.cpp xmlParser.h PackageConfig.cpp PackageConfig.h mpkg.cpp debug.cpp core.cpp dependencies.cpp conditions.cpp dataunits.cpp sql_pool.cpp local_package.cpp installpkg-ng.cpp 
+SOURCES=installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp local_package.cpp sql_pool.cpp
 
+OBJECTS=$(SOURCES:.cpp=.o)
+
+EXECUTABLE=installpkg-ng
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE)
+
+.cpp.o:
+	$(CC) $(CXXFLAGS) $< -o $@
+
+.PHONY : clean
 clean:
-	-@rm -f installpkg-ng				  >/dev/null 2>/dev/null
-	-@rm -f *.o				  >/dev/null 2>/dev/null
-	-@rm -f *~                   >/dev/null 2>/dev/null
-	@echo "Clean OK."
+	rm -f $(OBJECTS)
+	rm -f installpkg-ng
+	rm -f *.o
+	rm -f *~
+	
+
