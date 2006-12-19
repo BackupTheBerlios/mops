@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.4 2006/12/19 21:19:54 adiakin Exp $
+# $Id: Makefile,v 1.5 2006/12/19 21:21:48 adiakin Exp $
 #
 
 CC=gcc
@@ -8,7 +8,9 @@ CFLAGS=-c -Wall -std=c99 -g
 CXXFLAGS=-c -g
 LDFLAGS=-lsqlite3
 
-SOURCES=installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp local_package.cpp sql_pool.cpp
+SOURCES=installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
+	   	dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp \
+	   	local_package.cpp sql_pool.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
