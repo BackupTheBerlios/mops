@@ -1,13 +1,13 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
+$Id: local_package.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
 */
 
 
 
 #include "local_package.h"
-
+vector<string> temp_files;
 
 string get_tmp_file()
 {
@@ -17,7 +17,21 @@ string get_tmp_file()
 	tmp_fname=t;
 	debug("get_tmp_file end");
 	//free(t);
+	temp_files.resize(temp_files.size()+1);
+	temp_files[temp_files.size()-1]=tmp_fname;
 	return tmp_fname;
+}
+
+void delete_tmp_files()
+{
+	debug("preparing to remove temp files");
+	string rm="rm -f";
+	for (int i=0;i<temp_files.size();i++)
+	{
+		rm+=" "+temp_files[i];
+	}
+	system(rm.c_str()); // Remove files
+	temp_files.clear(); // Clean-up list - for future use
 }
 
 LocalPackage::LocalPackage(string _f)
@@ -207,8 +221,13 @@ int LocalPackage::set_additional_data()
 	}
 	debug("filename: "+fname);
 	string ffname;
-	ffname=fstr;
-	ffname+="/"+fpath;
+	if (fpath[0]!='/')
+	{
+		ffname=fstr;
+		ffname+="/";
+		ffname+=fpath;
+	}
+	else ffname=fpath;
 	debug("file path: "+ffname);
 	data.set_filename(fname);
 	server.set_url("file://");
@@ -224,7 +243,7 @@ int LocalPackage::injectFile()
 	debug("injectFile start");
 	get_size();
 	create_md5();
-	printf("filename is %s\n", filename.c_str());
+	debug("filename is "+ filename);
 	data.set_filename(filename);
 	get_xml();
 	get_filelist();

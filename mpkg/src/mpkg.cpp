@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.5 2006/12/19 17:29:09 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.6 2006/12/19 22:56:40 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -284,7 +284,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	debug("calling extract");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
-	sys="(cd "+sys_root+"; tar zxvf "+sys_cache+package->get_filename()+" --exclude install)";
+	printf("Extracting package %s\n",package->get_name().c_str());
+	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install > /dev/null)";
 	system(sys.c_str());
 
 	set_status(IntToStr(package->get_id()), PKGSTATUS_INSTALLED);

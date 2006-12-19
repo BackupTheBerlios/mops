@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+	$Id: dataunits.h,v 1.3 2006/12/19 22:56:40 i27249 Exp $
 */
 
 
@@ -322,6 +322,7 @@ class PACKAGE
 	string get_packager(bool sql=true);
 	string get_packager_email(bool sql=true);
 	int get_status();
+	string get_vstatus();
 	string get_md5(bool sql=true);
 	string get_filename(bool sql=true);
 

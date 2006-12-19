@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
 				    **/
 
 
@@ -14,7 +14,7 @@
 
 int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	printf("Preparing to install package %s", fname.c_str());
+	printf("Preparing to install package %s\n", fname.c_str());
 	// Part 0. Check if file exists.
 	debug("opening file...");
 	FILE* _f=fopen(fname.c_str(),"r");
@@ -59,25 +59,28 @@ int main (int argc, char **argv)
 	printf("Next packages will INSTALL:\n");
 	for (int i=0;i<DepTracker.get_install_list()->size();i++)
 	{
-		printf("%s\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str());
-		DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
+		printf("%s (status=%s)\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str(), \
+				DepTracker.get_install_list()->get_package(i)->get_vstatus().c_str());
+		//DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
 	}
 	
 	printf("Next packages will REMOVE:\n");
 	for (int i=0;i<DepTracker.get_remove_list()->size();i++)
 	{
+		printf("%s:\n", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
 		DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
-		printf("%s", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
+
 	}
-	
 	printf("Next packages is BROKEN:\n");
 	for (int i=0;i<DepTracker.get_failure_list()->size();i++)
 	{
+		printf("%s:\n", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
 		DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
-		printf("%s", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
+
 	}
 
 	DepTracker.commitToDb();
 	db.commit_actions();
+	delete_tmp_files();
 	return 0;
 }

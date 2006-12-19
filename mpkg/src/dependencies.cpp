@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.3 2006/12/18 10:00:49 i27249 Exp $
+$Id: dependencies.cpp,v 1.4 2006/12/19 22:56:40 i27249 Exp $
 */
 
 
@@ -108,7 +108,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	debug("Checking status of package...");
 	if (status==CHKINSTALL_INSTALLED || status==CHKINSTALL_INSTALL) // If package is already installed or already marked for install - it is already good :-)
 	{
-		debug("Package is already installed or marked for install");
+		printf("Package %s is already installed or marked for install\n", package->get_name().c_str());
 		return DEP_OK;
 	}
 	if (status==CHKINSTALL_REMOVE_PURGE || status==CHKINSTALL_REMOVE) // Package is installed, but someone wants to remove it - but changes his desigion - ok ;-)
@@ -145,6 +145,12 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 		failure_list.add(*package);
 		return DEP_NOTFOUND;
 	}
+	for (int t=0;t<install_list.size();t++)
+	{
+		// Skip package if it is already in install list. TODO: check version
+		if (install_list.get_package(t)->get_name()==package->get_name())
+			return DEP_OK;
+	}
 
 	debug("CHECK passed. Continue with dependencies");
 	package->set_status(PKGSTATUS_INSTALL);
@@ -159,6 +165,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	// Running thru all package dependencies
 	for (int i=0;i<package->get_dependencies()->size();i++)
 	{
+		package->get_dependencies()->get_dependency(i)->set_broken(DEP_OK); // By default, dep is OK
 		debug("Checking dependency...");
 		already_resolved=false;	// Reset flag
 		this_dep_failed=false; 	// Another reset
@@ -216,7 +223,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 				this_dep_failed=true;	// Again... but only for this dependency
 			}
 		}
-	}
+	} // FInish running thru deps
 
 	// Finalizing results
 	if (dep_all_ok) // If all dependencies passes the tests
@@ -225,13 +232,41 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 		package->set_id(atoi(get_package_id(package).c_str()));
 		package->set_status(PKGSTATUS_INSTALL);
 		install_list.add(*package); 	// Add to install list
+		// One thing we have forgotten - is there any packages in broken list, who awaited this package?
+		for (int f=0;f<failure_list.size();f++)
+		{
+			for (int d=0;d<failure_list.get_package(f)->get_dependencies()->size();d++)
+			{
+				if (failure_list.get_package(f)->get_dependencies()->get_dependency(d)->get_broken()!=DEP_OK && \
+						failure_list.get_package(f)->get_dependencies()->get_dependency(d)->get_package_name()==package->get_name())
+				{
+					// how to delete from list?... We NEED THIS! Ok, we cannot delete. But we will replace by "SPECIAL" package...
+					PACKAGE placeholder;
+					PACKAGE tmp;
+					tmp=*failure_list.get_package(f);
+					placeholder.set_name("@empty@");
+					failure_list.set_package(f, placeholder); // Take a second chance to package...
+					merge(&tmp);
+				}
+			}
+		}
 		return DEP_OK;			// return success code
 	}
 	else	// If not...
 	{
 		debug("dep failed, adding to failed");
 		package->set_id(atoi(get_package_id(package).c_str()));
-		failure_list.add(*package); 	// add package to failed list (it will contain all dependency error records)
+		bool set;
+		set=false;
+		for (int f=0;f<failure_list.size() && !set ;f++)
+		{
+			if (failure_list.get_package(f)->get_name()=="@empty@")
+			{
+				failure_list.set_package(f, *package);
+				set=true;
+			}
+		}
+		if (!set) failure_list.add(*package); 	// add package to failed list (it will contain all dependency error records)
 		return DEP_BROKEN;		// return failure code
 	}
 } // DependencyTracker::merge end.

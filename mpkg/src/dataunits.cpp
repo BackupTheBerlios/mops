@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.3 2006/12/19 17:29:09 i27249 Exp $
+	$Id: dataunits.cpp,v 1.4 2006/12/19 22:56:40 i27249 Exp $
 */
 
 
@@ -829,6 +829,21 @@ int PACKAGE::get_status()
 {
 	return package_status;
 }
+
+string PACKAGE::get_vstatus()
+{
+	if (package_status==PKGSTATUS_PURGE) return "PURGE";
+	if (package_status==PKGSTATUS_REMOVE_PURGE) return "REMOVE_PURGE";
+	if (package_status==PKGSTATUS_INSTALLED) return "INSTALLED";
+	if (package_status==PKGSTATUS_REMOVE) return "REMOVE";
+	if (package_status==PKGSTATUS_UPDATE) return "UPDATE";
+	if (package_status==PKGSTATUS_INSTALL) return "INSTALL";
+	if (package_status==PKGSTATUS_UNAVAILABLE) return "UNAVAILABLE";
+	if (package_status==PKGSTATUS_AVAILABLE) return "AVAILABLE";
+	if (package_status==PKGSTATUS_UNKNOWN) return "UNKNOWN";
+	return "Unknown status";
+}
+
 
 string PACKAGE::get_md5(bool sql)
 {

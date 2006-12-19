@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.4 2006/12/19 17:29:09 i27249 Exp $
+ *	$Id: core.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -703,10 +703,10 @@ RESULT get_locationlist(string package_id, LOCATION_LIST *location_list)
 		string b=table[1];
 		string c;
 		string d;
-		debug("\n\n");
-		for (int i=0; i<8;i++)
-			printf("%s|",table[i]);
-		printf("\n\n");
+		//debug("\n\n");
+		//for (int i=0; i<8;i++)
+		//	printf("%s|",table[i]);
+		//printf("\n\n");
 		debug("EXTRACTING SERVER, "+a+" | "+b);
 		for (int i=4;i<(rows+1)*cols; i=i+cols)
 		{
