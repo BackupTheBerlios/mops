@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.7 2006/12/20 20:00:38 i27249 Exp $
+# $Id: Makefile,v 1.8 2006/12/20 20:03:32 adiakin Exp $
 #
 
 CC=gcc
@@ -22,7 +22,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CXX) $(LDFLAGS) $(OBJECTS) -o $(EXECUTABLE)
 
 .cpp.o:
-	$(CC) $(CXXFLAGS) $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 .PHONY : clean
 clean:
