@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.9 2006/12/20 20:02:56 adiakin Exp $
 				    **/
 
 
@@ -77,6 +77,13 @@ int main (int argc, char **argv)
 		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s install [package_file] [package_file]... \nor:   %s remove [package_name] [package_name]...\n", argv[0], argv[0]);
 		return 1;
 	}
+
+	/**
+	 DANGER!!!!
+	 unstable shit!
+	 */
+	
+	
 	mpkgDatabase db;
 	DependencyTracker DepTracker;
 	string action=argv[1]; // We will depend on installpkg or removepkg to decide what to do
