@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.6 2006/12/19 22:56:40 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -13,6 +13,29 @@ mpkgDatabase::mpkgDatabase()
 	CheckDatabaseIntegrity();
 }
 mpkgDatabase::~mpkgDatabase(){}
+
+int uninstall(vector<string> pkgnames)
+{
+	// nothing to do here at this time...
+	return 0;
+}
+
+PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
+{
+	PACKAGE_LIST packagelist;
+
+	get_packagelist("select * from packages where package_name='"+pkg_name+"' and package_status='"+IntToStr(PKGSTATUS_INSTALLED)+"';", &packagelist);
+	// We do NOT allow multiple packages with same name to be installed, so, we simply get first package of list.
+	
+	if (packagelist.size()>0)
+		return *packagelist.get_package(0);
+	else
+	{
+		PACKAGE ret;
+		return ret;
+	}
+}
+	
 
 int mpkgDatabase::emerge_to_db(PACKAGE *package)
 {
@@ -281,12 +304,60 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 int mpkgDatabase::install_package(PACKAGE* package)
 {
 	string sys;
+	debug("Preparing scripts");
+	string tmp_preinstall=get_tmp_file();
+	string tmp_postinstall=get_tmp_file();
+
+	string sys_preinstall="/bin/sh "+tmp_preinstall;
+	string sys_postinstall="/bin/sh "+tmp_postinstall;
+	FILE* f_preinstall;
+	FILE* f_postinstall;
+
+	// Creating and running PRE-INSTALL script
+	f_preinstall=fopen(tmp_preinstall.c_str(), "w");
+	if (f_preinstall)
+	{
+		for (int i=0;i<package->get_scripts()->get_preinstall(false).length();i++)
+		{
+			fputc(package->get_scripts()->get_preinstall(false)[i], f_preinstall);
+		}
+		fclose(f_preinstall);
+#ifndef DO_NOT_RUN_SCRIPTS
+		system(sys_preinstall.c_str());
+#endif
+	}
+	else
+	{
+		printf("unable to write pre-install script: check permissions and disk space\n");
+		fclose(f_preinstall);
+	}
+
+	// Extracting package
 	debug("calling extract");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	printf("Extracting package %s\n",package->get_name().c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install > /dev/null)";
 	system(sys.c_str());
+
+	// Creating and running POST-INSTALL script
+	f_postinstall=fopen(tmp_postinstall.c_str(), "w");
+	if (f_postinstall)
+	{
+		for (int i=0;i<package->get_scripts()->get_postinstall(false).length();i++)
+		{
+			fputc(package->get_scripts()->get_postinstall(false)[i], f_postinstall);
+		}
+		fclose(f_postinstall);
+#ifndef DO_NOT_RUN_SCRIPTS
+		system(sys_postinstall.c_str());
+#endif
+	}
+	else
+	{
+		printf("unable to write post-install script: check permissions and disk space\n");
+		fclose(f_postinstall);
+	}
 
 	set_status(IntToStr(package->get_id()), PKGSTATUS_INSTALLED);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.4 2006/12/19 22:56:40 i27249 Exp $
+	$Id: dataunits.cpp,v 1.5 2006/12/20 13:00:47 i27249 Exp $
 */
 
 
@@ -718,6 +718,82 @@ bool FILE_LIST::IsEmpty()
 FILE_LIST::FILE_LIST(){}
 FILE_LIST::~FILE_LIST(){}
 
+int SCRIPTS::get_id()
+{
+	return script_id;
+}
+
+string SCRIPTS::get_vid()
+{
+	return IntToStr(script_id);
+}
+
+string SCRIPTS::get_preinstall(bool sql)
+{
+	if (sql) return PrepareSql(preinstall);
+	return preinstall;
+}
+
+string SCRIPTS::get_postinstall(bool sql)
+{
+	if (sql) return PrepareSql(postinstall);
+	return postinstall;
+}
+
+string SCRIPTS::get_preremove(bool sql)
+{
+	if (sql) return PrepareSql(preremove);
+	return preremove;
+}
+
+string SCRIPTS::get_postremove(bool sql)
+{
+	if (sql) return PrepareSql(postremove);
+	return postremove;
+}
+
+void SCRIPTS::set_preinstall(string preinst)
+{
+	preinstall=preinst;
+}
+
+void SCRIPTS::set_postinstall(string postinst)
+{
+	postinstall=postinst;
+}
+
+void SCRIPTS::set_preremove(string prerem)
+{
+	preremove=prerem;
+}
+
+void SCRIPTS::set_postremove(string postrem)
+{
+	postremove=postrem;
+}
+
+void SCRIPTS::set_id(int id)
+{
+	script_id=id;
+}
+
+void SCRIPTS::set_vid(string id)
+{
+	script_id=atoi(id.c_str());
+}
+
+SCRIPTS::SCRIPTS()
+{
+	script_id=0;
+	preinstall = "#!/bin/sh\n";
+	postinstall ="#!/bin/sh\n";
+	preremove =  "#!/bin/sh\n";
+	postremove = "#!/bin/sh\n";
+
+}
+SCRIPTS::~SCRIPTS()
+{
+}
 
 int PACKAGE::add_dependency(string package_name, string dep_condition, string package_version)
 {
@@ -967,6 +1043,11 @@ TAG_LIST* PACKAGE::get_tags()
 	return &package_tags;
 }
 
+SCRIPTS* PACKAGE::get_scripts()
+{
+	return &package_scripts;
+}
+
 int PACKAGE::set_files(FILE_LIST files)
 {
 	package_files=files;
@@ -991,7 +1072,11 @@ int PACKAGE::set_tags(TAG_LIST tags)
 	return 0;
 }
 
-
+int PACKAGE::set_scripts(SCRIPTS scripts)
+{
+	package_scripts=scripts;
+	return 0;
+}
 bool PACKAGE::IsEmpty()
 {
 	if (package_name.empty()) return true;

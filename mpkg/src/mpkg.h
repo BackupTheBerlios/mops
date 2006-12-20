@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.3 2006/12/18 10:00:49 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -19,6 +19,9 @@ class mpkgDatabase
 		int fetch_package(PACKAGE *package); // Downloads package to local cache, returns 0 if ok, 1 if failed. Also, checks if package is already downloaded.
 		int install_package(PACKAGE *package); // PHYSICALLY install package (extract, execute scripts)
 		int remove_package(PACKAGE *package); // PHYSICALLY remove package (delete files, execute remove scripts)
+		int uninstall(vector<string> pkgnames); // Wrapper, uninstalls all packages with given names.
+		PACKAGE get_installed_package(string pkg_name); // Returns installed package
+
 //		int update_package(int removing_id, string install_filename); // Updates a package. Meta-function: first remove old, next install new
 		string get_file_md5(string filename);
 		mpkgDatabase();

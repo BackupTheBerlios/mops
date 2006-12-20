@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
+ *	$Id: core.cpp,v 1.6 2006/12/20 13:00:47 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -410,6 +410,8 @@ string add_package_record (PACKAGE *package)
 	if (!package->get_tags()->IsEmpty()) add_taglist_record(package_id, package->get_tags());
 //	else printf("no tags found\n");
 	
+	add_scripts_record(package_id, package->get_scripts());
+	
 //	printf("add_package_record()\n");
 	return package_id;
 }	
@@ -455,6 +457,7 @@ RESULT get_package(string package_id, PACKAGE *package, bool GetExtraInfo)
 		get_locationlist(package_id, package->get_locations());
 		get_dependencylist(package_id, package->get_dependencies());
 		get_taglist(package_id, package->get_tags());
+		get_scripts(package_id, package->get_scripts());
 	}
 	else debug ("SKIPPING EXTRA INFO");
 	sqlite3_free_table(table);
@@ -502,6 +505,7 @@ RESULT get_packagelist (string query, PACKAGE_LIST *packagelist)
 		get_locationlist(package_id, package.get_locations());
 		get_dependencylist(package_id, package.get_dependencies());
 		get_taglist(package_id, package.get_tags());
+		get_scripts(package_id, package.get_scripts());
 		debug("get_packagelist: got package with "+IntToStr(package.get_locations()->size())+" locations...");
 		packagelist->add(package);
 	}
@@ -872,5 +876,53 @@ string get_version(string package_id)
 	return version;
 }
 
+int add_scripts_record(string package_id, SCRIPTS *scripts)
+{
+	string sql_query;
+	sql_query="insert into scripts values (NULL, '"+\
+		   package_id+T+\
+		   scripts->get_preinstall()+T+\
+		   scripts->get_postinstall()+T+\
+		   scripts->get_preremove()+T+\
+		   scripts->get_postremove()+"');";
+	return sql_exec(sql_query);
+}
 
+int get_scripts(string package_id, SCRIPTS *scripts)
+{
+	char **table;
+	int rows;
+	int cols;
+	string id;
+	string pre_i;
+	string post_i;
+	string pre_r;
+	string post_r;
+	int ret;
+	string sql_query="select * from scripts where packages_package_id="+package_id+";";
+	get_sql_table(&sql_query, &table, &rows, &cols);
+	if (rows==1)
+	{
+		id=table[cols];
+		pre_i=table[cols+2];
+		post_i=table[cols+3];
+		pre_r=table[cols+4];
+		post_r=table[cols+5];
+
+		scripts->set_vid(id);
+		scripts->set_preinstall(pre_i);
+		scripts->set_postinstall(post_i);
+		scripts->set_preremove(pre_r);
+		scripts->set_postremove(post_r);
+		ret=0;
+	}
+	else
+	{
+		debug("No scripts found for requested package, or multiple records detected");
+		ret=1;
+	}
+
+	sqlite3_free_table(table);
+	return ret;
+}
 

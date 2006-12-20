@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.3 2006/12/19 22:56:40 i27249 Exp $
+	$Id: dataunits.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
 */
 
 
@@ -289,6 +289,35 @@ class FILE_LIST
 	~FILE_LIST();
 };
 
+class SCRIPTS
+{
+    private:
+	int script_id;
+	string preinstall;
+	string postinstall;
+	string preremove;
+	string postremove;
+
+    public:
+	int get_id();
+	string get_vid();
+	string get_preinstall(bool sql=true);
+	string get_postinstall(bool sql=true);
+	string get_preremove(bool sql=true);
+	string get_postremove(bool sql=true);
+
+	void set_preinstall(string preinst);
+	void set_postinstall(string postinst);
+	void set_preremove(string prerem);
+	void set_postremove(string postrem);
+	void set_id(int id);
+	void set_vid(string id);
+
+	SCRIPTS();
+	~SCRIPTS();
+};
+
+
 class PACKAGE
 {
     private:
@@ -347,16 +376,19 @@ class PACKAGE
 	LOCATION_LIST package_locations;
 	DEPENDENCY_LIST package_dependencies;
 	TAG_LIST package_tags;
+	SCRIPTS package_scripts;
     public:
 	FILE_LIST* get_files();
 	LOCATION_LIST* get_locations();
 	DEPENDENCY_LIST* get_dependencies();
 	TAG_LIST* get_tags();
+	SCRIPTS* get_scripts();
 
 	int set_files(FILE_LIST files);
 	int set_locations(LOCATION_LIST locations);
 	int set_dependencies(DEPENDENCY_LIST dependencies);
 	int set_tags(TAG_LIST tags);
+	int set_scripts(SCRIPTS scripts);
 
 	int add_dependency(string package_name, string dep_condition, string package_version);
 	int add_file(string file_name, string file_size);

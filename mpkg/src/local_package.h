@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.3 2006/12/19 22:56:40 i27249 Exp $
+$Id: local_package.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
 */
 
 
@@ -25,6 +25,7 @@ class LocalPackage
 		int create_md5();
 		int get_size();
 		int get_xml();
+		int get_scripts();
 		int get_filelist();
 		int set_additional_data();
 		int CreateFlistNode(string fname, string tmp_xml);

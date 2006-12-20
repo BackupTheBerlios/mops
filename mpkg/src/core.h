@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ *	$Id: core.h,v 1.3 2006/12/20 13:00:47 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -29,7 +29,7 @@ string add_package_record (PACKAGE *package);
 RESULT add_server_record (SERVER *server);
 RESULT add_server_taglist_record(string server_id, SERVER_TAG_LIST *server_tag_list);
 RESULT add_server_tag_link(string server_id, string tag_id);
-
+int add_scripts_record(string package_id, SCRIPTS *scripts);
 //--------------------Mid-level functions-------------------------
 PACKAGE_LIST get_packagelist (string query);
 RESULT get_filelist(string package_id, FILE_LIST *filelist);
@@ -46,6 +46,7 @@ string get_status(string package_id);
 string get_package_id(PACKAGE *package);
 string get_version(string package_id);
 int check_install_package(PACKAGE *package);
+int get_scripts(string package_id, SCRIPTS *scripts);
 //----------------------------------SQL low-level routines----------------------------
 
 #endif //CORE_H_

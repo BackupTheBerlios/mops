@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.6 2006/12/20 12:04:00 adiakin Exp $
+	$Id: installpkg-ng.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
 				    **/
 
 
@@ -44,6 +44,14 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 	DepTracker->merge(&lp.data);
 	return 0;
 	
+}
+
+int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	printf("Preparing to UNINSTALL package %s\n", pkg_name.c_str());
+	PACKAGE package=db->get_installed_package(pkg_name);
+	DepTracker->unmerge(&package);
+	return 0;
 }
 
 int main (int argc, char **argv)

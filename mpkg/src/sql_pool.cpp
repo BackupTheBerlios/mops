@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.3 2006/12/19 17:29:09 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.4 2006/12/20 13:00:47 i27249 Exp $
  ************************************************************************************/
 
 /** Very important function! Run it before any usage of database. If it fails (and returns false), it means that database contains serious errors (or just empty, 
@@ -23,6 +23,7 @@ bool CheckDatabaseIntegrity()
 			sql_exec("select * from server_tags_links;")!=0 || \
 			sql_exec("select * from servers;")!=0 || \
 			sql_exec("select * from tags;")!=0 || \
+			sql_exec("select * from scripts;")!=0 || \
 			sql_exec("select * from tags_links;")!=0 \
 			)
 	{

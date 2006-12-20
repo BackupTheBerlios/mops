@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.6 2006/12/20 12:04:00 adiakin Exp $
+$Id: local_package.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
 */
 
 
@@ -52,6 +52,113 @@ LocalPackage::LocalPackage(string _f)
 }
 
 LocalPackage::~LocalPackage(){}
+
+int LocalPackage::get_scripts()
+{
+	debug("get_scripts start");
+	
+	string tmp_preinstall=get_tmp_file();
+	string tmp_postinstall=get_tmp_file();
+	string tmp_preremove=get_tmp_file();
+	string tmp_postremove=get_tmp_file();
+	
+	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall;
+	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall;
+	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove;
+	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove;
+
+	system(sys_preinstall.c_str());
+	system(sys_postinstall.c_str());
+	system(sys_preremove.c_str());
+	system(sys_postremove.c_str());
+
+	FILE* f_preinstall;
+	FILE* f_postinstall;
+	FILE* f_preremove;
+	FILE* f_postremove;
+
+	f_preinstall=fopen(tmp_preinstall.c_str(), "r");
+	f_postinstall=fopen(tmp_postinstall.c_str(), "r");
+	f_preremove=fopen(tmp_preremove.c_str(), "r");
+	f_postremove=fopen(tmp_postremove.c_str(), "r");
+
+	string str;
+	char buf;
+
+	if (f_preinstall)
+	{
+		str.clear();
+		buf=' ';
+		while (buf!=EOF)
+		{
+			buf=fgetc(f_preinstall);
+			if (buf!=EOF) str+=buf;
+		}
+		fclose(f_preinstall);
+		if (!str.empty()) data.get_scripts()->set_preinstall(str);
+	}
+	else
+	{
+		fclose(f_preinstall);
+		debug("Unable to read preinstall script from temp file");
+	}
+
+	if (f_postinstall)
+	{
+		str.clear();
+		buf=' ';
+		while (buf!=EOF)
+		{
+			buf=fgetc(f_postinstall);
+			if (buf!=EOF) str+=buf;
+		}
+
+		fclose(f_postinstall);
+		if (!str.empty()) data.get_scripts()->set_postinstall(str);
+	}
+	else
+	{
+		fclose(f_postinstall);
+		debug("Unable to read postinstall script from temp file");
+	}
+
+	if (f_preremove)
+	{
+		str.clear();
+		buf=' ';
+		while (buf!=EOF)
+		{
+			buf=fgetc(f_preremove);
+			if (buf!=EOF) str+=buf;
+		}
+		fclose(f_preremove);
+		if (!str.empty()) data.get_scripts()->set_preremove(str);
+	}
+	else
+	{
+		fclose(f_preremove);
+		debug("Unable to read preremove script from temp file");
+	}
+
+	if (f_postremove)
+	{
+		str.clear();
+		buf=' ';
+		while (buf!=EOF)
+		{
+			buf=fgetc(f_postremove);
+			if (buf!=EOF) str+=buf;
+		}
+		fclose(f_postremove);
+		if (!str.empty()) data.get_scripts()->set_postremove(str);
+	}
+	else
+	{
+		fclose(f_postremove);
+		debug("Unable to read postremove script from temp file");
+	}
+
+}
 
 int LocalPackage::get_xml()
 {
@@ -258,6 +365,7 @@ int LocalPackage::injectFile()
 	debug("filename is "+ filename);
 	data.set_filename(filename);
 	get_xml();
+	get_scripts();
 	get_filelist();
 	set_additional_data();
 	debug("injectFile end");
