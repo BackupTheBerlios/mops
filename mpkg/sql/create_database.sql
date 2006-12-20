@@ -16,6 +16,15 @@ create table packages (
 	package_filename NOT NULL
 );
 
+create table scripts (
+	script_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	packages_package_id INTEGER NOT NULL,
+	preinstall TEXT NOT NULL DEFAULT '#!/bin/sh',
+	postinstall TEXT NOT NULL DEFAULT '#!/bin/sh',
+	preremove TEXT NOT NULL DEFAULT '#!/bin/sh',
+	postremove TEXT NOT NULL DEFAULT '#!/bin/sh'
+);
+
 create table files (
 	file_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	file_name TEXT NOT NULL,
