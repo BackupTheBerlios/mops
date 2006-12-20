@@ -1,19 +1,25 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
+$Id: local_package.cpp,v 1.6 2006/12/20 12:04:00 adiakin Exp $
 */
 
 
+#include <unistd.h>
+#include <errno.h>
 
 #include "local_package.h"
 vector<string> temp_files;
+extern int errno;
 
 string get_tmp_file()
 {
 	string tmp_fname;
 	debug("get_tmp_file start");
 	char *t=tmpnam(NULL);
+	if ( t == NULL  )
+		return NULL;
+
 	tmp_fname=t;
 	debug("get_tmp_file end");
 	//free(t);
@@ -25,12 +31,17 @@ string get_tmp_file()
 void delete_tmp_files()
 {
 	debug("preparing to remove temp files");
-	string rm="rm -f";
-	for (int i=0;i<temp_files.size();i++)
-	{
-		rm+=" "+temp_files[i];
+
+	for ( int i = 0; i < temp_files.size(); i++ ) {
+		if ( unlink( temp_files[i].c_str() ) != 0 ) {
+			debug("cannot delete temp file ");
+			debug( temp_files[i] );
+			debug("\n");
+			perror( strerror( errno ) );
+
+		}		
 	}
-	system(rm.c_str()); // Remove files
+
 	temp_files.clear(); // Clean-up list - for future use
 }
 
@@ -141,6 +152,7 @@ int LocalPackage::create_md5()
 	if (!md5)
 	{
 		fprintf(stderr, "Unable to open md5 temp file\n");
+		fclose( md5 );
 		return 1;
 	}
 	char _c_md5[1000];

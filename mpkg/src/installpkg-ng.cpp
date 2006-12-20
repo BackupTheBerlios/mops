@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.5 2006/12/19 22:56:40 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.6 2006/12/20 12:04:00 adiakin Exp $
 				    **/
 
 
@@ -12,8 +12,15 @@
 #include "debug.h"
 #include "mpkg.h"
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+
 int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+
+
 	printf("Preparing to install package %s\n", fname.c_str());
 	// Part 0. Check if file exists.
 	debug("opening file...");
@@ -41,6 +48,22 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 
 int main (int argc, char **argv)
 {
+
+	uid_t uid, euid;
+
+	uid = getuid();
+	euid = geteuid();
+
+#ifdef DEBUG
+	printf("uid = %i, euid = %i\n", uid, euid);
+#endif
+
+	if ( uid != 0 ) {
+		fprintf(stderr, "You must login as root to run this program\n");
+		exit(1);
+	}
+	
+
 	if (argc<2)
 	{
 		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s [package_file] [package_file] \n[debug: argc is %d]\n", argv[0], argc);

@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.5 2006/12/19 21:21:48 adiakin Exp $
+# $Id: Makefile,v 1.6 2006/12/20 12:04:00 adiakin Exp $
 #
 
 CC=gcc
@@ -26,7 +26,7 @@ $(EXECUTABLE): $(OBJECTS)
 
 .PHONY : clean
 clean:
-	rm -f $(OBJECTS)
+	rm -f $(OBJECTS) $(EXECUTABLE)
 	rm -f installpkg-ng
 	rm -f *.o
 	rm -f *~
