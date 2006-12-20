@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.9 2006/12/20 19:17:28 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -414,7 +414,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		fname=sys_root + package->get_files()->get_file(i)->get_name(false);
 		if (fname[fname.length()-1]=='/')
 		{
-			if (fname!=sys_root) rm_ret=rmdir(fname.c_str());
+			rm_ret=rmdir(fname.c_str());
 			if (rm_ret!=0)
 			{
 				//if (rm_ret!=ENOTEMPTY) debug ("failed to delete directory");
