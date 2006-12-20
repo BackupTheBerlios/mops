@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.4 2006/12/19 22:56:40 i27249 Exp $
+$Id: dependencies.cpp,v 1.5 2006/12/20 19:05:00 i27249 Exp $
 */
 
 
@@ -46,10 +46,10 @@ bool DependencyTracker::commitToDb()
 	}
 
 	// Because removing of packages still not defined exaclty, leave this commented out...
-	/*for (int i=0; i<remove_list.size(); i++)
+	for (int i=0; i<remove_list.size(); i++)
 	{
-		set_status(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->get_status());
-	}*/
+		set_status(IntToStr(remove_list.get_package(i)->get_id()), remove_list.get_package(i)->get_status());
+	}
 
 	return true;
 }
@@ -273,14 +273,18 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 
 RESULT DependencyTracker::unmerge(PACKAGE *package)
 {
+	debug("Dependency UNMERGE: "+package->get_name());
 	PACKAGE_LIST package_list;
 	PACKAGE_LIST required_by;
+	package->set_status(PKGSTATUS_REMOVE);
 	
 	char **table;
 	int rows;
 	int cols;
-	string dep_query="select packages_package_id from dependencies where packages_package_name='"+package->get_name()+"';";
+	remove_list.add(*package);
+	string dep_query="select packages_package_id from dependencies where dependency_package_name='"+package->get_name()+"';";
 	get_sql_table(&dep_query,&table,&rows,&cols);
+	debug("Querying linked packages, got "+IntToStr(rows) +" items");
 
 	string sql_query="select * from packages where package_id=";
 	if (rows!=0)
@@ -292,12 +296,11 @@ RESULT DependencyTracker::unmerge(PACKAGE *package)
 			else sql_query+=";";
 		}
 		get_packagelist(sql_query, &package_list);
-		for (int i=0;i<package_list.size();i++)
+		for (int i=0; i<package_list.size(); i++)
 		{
 			if (package_list.get_package(i)->get_status()==PKGSTATUS_INSTALLED) unmerge(package_list.get_package(i));
 		}
 	}
-	remove_list.add(*package);
 	return 0;
 }
 

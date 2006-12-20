@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
+$Id: local_package.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
 */
 
 
@@ -9,6 +9,7 @@ $Id: local_package.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
 #include <errno.h>
 
 #include "local_package.h"
+#include "oldstyle.h"
 vector<string> temp_files;
 extern int errno;
 
@@ -62,10 +63,10 @@ int LocalPackage::get_scripts()
 	string tmp_preremove=get_tmp_file();
 	string tmp_postremove=get_tmp_file();
 	
-	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall;
-	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall;
-	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove;
-	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove;
+	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall+" 2>/dev/null";
+	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall+" 2>/dev/null";
+	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove+" 2>/dev/null";
+	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove+" 2>/dev/null";
 
 	system(sys_preinstall.c_str());
 	system(sys_postinstall.c_str());
@@ -164,8 +165,29 @@ int LocalPackage::get_xml()
 {
 	debug("get_xml start");
 	string tmp_xml=get_tmp_file();
-	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml;
+	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
 	system(sys.c_str());
+	
+	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
+	FILE *test_xml=fopen(tmp_xml.c_str(),"r");
+	bool is_xml=false;
+	for (int i=0; i<10 && fgetc(test_xml)!=EOF; i++)
+	{
+		if (i==9)
+		{
+			is_xml=true;
+		}
+	}
+	fclose(test_xml);
+	
+	if (!is_xml)
+	{
+		printf("Invalid package: no XML data");
+		return 1;
+	
+		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
+	}
+
 	PackageConfig p(tmp_xml);
 	data.set_name(p.getName());
 	data.set_version(p.getVersion());
@@ -176,7 +198,7 @@ int LocalPackage::get_xml()
 	data.set_description(p.getDescription());
 	data.set_short_description(p.getShortDescription());
 	data.set_changelog(p.getChangelog());
-	
+
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
 	TAG tag_tmp;
@@ -201,7 +223,6 @@ int LocalPackage::get_xml()
 	vec_tmp_names=p.getSuggestNames();
 	vec_tmp_conditions=p.getSuggestConditions();
 	vec_tmp_versions=p.getSuggestVersions();
-
 
 	for (int i=0;i<vec_tmp_names.size();i++)
 	{

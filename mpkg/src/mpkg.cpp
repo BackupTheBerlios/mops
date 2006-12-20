@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -110,6 +110,7 @@ void mpkgDatabase::commit_actions()
 	// First: removing required packages
 	PACKAGE_LIST remove_list;
 	get_packagelist("select * from packages where package_status='"+IntToStr(PKGSTATUS_REMOVE)+"';", &remove_list);
+	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	for (int i=0;i<remove_list.size();i++)
 	{
 		remove_package(remove_list.get_package(i));
@@ -225,7 +226,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				if (package->get_md5()==get_file_md5(_fname))
 				{
 					debug("md5 ok");
-					_sys="ln -s "+_fname+" "+SYS_CACHE;
+					_sys="ln -fs "+_fname+" "+SYS_CACHE;
 					debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Creating symlink: "+_sys);
 					system(_sys.c_str());
 					return 0; // File successfully delivered thru symlink, we can exit function now
@@ -336,6 +337,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	debug("calling extract");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
+	string create_root="mkdir "+sys_root;
+	system(create_root.c_str());
 	printf("Extracting package %s\n",package->get_name().c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install > /dev/null)";
 	system(sys.c_str());
@@ -365,5 +368,119 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	// Running pre-remove scripts
+	debug("REMOVE PACKAGE::Preparing scripts");
+	string tmp_preremove=get_tmp_file();
+	string tmp_postremove=get_tmp_file();
+
+	string sys_preremove="/bin/sh "+tmp_preremove;
+	string sys_postremove="/bin/sh "+tmp_postremove;
+	FILE* f_preremove;
+	FILE* f_postremove;
+
+	// Creating and running PRE-INSTALL script
+	f_preremove=fopen(tmp_preremove.c_str(), "w");
+	if (f_preremove)
+	{
+		for (int i=0;i<package->get_scripts()->get_preremove(false).length();i++)
+		{
+			fputc(package->get_scripts()->get_preremove(false)[i], f_preremove);
+		}
+		fclose(f_preremove);
+#ifndef DO_NOT_RUN_SCRIPTS
+		system(sys_preremove.c_str());
+#endif
+	}
+	else
+	{
+		printf("unable to write pre-remove script: check permissions and disk space\n");
+		fclose(f_preremove);
+	}
+
+	// removing package
+	debug("calling remove");
+	string sys_cache=SYS_CACHE;
+	string sys_root=SYS_ROOT;
+	string fname;
+	printf("Removing package %s\n",package->get_name().c_str());
+	int gauss=0;
+	int rm_ret;
+	int dir_depth;
+	double step=package->get_files()->size()/70;
+	debug("Package has "+IntToStr(package->get_files()->size())+" files");
+
+	for (int i=0; i<package->get_files()->size(); i++)
+	{
+		fname=sys_root + package->get_files()->get_file(i)->get_name(false);
+		if (fname[fname.length()-1]=='/')
+		{
+			if (fname!=sys_root) rm_ret=rmdir(fname.c_str());
+			if (rm_ret!=0)
+			{
+				//if (rm_ret!=ENOTEMPTY) debug ("failed to delete directory");
+			}
+		}
+		else
+		{
+			if (unlink (fname.c_str())!=0)
+			{
+				//printf("Cannot delete file %s\n", fname.c_str());
+			}
+		}
+		if ((i-gauss*step)/step > 1)
+		{
+			printf(">");
+			gauss++;
+		}
+	}
+	printf("\n");
+
+	// Run 2: clearing empty directories
+	vector<string>empty_dirs;
+	string edir;
+	for (int i=0; i<package->get_files()->size(); i++)
+	{
+		fname=sys_root + package->get_files()->get_file(i)->get_name(false);
+		for (int d=0; d<fname.length(); d++)
+		{
+			edir+=fname[d];
+			if (fname[d]=='/')
+			{
+				empty_dirs.resize(empty_dirs.size()+1);
+				empty_dirs[empty_dirs.size()-1]=edir;
+			}
+		}
+
+		for (int x=empty_dirs.size()-1;x>=0; x--)
+		{
+			rmdir(empty_dirs[x].c_str());
+		}
+		edir.clear();
+		empty_dirs.clear();
+	}
+
+	// Creating and running POST-INSTALL script
+	f_postremove=fopen(tmp_postremove.c_str(), "w");
+	if (f_postremove)
+	{
+		for (int i=0;i<package->get_scripts()->get_postremove(false).length();i++)
+		{
+			fputc(package->get_scripts()->get_postremove(false)[i], f_postremove);
+		}
+		fclose(f_postremove);
+#ifndef DO_NOT_RUN_SCRIPTS
+		system(sys_postremove.c_str());
+#endif
+	}
+	else
+	{
+		printf("unable to write post-remove script: check permissions and disk space\n");
+		fclose(f_postremove);
+	}
+
+	set_status(IntToStr(package->get_id()), PKGSTATUS_AVAILABLE);
+	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
+
+	
 }
 

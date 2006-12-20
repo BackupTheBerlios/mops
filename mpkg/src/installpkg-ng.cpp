@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.7 2006/12/20 13:00:47 i27249 Exp $
+	$Id: installpkg-ng.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
 				    **/
 
 
@@ -72,29 +72,48 @@ int main (int argc, char **argv)
 	}
 	
 
-	if (argc<2)
+	if (argc<3)
 	{
-		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s [package_file] [package_file] \n[debug: argc is %d]\n", argv[0], argc);
+		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s install [package_file] [package_file]... \nor:   %s remove [package_name] [package_name]...\n", argv[0], argv[0]);
 		return 1;
 	}
 	mpkgDatabase db;
 	DependencyTracker DepTracker;
-	string action=argv[0]; // We will depend on installpkg or removepkg to decide what to do
-	string fname;
-	for (int i=1;i<argc;i++)
+	string action=argv[1]; // We will depend on installpkg or removepkg to decide what to do
+
+	if (action!="install" && action!="remove")
 	{
-		fname=argv[i];
-		install(fname, &db, &DepTracker);
+		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s install [package_file] [package_file]... \nor:    %s remove [package_name] [package_name]...\n", argv[0], argv[0]);
+		return 1;
+	}
+
+	string fname;
+	string pname;
+	if (action=="install")
+	{
+		for (int i=2;i<argc;i++)
+		{
+			fname=argv[i];
+			install(fname, &db, &DepTracker);
+		}
+	}
+	if (action=="remove")
+	{
+		for (int i=2; i<argc;i++)
+		{
+			pname=argv[i];
+			uninstall(pname, &db, &DepTracker);
+		}
 	}
 	
 	printf("Next packages will INSTALL:\n");
 	for (int i=0;i<DepTracker.get_install_list()->size();i++)
 	{
-		printf("%s (status=%s)\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str(), \
+		printf("%s \t(status=%s)\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str(), \
 				DepTracker.get_install_list()->get_package(i)->get_vstatus().c_str());
 		//DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
 	}
-	
+	printf("\n");	
 	printf("Next packages will REMOVE:\n");
 	for (int i=0;i<DepTracker.get_remove_list()->size();i++)
 	{
@@ -102,6 +121,7 @@ int main (int argc, char **argv)
 		DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
 
 	}
+	printf("\n");
 	printf("Next packages is BROKEN:\n");
 	for (int i=0;i<DepTracker.get_failure_list()->size();i++)
 	{
@@ -109,6 +129,7 @@ int main (int argc, char **argv)
 		DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
 
 	}
+	printf("\n");
 
 	DepTracker.commitToDb();
 	db.commit_actions();
