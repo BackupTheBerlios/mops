@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
+$Id: local_package.h,v 1.5 2006/12/20 20:00:38 i27249 Exp $
 */
 
 
@@ -10,9 +10,7 @@ $Id: local_package.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
 #include "dependencies.h"
 #include "PackageConfig.h"
 #include "debug.h"
-/** Returns free temporary filename **/
-string get_tmp_file();
-void delete_tmp_files();
+#include "file_routines.h"
 class LocalPackage
 {
 	public:

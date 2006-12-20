@@ -1,50 +1,11 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.8 2006/12/20 19:05:00 i27249 Exp $
+$Id: local_package.cpp,v 1.9 2006/12/20 20:00:38 i27249 Exp $
 */
-
-
-#include <unistd.h>
-#include <errno.h>
 
 #include "local_package.h"
 #include "oldstyle.h"
-vector<string> temp_files;
-extern int errno;
-
-string get_tmp_file()
-{
-	string tmp_fname;
-	debug("get_tmp_file start");
-	char *t=tmpnam(NULL);
-	if ( t == NULL  )
-		return NULL;
-
-	tmp_fname=t;
-	debug("get_tmp_file end");
-	//free(t);
-	temp_files.resize(temp_files.size()+1);
-	temp_files[temp_files.size()-1]=tmp_fname;
-	return tmp_fname;
-}
-
-void delete_tmp_files()
-{
-	debug("preparing to remove temp files");
-
-	for ( int i = 0; i < temp_files.size(); i++ ) {
-		if ( unlink( temp_files[i].c_str() ) != 0 ) {
-			debug("cannot delete temp file ");
-			debug( temp_files[i] );
-			debug("\n");
-			perror( strerror( errno ) );
-
-		}		
-	}
-
-	temp_files.clear(); // Clean-up list - for future use
-}
 
 LocalPackage::LocalPackage(string _f)
 {
@@ -169,6 +130,12 @@ int LocalPackage::get_xml()
 	system(sys.c_str());
 	
 	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
+	if (!FileExists(tmp_xml))
+	{
+		printf("Unable to extract XML data\n");
+		return 2;
+	}
+	
 	FILE *test_xml=fopen(tmp_xml.c_str(),"r");
 	bool is_xml=false;
 	for (int i=0; i<10 && fgetc(test_xml)!=EOF; i++)
@@ -380,15 +347,21 @@ int LocalPackage::set_additional_data()
 int LocalPackage::injectFile()
 {
 	// Injecting data from file!
+	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
+	int ret=0;
 	debug("injectFile start");
-	get_size();
-	create_md5();
+	
+	if (get_size()!=0) return 1;
+	if (create_md5()!=0) return 2;
+	
 	debug("filename is "+ filename);
 	data.set_filename(filename);
-	get_xml();
-	get_scripts();
-	get_filelist();
-	set_additional_data();
+	
+	if (get_xml()!=0) return 3;
+	if (get_scripts()!=0) return 4;
+	if (get_filelist()!=0) return 5;
+	if (set_additional_data()!=0) return 6;
+	
 	debug("injectFile end");
 	return 0;
 }
