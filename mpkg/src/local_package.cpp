@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.10 2006/12/21 15:43:53 i27249 Exp $
+$Id: local_package.cpp,v 1.11 2006/12/21 18:09:17 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -225,10 +225,10 @@ int LocalPackage::set_additional_data()
 	}
 	debug("filename: "+fname);
 	string ffname;
-	printf("Filename:\n%s\n\nPath:\n%s\n", fname.c_str(), fpath.c_str());
+	//printf("Filename:\n%s\n\nPath:\n%s\n", fname.c_str(), fpath.c_str());
 	if (fpath[0]!='/')
 	{
-		printf("FPATH=%s\n",fpath.c_str());
+		//printf("FPATH=%s\n",fpath.c_str());
 		ffname=pwd;
 		ffname+="/";
 		ffname+=fpath;
@@ -243,7 +243,7 @@ int LocalPackage::set_additional_data()
 	return 0;
 }
 
-int LocalPackage::injectFile()
+int LocalPackage::injectFile(bool index)
 {
 	// Injecting data from file!
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
@@ -269,15 +269,21 @@ int LocalPackage::injectFile()
 		debug("get_xml FAILED");
 		return 3;
 	}
-	if (get_scripts()!=0)
+	if (!index)
 	{
-		debug("get_scripts FAILED");
-		return 4;
+		if (get_scripts()!=0)
+		{
+			debug("get_scripts FAILED");
+			return 4;
+		}
 	}
-	if (get_filelist()!=0)
+	if (!index)
 	{
-		debug("get_filelist FAILED");
-		return 5;
+		if (get_filelist()!=0)
+		{
+			debug("get_filelist FAILED");
+			return 5;
+		}
 	}
 	if (set_additional_data()!=0)
 	{

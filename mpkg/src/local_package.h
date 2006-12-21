@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.5 2006/12/20 20:00:38 i27249 Exp $
+$Id: local_package.h,v 1.6 2006/12/21 18:09:17 i27249 Exp $
 */
 
 
@@ -17,7 +17,7 @@ class LocalPackage
 		LocalPackage(string _f);
 		~LocalPackage();
 		PACKAGE data;
-		int injectFile();
+		int injectFile(bool index=false);
 	private:
 		string filename;
 		int create_md5();

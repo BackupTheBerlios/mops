@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.2 2006/12/21 15:43:53 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.3 2006/12/21 18:09:17 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -56,7 +56,7 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count)
 {
-	printf("ReadFILE: %s\n", filename.c_str());
+	//printf("ReadFILE: %s\n", filename.c_str());
 	FILE *src=fopen(filename.c_str(),"r");
 	string ret;
 	char buf;
@@ -72,7 +72,7 @@ string ReadFile(string filename, int max_count)
 			if (i==max_count-1) break; // This will stop reading if we reach max_count of bytes read. Also, it will continue until end if max_count==0.
 		}
 		fclose(src);
-		printf("[%s]\n",ret.c_str());
+		//printf("[%s]\n",ret.c_str());
 		return ret;
 	}
 	else

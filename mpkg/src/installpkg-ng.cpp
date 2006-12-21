@@ -4,14 +4,14 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.9 2006/12/20 20:02:56 adiakin Exp $
+	$Id: installpkg-ng.cpp,v 1.10 2006/12/21 18:09:17 i27249 Exp $
 				    **/
 
 
 #include "local_package.h"
 #include "debug.h"
 #include "mpkg.h"
-
+#include "repository.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -88,7 +88,7 @@ int main (int argc, char **argv)
 	DependencyTracker DepTracker;
 	string action=argv[1]; // We will depend on installpkg or removepkg to decide what to do
 
-	if (action!="install" && action!="remove")
+	if (action!="install" && action!="remove" && action!="index")
 	{
 		printf("MOPSLinux Packaging System\ninstallpkg-ng v.0.1 alpha \nusage: %s install [package_file] [package_file]... \nor:    %s remove [package_name] [package_name]...\n", argv[0], argv[0]);
 		return 1;
@@ -112,6 +112,14 @@ int main (int argc, char **argv)
 			uninstall(pname, &db, &DepTracker);
 		}
 	}
+
+	if (action=="index")
+	{
+		Repository rep;
+		rep.build_index("http://localhost/");
+		exit(0);
+	}
+
 	
 	printf("Next packages will INSTALL:\n");
 	for (int i=0;i<DepTracker.get_install_list()->size();i++)
