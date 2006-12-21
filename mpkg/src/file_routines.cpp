@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.1 2006/12/20 20:00:38 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.2 2006/12/21 15:43:53 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -43,36 +43,41 @@ void delete_tmp_files()
 
 bool FileExists(string filename)
 {
-	FILE *test=fopen(filename.c_str(),"r");
-	if (test)
-	{
-		fclose(test);
-		return true;
-	}
-	else
-	{
-		fclose(test);
-		return false;
-	}
+	if (access(filename.c_str(), R_OK)==0) return true;
+	else return false;
 }
 
-string ReadFile(string filename)
+bool FileNotEmpty(string filename)
 {
+	if (!ReadFile(filename, 10).empty()) return true;
+	else return false;
+}
+		
+
+string ReadFile(string filename, int max_count)
+{
+	printf("ReadFILE: %s\n", filename.c_str());
 	FILE *src=fopen(filename.c_str(),"r");
 	string ret;
 	char buf;
+	ret.clear();
 	if (src)
 	{
+		//printf("[%s]\n",ret.c_str());
+		
 		for (int i=0;buf!=EOF;i++)
 		{
 			buf=fgetc(src);
 			if (buf!=EOF) ret+=buf;
+			if (i==max_count-1) break; // This will stop reading if we reach max_count of bytes read. Also, it will continue until end if max_count==0.
 		}
 		fclose(src);
+		printf("[%s]\n",ret.c_str());
 		return ret;
 	}
 	else
 	{
+		fclose(src);
 		printf("Cannot open file %s\n", filename.c_str());
 		return "";
 	}

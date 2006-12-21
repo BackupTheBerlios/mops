@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.9 2006/12/20 20:00:38 i27249 Exp $
+$Id: local_package.cpp,v 1.10 2006/12/21 15:43:53 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -34,92 +34,16 @@ int LocalPackage::get_scripts()
 	system(sys_preremove.c_str());
 	system(sys_postremove.c_str());
 
-	FILE* f_preinstall;
-	FILE* f_postinstall;
-	FILE* f_preremove;
-	FILE* f_postremove;
+	string str_preinstall=ReadFile(tmp_preinstall);
+	string str_postinstall=ReadFile(tmp_postinstall);
+	string str_preremove=ReadFile(tmp_preremove);
+	string str_postremove=ReadFile(tmp_postremove);
 
-	f_preinstall=fopen(tmp_preinstall.c_str(), "r");
-	f_postinstall=fopen(tmp_postinstall.c_str(), "r");
-	f_preremove=fopen(tmp_preremove.c_str(), "r");
-	f_postremove=fopen(tmp_postremove.c_str(), "r");
-
-	string str;
-	char buf;
-
-	if (f_preinstall)
-	{
-		str.clear();
-		buf=' ';
-		while (buf!=EOF)
-		{
-			buf=fgetc(f_preinstall);
-			if (buf!=EOF) str+=buf;
-		}
-		fclose(f_preinstall);
-		if (!str.empty()) data.get_scripts()->set_preinstall(str);
-	}
-	else
-	{
-		fclose(f_preinstall);
-		debug("Unable to read preinstall script from temp file");
-	}
-
-	if (f_postinstall)
-	{
-		str.clear();
-		buf=' ';
-		while (buf!=EOF)
-		{
-			buf=fgetc(f_postinstall);
-			if (buf!=EOF) str+=buf;
-		}
-
-		fclose(f_postinstall);
-		if (!str.empty()) data.get_scripts()->set_postinstall(str);
-	}
-	else
-	{
-		fclose(f_postinstall);
-		debug("Unable to read postinstall script from temp file");
-	}
-
-	if (f_preremove)
-	{
-		str.clear();
-		buf=' ';
-		while (buf!=EOF)
-		{
-			buf=fgetc(f_preremove);
-			if (buf!=EOF) str+=buf;
-		}
-		fclose(f_preremove);
-		if (!str.empty()) data.get_scripts()->set_preremove(str);
-	}
-	else
-	{
-		fclose(f_preremove);
-		debug("Unable to read preremove script from temp file");
-	}
-
-	if (f_postremove)
-	{
-		str.clear();
-		buf=' ';
-		while (buf!=EOF)
-		{
-			buf=fgetc(f_postremove);
-			if (buf!=EOF) str+=buf;
-		}
-		fclose(f_postremove);
-		if (!str.empty()) data.get_scripts()->set_postremove(str);
-	}
-	else
-	{
-		fclose(f_postremove);
-		debug("Unable to read postremove script from temp file");
-	}
-
+	if (!str_preinstall.empty()) data.get_scripts()->set_preinstall(str_preinstall);
+	if (!str_postinstall.empty()) data.get_scripts()->set_postinstall(str_postinstall);
+	if (!str_preremove.empty()) data.get_scripts()->set_preremove(str_preremove);
+	if (!str_postremove.empty()) data.get_scripts()->set_postremove(str_postremove);
+	return 0;
 }
 
 int LocalPackage::get_xml()
@@ -130,28 +54,10 @@ int LocalPackage::get_xml()
 	system(sys.c_str());
 	
 	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
-	if (!FileExists(tmp_xml))
-	{
-		printf("Unable to extract XML data\n");
-		return 2;
-	}
-	
-	FILE *test_xml=fopen(tmp_xml.c_str(),"r");
-	bool is_xml=false;
-	for (int i=0; i<10 && fgetc(test_xml)!=EOF; i++)
-	{
-		if (i==9)
-		{
-			is_xml=true;
-		}
-	}
-	fclose(test_xml);
-	
-	if (!is_xml)
+	if (!FileNotEmpty(tmp_xml))
 	{
 		printf("Invalid package: no XML data");
 		return 1;
-	
 		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
 	}
 
@@ -243,19 +149,13 @@ int LocalPackage::create_md5()
 
 	string sys="md5sum "+filename+" > "+tmp_md5;
 	system(sys.c_str());
-	FILE* md5=fopen(tmp_md5.c_str(), "r");
-	if (!md5)
+	string md5str=ReadFile(tmp_md5, 32);
+	debug("MD5 = "+md5str);
+	if (md5str.empty())
 	{
-		fprintf(stderr, "Unable to open md5 temp file\n");
-		fclose( md5 );
+		printf("ERROR: Unable to read md5 temp file\n");
 		return 1;
 	}
-	char _c_md5[1000];
-	fscanf(md5, "%s", &_c_md5);
-	string md5str;
-	md5str=_c_md5;
-	//free(_c_md5);
-	fclose(md5);
 	data.set_md5(md5str);
 	debug("create_md5 end");
 	return 0;
@@ -268,7 +168,11 @@ int LocalPackage::get_size()
 	string sys="gzip -l "+filename+" > "+tmp;
 	system(sys.c_str());
 	FILE *zdata=fopen(tmp.c_str(), "r");
-	if (!zdata) return 1;
+	if (!zdata)
+	{
+		printf("Unable to extract size of package\n");
+		return 1;
+	}
 	char c_size[40000];
 	char i_size[40000];
 	debug("reading file...");
@@ -289,8 +193,6 @@ int LocalPackage::get_size()
 	isize=i_size;
 	data.set_compressed_size(csize);
 	data.set_installed_size(isize);
-	//free(c_size);
-	//free(i_size);
 	debug("get_size end");
 	return 0;
 }
@@ -300,13 +202,8 @@ int LocalPackage::set_additional_data()
 	LOCATION location;
 	SERVER server;
 	location.set_local();
-	string pwd_t=get_tmp_file();
-	string pwd="pwd > "+pwd_t;
-	system(pwd.c_str());
-	FILE* _pt=fopen(pwd_t.c_str(), "r");
-	char fstr[40000];
-	fscanf(_pt, "%s", &fstr);
-	fclose(_pt);
+	char pwd[MAXPATHLEN];
+	getwd(pwd);
 	string fpath;
 	string fname;
 	int fname_start;
@@ -328,9 +225,11 @@ int LocalPackage::set_additional_data()
 	}
 	debug("filename: "+fname);
 	string ffname;
+	printf("Filename:\n%s\n\nPath:\n%s\n", fname.c_str(), fpath.c_str());
 	if (fpath[0]!='/')
 	{
-		ffname=fstr;
+		printf("FPATH=%s\n",fpath.c_str());
+		ffname=pwd;
 		ffname+="/";
 		ffname+=fpath;
 	}
@@ -351,16 +250,40 @@ int LocalPackage::injectFile()
 	int ret=0;
 	debug("injectFile start");
 	
-	if (get_size()!=0) return 1;
-	if (create_md5()!=0) return 2;
+	if (get_size()!=0)
+	{
+		debug("get_size() FAILED");
+		return 1;
+	}
+	if (create_md5()!=0)
+	{
+		debug("create_md5 FAILED");
+		return 2;
+	}
 	
 	debug("filename is "+ filename);
 	data.set_filename(filename);
 	
-	if (get_xml()!=0) return 3;
-	if (get_scripts()!=0) return 4;
-	if (get_filelist()!=0) return 5;
-	if (set_additional_data()!=0) return 6;
+	if (get_xml()!=0)
+	{
+		debug("get_xml FAILED");
+		return 3;
+	}
+	if (get_scripts()!=0)
+	{
+		debug("get_scripts FAILED");
+		return 4;
+	}
+	if (get_filelist()!=0)
+	{
+		debug("get_filelist FAILED");
+		return 5;
+	}
+	if (set_additional_data()!=0)
+	{
+		debug("set_additional_data FAILED");
+		return 6;
+	}
 	
 	debug("injectFile end");
 	return 0;
