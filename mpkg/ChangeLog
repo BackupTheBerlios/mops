@@ -1,0 +1,151 @@
+2006-12-22 13:33  adiakin
+
+	* src/: config.h, installpkg-ng.cpp, local_package.cpp: gettext
+	  support
+
+2006-12-22 13:30  adiakin
+
+	* src/actions.h: [no log message]
+
+2006-12-22 13:26  adiakin
+
+	* src/: Makefile, core.cpp, debug.cpp, debug.h, file_routines.h,
+	  installpkg-ng.cpp, local_package.cpp, local_package.h: added
+	  gettext and getopt support, some code cleanup
+
+2006-12-21 21:09  i27249
+
+	* src/: Makefile, file_routines.cpp, installpkg-ng.cpp,
+	  local_package.cpp, local_package.h, repository.cpp, repository.h:
+	  Repository support - started an implementation
+
+2006-12-21 18:43  i27249
+
+	* src/: file_routines.cpp, file_routines.h, local_package.cpp: Some
+	  code optimizations, system() removing is in progress )
+
+2006-12-21 18:04  adiakin
+
+	* src/: HttpDownload.cpp, HttpDownload.h, IDownload.h, cErrors.h:
+	  [no log message]
+
+2006-12-21 10:19  i27249
+
+	* src/file_routines.h: Some fixes... I forgotten :-)
+
+2006-12-20 23:03  adiakin
+
+	* src/Makefile: [no log message]
+
+2006-12-20 23:02  adiakin
+
+	* src/: HttpDownload.cpp, HttpDownload.h, IDownload.h, cErrors.h,
+	  installpkg-ng.cpp: common download interface and http method
+	  implementation
+
+2006-12-20 23:00  i27249
+
+	* src/: Makefile, file_routines.cpp, file_routines.h,
+	  local_package.cpp, local_package.h: Some (all?) file routines
+	  moved to file_routines.*, added functions to read/write file, and
+	  check existance
+
+2006-12-20 22:17  i27249
+
+	* src/mpkg.cpp: Very little fixes
+
+2006-12-20 22:05  i27249
+
+	* src/: config.h, dependencies.cpp, installpkg-ng.cpp,
+	  local_package.cpp, mpkg.cpp: Misc cleanup Remove support Changed
+	  the way of running program: now should be installpkg-ng install
+	  [package_name]					 or
+	  installpkg-ng remove [package_name]
+
+2006-12-20 16:36  i27249
+
+	* sql/create_database.sql: Added "scripts" table. Please re-create
+	  or modify your databases!
+
+2006-12-20 16:00  i27249
+
+	* src/: config.h, core.cpp, core.h, dataunits.cpp, dataunits.h,
+	  installpkg-ng.cpp, local_package.cpp, local_package.h, mpkg.cpp,
+	  mpkg.h, sql_pool.cpp: Added support for scripts Beginning
+	  removing implementation
+
+2006-12-20 15:04  adiakin
+
+	* src/: Makefile, installpkg-ng.cpp, local_package.cpp: security
+	  fixes
+
+2006-12-20 01:56  i27249
+
+	* src/: core.cpp, dataunits.cpp, dataunits.h, dependencies.cpp,
+	  installpkg-ng.cpp, local_package.cpp, local_package.h, mpkg.cpp:
+	  fixed: some stupid bugs with filename building Improved:
+	  seriously cleaned up and tuned visual interface (it become
+	  readable) fixed: some dependency tracking issues fixed: temporary
+	  files now all deletes at end
+
+2006-12-20 00:21  adiakin
+
+	* src/Makefile: code celanup
+
+2006-12-20 00:19  adiakin
+
+	* src/Makefile: normal Makefile )
+
+2006-12-19 20:29  i27249
+
+	* src/: Makefile, config.h, core.cpp, dataunits.cpp,
+	  installpkg-ng.cpp, local_package.cpp, mpkg.cpp, sql_pool.cpp:
+	  Hope, fully working installpkg-ng (including dependency
+	  tracking).  Added support for multiple package installations at a
+	  time (but NOT wildcards).
+
+2006-12-18 19:50  i27249
+
+	* src/: core.cpp, mpkg.cpp: Fixed locations & servers. Should work
+	  now.
+
+2006-12-18 13:00  i27249
+
+	* src/: dependencies.cpp, installpkg-ng.cpp, local_package.cpp,
+	  mpkg.cpp, mpkg.h: Fixed some package adding issues. But still not
+	  fully working propertly (locations comparsion problems)
+
+2006-12-17 22:34  i27249
+
+	* src/: Makefile, PackageConfig.cpp, PackageConfig.h,
+	  conditions.cpp, conditions.h, config.h, constants.h, core.cpp,
+	  core.h, dataunits.cpp, dataunits.h, debug.cpp, debug.h,
+	  dependencies.cpp, dependencies.h, installpkg-ng.cpp,
+	  local_package.cpp, local_package.h, mpkg.cpp, mpkg.h,
+	  sql_pool.cpp, sql_pool.h, xmlParser.cpp, xmlParser.h: Added CVS
+	  headers to all files
+
+2006-12-17 22:08  i27249
+
+	* src/Makefile, src/PackageConfig.cpp, src/PackageConfig.h,
+	  src/conditions.cpp, src/constants.h, src/core.h,
+	  src/local_package.h, src/sql_pool.cpp, src/sql_pool.h,
+	  src/xmlParser.cpp, src/local_package.cpp, src/xmlParser.h,
+	  src/config.h, src/dataunits.h, src/mpkg.h, src/conditions.h,
+	  src/core.cpp, src/debug.cpp, src/debug.h, src/dependencies.cpp,
+	  src/dependencies.h, src/mpkg.cpp, sql/create_database.sql,
+	  src/dataunits.cpp, src/installpkg-ng.cpp: 2006-12-17 22:04:
+	  Initial import to CVS. Almost working dependencies and
+	  installpkg-ng
+
+2006-12-17 22:08  i27249
+
+	* src/Makefile, src/PackageConfig.cpp, src/PackageConfig.h,
+	  src/conditions.cpp, src/constants.h, src/core.h,
+	  src/local_package.h, src/sql_pool.cpp, src/sql_pool.h,
+	  src/xmlParser.cpp, src/local_package.cpp, src/xmlParser.h,
+	  src/config.h, src/dataunits.h, src/mpkg.h, src/conditions.h,
+	  src/core.cpp, src/debug.cpp, src/debug.h, src/dependencies.cpp,
+	  src/dependencies.h, src/mpkg.cpp, sql/create_database.sql,
+	  src/dataunits.cpp, src/installpkg-ng.cpp: Initial revision
+
