@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.12 2006/12/22 10:26:05 adiakin Exp $
+$Id: local_package.cpp,v 1.13 2006/12/22 10:33:59 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -153,7 +153,7 @@ int LocalPackage::create_md5()
 	debug("MD5 = "+md5str);
 	if (md5str.empty())
 	{
-		printf("ERROR: Unable to read md5 temp file\n");
+		printf(_("ERROR: Unable to read md5 temp file\n"));
 		return 1;
 	}
 	data.set_md5(md5str);
@@ -170,7 +170,7 @@ int LocalPackage::get_size()
 	FILE *zdata=fopen(tmp.c_str(), "r");
 	if (!zdata)
 	{
-		printf("Unable to extract size of package\n");
+		printf(_("Unable to extract size of package\n"));
 		return 1;
 	}
 	char c_size[40000];

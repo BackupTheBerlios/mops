@@ -4,7 +4,7 @@
 	New generation of installpkg :-)
 	This tool ONLY can install concrete local file, but in real it can do more :-) 
 	
-	$Id: installpkg-ng.cpp,v 1.11 2006/12/22 10:26:05 adiakin Exp $
+	$Id: installpkg-ng.cpp,v 1.12 2006/12/22 10:33:59 adiakin Exp $
 				    **/
 
 
@@ -20,8 +20,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
-#include <locale.h>
-#include <libintl.h>
 
 
 /*
@@ -34,7 +32,6 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 */
 
-#define _(string) gettext(string)
 
 const char* program_name;
 extern char* optarg;
@@ -52,10 +49,9 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker);
 
 int main (int argc, char **argv)
 {
-
-	setlocale(LC_ALL, "");
-	bindtextdomain( "installpkg-ng", "/usr/share/locale");
-	textdomain("installpkg-ng");
+setlocale(LC_ALL, "");
+bindtextdomain( "installpkg-ng", "/usr/share/locale");
+textdomain("installpkg-ng");
 
 /*	
 	try {

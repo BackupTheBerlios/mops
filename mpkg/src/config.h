@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.5 2006/12/20 19:05:00 i27249 Exp $
+    $Id: config.h,v 1.6 2006/12/22 10:33:59 adiakin Exp $
 */
 
 
@@ -10,5 +10,10 @@
 //#define ENABLE_DEBUG
 #define SYS_ROOT "/root/development/sys_root/"
 #define SYS_CACHE "/root/development/sys_cache/"
+
+#include <libintl.h>
+#include <locale.h>
+
+#define _(string) gettext(string)
 
 #endif
