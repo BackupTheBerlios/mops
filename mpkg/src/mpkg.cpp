@@ -1,8 +1,9 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.9 2006/12/20 19:17:28 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.10 2006/12/22 13:56:05 adiakin Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
+#include "syscommands.h"
 
 /** Scans database and do actions. Actually, packages will install in SYS_ROOT folder (for testing).
  * In real systems, set SYS_ROOT to "/"
@@ -353,7 +354,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		}
 		fclose(f_postinstall);
 #ifndef DO_NOT_RUN_SCRIPTS
-		system(sys_postinstall.c_str());
+//		system(sys_postinstall.c_str());
+		runShellCommand(sys_postinstall);
 #endif
 	}
 	else
@@ -388,7 +390,9 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		}
 		fclose(f_preremove);
 #ifndef DO_NOT_RUN_SCRIPTS
-		system(sys_preremove.c_str());
+//		system(sys_preremove.c_str());
+		runShellCommand(sys_preremove);
+		
 #endif
 	}
 	else
