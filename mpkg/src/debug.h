@@ -1,15 +1,26 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+$Id: debug.h,v 1.3 2006/12/22 10:26:05 adiakin Exp $
 */
 
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
+
 #include <string>
+#include <stdlib.h>
+/*
+#include <log4cxx/logger.h>
+#include <log4cxx/ndc.h>
+#include <log4cxx/helpers/exception.h>
+#include <log4cxx/basicconfigurator.h>
+*/
 #include "config.h"
-using namespace std;
+/*
+using namespace log4cxx;
+using namespace log4cxx::helpers;
+*/
+typedef int DEBUG_LEVEL;
 
-void debug(string str);
-
+void debug(std::string str);
 #endif //DEBUG_H_
 

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.6 2006/12/20 13:00:47 i27249 Exp $
+ *	$Id: core.cpp,v 1.7 2006/12/22 10:26:05 adiakin Exp $
  *
  ********************************************************************************/
 
@@ -813,6 +813,8 @@ string get_package_id(PACKAGE &package)
 		sqlite3_free_table(table);
 		return "ERROR";
 	}
+
+	return "ERROR";
 }
 
 

@@ -1,11 +1,11 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.11 2006/12/21 18:09:17 i27249 Exp $
+$Id: local_package.cpp,v 1.12 2006/12/22 10:26:05 adiakin Exp $
 */
 
 #include "local_package.h"
-#include "oldstyle.h"
+//#include "oldstyle.h"
 
 LocalPackage::LocalPackage(string _f)
 {
@@ -203,7 +203,7 @@ int LocalPackage::set_additional_data()
 	SERVER server;
 	location.set_local();
 	char pwd[MAXPATHLEN];
-	getwd(pwd);
+	getcwd(pwd, MAXPATHLEN);
 	string fpath;
 	string fname;
 	int fname_start;

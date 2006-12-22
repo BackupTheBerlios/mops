@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.3 2006/12/21 15:43:53 i27249 Exp $
+* $Id: file_routines.h,v 1.4 2006/12/22 10:26:05 adiakin Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -8,7 +8,7 @@
 #include "local_package.h"
 #include <unistd.h>
 #include <errno.h>
-#include <libtar.h>
+//#include <libtar.h>
 #include <sys/dir.h>
 #include <sys/types.h>
 #include <sys/param.h>

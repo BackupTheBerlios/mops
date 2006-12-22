@@ -1,11 +1,13 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.6 2006/12/21 18:09:17 i27249 Exp $
+$Id: local_package.h,v 1.7 2006/12/22 10:26:05 adiakin Exp $
 */
 
 
 #ifndef LOCAL_PACKAGE_H_
 #define LOCAL_PACKAGE_H_
+
+#include <sys/param.h>
 
 #include "dependencies.h"
 #include "PackageConfig.h"

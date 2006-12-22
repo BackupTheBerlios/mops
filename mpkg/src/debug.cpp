@@ -1,15 +1,18 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+ $Id: debug.cpp,v 1.3 2006/12/22 10:26:05 adiakin Exp $
  */
  
 
 
 #include "debug.h"
 
-void debug(string str)
+
+
+void debug(std::string str)
 {
-#ifdef ENABLE_DEBUG
+#ifdef DEBUG
 	str+="\n";
 	printf(str.c_str()); // Comment out this strings to disable debug output
 #endif
 }
+
