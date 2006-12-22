@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.3 2006/12/22 10:26:05 adiakin Exp $
+$Id: debug.h,v 1.4 2006/12/22 13:14:56 adiakin Exp $
 */
 
 
@@ -20,6 +20,7 @@ using namespace log4cxx;
 using namespace log4cxx::helpers;
 */
 typedef int DEBUG_LEVEL;
+
 
 void debug(std::string str);
 #endif //DEBUG_H_

@@ -1,11 +1,11 @@
 /**
-	MOPSLinux packaging system    
-	    installpkg-ng
-	New generation of installpkg :-)
-	This tool ONLY can install concrete local file, but in real it can do more :-) 
-	
-	$Id: installpkg-ng.cpp,v 1.12 2006/12/22 10:33:59 adiakin Exp $
-				    **/
+ *	MOPSLinux packaging system    
+ *	    installpkg-ng
+ *	New generation of installpkg :-)
+ *	This tool ONLY can install concrete local file, but in real it can do more :-) 
+ *	
+ *	$Id: installpkg-ng.cpp,v 1.13 2006/12/22 13:14:56 adiakin Exp $
+ */
 
 
 #include "local_package.h"
@@ -20,17 +20,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
-
-
-/*
-#include <log4cxx/logger.h>
-#include <log4cxx/basicconfigurator.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/ndc.h>
-
-using namespace log4cxx;
-using namespace log4cxx::helpers;
-*/
 
 
 const char* program_name;
@@ -49,29 +38,11 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker);
 
 int main (int argc, char **argv)
 {
-setlocale(LC_ALL, "");
-bindtextdomain( "installpkg-ng", "/usr/share/locale");
-textdomain("installpkg-ng");
+	setlocale(LC_ALL, "");
+	bindtextdomain( "installpkg-ng", "/usr/share/locale");
+	textdomain("installpkg-ng");
 
-/*	
-	try {
 
-		BasicConfigurator::configure();
- 		rootLogger = Logger::getRootLogger();
-
-		NDC::push(_T("main"));
-
-		rootLogger->debug(_T("starting app..."));
-	} catch (Exception&) {
-#ifdef DEBUG
-			printf("no logger avaliable\n");
-#endif
-	}
-*/
-
-	/**
-	 * do we need to be verbose?
-	 */
 	int verbose = 0;
 
 	/**
@@ -192,7 +163,7 @@ textdomain("installpkg-ng");
 	
 	}
 
-	if (  action == ACT_LIST ) {
+	if ( action == ACT_LIST ) {
 	
 	}
 
@@ -286,7 +257,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 
 int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	printf("Preparing to UNINSTALL package %s\n", pkg_name.c_str());
+	printf(_("Preparing to UNINSTALL package %s\n"), pkg_name.c_str());
 	PACKAGE package=db->get_installed_package(pkg_name);
 	DepTracker->unmerge(&package);
 	return 0;
