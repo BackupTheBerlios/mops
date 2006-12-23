@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.3 2006/12/23 11:42:06 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -305,4 +305,7 @@ vector<string> PackageConfig::getFilelist()
 	return a;
 }
 
-
+XMLNode PackageConfig::getXMLNode()
+{
+	return _node;
+}

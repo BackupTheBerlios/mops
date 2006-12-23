@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.13 2006/12/22 10:33:59 adiakin Exp $
+$Id: local_package.cpp,v 1.14 2006/12/23 11:42:06 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -62,6 +62,8 @@ int LocalPackage::get_xml()
 	}
 
 	PackageConfig p(tmp_xml);
+	_packageXMLNode = p.getXMLNode(); // To be indexing work
+
 	data.set_name(p.getName());
 	data.set_version(p.getVersion());
 	data.set_arch(p.getArch());
@@ -157,6 +159,8 @@ int LocalPackage::create_md5()
 		return 1;
 	}
 	data.set_md5(md5str);
+	_packageXMLNode.addChild("md5");
+	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
 	debug("create_md5 end");
 	return 0;
 }
@@ -193,6 +197,10 @@ int LocalPackage::get_size()
 	isize=i_size;
 	data.set_compressed_size(csize);
 	data.set_installed_size(isize);
+	_packageXMLNode.addChild("compressed_size");
+	_packageXMLNode.getChildNode("compressed_size").addText(csize.c_str());
+	_packageXMLNode.addChild("installed_size");
+	_packageXMLNode.getChildNode("installed_size").addText(isize.c_str());
 	debug("get_size end");
 	return 0;
 }
@@ -225,10 +233,8 @@ int LocalPackage::set_additional_data()
 	}
 	debug("filename: "+fname);
 	string ffname;
-	//printf("Filename:\n%s\n\nPath:\n%s\n", fname.c_str(), fpath.c_str());
 	if (fpath[0]!='/')
 	{
-		//printf("FPATH=%s\n",fpath.c_str());
 		ffname=pwd;
 		ffname+="/";
 		ffname+=fpath;
@@ -240,6 +246,12 @@ int LocalPackage::set_additional_data()
 	location.set_server(server);
 	location.set_path(ffname);
 	data.get_locations()->add(location);
+	_packageXMLNode.addChild("filename");
+	_packageXMLNode.getChildNode("filename").addText(data.get_filename().c_str());
+	_packageXMLNode.addChild("location");
+	_packageXMLNode.getChildNode("location").addText(fpath.c_str());
+
+
 	return 0;
 }
 
@@ -307,5 +319,10 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	system(sed_cmd.c_str());
 	debug("CreateFlistNode end");
 	return 0;
+}
+
+XMLNode LocalPackage::getPackageXMLNode()
+{
+	return _packageXMLNode;
 }
 

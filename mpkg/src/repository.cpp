@@ -1,11 +1,13 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.1 2006/12/21 18:09:17 i27249 Exp $
+ * $Id: repository.cpp,v 1.2 2006/12/23 11:42:06 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 
 Repository::Repository(){}
 Repository::~Repository(){}
+
+XMLNode _root;
 
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
@@ -21,39 +23,33 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		printf("indexing file %s\n",filename);
 		LocalPackage lp(_package);
 		lp.injectFile(true);
-		// TODO: create XML node
+		_root.addChild(lp.getPackageXMLNode());
 	}
-		
-
-	/*if (filetype==FTW_D)
-	{
-		printf("[dir] %s\n", filename);
-	}
-	if (filetype!=FTW_F && filetype!=FTW_D)
-	{
-		printf("[unknown] %s\n", filename);
-	}*/
 	return 0;
 }
 
 
 int Repository::build_index(string server_url)
 {
+	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
+	_root=XMLNode::createXMLTopNode("repository");
+	_root.addAttribute("server_url", server_url.c_str());
+	
+	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
 	// and build an XML tree for whole repository, then write it to ./packages.xml
 	
-	
-	
 	ftw(".", ProcessPackage, 100);
-	//LocalPackage lp(package);
-	
 
+	// Finally, write our XML tree to file
+	_root.writeToFile("packages.xml");
 	return 0;
 }
 
 PACKAGE_LIST Repository::get_index(string server_url)
 {
 	PACKAGE_LIST packages;
+	// Fetching packages.xml from server, parses it, and returns full packagelist. TODO.
 	return packages;
 }
