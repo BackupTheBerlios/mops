@@ -9,6 +9,6 @@
 #define ACT_UPDATE	0x07
 #define ACT_LIST	0x08
 #define ACT_NONE	0x09
-
+#define ACT_INDEX	0x0a
 #endif
 

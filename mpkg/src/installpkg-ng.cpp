@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.13 2006/12/22 13:14:56 adiakin Exp $
+ *	$Id: installpkg-ng.cpp,v 1.14 2006/12/23 12:31:21 i27249 Exp $
  */
 
 
@@ -121,7 +121,7 @@ int main (int argc, char **argv)
 		if ( check_action( argv[optind++] ) == -1 )
 				print_usage(stderr, 1);
 		
-		action = setup_action( argv[optind++] );
+		action = setup_action( argv[optind-1] );
 	}
 
 
@@ -173,6 +173,11 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_CLEAN ) {
 	
+	}
+
+	if ( action == ACT_INDEX ) {
+		Repository rep;
+		rep.build_index(argv[optind]);
 	}
 
 	
@@ -273,12 +278,13 @@ int check_action(char* act)
 #endif
 
 	if ( _act != "install"
-		|| _act != "remove"
-	  	|| _act != "update"
-	  	|| _act != "upgrade"
-	  	|| _act != "list"
-	  	|| _act != "search"
-	  	|| _act != "clean" ) {
+		&& _act != "remove"
+	  	&& _act != "update"
+	  	&& _act != "upgrade"
+	  	&& _act != "list"
+	  	&& _act != "search"
+		&& _act != "index"
+	  	&& _act != "clean" ) {
 		res = -1;
 	}
 
@@ -294,7 +300,7 @@ int setup_action(char* act)
 	std::string _act(act);
 
 #ifdef DEBUG
-	printf("DEBUG: action = %s\n", act);
+	printf("[setup_action] DEBUG: action = %s\n", act);
 #endif
 
 	if ( _act == "install" )
@@ -317,6 +323,10 @@ int setup_action(char* act)
 
 	if ( _act == "clean" )
 		return ACT_CLEAN;
+
+	if (_act == "index" )
+		return ACT_INDEX;
+
 
 	return ACT_NONE;
 }

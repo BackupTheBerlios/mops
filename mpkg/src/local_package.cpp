@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.14 2006/12/23 11:42:06 i27249 Exp $
+$Id: local_package.cpp,v 1.15 2006/12/23 12:31:21 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -261,7 +261,12 @@ int LocalPackage::injectFile(bool index)
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
 	int ret=0;
 	debug("injectFile start");
-	
+	if (get_xml()!=0)
+	{
+		debug("get_xml FAILED");
+		return 3;
+	}
+
 	if (get_size()!=0)
 	{
 		debug("get_size() FAILED");
@@ -276,11 +281,6 @@ int LocalPackage::injectFile(bool index)
 	debug("filename is "+ filename);
 	data.set_filename(filename);
 	
-	if (get_xml()!=0)
-	{
-		debug("get_xml FAILED");
-		return 3;
-	}
 	if (!index)
 	{
 		if (get_scripts()!=0)
