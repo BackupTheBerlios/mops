@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.4 2006/12/24 12:47:21 i27249 Exp $
+ *	$Id: core.h,v 1.5 2006/12/24 14:13:22 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -26,8 +26,14 @@ class SQLRecord
 		vector<SQLField> field;
 
 	public:
+		int size();
+		bool empty();
+		void clear();
 		vector<string> getRecordValues();
+		string getFieldName(int num);
 		string getValue(string fieldname);
+		string getValueI(int num);
+		int addField(string filename, string value="");
 		bool setValue(string fieldname, string value);
 
 		SQLRecord();

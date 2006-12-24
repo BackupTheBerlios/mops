@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.5 2006/12/24 12:47:21 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.6 2006/12/24 14:13:22 i27249 Exp $
  ************************************************************************************/
 
 /** Very important function! Run it before any usage of database. If it fails (and returns false), it means that database contains serious errors (or just empty, 
@@ -91,7 +91,77 @@ RESULT sql_exec (string sql_query)
 	return 0;
 }
 
-RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name)
+RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
-	// TODO
+	string sql_query;
+	string sql_action;
+	string sql_fields;
+	string sql_from;
+	string sql_where;
+
+	char **table;
+	int cols;
+	int rows;
+	// Do what?
+	sql_action="select";
+
+	// Get what?
+	if (fields.empty()) // If fields is empty, just get all fields
+	{
+		sql_fields+="*";
+	}
+
+	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
+	{
+		sql_query+=fields.getFieldName(i);
+		if (i!=fields.size()-1) sql_query+=", ";
+	}
+
+	sql_from = "from "+table_name;
+
+	if (!search.empty())
+	{
+		sql_where="where ";
+		for (int i=0;i<search.size();i++)
+		{
+			sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
+			if (i!=search.size()-1) sql_where+=" and ";
+		}
+	}
+
+	sql_query=sql_action+" "+sql_fields+" "+sql_from+" "+sql_where+";";
+
+	printf("[vtable] %s\n", sql_query.c_str());
+
+	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
+	if (sql_ret==0)
+	{
+		output->clear(); // Ensure that output is clean and empty
+		SQLRecord row;
+		string _fieldname;
+		for (int i=0;i<cols;i++)
+		{
+			_fieldname=table[i];
+			row.addField(_fieldname);
+		}
+		fields=row;
+		
+		// value == cols*row_num + shift;
+		
+		int field_num=0;
+		for (int current_row=1; current_row<=rows; current_row++)
+		{
+			field_num=0;
+			row=fields;
+			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
+			{
+				row.setValue((string) table[field_num], (string) table[value_pos]);
+			}
+			output->addRecord(row);
+		}
+		sqlite3_free_table(table);
+		return 0;
+	}
+	else return sql_ret;
 }
+

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.8 2006/12/24 12:47:21 i27249 Exp $
+ *	$Id: core.cpp,v 1.9 2006/12/24 14:13:22 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -932,6 +932,32 @@ int get_scripts(string package_id, SCRIPTS *scripts)
 vector<string> SQLRecord::getRecordValues()
 {
 	// TODO
+	vector<string> output;
+	for (int i=0;i<field.size();i++)
+	{
+		output.resize(i+1);
+		output[i]=field[i].value;
+	}
+	return output;
+
+}
+int SQLRecord::size()
+{
+	return field.size();
+}
+
+bool SQLRecord::empty()
+{
+	if (field.size()==0) return true;
+	else return false;
+}
+string SQLRecord::getFieldName(int num)
+{
+	if (num<field.size() && num >=0)
+	{
+		return field[num].fieldname;
+	}
+	else return "__OVERFLOW__";
 }
 
 string SQLRecord::getValue(string fieldname)
@@ -956,6 +982,39 @@ bool SQLRecord::setValue(string fieldname, string value)
 	return false;
 }
 
+int SQLRecord::addField(string fieldname, string value)
+{
+	// Check if such field already exists
+	for (int i=0; i<field.size(); i++)
+	{
+		if (field[i].fieldname==fieldname)
+		{
+			if (!value.empty()) field[i].value=value;
+			return i;
+		}
+	}
+	// Else, add field and store value
+	int pos;
+	pos=field.size();
+	field.resize(pos+1);
+	field[pos].fieldname=fieldname;
+	field[pos].value=value;
+	return pos;
+}
+
+string SQLRecord::getValueI(int num)
+{
+	if (num<field.size() && num>=0)
+	{
+		return field[num].value;
+	}
+	else return "__OVERFLOW__";
+}
+
+void SQLRecord::clear()
+{
+	field.clear();
+}
 SQLRecord::SQLRecord(){}
 SQLRecord::~SQLRecord(){}
 
