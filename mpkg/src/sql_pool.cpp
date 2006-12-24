@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.4 2006/12/20 13:00:47 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.5 2006/12/24 12:47:21 i27249 Exp $
  ************************************************************************************/
 
 /** Very important function! Run it before any usage of database. If it fails (and returns false), it means that database contains serious errors (or just empty, 
@@ -89,4 +89,9 @@ RESULT sql_exec (string sql_query)
 	}
 	sqlite3_close(db);
 	return 0;
+}
+
+RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name)
+{
+	// TODO
 }

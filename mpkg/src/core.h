@@ -2,18 +2,59 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.3 2006/12/20 13:00:47 i27249 Exp $
+ *	$Id: core.h,v 1.4 2006/12/24 12:47:21 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
 
 #include "dataunits.h"
 #include "constants.h"
-#include "sql_pool.h"
 
 //string T="', '"; // Wery helpful element for SQL queries
 
 #define T "', '"   // Wery helpful element for SQL queries
+
+typedef struct
+{
+	string fieldname;
+	string value;
+} SQLField;
+
+class SQLRecord
+{
+	private:
+		vector<SQLField> field;
+
+	public:
+		vector<string> getRecordValues();
+		string getValue(string fieldname);
+		bool setValue(string fieldname, string value);
+
+		SQLRecord();
+		~SQLRecord();
+};
+
+class SQLTable
+{
+	private:
+		vector<SQLRecord> table;
+	public:
+		int getRecordCount(); 	// returns record count
+		bool empty();		// returns TRUE if table is empty (record count = 0), otherwise returns false
+		void clear();		// clears table
+		string getValue (int num, string fieldname);	// returns value of field called fieldname in num record
+		SQLRecord getRecord(int num);
+
+		void addRecord(SQLRecord record);
+		SQLTable();
+		~SQLTable();
+		// TODO!!!
+};
+
+
+
+#include "sql_pool.h"
+
 
 //------------------Library front-end--------------------------------
 RESULT modify_package(PACKAGE *package);

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.7 2006/12/22 10:26:05 adiakin Exp $
+ *	$Id: core.cpp,v 1.8 2006/12/24 12:47:21 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -927,4 +927,80 @@ int get_scripts(string package_id, SCRIPTS *scripts)
 	sqlite3_free_table(table);
 	return ret;
 }
+
+// TODO: class SQLRecord
+vector<string> SQLRecord::getRecordValues()
+{
+	// TODO
+}
+
+string SQLRecord::getValue(string fieldname)
+{
+	for (int i=0;i<field.size();i++)
+	{
+		if (field[i].fieldname==fieldname) return field[i].value;
+	}
+	return "__FIELD_NOT_FOUND__"; // Means error
+}
+
+bool SQLRecord::setValue(string fieldname, string value)
+{
+	for (int i=0; i<field.size(); i++)
+	{
+		if (field[i].fieldname==fieldname)
+		{
+			field[i].value=value;
+			return true;
+		}
+	}
+	return false;
+}
+
+SQLRecord::SQLRecord(){}
+SQLRecord::~SQLRecord(){}
+
+// TODO: class SQLTable
+
+int SQLTable::getRecordCount()
+{
+	return table.size();
+}
+
+bool SQLTable::empty()
+{
+	if (table.size()==0) return true;
+	else return false;
+}
+
+void SQLTable::clear()
+{
+	table.clear();
+}
+
+string SQLTable::getValue(int num, string fieldname)
+{
+	if (num<table.size())
+	{
+		return table[num].getValue(fieldname);
+	}
+	else return "__OVERFLOW__";
+}
+
+SQLRecord SQLTable::getRecord(int num)
+{
+	if (num<table.size() && num>=0) return table[num];
+}
+
+void SQLTable::addRecord(SQLRecord record)
+{
+	int pos=table.size();
+	table.resize(pos+1);
+	table[pos]=record;
+}
+
+
+SQLTable::SQLTable(){}
+SQLTable::~SQLTable(){}
+
+
 
