@@ -28,7 +28,7 @@ create table scripts (
 create table files (
 	file_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	file_name TEXT NOT NULL,
-	file_size TEXT NOT NULL,
+	file_size TEXT NULL,
 	packages_package_id INTEGER NOT NULL
 );
 

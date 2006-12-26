@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.5 2006/12/20 19:05:00 i27249 Exp $
+$Id: dependencies.cpp,v 1.6 2006/12/26 18:57:11 i27249 Exp $
 */
 
 
@@ -42,13 +42,13 @@ bool DependencyTracker::commitToDb()
 {
 	for (int i=0; i<install_list.size(); i++)
 	{
-		set_status(IntToStr(install_list.get_package(i)->get_id()), install_list.get_package(i)->get_status());
+		db->set_status(install_list.get_package(i)->get_id(), install_list.get_package(i)->get_status());
 	}
 
 	// Because removing of packages still not defined exaclty, leave this commented out...
 	for (int i=0; i<remove_list.size(); i++)
 	{
-		set_status(IntToStr(remove_list.get_package(i)->get_id()), remove_list.get_package(i)->get_status());
+		db->set_status(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->get_status());
 	}
 
 	return true;
@@ -104,7 +104,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	//Step 2. Check dependencies and build a list
 	debug("DependencyTracker::merge");
 	RESULT status=0;
-	status=check_install_package(package); // Checking status of package - is it principially possible to be installed?
+	status=db->check_install_package(package); // Checking status of package - is it principially possible to be installed?
 	debug("Checking status of package...");
 	if (status==CHKINSTALL_INSTALLED || status==CHKINSTALL_INSTALL) // If package is already installed or already marked for install - it is already good :-)
 	{
@@ -115,21 +115,21 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	{
 		debug("Package is installed, but marked to remove - adding to install-list, там разберутся.");
 		package->set_status(PKGSTATUS_INSTALLED);
-		package->set_id(atoi(get_package_id(package).c_str()));
+		package->set_id(db->get_package_id(package));
 		install_list.add(*package); // next procedure resolves that package is already in the system and just changes the status (who run after merge)
 		return DEP_OK;
 	}
 	if (status==CHKINSTALL_UNAVAILABLE) // Failure - package unavailable
 	{
 		debug("Package is unavailable");
-		package->set_id(atoi(get_package_id(package).c_str()));
+		package->set_id(db->get_package_id(package));
 		failure_list.add(*package);
 		return DEP_UNAVAILABLE;
 	}
 	if (status==CHKINSTALL_FILECONFLICT) // Failure - file conflict
 	{
 		debug("File conflict detected");
-		package->set_id(atoi(get_package_id(package).c_str()));
+		package->set_id(db->get_package_id(package));
 		failure_list.add(*package);
 		return DEP_FILECONFLICT;
 	}
@@ -162,6 +162,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	bool dep_all_ok=true;		// This flag is TRUE until at least one dependency fails to resolve
 	int dep_tree_result;		// Temporary variable to store child dependency resolution result
 	bool _type_dep=false;
+	SQLRecord sqlSearch;
 	// Running thru all package dependencies
 	for (int i=0;i<package->get_dependencies()->size();i++)
 	{
@@ -182,7 +183,8 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 		}
 		if (i>=package->get_dependencies()->size()) break;
 		debug("searching complaining packages...");
-		get_packagelist("select * from packages where package_name='" + package->get_dependencies()->get_dependency(i)->get_package_name() + "';", &package_list); 
+		sqlSearch.addField("package_name",  package->get_dependencies()->get_dependency(i)->get_package_name());
+		db->get_packagelist(sqlSearch, &package_list); 
 		
 		if (package_list.IsEmpty()) // If no packages with required name found
 		{
@@ -229,7 +231,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	if (dep_all_ok) // If all dependencies passes the tests
 	{
 		debug("dep ok, adding to install list");
-		package->set_id(atoi(get_package_id(package).c_str()));
+		package->set_id(db->get_package_id(package));
 		package->set_status(PKGSTATUS_INSTALL);
 		install_list.add(*package); 	// Add to install list
 		// One thing we have forgotten - is there any packages in broken list, who awaited this package?
@@ -255,7 +257,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	else	// If not...
 	{
 		debug("dep failed, adding to failed");
-		package->set_id(atoi(get_package_id(package).c_str()));
+		package->set_id(db->get_package_id(package));
 		bool set;
 		set=false;
 		for (int f=0;f<failure_list.size() && !set ;f++)
@@ -278,24 +280,30 @@ RESULT DependencyTracker::unmerge(PACKAGE *package)
 	PACKAGE_LIST required_by;
 	package->set_status(PKGSTATUS_REMOVE);
 	
-	char **table;
-	int rows;
-	int cols;
 	remove_list.add(*package);
-	string dep_query="select packages_package_id from dependencies where dependency_package_name='"+package->get_name()+"';";
-	get_sql_table(&dep_query,&table,&rows,&cols);
-	debug("Querying linked packages, got "+IntToStr(rows) +" items");
+	SQLTable dep_sqlTable;
+	SQLRecord dep_sqlFields;
+	SQLRecord dep_sqlSearch;
+	
+	dep_sqlFields.addField("packages_package_id");
+	dep_sqlSearch.addField("dependency_package_name", package->get_name());
+	if (db->getSqlDb()->get_sql_vtable(&dep_sqlTable, dep_sqlFields, "dependencies", dep_sqlSearch)!=0)
+		return -1;
 
-	string sql_query="select * from packages where package_id=";
-	if (rows!=0)
+	//string dep_query="select packages_package_id from dependencies where dependency_package_name='"+package->get_name()+"';";
+	//get_sql_table(&dep_query,&table,&rows,&cols);
+	//debug("Querying linked packages, got "+IntToStr(rows) +" items");
+
+	SQLRecord sqlSearch;
+	sqlSearch.setSearchMode(SEARCH_OR);
+	if (!dep_sqlTable.empty())
 	{
-		for (int i=1; i<=rows;i++)
+		for (int i=0; i<dep_sqlTable.getRecordCount(); i++)
 		{
-			sql_query+=table[i];
-			if (i<rows) sql_query+=" or package_id=";
-			else sql_query+=";";
+			sqlSearch.addField("package_id", dep_sqlTable.getValue(i, "packages_package_id"));
 		}
-		get_packagelist(sql_query, &package_list);
+		if (db->get_packagelist(sqlSearch, &package_list)!=0)
+			return -2;
 		for (int i=0; i<package_list.size(); i++)
 		{
 			if (package_list.get_package(i)->get_status()==PKGSTATUS_INSTALLED) unmerge(package_list.get_package(i));
@@ -304,5 +312,8 @@ RESULT DependencyTracker::unmerge(PACKAGE *package)
 	return 0;
 }
 
-DependencyTracker::DependencyTracker(){}
+DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
+{
+	db=mpkgDB;
+}
 DependencyTracker::~DependencyTracker(){}

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.5 2006/12/20 13:00:47 i27249 Exp $
+	$Id: dataunits.cpp,v 1.6 2006/12/26 18:57:11 i27249 Exp $
 */
 
 
@@ -718,6 +718,26 @@ bool FILE_LIST::IsEmpty()
 FILE_LIST::FILE_LIST(){}
 FILE_LIST::~FILE_LIST(){}
 
+void SCRIPTS::clear()
+{
+	script_id=0;
+	preinstall.clear();
+	postinstall.clear();
+	preremove.clear();
+	postremove.clear();
+}
+
+bool SCRIPTS::IsEmpty()
+{
+	if (script_id==0 \
+			&& preinstall.empty() \
+			&& postinstall.empty() \
+			&& preremove.empty() \
+			&& postremove.empty())
+		return true;
+	else return false;
+}
+
 int SCRIPTS::get_id()
 {
 	return script_id;
@@ -793,6 +813,30 @@ SCRIPTS::SCRIPTS()
 }
 SCRIPTS::~SCRIPTS()
 {
+}
+
+void PACKAGE::clear()
+{
+	package_id=0;
+	package_name.clear();
+	package_version.clear();
+	package_arch.clear();
+	package_build.clear();
+	package_compressed_size.clear();
+	package_installed_size.clear();
+	package_short_description.clear();
+	package_description.clear();
+	package_changelog.clear();
+	package_packager.clear();
+	package_packager_email.clear();
+	package_status=0;
+	package_md5.clear();
+	package_filename.clear();
+	package_files.clear();
+	package_locations.clear();
+	package_dependencies.clear();
+	package_tags.clear();
+	package_scripts.clear();
 }
 
 int PACKAGE::add_dependency(string package_name, string dep_condition, string package_version)

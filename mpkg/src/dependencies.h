@@ -1,15 +1,15 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+$Id: dependencies.h,v 1.3 2006/12/26 18:57:11 i27249 Exp $
 */
 
 
 
 #ifndef DEPENDENCIES_H_
 #define DEPENDENCIES_H_
-
+#include "mpkg.h"
 #include "core.h"
 #include "conditions.h"
-
+//#include "mpkg.h"
 #define DEP_OK 0
 #define DEP_NOTFOUND 1
 #define DEP_CONFLICT 2
@@ -27,6 +27,7 @@ class DependencyTracker
 		PACKAGE_LIST install_list;
 		PACKAGE_LIST remove_list;
 		PACKAGE_LIST failure_list;
+		mpkgDatabase *db;
 
 	public:
 		PACKAGE_LIST* get_install_list();
@@ -37,7 +38,7 @@ class DependencyTracker
 		bool commitToDb();
 		void PrintFailure(PACKAGE *package);
 		bool checkVersion(string version1, int condition, string version2);
-		DependencyTracker();
+		DependencyTracker(mpkgDatabase *mpkgDB);
 		~DependencyTracker();
 };
 

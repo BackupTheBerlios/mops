@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.5 2006/12/24 14:13:22 i27249 Exp $
+ *	$Id: core.h,v 1.6 2006/12/26 18:57:11 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -14,6 +14,9 @@
 
 #define T "', '"   // Wery helpful element for SQL queries
 
+#define SEARCH_OR 	0x01
+#define SEARCH_AND 	0x02
+
 typedef struct
 {
 	string fieldname;
@@ -24,6 +27,7 @@ class SQLRecord
 {
 	private:
 		vector<SQLField> field;
+		int search_type;
 
 	public:
 		int size();
@@ -33,6 +37,8 @@ class SQLRecord
 		string getFieldName(int num);
 		string getValue(string fieldname);
 		string getValueI(int num);
+		void setSearchMode(int mode);
+		int getSearchMode();
 		int addField(string filename, string value="");
 		bool setValue(string fieldname, string value);
 
@@ -62,6 +68,9 @@ class SQLTable
 #include "sql_pool.h"
 
 
+
+/*
+
 //------------------Library front-end--------------------------------
 RESULT modify_package(PACKAGE *package);
 PACKAGE_LIST resolve_dependencies (PACKAGE *package);
@@ -78,7 +87,7 @@ RESULT add_server_taglist_record(string server_id, SERVER_TAG_LIST *server_tag_l
 RESULT add_server_tag_link(string server_id, string tag_id);
 int add_scripts_record(string package_id, SCRIPTS *scripts);
 //--------------------Mid-level functions-------------------------
-PACKAGE_LIST get_packagelist (string query);
+//PACKAGE_LIST get_packagelist (string query);
 RESULT get_filelist(string package_id, FILE_LIST *filelist);
 RESULT get_locationlist(string package_id, LOCATION_LIST *location_list);
 RESULT get_dependencylist(string package_id, DEPENDENCY_LIST *deplist);
@@ -95,6 +104,6 @@ string get_version(string package_id);
 int check_install_package(PACKAGE *package);
 int get_scripts(string package_id, SCRIPTS *scripts);
 //----------------------------------SQL low-level routines----------------------------
-
+*/
 #endif //CORE_H_
 

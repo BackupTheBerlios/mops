@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.14 2006/12/23 12:31:21 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.15 2006/12/26 18:57:11 i27249 Exp $
  */
 
 
@@ -131,7 +131,7 @@ int main (int argc, char **argv)
 
 
 	mpkgDatabase db;
-	DependencyTracker DepTracker;
+	DependencyTracker DepTracker(&db);
 
 
 	string fname;

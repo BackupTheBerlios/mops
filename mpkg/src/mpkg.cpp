@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.10 2006/12/22 13:56:05 adiakin Exp $
+ * 	$Id: mpkg.cpp,v 1.11 2006/12/26 18:57:11 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -11,7 +11,7 @@
 
 mpkgDatabase::mpkgDatabase()
 {
-	CheckDatabaseIntegrity();
+	// Empty for now...
 }
 mpkgDatabase::~mpkgDatabase(){}
 
@@ -24,8 +24,11 @@ int uninstall(vector<string> pkgnames)
 PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
 {
 	PACKAGE_LIST packagelist;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", pkg_name);
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALLED));
 
-	get_packagelist("select * from packages where package_name='"+pkg_name+"' and package_status='"+IntToStr(PKGSTATUS_INSTALLED)+"';", &packagelist);
+	get_packagelist(sqlSearch, &packagelist);
 	// We do NOT allow multiple packages with same name to be installed, so, we simply get first package of list.
 	
 	if (packagelist.size()>0)
@@ -41,15 +44,15 @@ PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
 int mpkgDatabase::emerge_to_db(PACKAGE *package)
 {
 	debug("mpkgDatabase::emerge_to_db()");
-	string pkg_id;
+	int pkg_id;
 	pkg_id=get_package_id(package);
-	if (pkg_id=="0")
+	if (pkg_id==0)
 	{
 		debug ("Package is new, adding to database");
 		add_package_record(package);
 		return 0;
 	}
-	if (pkg_id=="ERROR")
+	if (pkg_id<0)
 	{
 		debug("Database error, cannot emerge");
 		return 1;
@@ -60,10 +63,7 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 	PACKAGE db_package;
 	LOCATION_LIST new_locations;
 	get_package(pkg_id, &db_package, true);
-	package->set_id(atoi(pkg_id.c_str()));
-	debug("------------->Package locations: "+IntToStr(package->get_locations()->size()));
-	debug("------------->DB Package locations: "+IntToStr(db_package.get_locations()->size()));
-
+	package->set_id(pkg_id);
 
 	for (int j=0; j<package->get_locations()->size(); j++)
 	{
@@ -110,7 +110,9 @@ void mpkgDatabase::commit_actions()
 {
 	// First: removing required packages
 	PACKAGE_LIST remove_list;
-	get_packagelist("select * from packages where package_status='"+IntToStr(PKGSTATUS_REMOVE)+"';", &remove_list);
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
+	get_packagelist(sqlSearch, &remove_list);
 	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	for (int i=0;i<remove_list.size();i++)
 	{
@@ -120,7 +122,8 @@ void mpkgDatabase::commit_actions()
 
 	// Second: installing required packages
 	PACKAGE_LIST install_list;
-	get_packagelist("select * from packages where package_status='"+IntToStr(PKGSTATUS_INSTALL)+"';", &install_list);
+	sqlSearch.setValue("package_status", IntToStr(PKGSTATUS_INSTALL));
+	get_packagelist(sqlSearch, &install_list);
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
@@ -280,9 +283,23 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				break;
 			case SRV_HTTP:
 				// Not implemented yet.
-				debug("Fetching from HTTP is not implemented yet");
+				// temporary tech: wget =)
+				/*string wget_sys;
+				wget_sys="( cd "+SYS_CACHE+"; wget "+locationlist.get_location(i)->get_server()->get_url() + \
+					  locationlist.get_location(i)->get_path() + \
+					  package->get_filename() + \
+					  " )";
+				system(wget_sys.c_str());*/
+				debug("Fetching from HTTP is half-implemented yet");
 				break;
 			case SRV_FTP:
+				/*// temporary tech: wget =)
+				string wget_sys;
+				wget_sys="( cd "+SYS_CACHE+"; wget "+locationlist.get_location(i)->get_server()->get_url() + \
+					  locationlist.get_location(i)->get_path() + \
+					  package->get_filename() + \
+					  " )";
+				system(wget_sys.c_str());*/
 				// Not implemented yet.
 				debug("Fetching from FTP is not implemented yet");
 				break;
@@ -364,7 +381,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		fclose(f_postinstall);
 	}
 
-	set_status(IntToStr(package->get_id()), PKGSTATUS_INSTALLED);
+	set_status(package->get_id(), PKGSTATUS_INSTALLED);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 }
 
@@ -482,7 +499,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		fclose(f_postremove);
 	}
 
-	set_status(IntToStr(package->get_id()), PKGSTATUS_AVAILABLE);
+	set_status(package->get_id(), PKGSTATUS_AVAILABLE);
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 
 	

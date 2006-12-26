@@ -1,11 +1,11 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.10 2006/12/22 10:26:05 adiakin Exp $
+# $Id: Makefile,v 1.11 2006/12/26 18:57:11 i27249 Exp $
 #
 
 CC=gcc
 CXX=g++
 CFLAGS=-c -Wall -std=c99 -g
-CXXFLAGS=-c -g -DDEBUG 
+CXXFLAGS=-c -g 
 LDFLAGS=-lsqlite3 
 
 SOURCES=installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \

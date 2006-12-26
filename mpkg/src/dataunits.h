@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.4 2006/12/20 13:00:47 i27249 Exp $
+	$Id: dataunits.h,v 1.5 2006/12/26 18:57:11 i27249 Exp $
 */
 
 
@@ -312,6 +312,8 @@ class SCRIPTS
 	void set_postremove(string postrem);
 	void set_id(int id);
 	void set_vid(string id);
+	void clear();
+	bool IsEmpty();
 
 	SCRIPTS();
 	~SCRIPTS();
@@ -402,6 +404,7 @@ class PACKAGE
 
 	// CLASS ROUTINES //
 	void destroy();
+	void clear();
 	bool IsEmpty();
 	PACKAGE();
 	~PACKAGE();
