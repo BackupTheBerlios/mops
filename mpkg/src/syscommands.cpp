@@ -33,3 +33,13 @@ void runShellCommand(std::string cmd)
 		exit(1);
 	}
 }
+
+
+void spawn(char* proc, char* args)
+{
+	pid_t child;
+	pid_t pid;
+	int status;
+
+}
+

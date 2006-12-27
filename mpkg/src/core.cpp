@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.10 2006/12/26 18:57:11 i27249 Exp $
+ *	$Id: core.cpp,v 1.11 2006/12/27 12:19:29 adiakin Exp $
  *
  ********************************************************************************/
 
@@ -16,7 +16,7 @@
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
-	return 0; // Skip checking for some time - I think it doesn't work
+	//return 0; // Skip checking for some time - I think it doesn't work
 	int package_id;
 	PACKAGE tmp;
 	string fname;
@@ -25,15 +25,24 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
+#ifdef DEBUG
+	printf("DEBUG: core.cpp: file_size = %i\n", package->get_files()->size());
+#endif
 	for (int i=0;i<package->get_files()->size();i++)
 	{
-		//printf("Checking files...\n");
+#ifdef DEBUG
+	printf("DEBUG: core.cpp: checking files, i = %i\n", i);
+#endif
 		fname_skip.clear();
 		fname=package->get_files()->get_file(i)->get_name(false);
-		for (int l=1;l<ilength;i++)
-			fname_skip+=fname[l];
+		#ifdef DEBUG
+		printf("DEBUG: core.cpp: fname = %s\n", fname.c_str());
+		printf("DEBUG: ilength = %i\n", ilength);
+		#endif
 
-		if (fname[fname.length()-1]!='/' && fname_skip!="install")
+		
+		if ( fname_skip.find("install") != std::string::npos 
+			 && ( fname[fname.length() - 1] != '/' ))
 		{
 			sqlTable.clear();
 			sqlFields.clear();
@@ -46,6 +55,9 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 			//package_id=get_id("files", "packages_package_id", "file_name", package->get_files()->get_file(i)->get_name(), &array, &col);
 			if (!sqlTable.empty())
 			{
+#ifdef DEBUG
+		printf("DEBUG: core.cpp: table record count = %i\n", sqlTable.getRecordCount());
+#endif
 				for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages with exactly same name - e.g. just other version
 				{
 					package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());

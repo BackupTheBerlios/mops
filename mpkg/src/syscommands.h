@@ -9,6 +9,7 @@
 #include <string>
 
 void runShellCommand(std::string cmd);
+void spawn(char* proc, char* args);
 
 #endif
 
