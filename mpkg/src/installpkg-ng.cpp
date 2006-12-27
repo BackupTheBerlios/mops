@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.15 2006/12/26 18:57:11 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.16 2006/12/27 12:19:02 i27249 Exp $
  */
 
 
@@ -178,29 +178,37 @@ int main (int argc, char **argv)
 	if ( action == ACT_INDEX ) {
 		Repository rep;
 		rep.build_index(argv[optind]);
+		return 0;
 	}
 
-	
-	printf(_("Next packages will INSTALL:\n"));
-	for (int i=0;i<DepTracker.get_install_list()->size();i++)
+	if (!DepTracker.get_install_list()->IsEmpty())
 	{
-		printf("%s \t(status=%s)\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str(), \
-				DepTracker.get_install_list()->get_package(i)->get_vstatus().c_str());
-		//DepTracker.PrintFailure(DepTracker.get_install_list()->get_package(i));
+		printf(_("Next packages will be installed:\n"));
+		for (int i=0;i<DepTracker.get_install_list()->size();i++)
+		{
+			printf("%s\n", DepTracker.get_install_list()->get_package(i)->get_name(false).c_str());
+		}
 	}
-	printf(_("\nNext packages will REMOVE:\n"));
-	for (int i=0;i<DepTracker.get_remove_list()->size();i++)
-	{
-		printf("%s:\n", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
-		DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
 
+	if (!DepTracker.get_remove_list()->IsEmpty())
+	{
+		printf(_("\nNext packages will be removed:\n"));
+		for (int i=0;i<DepTracker.get_remove_list()->size();i++)
+		{
+			printf("%s:", DepTracker.get_remove_list()->get_package(i)->get_name(false).c_str());
+			DepTracker.PrintFailure(DepTracker.get_remove_list()->get_package(i));
+		}
 	}
-	printf(_("Next packages is BROKEN:\n"));
-	for (int i=0;i<DepTracker.get_failure_list()->size();i++)
-	{
-		printf("%s:\n", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
-		DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
 
+	if (!DepTracker.get_failure_list()->IsEmpty())
+	{
+
+		printf(_("Next packages is BROKEN:\n"));
+		for (int i=0;i<DepTracker.get_failure_list()->size();i++)
+		{
+			printf("%s: ", DepTracker.get_failure_list()->get_package(i)->get_name(false).c_str());
+			DepTracker.PrintFailure(DepTracker.get_failure_list()->get_package(i));
+		}
 	}
 	printf("\n");
 

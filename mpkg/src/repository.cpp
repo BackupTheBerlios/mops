@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.2 2006/12/23 11:42:06 i27249 Exp $
+ * $Id: repository.cpp,v 1.3 2006/12/27 12:19:02 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 
@@ -11,6 +11,9 @@ XMLNode _root;
 
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
+#ifdef DEBUG
+	printf("repository.cpp: processing package %s\n", filename);
+#endif
 	string _package=filename;
        	string ext;
 	for (int i=_package.length()-4;i<_package.length();i++)
