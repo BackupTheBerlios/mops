@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.3 2006/12/27 12:19:02 i27249 Exp $
+ * $Id: repository.cpp,v 1.4 2006/12/29 20:56:18 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 
@@ -8,6 +8,79 @@ Repository::Repository(){}
 Repository::~Repository(){}
 
 XMLNode _root;
+
+int xml2package(XMLNode pkgnode, PACKAGE *data)
+{
+	PackageConfig p(pkgnode);
+	
+	data->set_name(p.getName());
+	data->set_version(p.getVersion());
+	data->set_arch(p.getArch());
+	data->set_build(p.getBuild());
+	data->set_packager(p.getAuthorName());
+	data->set_packager_email(p.getAuthorEmail());
+	data->set_description(p.getDescription());
+	data->set_short_description(p.getShortDescription());
+	data->set_changelog(p.getChangelog());
+
+	DEPENDENCY dep_tmp;
+	DEPENDENCY suggest_tmp;
+	TAG tag_tmp;
+
+	vector<string> vec_tmp_names;
+	vector<string> vec_tmp_conditions;
+	vector<string> vec_tmp_versions;
+
+	vec_tmp_names=p.getDepNames();
+	vec_tmp_conditions=p.getDepConditions();
+	vec_tmp_versions=p.getDepVersions();
+
+	for (int i=0;i<vec_tmp_names.size();i++)
+	{
+		dep_tmp.set_package_name(vec_tmp_names[i]);
+		dep_tmp.set_package_version(vec_tmp_versions[i]);
+		dep_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
+		dep_tmp.set_type("DEPENDENCY");
+		data->get_dependencies()->add(dep_tmp);
+		dep_tmp.clear();
+	}
+	vec_tmp_names=p.getSuggestNames();
+	vec_tmp_conditions=p.getSuggestConditions();
+	vec_tmp_versions=p.getSuggestVersions();
+
+	for (int i=0;i<vec_tmp_names.size();i++)
+	{
+		suggest_tmp.set_package_name(vec_tmp_names[i]);
+		suggest_tmp.set_package_version(vec_tmp_versions[i]);
+		suggest_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
+		suggest_tmp.set_type("SUGGEST");
+		data->get_dependencies()->add(suggest_tmp);
+		suggest_tmp.clear();
+	}
+
+	vec_tmp_names=p.getTags();
+	for (int i=0;i<vec_tmp_names.size();i++)
+	{
+		tag_tmp.set_name(vec_tmp_names[i]);
+		data->get_tags()->add(tag_tmp);
+		tag_tmp.clear();
+	}
+
+	vec_tmp_names.clear();
+	vec_tmp_conditions.clear();
+	vec_tmp_versions.clear();
+
+	LOCATION tmp_location;
+	tmp_location.set_path(p.getLocation());
+	data->get_locations()->add(tmp_location);
+	data->set_filename(p.getFilename());
+	data->set_md5(p.getMd5());
+	data->set_compressed_size(p.getCompressedSize());
+	data->set_installed_size(p.getInstalledSize());
+
+	return 0;
+}
+
 
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
@@ -53,6 +126,33 @@ int Repository::build_index(string server_url)
 PACKAGE_LIST Repository::get_index(string server_url)
 {
 	PACKAGE_LIST packages;
+	PACKAGE pkg;
+	string wget_line;
+	string xml_name=get_tmp_file();
+	XMLNode repository_root;
+	wget_line="wget --output-document="+xml_name+" "+server_url+"packages.xml";
+	if (system(wget_line.c_str())==0)
+	{
+		printf("Download success\n");
+		repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
+		int pkg_count=repository_root.nChildNode("package");
+		if (pkg_count==0)
+		{
+			printf(_("Repository has no packages, aborting"));
+			return packages;
+		}
+		for (int i=0; i<pkg_count; i++)
+		{
+			pkg.clear();
+			xml2package(repository_root.getChildNode("package", i), &pkg);
+			packages.add(pkg);
+		}
+
+	}
+	else
+	{
+		printf(_("Download error, check connection and URL"));
+	}
 	// Fetching packages.xml from server, parses it, and returns full packagelist. TODO.
 	return packages;
 }

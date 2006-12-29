@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.7 2006/12/29 12:57:00 i27249 Exp $
+	$Id: dataunits.cpp,v 1.8 2006/12/29 20:56:18 i27249 Exp $
 */
 
 
@@ -183,6 +183,15 @@ int SERVER::get_type()
 	int i;
 	i=0;
 	debug("get_type()");
+
+	if (server_url.find("file")!=std::string::npos) return SRV_FILE;
+	if (server_url.find("cache://")!=std::string::npos) return SRV_CACHE;
+	if (server_url.find("cdrom://")!=std::string::npos) return SRV_CDROM;
+	if (server_url.find("http://")!=std::string::npos) return SRV_HTTP;
+	if (server_url.find("ftp://")!=std::string::npos) return SRV_FTP;
+	return SRV_BADURL;
+
+
 	while (i<server_url.length() && \
 			(tmp!="file://" || \
 			tmp!="cache://" || \
@@ -1527,31 +1536,85 @@ int PACKAGE_LIST::add(PACKAGE package)
     return ret;
 }
 
+
 int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 {
-	int ret;
+	printf("add_list: adding %d packages\n", pkgList->size());
+	// IMPORTANT NOTE!
+	// If skip_identical is true, the locations will be MERGED together!
+	int ret=0;
 	int old_size=packages.size();
 	ret=packages.size()+pkgList->size();
 	//packages.resize(ret);
-	bool identical_found;
+	bool identical_found=false;
+	int identical_id;
+	bool location_found;
 	for (int i=0; i<pkgList->size();i++)
 	{
-		if (!skip_identical)
+#ifdef DEBUG
+		printf("add_list: adding package %d\n", i);
+		if (skip_identical) printf("add_list: skip_identical=true)\n");
+#endif
+		if (skip_identical)
 		{
+#ifdef DEBUG
+			printf("Skipping identical packages, just adding locations for them\n");
+#endif
 			identical_found=false;
 			// Checking if lists have identical items, remove it
 			for (int s=0; s<packages.size(); s++)
 			{
-				if (packages[s]==*pkgList->get_package(i))
+				if (packages[s].get_name()==pkgList->get_package(i)->get_name() \
+					&& packages[s].get_version()==pkgList->get_package(i)->get_version() \
+					&& packages[s].get_arch()==pkgList->get_package(i)->get_arch() \
+					&& packages[s].get_build()==pkgList->get_package(i)->get_build())
 				{
-					identical_found=false;
+#ifdef DEBUG
+					printf("Found identical package %s, merging locations\n", pkgList->get_package(i)->get_name().c_str());
+#endif
+					// Comparing locations and merging
+					for (int l=0; l<pkgList->get_package(i)->get_locations()->size(); l++)
+					{
+						location_found=false;
+						for (int ls=0; ls<packages[s].get_locations()->size(); ls++)
+						{
+							if (*packages[s].get_locations()->get_location(ls)==*pkgList->get_package(i)->get_locations()->get_location(l))
+							{
+#ifdef DEBUG
+								printf("Location already exists\n");
+#endif
+								location_found=true;
+								break;
+							}
+						}
+						if (!location_found)
+						{
+#ifdef DEBUG
+							printf("New location, adding\n");
+#endif
+							packages[s].get_locations()->add(*pkgList->get_package(i)->get_locations()->get_location(l));
+						}
+					}
+					identical_found=true;
 					break;
-				}
+				} // end: if packages seems identical
 			}
 		}
-		if (!identical_found) packages.push_back(*pkgList->get_package(i));
+#ifdef DEBUG
+		else
+		{
+			printf("simply adding packages\n");
+		}
+#endif
+		if (!identical_found)
+		{
+#ifdef DEBUG
+			printf("New package, adding\n");
+#endif
+			packages.push_back(*pkgList->get_package(i));
+		}
 	}
-	return ret;
+	return 0;
 }
 
 

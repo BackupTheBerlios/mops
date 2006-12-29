@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.12 2006/12/29 12:57:00 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.13 2006/12/29 20:56:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -247,6 +247,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		}
 	} // End of searching local file servers
 
+	string wget_sys;
 	for (int i=0; i<locationlist.size(); i++) // Second: looking for all other servers ordering by priority.
 	{
 		_srv_type=locationlist.get_location(i)->get_server()->get_type();
@@ -284,12 +285,13 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 			case SRV_HTTP:
 				// Not implemented yet.
 				// temporary tech: wget =)
-				/*string wget_sys;
-				wget_sys="( cd "+SYS_CACHE+"; wget "+locationlist.get_location(i)->get_server()->get_url() + \
-					  locationlist.get_location(i)->get_path() + \
-					  package->get_filename() + \
-					  " )";
-				system(wget_sys.c_str());*/
+				wget_sys="wget -O "+SYS_CACHE+package->get_filename()+" "\
+					  + locationlist.get_location(i)->get_server()->get_url() \
+					  + locationlist.get_location(i)->get_path() \
+					  + package->get_filename();
+
+				system(wget_sys.c_str());
+				
 				debug("Fetching from HTTP is half-implemented yet");
 				break;
 			case SRV_FTP:
@@ -594,6 +596,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 
 int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 {
+	printf(_("Got data about %d new packages, importing\n"), newPackages->size());
 	PACKAGE_LIST currentPackages;
 	SQLRecord sqlSearch;
 	PACKAGE tmpPackage;

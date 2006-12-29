@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.3 2006/12/23 11:42:06 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.4 2006/12/29 20:56:18 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -13,6 +13,12 @@ PackageConfig::PackageConfig(string _f)
 	_node = XMLNode::openFileHelper(fileName.c_str(), "PACKAGE");
 	debug("XML file opened");
 }
+
+PackageConfig::PackageConfig(XMLNode rootnode)
+{
+	_node = rootnode;
+}
+
 
 PackageConfig::~PackageConfig()
 {
@@ -308,4 +314,54 @@ vector<string> PackageConfig::getFilelist()
 XMLNode PackageConfig::getXMLNode()
 {
 	return _node;
+}
+
+string PackageConfig::getMd5()
+{
+	if (_node.nChildNode("md5")!=0)
+	{
+		string a = (string) _node.getChildNode("md5").getText();
+		return a;
+	}
+	else return "";
+}
+
+string PackageConfig::getCompressedSize()
+{
+	if (_node.nChildNode("compressed_size")!=0)
+	{
+		string a = (string) _node.getChildNode("compressed_size").getText();
+		return a;
+	}
+	else return "";
+}
+
+string PackageConfig::getInstalledSize()
+{
+	if (_node.nChildNode("installed_size")!=0)
+	{
+		string a = (string) _node.getChildNode("installed_size").getText();
+		return a;
+	}
+	else return "";
+}
+
+string PackageConfig::getFilename()
+{
+	if (_node.nChildNode("filename")!=0)
+	{
+		string a = (string) _node.getChildNode("filename").getText();
+		return a;
+	}
+	else return "";
+}
+
+string PackageConfig::getLocation()
+{
+	if (_node.nChildNode("location")!=0)
+	{
+		string a = (string) _node.getChildNode("location").getText();
+		return a;
+	}
+	else return "";
 }

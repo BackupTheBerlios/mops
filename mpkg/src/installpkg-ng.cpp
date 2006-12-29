@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.17 2006/12/29 12:57:00 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.18 2006/12/29 20:56:18 i27249 Exp $
  */
 
 #include "config.h"
@@ -250,7 +250,7 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 		return -1;
 	}
 
-	printf("Found %d repositories, receiving data\n", REPOSITORY_LIST.size()-1);
+	printf("Found %d repositories, receiving data\n", REPOSITORY_LIST.size());
 	
 	for (int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
@@ -261,11 +261,14 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 		}
 		else
 		{
+			printf(_("Repository has %d packages, infiltrating...\n"), tmpPackages.size());
 			for (int s=0; s<tmpPackages.size(); s++)
 			{
 				tmpPackages.get_package(i)->set_status(PKGSTATUS_AVAILABLE);
+				tmpPackages.get_package(i)->get_locations()->get_location(0)->get_server()->set_url(REPOSITORY_LIST[i]);
 			}
 			availablePackages.add_list(&tmpPackages);
+			printf(_("After infiltrating, we have got %d NEW packages"), availablePackages.size());
 		}
 	}
 
@@ -279,6 +282,40 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 
 
 	printf(_("Preparing to install package %s\n"), fname.c_str());
+	// Step 1. Checking if it is just a name of a package
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", fname);
+	PACKAGE_LIST candidates;
+	PACKAGE tmp_pkg;
+	db->get_packagelist(sqlSearch, &candidates);
+	bool alreadyInstalled=false;
+	if (candidates.size()>0)
+	{
+		for (int i=0; i<candidates.size(); i++)
+		{
+			if (candidates.get_package(i)->get_status()==PKGSTATUS_INSTALLED)
+			{
+				alreadyInstalled=true;
+				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_version().c_str());
+				break;
+			}
+			if (candidates.get_package(i)->get_status()==PKGSTATUS_AVAILABLE)
+			{
+				if (tmp_pkg.get_version()<candidates.get_package(i)->get_version() || tmp_pkg.IsEmpty())
+				{
+					tmp_pkg=*candidates.get_package(i);
+				}
+			}
+		}
+		if (alreadyInstalled)
+		{
+			return 0;
+		}
+		DepTracker->merge(&tmp_pkg);
+		return 0;
+	}
+	
+
 	// Part 0. Check if file exists.
 	
 	struct stat st;
