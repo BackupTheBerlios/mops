@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.4 2006/12/26 18:57:11 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.5 2006/12/29 12:57:00 i27249 Exp $
  ************************************************************************************/
 
 
@@ -33,7 +33,7 @@ class SQLiteDB
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);
 		int sql_delete(string table_name, SQLRecord search);
 		
-		SQLiteDB(string filename=SQLITE_DB_FILENAME);
+		SQLiteDB(string filename=DB_FILENAME);
 		~SQLiteDB();
 };
 

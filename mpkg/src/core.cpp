@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.11 2006/12/27 12:19:29 adiakin Exp $
+ *	$Id: core.cpp,v 1.12 2006/12/29 12:57:00 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -41,7 +41,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		#endif
 
 		
-		if ( fname_skip.find("install") != std::string::npos 
+		if ( fname.find("install") == std::string::npos 
 			 && ( fname[fname.length() - 1] != '/' ))
 		{
 			sqlTable.clear();
@@ -224,7 +224,7 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 }
 
 // Adds location list linked to package_id
-int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locationlist)
+int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locationlist) // returns 0 if ok, anything else if failed.
 {
 	debug("ADDING LOCATION LIST");
 	int serv_id;
@@ -237,6 +237,10 @@ int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locatio
 		{
 			debug("Adding SERVER");
 			serv_id=add_server_record(locationlist->get_location(i)->get_server());
+			if (serv_id<=0)
+			{
+				return -1;
+			}
 			sqlLocation.clear();
 			sqlLocation.addField("servers_server_id", IntToStr(serv_id));
 			sqlLocation.addField("packages_package_id", IntToStr(package_id));
@@ -251,18 +255,17 @@ int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locatio
 	return ret;
 }
 
-int mpkgDatabase::add_server_record(SERVER *server)
+int mpkgDatabase::add_server_record(SERVER *server)	// Returns server id if success, or -1 if failed.
 {
-	//string sql_query;
 	int server_id;
-	//sql_query.clear();
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("server_id");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("server_url", server->get_url());
-	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "servers", sqlSearch);
-	//server_id=get_id("servers","server_id","server_url",server->get_url());
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "servers", sqlSearch)!=0)
+		return -1;
+
 	if(sqlTable.empty())
 	{
 		sqlSearch.addField("server_priority", server->get_priority());
@@ -270,6 +273,10 @@ int mpkgDatabase::add_server_record(SERVER *server)
 		db.sql_insert("servers", sqlSearch);
 		server_id=get_last_id("servers","server_id");
 		if (!server->get_tags()->IsEmpty() && server_id!=0) add_server_taglist_record(server_id, server->get_tags());
+	}
+	else
+	{
+		server_id=atoi(sqlTable.getValue(0,"server_id").c_str());
 	}
 	return server_id;
 }

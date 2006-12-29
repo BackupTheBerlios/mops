@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.6 2006/12/26 18:57:11 i27249 Exp $
+	$Id: dataunits.cpp,v 1.7 2006/12/29 12:57:00 i27249 Exp $
 */
 
 
@@ -23,6 +23,21 @@ string PrepareSql(string str)
 	}
 	return ret;
 }
+
+bool SERVER_TAG::operator != (SERVER_TAG stag)
+{
+	if (server_tag_id!=stag.get_id()) return true;
+	if (server_tag_name!=stag.get_name(false)) return true;
+	return false;
+}
+
+bool SERVER_TAG::operator == (SERVER_TAG stag)
+{
+	if (server_tag_id!=stag.get_id()) return false;
+	if (server_tag_name!=stag.get_name(false)) return false;
+	return true;
+}
+
 
 
 int SERVER_TAG::get_id()
@@ -59,6 +74,28 @@ SERVER_TAG::SERVER_TAG()
 	server_tag_id=0;
 }
 SERVER_TAG::~SERVER_TAG(){}
+
+
+bool SERVER_TAG_LIST::operator != (SERVER_TAG_LIST slist)
+{
+	if (size()!=slist.size()) return true;
+	for (int i=0; i<size(); i++)
+	{
+		if (server_tags[i]!=*slist.get_server_tag(i)) return true;
+	}
+	return false;
+}
+
+bool SERVER_TAG_LIST::operator == (SERVER_TAG_LIST slist)
+{
+	if (size()!=slist.size()) return false;
+	for (int i=0; i<size(); i++)
+	{
+		if (server_tags[i]!=*slist.get_server_tag(i)) return false;
+	}
+	return true;
+}
+
 
 
 SERVER_TAG* SERVER_TAG_LIST::get_server_tag(int num)
@@ -108,6 +145,26 @@ bool SERVER_TAG_LIST::IsEmpty()
 
 SERVER_TAG_LIST::SERVER_TAG_LIST(){}
 SERVER_TAG_LIST::~SERVER_TAG_LIST(){}
+
+bool SERVER::operator != (SERVER nserv)
+{
+	if (server_id!=nserv.get_id()) return true;
+	if (server_url!=nserv.get_url(false)) return true;
+	if (server_priority!=nserv.get_priority(false)) return true;
+	if (server_tags!=*nserv.get_tags()) return true;
+	return false;
+}
+
+bool SERVER::operator == (SERVER nserv)
+{
+	if (server_id!=nserv.get_id()) return false;
+	if (server_url!=nserv.get_url(false)) return false;
+	if (server_priority!=nserv.get_priority(false)) return false;
+	if (server_tags!=*nserv.get_tags()) return false;
+	return true;
+}
+
+
 
 int SERVER::get_id()
 {
@@ -200,6 +257,27 @@ SERVER::SERVER()
 SERVER::~SERVER()
 {
 }
+
+bool SERVER_LIST::operator != (SERVER_LIST serv_list)
+{
+	if (size()!=serv_list.size()) return true;
+	for (int i=0; i<size(); i++)
+	{
+		if (servers[i]!=*serv_list.get_server(i)) return true;
+	}
+	return false;
+}
+
+bool SERVER_LIST::operator == (SERVER_LIST serv_list)
+{
+	if (size()!=serv_list.size()) return false;
+	for (int i=0; i<size(); i++)
+	{
+		if (servers[i]!=*serv_list.get_server(i)) return false;
+	}
+	return true;
+}
+
 
 SERVER* SERVER_LIST::get_server(int num)
 {
@@ -312,6 +390,49 @@ LOCATION::~LOCATION()
 {
 }
 
+bool LOCATION::operator != (LOCATION location)
+{
+	if (location_id!=location.get_id()) return true;
+	if (location_path!=location.get_path()) return true;
+	if (server!=*location.get_server()) return true;
+	return false;
+}
+
+bool LOCATION::operator == (LOCATION location)
+{
+	if (location_id!=location.get_id()) return false;
+	if (location_path!=location.get_path()) return false;
+	if (server!=*location.get_server()) return false;
+	return true;
+}
+
+
+bool LOCATION_LIST::operator != (LOCATION_LIST nloc)
+{
+	if (size()!=nloc.size()) return true;
+	for (int i=0; i<size(); i++)
+	{
+		if (*nloc.get_location(i)!=locations[i]) return true;
+	}
+	return false;
+}
+
+bool LOCATION_LIST::operator == (LOCATION_LIST nloc)
+{
+	if (size()!=nloc.size()) return false;
+	for (int i=0; i<size(); i++)
+	{
+		if (*nloc.get_location(i)!=locations[i]) return false;
+	}
+	return true;
+}
+
+
+vector<LOCATION> LOCATION_LIST::get_locations()
+{
+	return locations;
+}
+
 LOCATION* LOCATION_LIST::get_location(int num)
 {
 	if (num>=0 && num<size()) return &locations[num];
@@ -354,6 +475,27 @@ bool LOCATION_LIST::IsEmpty()
 
 LOCATION_LIST::LOCATION_LIST(){}
 LOCATION_LIST::~LOCATION_LIST(){}
+
+bool DEPENDENCY::operator != (DEPENDENCY ndep)
+{
+	if (dependency_id!=ndep.get_id()) return true;
+	if (dependency_condition!=ndep.get_condition(false)) return true;
+	if (dependency_package_name!=ndep.get_package_name(false)) return true;
+	if (dependency_package_version!=ndep.get_package_version(false)) return true;
+	if (dependency_broken!=ndep.get_broken()) return true;
+	return false;
+}
+
+bool DEPENDENCY::operator == (DEPENDENCY ndep)
+{
+	if (dependency_id!=ndep.get_id()) return false;
+	if (dependency_condition!=ndep.get_condition(false)) return false;
+	if (dependency_package_name!=ndep.get_package_name(false)) return false;
+	if (dependency_package_version!=ndep.get_package_version(false)) return false;
+	if (dependency_broken!=ndep.get_broken()) return false;
+	return true;
+}
+
 
 void DEPENDENCY::clear()
 {
@@ -473,6 +615,22 @@ DEPENDENCY::DEPENDENCY()
 }
 DEPENDENCY::~DEPENDENCY(){}
 
+bool TAG::operator != (TAG ntag)
+{
+	if (tag_id!=ntag.get_id()) return true;
+	if (tag_name!=ntag.get_name(false)) return true;
+	return false;
+}
+
+bool TAG::operator == (TAG ntag)
+{
+	if (tag_id!=ntag.get_id()) return false;
+	if (tag_name!=ntag.get_name(false)) return false;
+	return true;
+}
+
+
+
 void TAG::clear()
 {
 	tag_id=0;
@@ -512,6 +670,21 @@ TAG::TAG()
 	tag_id=0;
 }
 TAG::~TAG(){}
+
+bool FILES::operator != (FILES nfile)
+{
+	if (file_id!=nfile.get_id()) return true;
+	if (file_name!=nfile.get_name(false)) return true;
+	return false;
+}
+
+bool FILES::operator == (FILES nfile)
+{
+	if (file_id!=nfile.get_id()) return false;
+	if (file_name!=nfile.get_name(false)) return false;
+	return true;
+}
+
 
 int FILES::get_id()
 {
@@ -559,6 +732,22 @@ FILES::FILES()
 	file_id=0;
 }
 FILES::~FILES(){}
+
+bool TAG_LIST::operator != (TAG_LIST ntags)
+{
+	if (size()!=ntags.size()) return true;
+	for (int i=0; i<size(); i++)
+		if (tags[i]!=*ntags.get_tag(i)) return true;
+	return false;
+}
+
+bool TAG_LIST::operator == (TAG_LIST ntags)
+{
+	if (size()!=ntags.size()) return false;
+	for (int i=0; i<size(); i++)
+		if (tags[i]!=*ntags.get_tag(i)) return false;
+	return true;
+}
 
 
 TAG* TAG_LIST::get_tag(int num)
@@ -608,6 +797,25 @@ bool TAG_LIST::IsEmpty()
 TAG_LIST::TAG_LIST(){}
 TAG_LIST::~TAG_LIST(){}
 
+bool DEPENDENCY_LIST::operator != (DEPENDENCY_LIST ndep)
+{
+	if (size()!=ndep.size()) return true;
+	for (int i=0; i<size();i++)
+	{
+		if (dependencies[i]!=*ndep.get_dependency(i)) return true;
+	}
+	return false;
+}
+
+bool DEPENDENCY_LIST::operator == (DEPENDENCY_LIST ndep)
+{
+	if (size()!=ndep.size()) return false;
+	for (int i=0; i<size();i++)
+	{
+		if (dependencies[i]!=*ndep.get_dependency(i)) return false;
+	}
+	return true;
+}
 
 DEPENDENCY* DEPENDENCY_LIST::get_dependency(int num)
 {
@@ -654,6 +862,27 @@ bool DEPENDENCY_LIST::IsEmpty()
 }
 DEPENDENCY_LIST::DEPENDENCY_LIST(){}
 DEPENDENCY_LIST::~DEPENDENCY_LIST(){}
+
+
+bool FILE_LIST::operator != (FILE_LIST nfiles)
+{
+	if (size()!=nfiles.size()) return true;
+	for (int i=0; i<size(); i++)
+	{
+		if (files[i]!=*nfiles.get_file(i)) return true;
+	}
+	return false;
+}
+
+bool FILE_LIST::operator == (FILE_LIST nfiles)
+{
+	if (size()!=nfiles.size()) return false;
+	for (int i=0; i<size(); i++)
+	{
+		if (files[i]!=*nfiles.get_file(i)) return false;
+	}
+	return true;
+}
 
 
 FILES* FILE_LIST::get_file(int num)
@@ -717,6 +946,26 @@ bool FILE_LIST::IsEmpty()
 }
 FILE_LIST::FILE_LIST(){}
 FILE_LIST::~FILE_LIST(){}
+
+bool SCRIPTS::operator != (SCRIPTS scr)
+{
+	if (script_id!=scr.get_id()) return true;
+	if (preinstall!=scr.get_preinstall(false)) return true;
+	if (postinstall!=scr.get_postinstall(false)) return true;
+	if (preremove!=scr.get_preremove(false)) return true;
+	if (postremove!=scr.get_postremove(false)) return true;
+	return false;
+}
+
+bool SCRIPTS::operator == (SCRIPTS scr)
+{
+	if (script_id!=scr.get_id()) return false;
+	if (preinstall!=scr.get_preinstall(false)) return false;
+	if (postinstall!=scr.get_postinstall(false)) return false;
+	if (preremove!=scr.get_preremove(false)) return false;
+	if (postremove!=scr.get_postremove(false)) return false;
+	return true;
+}
 
 void SCRIPTS::clear()
 {
@@ -814,6 +1063,75 @@ SCRIPTS::SCRIPTS()
 SCRIPTS::~SCRIPTS()
 {
 }
+
+bool PACKAGE::operator != (PACKAGE npkg)
+{
+	if (package_id!=npkg.get_id()) return true;
+	if (package_name!=npkg.get_name(false)) return true;
+	if (package_version!=npkg.get_version(false)) return true;
+	if (package_arch!=npkg.get_arch(false)) return true;
+	if (package_build!=npkg.get_build(false)) return true;
+	if (package_compressed_size!=npkg.get_compressed_size(false)) return true;
+	if (package_installed_size!=npkg.get_installed_size(false)) return true;
+	if (package_short_description!=npkg.get_short_description(false)) return true;
+	if (package_description!=npkg.get_description(false)) return true;
+	if (package_changelog!=npkg.get_changelog(false)) return true;
+	if (package_packager!=npkg.get_packager(false)) return true;
+	if (package_packager_email!=npkg.get_packager_email(false)) return true;
+	if (package_status!=npkg.get_status()) return true;
+	if (package_md5!=npkg.get_md5(false)) return true;
+	if (package_filename!=npkg.get_filename(false)) return true;
+	if (package_dependencies!=*npkg.get_dependencies()) return true;
+	if (package_locations!=*npkg.get_locations()) return true;
+	if (package_tags!=*npkg.get_tags()) return true;
+	if (package_scripts!=*npkg.get_scripts()) return true;
+	if (package_files!=*npkg.get_files()) return true;
+	return false;
+}	
+
+bool PACKAGE::operator == (PACKAGE npkg)
+{
+	if (package_id!=npkg.get_id()) return false;
+	if (package_name!=npkg.get_name(false)) return false;
+	if (package_version!=npkg.get_version(false)) return false;
+	if (package_arch!=npkg.get_arch(false)) return false;
+	if (package_build!=npkg.get_build(false)) return false;
+	if (package_compressed_size!=npkg.get_compressed_size(false)) return false;
+	if (package_installed_size!=npkg.get_installed_size(false)) return false;
+	if (package_short_description!=npkg.get_short_description(false)) return false;
+	if (package_description!=npkg.get_description(false)) return false;
+	if (package_changelog!=npkg.get_changelog(false)) return false;
+	if (package_packager!=npkg.get_packager(false)) return false;
+	if (package_packager_email!=npkg.get_packager_email(false)) return false;
+	if (package_status!=npkg.get_status()) return false;
+	if (package_md5!=npkg.get_md5(false)) return false;
+	if (package_filename!=npkg.get_filename(false)) return false;
+	if (package_dependencies!=*npkg.get_dependencies()) return false;
+	if (package_locations!=*npkg.get_locations()) return false;
+	if (package_tags!=*npkg.get_tags()) return false;
+	if (package_scripts!=*npkg.get_scripts()) return false;
+	if (package_files!=*npkg.get_files()) return false;
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void PACKAGE::clear()
 {
@@ -1155,6 +1473,26 @@ string IntToStr(int num)
 }
 
 
+bool PACKAGE_LIST::operator != (PACKAGE_LIST nlist)
+{
+	if (size()!=nlist.size()) return true;
+	for (int i=0; i<size(); i++)
+	{
+		if (packages[i]!=*nlist.get_package(i)) return true;
+	}
+	return false;
+}
+
+bool PACKAGE_LIST::operator == (PACKAGE_LIST nlist)
+{
+	if (size()!=nlist.size()) return false;
+	for (int i=0; i<size(); i++)
+	{
+		if (packages[i]!=*nlist.get_package(i)) return false;
+	}
+	return true;
+}
+
 PACKAGE* PACKAGE_LIST::get_package(int num)
 {
 	//PACKAGE s_package;
@@ -1188,6 +1526,34 @@ int PACKAGE_LIST::add(PACKAGE package)
     packages[ret]=package;
     return ret;
 }
+
+int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
+{
+	int ret;
+	int old_size=packages.size();
+	ret=packages.size()+pkgList->size();
+	//packages.resize(ret);
+	bool identical_found;
+	for (int i=0; i<pkgList->size();i++)
+	{
+		if (!skip_identical)
+		{
+			identical_found=false;
+			// Checking if lists have identical items, remove it
+			for (int s=0; s<packages.size(); s++)
+			{
+				if (packages[s]==*pkgList->get_package(i))
+				{
+					identical_found=false;
+					break;
+				}
+			}
+		}
+		if (!identical_found) packages.push_back(*pkgList->get_package(i));
+	}
+	return ret;
+}
+
 
 void PACKAGE_LIST::clear()
 {

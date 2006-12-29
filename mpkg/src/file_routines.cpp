@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.3 2006/12/21 18:09:17 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.4 2006/12/29 12:57:00 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -12,7 +12,14 @@ string get_tmp_file()
 {
 	string tmp_fname;
 	debug("get_tmp_file start");
-	char *t=tmpnam(NULL);
+	//char *t=tmpnam(NULL);
+	char t[]="/tmp/mpkg-XXXXXX";
+	int fd;
+	fd=mkstemp(t);
+
+#ifdef DEBUG
+	printf("file_routines.cpp: Temp filename: %s, return value = %i\n", t, fd);
+#endif
 	if ( t == NULL  )
 		return NULL;
 

@@ -1,4 +1,8 @@
 #include "syscommands.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/wait.h>
 
 void runShellCommand(std::string cmd)
 {

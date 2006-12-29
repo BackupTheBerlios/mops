@@ -4,10 +4,10 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.16 2006/12/27 12:19:02 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.17 2006/12/29 12:57:00 i27249 Exp $
  */
 
-
+#include "config.h"
 #include "local_package.h"
 #include "debug.h"
 #include "mpkg.h"
@@ -33,11 +33,12 @@ int check_action(char* act);
 void print_usage(FILE* stream, int exit_code);
 int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker);
 int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker);
-
+int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
 
 
 int main (int argc, char **argv)
 {
+	loadGlobalConfig();
 	setlocale(LC_ALL, "");
 	bindtextdomain( "installpkg-ng", "/usr/share/locale");
 	textdomain("installpkg-ng");
@@ -168,6 +169,7 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_UPDATE ) {
+		update_repository_data(&db, &DepTracker);
 		
 	}
 
@@ -237,6 +239,40 @@ void print_usage(FILE* stream, int exit_code)
 	exit(exit_code);
 }
 
+int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	Repository rep;
+	PACKAGE_LIST availablePackages;
+	PACKAGE_LIST tmpPackages;
+	if (REPOSITORY_LIST.empty())
+	{
+		printf("No repositories defined, add at least one to proceed\n");
+		return -1;
+	}
+
+	printf("Found %d repositories, receiving data\n", REPOSITORY_LIST.size()-1);
+	
+	for (int i=0; i<REPOSITORY_LIST.size(); i++)
+	{
+		tmpPackages = rep.get_index(REPOSITORY_LIST[i]);
+		if (tmpPackages.IsEmpty())
+		{
+			printf("No packages found at %s: repository error, or connection error\n", REPOSITORY_LIST[i].c_str());
+		}
+		else
+		{
+			for (int s=0; s<tmpPackages.size(); s++)
+			{
+				tmpPackages.get_package(i)->set_status(PKGSTATUS_AVAILABLE);
+			}
+			availablePackages.add_list(&tmpPackages);
+		}
+	}
+
+	// Go merging to DB
+	return db->updateRepositoryData(&availablePackages);
+	
+}
 
 int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {

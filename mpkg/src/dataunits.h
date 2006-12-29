@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.5 2006/12/26 18:57:11 i27249 Exp $
+	$Id: dataunits.h,v 1.6 2006/12/29 12:57:00 i27249 Exp $
 */
 
 
@@ -26,6 +26,9 @@ class SERVER_TAG
 	int get_id();
 	string get_name(bool sql=true);
 
+	bool operator != (SERVER_TAG stag);
+	bool operator == (SERVER_TAG stag);
+
 	int set_id(int id);
 	int set_name(string name);
 	
@@ -44,6 +47,10 @@ class SERVER_TAG_LIST
 	void clear();
 	bool IsEmpty();
 	int size();
+
+	bool operator != (SERVER_TAG_LIST slist);
+	bool operator == (SERVER_TAG_LIST slist);
+
 
 	SERVER_TAG* get_server_tag(int num);
 	int set_server_tag(int num, SERVER_TAG serv_tag);
@@ -85,6 +92,8 @@ class SERVER
 	int set_priority(string priority);
 	int set_tags(SERVER_TAG_LIST tags);
 
+	bool operator != (SERVER nserv);
+	bool operator == (SERVER nserv);
 	// CLASS ROUTINES //
 	bool IsEmpty();
 	SERVER();
@@ -104,6 +113,8 @@ class SERVER_LIST
 	void clear();
 	bool IsEmpty();
 	int size();
+	bool operator != (SERVER_LIST serv_list);
+	bool operator == (SERVER_LIST serv_list);
 
 	SERVER_LIST();
 	~SERVER_LIST();
@@ -121,6 +132,9 @@ class LOCATION
 	SERVER server;
 	
     public:
+	bool operator != (LOCATION location);
+	bool operator == (LOCATION location);
+
 	long get_id();
 	string get_path(bool sql=true);
 	void set_local();
@@ -145,7 +159,10 @@ class LOCATION_LIST
     private:
 	vector<LOCATION> locations;
     public:
+	bool operator != (LOCATION_LIST nloc);
+	bool operator == (LOCATION_LIST nloc);
 	LOCATION* get_location(int num);
+	vector<LOCATION> get_locations();
 	int set_location(int num, LOCATION location);
 
 	int add(LOCATION location);
@@ -184,6 +201,8 @@ class DEPENDENCY
 	int set_package_version(string package_version);
 	int set_broken(int broken);
 
+	bool operator != (DEPENDENCY ndep);
+	bool operator == (DEPENDENCY ndep);
 	// CLASS ROUTINES //
 	bool IsEmpty();
 	void clear();
@@ -203,7 +222,9 @@ class TAG
 	string get_name(bool sql=true);
 	int set_id(int id);
 	int set_name(string name);
-
+	
+	bool operator != (TAG ntag);
+	bool operator == (TAG ntag);
 	// CLASS ROUTINES //
 	void clear();
 	bool IsEmpty();
@@ -222,6 +243,8 @@ class FILES
 	// EXTERNAL DATA //
 	//PACKAGE_LIST *file_packages;
     public:
+	bool operator != (FILES nfile);
+	bool operator == (FILES nfile);
 	int get_id();
 	string get_name(bool sql=true);
 	string get_size(bool sql=true);
@@ -248,6 +271,8 @@ class TAG_LIST
 	void clear();
 	bool IsEmpty();
 	int size();
+	bool operator != (TAG_LIST ntags);
+	bool operator == (TAG_LIST ntags);
 
 	TAG_LIST();
 	~TAG_LIST();
@@ -260,7 +285,9 @@ class DEPENDENCY_LIST
     public:
 	DEPENDENCY* get_dependency(int num);
 	int set_dependency(int num, DEPENDENCY dependency);
-
+	
+	bool operator != (DEPENDENCY_LIST ndep);
+	bool operator == (DEPENDENCY_LIST ndep);
 	int add(DEPENDENCY dependency);
 	void clear();
 	bool IsEmpty();
@@ -275,6 +302,9 @@ class FILE_LIST
     private:
 	vector <FILES> files;
     public:
+	bool operator != (FILE_LIST nfiles);
+	bool operator == (FILE_LIST nfiles);
+
 	FILES* get_file(int num);
 	int set_file(int num, FILES file);
 	
@@ -299,6 +329,8 @@ class SCRIPTS
 	string postremove;
 
     public:
+	bool operator != (SCRIPTS scr);
+	bool operator == (SCRIPTS scr);
 	int get_id();
 	string get_vid();
 	string get_preinstall(bool sql=true);
@@ -386,6 +418,9 @@ class PACKAGE
 	TAG_LIST* get_tags();
 	SCRIPTS* get_scripts();
 
+	bool operator == (PACKAGE npkg);
+	bool operator != (PACKAGE npkg);
+
 	int set_files(FILE_LIST files);
 	int set_locations(LOCATION_LIST locations);
 	int set_dependencies(DEPENDENCY_LIST dependencies);
@@ -395,12 +430,6 @@ class PACKAGE
 	int add_dependency(string package_name, string dep_condition, string package_version);
 	int add_file(string file_name, string file_size);
 	int add_tag(string tag);
-
-	/*FILES get_package_file(int num);
-	LOCATIONS get_package_location(int num);
-	DEPENDENCY get_dependency(int num);
-	TAG get_tag(int num);*/
-
 
 	// CLASS ROUTINES //
 	void destroy();
@@ -417,8 +446,10 @@ class PACKAGE_LIST
     public:
 	PACKAGE* get_package(int num);
 	int set_package(int num, PACKAGE package);
-	
+	bool operator != (PACKAGE_LIST nlist);
+	bool operator == (PACKAGE_LIST nlist);
 	int add(PACKAGE package);
+	int add_list(PACKAGE_LIST *pkgList, bool skip_identical=true);
 	void clear();
 	bool IsEmpty();
 	int size();

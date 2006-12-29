@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.7 2006/12/26 18:57:11 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.8 2006/12/29 12:57:00 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -405,6 +405,9 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 
 SQLiteDB::SQLiteDB(string filename)
 {
+#ifdef DEBUG
+	printf("Database filename: %s\n", filename.c_str());
+#endif
 	db_filename=filename;
 	sqlError=0;
 	CheckDatabaseIntegrity();

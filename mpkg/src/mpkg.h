@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.5 2006/12/26 18:57:11 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.6 2006/12/29 12:57:00 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -45,6 +45,7 @@ class mpkgDatabase
 		int add_tag_link(int package_id, int tag_id);
 		int add_package_record(PACKAGE *package);
 		int add_scripts_record(int package_id, SCRIPTS *scripts);
+		int update_package_data(int package_id, PACKAGE *package);
 
 		int clean_package_filelist (PACKAGE *package);
 	private:
@@ -57,6 +58,7 @@ class mpkgDatabase
 		int install_package(PACKAGE *package); // PHYSICALLY install package (extract, execute scripts)
 		int remove_package(PACKAGE *package); // PHYSICALLY remove package (delete files, execute remove scripts)
 		int uninstall(vector<string> pkgnames); // Wrapper, uninstalls all packages with given names.
+		int updateRepositoryData(PACKAGE_LIST *newPackages);
 		PACKAGE get_installed_package(string pkg_name); // Returns installed package
 
 //		int update_package(int removing_id, string install_filename); // Updates a package. Meta-function: first remove old, next install new

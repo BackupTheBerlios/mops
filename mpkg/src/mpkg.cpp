@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.11 2006/12/26 18:57:11 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.12 2006/12/29 12:57:00 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -237,7 +237,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				}
 				else
 				{
-					debug("md5 incorrect");
+					printf("md5 incorrect\n");
 				}
 			}
 			else
@@ -341,9 +341,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			fputc(package->get_scripts()->get_preinstall(false)[i], f_preinstall);
 		}
 		fclose(f_preinstall);
-#ifndef DO_NOT_RUN_SCRIPTS
-		system(sys_preinstall.c_str());
-#endif
+		if (!DO_NOT_RUN_SCRIPTS)
+		{
+			system(sys_preinstall.c_str());
+		}
+		
 	}
 	else
 	{
@@ -370,10 +372,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			fputc(package->get_scripts()->get_postinstall(false)[i], f_postinstall);
 		}
 		fclose(f_postinstall);
-#ifndef DO_NOT_RUN_SCRIPTS
-//		system(sys_postinstall.c_str());
-		runShellCommand(sys_postinstall);
-#endif
+		if (!DO_NOT_RUN_SCRIPTS)
+		{
+	//		system(sys_postinstall.c_str());
+			runShellCommand(sys_postinstall);
+		}
 	}
 	else
 	{
@@ -406,11 +409,13 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			fputc(package->get_scripts()->get_preremove(false)[i], f_preremove);
 		}
 		fclose(f_preremove);
-#ifndef DO_NOT_RUN_SCRIPTS
-//		system(sys_preremove.c_str());
-		runShellCommand(sys_preremove);
+		if(!DO_NOT_RUN_SCRIPTS)
+		{
+
+	//		system(sys_preremove.c_str());
+			runShellCommand(sys_preremove);
+		}
 		
-#endif
 	}
 	else
 	{
@@ -489,9 +494,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			fputc(package->get_scripts()->get_postremove(false)[i], f_postremove);
 		}
 		fclose(f_postremove);
-#ifndef DO_NOT_RUN_SCRIPTS
-		system(sys_postremove.c_str());
-#endif
+		if (!DO_NOT_RUN_SCRIPTS)
+		{
+			system(sys_postremove.c_str());
+		}
 	}
 	else
 	{
@@ -503,5 +509,148 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 
 	
+}
+
+int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
+{
+	PACKAGE old_package;
+	if (get_package(package_id, &old_package)!=0)
+		return -1;
+	
+	SQLRecord sqlUpdate;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+
+	// 1. Updating direct package data
+	if (package->get_md5()!=old_package.get_md5())
+	{
+		sqlUpdate.addField("package_description", package->get_description());
+		sqlUpdate.addField("package_short_description", package->get_short_description());
+		sqlUpdate.addField("package_compressed_size", package->get_compressed_size());
+		sqlUpdate.addField("package_installed_size", package->get_installed_size());
+		sqlUpdate.addField("package_changelog", package->get_changelog());
+		sqlUpdate.addField("package_packager", package->get_packager());
+		sqlUpdate.addField("package_packager_email", package->get_packager_email());
+		sqlUpdate.addField("package_md5", package->get_md5());
+	}
+
+	// 2. Updating filename
+	if (package->get_filename()!=old_package.get_filename())
+	{
+		sqlUpdate.addField("package_filename", package->get_filename());
+	}
+
+	// 3. Updating status
+	if (package->get_status()!=old_package.get_status())
+	{
+		sqlUpdate.addField("package_status", IntToStr(package->get_status()));
+	}
+
+	// 4. Updating locations
+	
+	// Note about method used for updating locations:
+	// If locations are not identical:
+	// 	Step 1. Remove all existing package locations from "locations" table. Servers are untouched.
+	// 	Step 2. Add new locations.
+	// Note: after end of updating procedure for all packages, it will be good to do servers cleanup - delete all servers who has no locations.
+	
+	if (*package->get_locations()!=*old_package.get_locations())
+	{
+		SQLRecord loc_sqlDelete;
+		loc_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+
+		if (db.sql_delete("locations", loc_sqlDelete)!=0) return -2;
+		if (add_locationlist_record(package_id, package->get_locations())!=0) return -3;
+	}
+
+	// 5. Updating tags
+	if (*package->get_tags()!=*old_package.get_tags())
+	{
+		SQLRecord taglink_sqlDelete;
+		taglink_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+
+		if (db.sql_delete("tags_links", taglink_sqlDelete)!=0) return -4;
+		if (add_taglist_record(package_id, package->get_tags())!=0) return -5;
+	}
+
+	// 6. Updating dependencies
+	if (*package->get_dependencies()!=*old_package.get_dependencies())
+	{
+		SQLRecord dep_sqlDelete;
+		dep_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+
+		if(db.sql_delete("dependencies", dep_sqlDelete)!=0) return -6;
+		if (add_dependencylist_record(package_id, package->get_dependencies())!=0) return -7;
+	}
+
+	// 7, 8 - update scripts and file list. It is skipped for now, because we don't need this here (at least, for now).
+	
+	if (db.sql_update("packages", sqlUpdate, sqlSearch)!=0) return -8;
+	return 0;
+}
+
+
+
+
+int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
+{
+	PACKAGE_LIST currentPackages;
+	SQLRecord sqlSearch;
+	PACKAGE tmpPackage;
+	if (get_packagelist(sqlSearch, &currentPackages)!=0)
+		return -1;
+
+	// Step 1. Adding new data, updating old
+	int package_id;
+	int package_status;
+	for (int i=0; i< newPackages->size(); i++)
+	{
+		package_id=get_package_id(newPackages->get_package(i));
+		if (package_id>0)
+		{
+			// Such package found, updating data if needed
+			package_status=get_status(package_id);
+			if (package_status!=PKGSTATUS_UNAVAILABLE)
+				newPackages->get_package(i)->set_status(package_status);
+			update_package_data(package_id, newPackages->get_package(i));
+		}
+		if (package_id==0)
+		{
+			add_package_record(newPackages->get_package(i));
+		}
+		if (package_id<0)
+			return -1;
+	}
+	
+	// Step 2. Clean up old package data
+	int package_num;
+	for (int i=0; i<currentPackages.size(); i++)
+	{
+		if (currentPackages.get_package(i)->get_status()==PKGSTATUS_INSTALL \
+				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_AVAILABLE)
+		{
+			package_num=0;
+			for (int s=0; s<newPackages->size(); s++)
+			{
+				if (currentPackages.get_package(i)->get_name()==newPackages->get_package(i)->get_name() \
+						&& currentPackages.get_package(i)->get_version()==newPackages->get_package(i)->get_version() \
+						&& currentPackages.get_package(i)->get_arch()==newPackages->get_package(i)->get_arch() \
+						&& currentPackages.get_package(i)->get_build()==newPackages->get_package(i)->get_build())
+				{
+					package_num=s;
+					break;
+				}
+			}
+			if (package_num==0)
+			{
+				currentPackages.get_package(i)->get_locations()->clear();
+				currentPackages.get_package(i)->set_status(PKGSTATUS_UNAVAILABLE);
+				update_package_data(currentPackages.get_package(i)->get_id(), currentPackages.get_package(i));
+			}
+		}
+	}
+
+	// Step 3. Clean up servers and tags (remove unused items)
+	// TODO
 }
 
