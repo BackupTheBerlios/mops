@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.19 2007/01/19 06:08:54 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.20 2007/01/19 14:32:42 i27249 Exp $
  */
 
 #include "config.h"
@@ -177,18 +177,21 @@ int main (int argc, char **argv)
 			list_search.push_back((string) argv[i]);
 		}
 		list(&db, &DepTracker, list_search);
+		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_UPGRADE ) {
 		printf("Upgrade not implemented yet\n");
+		delete_tmp_files();
 		return 0;
 	}
 
 	if ( action == ACT_CONVERT  ) {
 		for (int i = optind; i < argc; i++)
 		{
-			convert_package((string) argv[i], "/root/Data/5.1/MPKG_REPOSITORY/auto/");
+			convert_package((string) argv[i], "/root/development/converted/");
 		}
+		delete_tmp_files();
 		return 0;
 	
 	}
@@ -203,17 +206,20 @@ int main (int argc, char **argv)
 		{
 			printf("Please define output directory\n");
 		}
+		delete_tmp_files();
 		return 0;
 	}
 
 	if ( action == ACT_LIST ) {
 		vector<string> list_empty;
 		list(&db, &DepTracker, list_empty);
+		delete_tmp_files();
 		return 0;
 	}
 
 	if ( action == ACT_UPDATE ) {
 		update_repository_data(&db, &DepTracker);
+		delete_tmp_files();
 		return 0;
 		
 	}
@@ -221,6 +227,7 @@ int main (int argc, char **argv)
 	if ( action == ACT_CLEAN ) {
 		clean_cache();	
 //		printf("Cache cleanup isn't implemented yet\n");
+		delete_tmp_files();
 		return 0;
 	
 	}
@@ -235,6 +242,7 @@ int main (int argc, char **argv)
 		{
 			printf("Please define server URL\n");
 		}
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -325,7 +333,7 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 	
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
-		printf("cycle i=%d\n", i);
+		//printf("cycle i=%d\n", i);
 		tmpPackages = rep.get_index(REPOSITORY_LIST[i]);
 		if (i+1==REPOSITORY_LIST.size())
 		{
@@ -353,9 +361,9 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 						tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->get_url());
 
 			}
-			printf("Running add_list....");
+			//printf("Running add_list....");
 			availablePackages.add_list(&tmpPackages);
-			printf("done.\n");
+			//printf("done.\n");
 			//printf(_("After infiltrating, we have got %d NEW packages"), availablePackages.size());
 
 		}
@@ -380,7 +388,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
 
 
-	printf(_("Querying the database, please wait...\n"));
+	//printf(_("Querying the database, please wait...\n"));
 	// Step 1. Checking if it is just a name of a package
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", fname);
@@ -414,9 +422,13 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 		return 0;
 	}
 	
-
+	// If reached this point, the package isn't in the database. Install from local file.
 	// Part 0. Check if file exists.
-	
+	if (!CheckFileType(fname))
+	{
+		printf("%s: unsupported package type\n", fname.c_str());
+		return -1;
+	}
 	struct stat st;
 	if (lstat(fname.c_str(), &st) != 0) {
 		if ( errno == ENOENT ) {
@@ -427,6 +439,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 	
 	if ( !S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode) ) {
 		fprintf(stderr, _("unknown file type\n"));
+		return 1;
 	}
 	
 	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker

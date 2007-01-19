@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.16 2007/01/19 06:08:54 i27249 Exp $
+$Id: local_package.cpp,v 1.17 2007/01/19 14:32:42 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -373,7 +373,7 @@ int LocalPackage::injectFile(bool index)
 		debug("local_package.cpp: injectFile(): set_additional_data FAILED");
 		return -6;
 	}
-	
+	delete_tmp_files();	
 	debug("local_package.cpp: injectFile(): end");
 	return 0;
 }

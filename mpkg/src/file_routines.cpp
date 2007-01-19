@@ -1,9 +1,10 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.5 2007/01/19 06:08:54 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.6 2007/01/19 14:32:42 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
+#include <assert.h>
 
 vector<string> temp_files;
 extern int errno;
@@ -28,6 +29,7 @@ string get_tmp_file()
 	//free(t);
 	temp_files.resize(temp_files.size()+1);
 	temp_files[temp_files.size()-1]=tmp_fname;
+	close(fd);
 	return tmp_fname;
 }
 
@@ -84,8 +86,10 @@ string ReadFile(string filename, int max_count)
 	}
 	else
 	{
-		fclose(src);
+		perror("file_routines.cpp: ReadFile()");
+		//fclose(src);
 		printf("Cannot open file %s\n", filename.c_str());
+		abort();
 		return "";
 	}
 }
@@ -104,9 +108,23 @@ int WriteFile(string filename, string data)
 	}
 	else
 	{
-		fclose(output);
+		//assert(src != NULL);
+		
+		//fclose(output);
 		printf("Unable to write file %s\n", filename.c_str());
+		abort();
 		return 1;
 	}
+}
+
+bool CheckFileType(string fname)
+{
+	string ext;
+	for (unsigned int i=fname.length()-4; i<fname.length(); i++)
+	{
+		ext+=fname[i];
+	}
+	if (ext==".tgz") return true;
+	return false;
 }
 

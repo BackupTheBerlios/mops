@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.9 2007/01/19 06:08:54 i27249 Exp $
+	$Id: dataunits.cpp,v 1.10 2007/01/19 14:32:42 i27249 Exp $
 */
 
 
@@ -1593,7 +1593,7 @@ int PACKAGE_LIST::add(PACKAGE package)
 
 int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 {
-	printf("dataunits.cpp:add_list() started\n");
+//	printf("dataunits.cpp:add_list() started\n");
 //	printf("add_list: adding %d packages\n", pkgList->size());
 	// IMPORTANT NOTE!
 	// If skip_identical is true, the locations will be MERGED together!
@@ -1689,7 +1689,7 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 			this->add(*pkgList->get_package(i));
 		}
 	}
-	printf("dataunits.cpp:add_list() end\n");
+//	printf("dataunits.cpp:add_list() end\n");
 	return 0;
 }
 

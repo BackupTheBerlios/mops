@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.14 2007/01/19 06:08:54 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.15 2007/01/19 14:32:42 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -682,7 +682,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 
 int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 {
-	printf("mpkg.cpp: updateRepositoryData(): begin\n");
+	//printf("mpkg.cpp: updateRepositoryData(): begin\n");
 	//printf(_("Got data about %d new packages, importing\n"), newPackages->size());
 	debug("mpkg.cpp: updateRepositoryData(): requesting current packages");
 	PACKAGE_LIST currentPackages;
@@ -699,7 +699,8 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	int package_status;
 	for (int i=0; i< newPackages->size(); i++)
 	{
-		printf("for (int i=0; i< newPackages->size(); i++) i=%d\n", i);
+		//printf("for (int i=0; i< newPackages->size(); i++) i=%d\n", i);
+		printf("#");
 
 		package_id=get_package_id(newPackages->get_package(i));
 		if (package_id>0)
@@ -709,7 +710,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			debug("mpkg.cpp: updateRepositoryData(): package status: "+IntToStr(package_status));
 			if (package_status!=PKGSTATUS_UNAVAILABLE)
 				newPackages->get_package(i)->set_status(package_status);
-			printf("update_package_data call\n");
+			//printf("update_package_data call\n");
 			update_package_data(package_id, newPackages->get_package(i));
 		}
 		if (package_id==0)
@@ -724,7 +725,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		}
 	}
 	
-	printf("mpkg.cpp: updateRepositoryData(): Step 2. Clean up old package data (packages, that are no sources for now)\n");
+	//printf("mpkg.cpp: updateRepositoryData(): Step 2. Clean up old package data (packages, that are no sources for now)\n");
 	int package_num;
 	for (int i=0; i<currentPackages.size(); i++)
 	{
@@ -754,10 +755,11 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			}
 		}
 	}
+	printf("\n");
 
 	// Step 3. Clean up servers and tags (remove unused items)
 	// TODO
-	printf("mpkg.cpp: updateRepositoryData(): successful end\n");
+	//printf("mpkg.cpp: updateRepositoryData(): successful end\n");
 	return 0;
 }
 

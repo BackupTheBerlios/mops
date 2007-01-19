@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.4 2006/12/22 10:26:05 adiakin Exp $
+* $Id: file_routines.h,v 1.5 2007/01/19 14:32:42 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -18,5 +18,5 @@ bool FileExists(string filename);
 bool FileNotEmpty(string filename);
 string ReadFile(string filename, int max_count=0);
 int WriteFile(string filename, string data);
-
+bool CheckFileType(string fname);
 #endif

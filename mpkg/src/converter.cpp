@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.1 2007/01/19 06:11:04 i27249 Exp $
+ * $Id: converter.cpp,v 1.2 2007/01/19 14:32:42 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -81,16 +81,79 @@ int slack_convert(string filename, string xml_output)
 //	printf("package build: %s\n", package.get_build().c_str());
 
 	tmp.clear();
+#define DESCRIPTION_PROCESS
 #ifdef DESCRIPTION_PROCESS	
 	//DESCRIPTION
 	string desc_file=get_tmp_file();
 	string desc="tar zxf "+filename+" install/slack-desc --to-stdout > "+desc_file;
-	system(desc.c_str());
-	string description=ReadFile(desc_file);
-	// Step 1. Skip comments
-	unsigned int dpos=0;
-	string comment;
-	bool str1=true;
+	if (system(desc.c_str())==0)
+	{
+		string description=ReadFile(desc_file);
+		// Step 1. Skip comments
+		unsigned int dpos=0;
+		//unsigned int strLen=0;
+		string comment;
+		string head;
+		string short_description;
+		//bool str1=true;
+		if (!description.empty())
+		{
+			// Cleaning out comments
+			for (unsigned int i=0; i<description.length(); i++)
+			{
+				if (description[i]=='#')
+				{
+					while (description[i]!='\n') i++;
+				}
+				if (i<description.length()) tmp+=description[i];
+			}
+			description=tmp;
+			tmp.clear();
+			string pHead=package.get_name()+":";
+			int spos=description.find(pHead,0);
+			// Removing package: headers
+			for (unsigned int i=spos; i<description.length(); i++)
+			{
+				//head+=description[i];
+				if (i==0 || description[i-1]=='\n')
+				{
+					i=i+package.get_name().length()+1;
+					//if (description[i-1]=='\n') i=i+package.get_name().length()+2;
+					//head.clear();
+				}
+				if (i<description.length()) tmp+=description[i];
+			}
+			description=tmp;
+			tmp.clear();
+	
+			// Splitting short and long descriptions
+			for (unsigned int i=0; i<description.length() && description[i]!='\n'; i++)
+			{
+				tmp+=description[i];
+				dpos=i+1;
+			}
+			short_description=tmp;
+			tmp.clear();
+			for (unsigned int i=dpos; i<description.length(); i++)
+			{
+				if (i==dpos && description[i]=='\n')
+				{
+					while (description[i]=='\n' || description[i]==' ') i++;
+					if (i>=description.length()) break;
+				}
+				if (i<description.length()) tmp+=description[i];
+			}
+			description=tmp;
+			tmp.clear();
+			package.set_short_description(short_description);
+			package.set_description(description);
+		}
+	}
+	//printf("short description: [%s]\n", short_description.c_str());
+	//printf("description: [%s]\n", description.c_str());
+	//getc(stdin);
+
+	/*
 	if (!description.empty())
 	{
 		for (unsigned int i=0; i<package.get_name().length()+1; i++)
@@ -128,7 +191,7 @@ int slack_convert(string filename, string xml_output)
 			}
 		}
 		package.set_description(comment);
-	}
+	}*/
 #endif
 	printf(".");
 	XMLNode pkg=XMLNode::createXMLTopNode("package");
@@ -179,7 +242,7 @@ int convert_package(string filename, string output_dir)
 	string tmp_dir=get_tmp_file();
 //	printf("tmp_dir=%s\n", tmp_dir.c_str());
 	string xml_output=tmp_dir+"/install/data.xml";
-	string reasm="rm "+tmp_dir+" && mkdir "+tmp_dir+" "+/*"2>/dev/null"+*/" && cp "+filename+" "+tmp_dir+"/ && cd "+tmp_dir+" &&  tar zxf "+real_filename+" > /dev/null";
+	string reasm="rm "+tmp_dir+" && mkdir "+tmp_dir+" "+/*"2>/dev/null"+*/" && mkdir "+tmp_dir+"/install 2>/dev/null && cp "+filename+" "+tmp_dir+"/ && cd "+tmp_dir+" &&  tar zxf "+real_filename+" > /dev/null";
 //	printf("cmd: %s\n",reasm.c_str());
 //	scanf("%s", &tmp);
 	system(reasm.c_str());	
