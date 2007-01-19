@@ -10,5 +10,8 @@
 #define ACT_LIST	0x08
 #define ACT_NONE	0x09
 #define ACT_INDEX	0x0a
+#define ACT_PURGE	0x0b
+#define ACT_CONVERT	0x0c
+#define ACT_CONVERT_DIR	0x0d
 #endif
 

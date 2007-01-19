@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.8 2006/12/29 20:56:18 i27249 Exp $
+	$Id: dataunits.cpp,v 1.9 2007/01/19 06:08:54 i27249 Exp $
 */
 
 
@@ -16,7 +16,7 @@ string PrepareSql(string str)
 {
 	string ret;
 	if (str.empty()) return "0";
-	for (int i=0;i<str.length();i++)
+	for (unsigned int i=0;i<str.length();i++)
 	{
 		if (str[i]=='\'') ret+="\'";
 		ret+=str[i];
@@ -148,7 +148,7 @@ SERVER_TAG_LIST::~SERVER_TAG_LIST(){}
 
 bool SERVER::operator != (SERVER nserv)
 {
-	if (server_id!=nserv.get_id()) return true;
+	//if (server_id!=nserv.get_id()) return true;
 	if (server_url!=nserv.get_url(false)) return true;
 	if (server_priority!=nserv.get_priority(false)) return true;
 	if (server_tags!=*nserv.get_tags()) return true;
@@ -157,7 +157,7 @@ bool SERVER::operator != (SERVER nserv)
 
 bool SERVER::operator == (SERVER nserv)
 {
-	if (server_id!=nserv.get_id()) return false;
+	//if (server_id!=nserv.get_id()) return false;
 	if (server_url!=nserv.get_url(false)) return false;
 	if (server_priority!=nserv.get_priority(false)) return false;
 	if (server_tags!=*nserv.get_tags()) return false;
@@ -180,7 +180,7 @@ string SERVER::get_url(bool sql)
 int SERVER::get_type()
 {
 	string tmp;
-	int i;
+	unsigned int i;
 	i=0;
 	debug("get_type()");
 
@@ -250,6 +250,7 @@ int SERVER::set_priority(string priority)
 int SERVER::set_tags(SERVER_TAG_LIST tags)
 {
 	server_tags=tags;
+	return 0;
 }
 
 
@@ -401,7 +402,7 @@ LOCATION::~LOCATION()
 
 bool LOCATION::operator != (LOCATION location)
 {
-	if (location_id!=location.get_id()) return true;
+//	if (location_id!=location.get_id()) return true;
 	if (location_path!=location.get_path()) return true;
 	if (server!=*location.get_server()) return true;
 	return false;
@@ -409,19 +410,59 @@ bool LOCATION::operator != (LOCATION location)
 
 bool LOCATION::operator == (LOCATION location)
 {
-	if (location_id!=location.get_id()) return false;
-	if (location_path!=location.get_path()) return false;
-	if (server!=*location.get_server()) return false;
+/*	if (location_id!=location.get_id())
+	{
+		printf("dataunits.cpp: LOCATION::operator !=(): id mismatch\n");
+		return false;
+	}*/
+	if (location_path!=location.get_path())
+	{
+		printf("dataunits.cpp: LOCATION::operator !=(): path mismatch\n");
+	       	return false;
+	}
+	if (server!=*location.get_server())
+	{
+		printf("dataunits.cpp: LOCATION::operator !=(): server mismatch\n");
+		return false;
+	}
 	return true;
 }
 
 
 bool LOCATION_LIST::operator != (LOCATION_LIST nloc)
 {
-	if (size()!=nloc.size()) return true;
+#ifdef DEBUG
+	printf("dataunits.cpp: LOCATION_LIST::operator !=(): size()=%d, nloc.size()=%d\n",size(), nloc.size());
+#endif
+	if (size()!=nloc.size())
+	{
+		printf("returned true due to size mismatch");
+		return true;
+	}
+	bool r;
+
 	for (int i=0; i<size(); i++)
 	{
-		if (*nloc.get_location(i)!=locations[i]) return true;
+#ifdef DEBUG
+		printf("dataunits.cpp: LOCATION_LIST::operator !=(): cycle, i=%d\n", i);
+#endif
+		r=false;
+		for (int k=0; k<size(); k++)
+		{
+			if (*nloc.get_location(i)==locations[k]) 
+			{
+				r=true;
+				debug("dataunits.cpp: LOCATION_LIST::operator !=(): location match, r=true\n");
+				break;
+			}
+		}
+		if (!r) 
+		{
+#ifdef DEBUG
+			printf("dataunits.cpp: LOCATION_LIST::operator !=(): returned true due to location missing or new\n");
+#endif
+			return true;
+		}
 	}
 	return false;
 }
@@ -487,7 +528,7 @@ LOCATION_LIST::~LOCATION_LIST(){}
 
 bool DEPENDENCY::operator != (DEPENDENCY ndep)
 {
-	if (dependency_id!=ndep.get_id()) return true;
+//	if (dependency_id!=ndep.get_id()) return true;
 	if (dependency_condition!=ndep.get_condition(false)) return true;
 	if (dependency_package_name!=ndep.get_package_name(false)) return true;
 	if (dependency_package_version!=ndep.get_package_version(false)) return true;
@@ -497,7 +538,7 @@ bool DEPENDENCY::operator != (DEPENDENCY ndep)
 
 bool DEPENDENCY::operator == (DEPENDENCY ndep)
 {
-	if (dependency_id!=ndep.get_id()) return false;
+//	if (dependency_id!=ndep.get_id()) return false;
 	if (dependency_condition!=ndep.get_condition(false)) return false;
 	if (dependency_package_name!=ndep.get_package_name(false)) return false;
 	if (dependency_package_version!=ndep.get_package_version(false)) return false;
@@ -626,14 +667,14 @@ DEPENDENCY::~DEPENDENCY(){}
 
 bool TAG::operator != (TAG ntag)
 {
-	if (tag_id!=ntag.get_id()) return true;
+//	if (tag_id!=ntag.get_id()) return true;
 	if (tag_name!=ntag.get_name(false)) return true;
 	return false;
 }
 
 bool TAG::operator == (TAG ntag)
 {
-	if (tag_id!=ntag.get_id()) return false;
+//	if (tag_id!=ntag.get_id()) return false;
 	if (tag_name!=ntag.get_name(false)) return false;
 	return true;
 }
@@ -682,14 +723,14 @@ TAG::~TAG(){}
 
 bool FILES::operator != (FILES nfile)
 {
-	if (file_id!=nfile.get_id()) return true;
+//	if (file_id!=nfile.get_id()) return true;
 	if (file_name!=nfile.get_name(false)) return true;
 	return false;
 }
 
 bool FILES::operator == (FILES nfile)
 {
-	if (file_id!=nfile.get_id()) return false;
+//	if (file_id!=nfile.get_id()) return false;
 	if (file_name!=nfile.get_name(false)) return false;
 	return true;
 }
@@ -706,12 +747,6 @@ string FILES::get_name(bool sql)
 	return file_name;
 }
 
-string FILES::get_size(bool sql)
-{
-	if (sql) return PrepareSql(file_size);
-	return file_size;
-}
-
 int FILES::set_id(int id)
 {
 	file_id=id;
@@ -721,12 +756,6 @@ int FILES::set_id(int id)
 int FILES::set_name(string name)
 {
 	file_name=name;
-	return 0;
-}
-
-int FILES::set_size(string size)
-{
-	file_size=size;
 	return 0;
 }
 
@@ -936,7 +965,7 @@ int FILE_LIST::add_list(FILE_LIST filelist)
 	int ret;
 	ret=files.size();
 	files.resize(ret+filelist.files.size());
-	for (int i=0;i<filelist.files.size();i++)
+	for (unsigned int i=0;i<filelist.files.size();i++)
 	{
 		files[ret+i]=filelist.files[i];
 	}
@@ -958,7 +987,7 @@ FILE_LIST::~FILE_LIST(){}
 
 bool SCRIPTS::operator != (SCRIPTS scr)
 {
-	if (script_id!=scr.get_id()) return true;
+//	if (script_id!=scr.get_id()) return true;
 	if (preinstall!=scr.get_preinstall(false)) return true;
 	if (postinstall!=scr.get_postinstall(false)) return true;
 	if (preremove!=scr.get_preremove(false)) return true;
@@ -968,7 +997,7 @@ bool SCRIPTS::operator != (SCRIPTS scr)
 
 bool SCRIPTS::operator == (SCRIPTS scr)
 {
-	if (script_id!=scr.get_id()) return false;
+//	if (script_id!=scr.get_id()) return false;
 	if (preinstall!=scr.get_preinstall(false)) return false;
 	if (postinstall!=scr.get_postinstall(false)) return false;
 	if (preremove!=scr.get_preremove(false)) return false;
@@ -1075,7 +1104,7 @@ SCRIPTS::~SCRIPTS()
 
 bool PACKAGE::operator != (PACKAGE npkg)
 {
-	if (package_id!=npkg.get_id()) return true;
+//	if (package_id!=npkg.get_id()) return true;
 	if (package_name!=npkg.get_name(false)) return true;
 	if (package_version!=npkg.get_version(false)) return true;
 	if (package_arch!=npkg.get_arch(false)) return true;
@@ -1100,7 +1129,7 @@ bool PACKAGE::operator != (PACKAGE npkg)
 
 bool PACKAGE::operator == (PACKAGE npkg)
 {
-	if (package_id!=npkg.get_id()) return false;
+//	if (package_id!=npkg.get_id()) return false;
 	if (package_name!=npkg.get_name(false)) return false;
 	if (package_version!=npkg.get_version(false)) return false;
 	if (package_arch!=npkg.get_arch(false)) return false;
@@ -1182,11 +1211,11 @@ int PACKAGE::add_dependency(string package_name, string dep_condition, string pa
 	return 0;
 }
 
-int PACKAGE::add_file(string file_name, string file_size)
+int PACKAGE::add_file(string file_name)
 {
 	FILES file;
 	file.set_name(file_name);
-	file.set_size(file_size);
+	//file.set_size(file_size);
 	package_files.add(file);
 	return 0;
 }
@@ -1304,6 +1333,17 @@ string PACKAGE::get_filename(bool sql)
 	return package_filename;
 }
 
+int PACKAGE::get_err_type()
+{
+	return package_err_type;
+}
+
+int PACKAGE::set_err_type(int err)
+{
+	package_err_type=err;
+	return 0;
+}
+
 int PACKAGE::set_id(int id)
 {
 	package_id=id;
@@ -1399,6 +1439,12 @@ FILE_LIST* PACKAGE::get_files()
 	return &package_files;
 }
 
+FILE_LIST* PACKAGE::get_config_files()
+{
+	return &config_files;
+}
+
+
 DEPENDENCY_LIST* PACKAGE::get_dependencies()
 {
 	return &package_dependencies;
@@ -1424,6 +1470,13 @@ int PACKAGE::set_files(FILE_LIST files)
 	package_files=files;
 	return 0;
 }
+
+int PACKAGE::set_config_files(FILE_LIST conf_files)
+{
+	config_files=conf_files;
+	return 0;
+}
+
 
 int PACKAGE::set_dependencies(DEPENDENCY_LIST dependencies)
 {
@@ -1458,6 +1511,7 @@ PACKAGE::PACKAGE()
 {
 	package_id=0;
 	package_status=0;
+	package_err_type=DEP_OK;
 }
 PACKAGE::~PACKAGE()
 {
@@ -1539,15 +1593,16 @@ int PACKAGE_LIST::add(PACKAGE package)
 
 int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 {
-	printf("add_list: adding %d packages\n", pkgList->size());
+	printf("dataunits.cpp:add_list() started\n");
+//	printf("add_list: adding %d packages\n", pkgList->size());
 	// IMPORTANT NOTE!
 	// If skip_identical is true, the locations will be MERGED together!
-	int ret=0;
-	int old_size=packages.size();
+	int ret;
+//	int old_size=packages.size();
 	ret=packages.size()+pkgList->size();
 	//packages.resize(ret);
 	bool identical_found=false;
-	int identical_id;
+	//int identical_id;
 	bool location_found;
 	for (int i=0; i<pkgList->size();i++)
 	{
@@ -1558,23 +1613,32 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 		if (skip_identical)
 		{
 #ifdef DEBUG
-			printf("Skipping identical packages, just adding locations for them\n");
+			printf("add_list: Skipping identical packages, just adding locations for them\n");
 #endif
 			identical_found=false;
 			// Checking if lists have identical items, remove it
-			for (int s=0; s<packages.size(); s++)
+			for (unsigned int s=0; s<packages.size(); s++)
 			{
+#ifdef DEBUG
+				printf("add_list: comparing with package %d\n", s);
+#endif
 				if (packages[s].get_name()==pkgList->get_package(i)->get_name() \
 					&& packages[s].get_version()==pkgList->get_package(i)->get_version() \
 					&& packages[s].get_arch()==pkgList->get_package(i)->get_arch() \
 					&& packages[s].get_build()==pkgList->get_package(i)->get_build())
 				{
+					identical_found=true;
 #ifdef DEBUG
-					printf("Found identical package %s, merging locations\n", pkgList->get_package(i)->get_name().c_str());
+					printf("add_list: Found identical package %s with %d locations, merging locations\n", \
+							pkgList->get_package(i)->get_name().c_str(), \
+							pkgList->get_package(i)->get_locations()->size());
 #endif
 					// Comparing locations and merging
 					for (int l=0; l<pkgList->get_package(i)->get_locations()->size(); l++)
 					{
+#ifdef DEBUG
+						printf("add_list: Testing location %d\n", l);
+#endif
 						location_found=false;
 						for (int ls=0; ls<packages[s].get_locations()->size(); ls++)
 						{
@@ -1587,6 +1651,10 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 								break;
 							}
 						}
+#ifdef DEBUG
+						if (location_found) printf("add_list: location_found=true, so -> location is not new\n");
+						else printf("add_list: location_found=false, so location is NEW\n");
+#endif
 						if (!location_found)
 						{
 #ifdef DEBUG
@@ -1595,25 +1663,33 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 							packages[s].get_locations()->add(*pkgList->get_package(i)->get_locations()->get_location(l));
 						}
 					}
-					identical_found=true;
 					break;
-				} // end: if packages seems identical
+				}
+#ifdef DEBUG
+				else	// end: if packages seems identical
+				{
+					printf("add_list: package is NEW, adding fully");
+				}
+#endif
+
 			}
 		}
 #ifdef DEBUG
 		else
 		{
-			printf("simply adding packages\n");
+			printf("add_list: simply adding packages\n");
 		}
 #endif
 		if (!identical_found)
 		{
 #ifdef DEBUG
-			printf("New package, adding\n");
+			printf("add_list: (at end of cycle) identical_found=false, so -> New package with %d locations, adding\n", \
+					pkgList->get_package(i)->get_locations()->size());
 #endif
-			packages.push_back(*pkgList->get_package(i));
+			this->add(*pkgList->get_package(i));
 		}
 	}
+	printf("dataunits.cpp:add_list() end\n");
 	return 0;
 }
 
@@ -1638,7 +1714,7 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 {
 	string max_version="0";
 	int id=0;
-	for (int i=0;i<packages.size();i++)
+	for (unsigned int i=0;i<packages.size();i++)
 	{
 		if (packages[i].get_version()>=max_version)
 		{

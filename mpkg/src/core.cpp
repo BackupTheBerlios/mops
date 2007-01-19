@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.12 2006/12/29 12:57:00 i27249 Exp $
+ *	$Id: core.cpp,v 1.13 2007/01/19 06:08:53 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -14,66 +14,89 @@
 
 //------------------Library front-end--------------------------------
 
+
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
-	//return 0; // Skip checking for some time - I think it doesn't work
+	// WARNING WARNING WARNING!
+	//
+	// This function needs COMPLETE redesign, due to monsterous memory and CPU consumption
+	// For just 10 middle-size packages, it eats more than 1Gb of RAM and takes lot of time
+	// to proceed (if even not killed due to running out of memory).
+	// 
+	// Because of all this, I disabled this function now. It will be always return 0
+	// PLEASE NOTE: for now, NO CONFLICTS ARE CHECKED!
+	
+	return 0;
+	/*
+//	printf("core.cpp: check_file_conflicts(): package->get_id()=%d\n", package->get_id());
 	int package_id;
-	PACKAGE tmp;
+	int prev_package_id=package->get_id();
+//	PACKAGE tmp;
 	string fname;
-	string fname_skip="install";
-	int ilength=fname_skip.length();
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
-#ifdef DEBUG
-	printf("DEBUG: core.cpp: file_size = %i\n", package->get_files()->size());
-#endif
+	sqlSearch.setSearchMode(SEARCH_OR);
+	int status;
+//	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 #ifdef DEBUG
-	printf("DEBUG: core.cpp: checking files, i = %i\n", i);
+		printf("[%d] request for file %s", i, package->get_files()->get_file(i)->get_name().c_str());
 #endif
-		fname_skip.clear();
-		fname=package->get_files()->get_file(i)->get_name(false);
-		#ifdef DEBUG
-		printf("DEBUG: core.cpp: fname = %s\n", fname.c_str());
-		printf("DEBUG: ilength = %i\n", ilength);
-		#endif
-
-		
-		if ( fname.find("install") == std::string::npos 
-			 && ( fname[fname.length() - 1] != '/' ))
+		sqlFields.addField("packages_package_id");
+		sqlFields.addField("file_name");
+		fname=package->get_files()->get_file(i)->get_name();
+		if (fname[fname.length()-1]!='/') 
 		{
-			sqlTable.clear();
-			sqlFields.clear();
-			sqlSearch.clear();
-			sqlFields.addField("packages_package_id");
 			sqlSearch.addField("file_name", package->get_files()->get_file(i)->get_name());
-		//	printf("!!!!!!!!!!!!!!!!!!!!\n");
-			db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
-			
-			//package_id=get_id("files", "packages_package_id", "file_name", package->get_files()->get_file(i)->get_name(), &array, &col);
-			if (!sqlTable.empty())
-			{
 #ifdef DEBUG
-		printf("DEBUG: core.cpp: table record count = %i\n", sqlTable.getRecordCount());
+			printf("done\n");
 #endif
-				for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages with exactly same name - e.g. just other version
+		}
+#ifdef DEBUG
+		else printf("failed\n");
+#endif
+	}
+//	printf("core.cpp: check_file_conflicts(): cycle end, running SQL query\n");
+	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
+//	printf("core.cpp: check_file_conflicts(): SQL end\n");
+			
+	if (!sqlTable.empty())
+	{
+#ifdef DEBUG
+		printf("core.cpp: check_file_conflicts(): sqlTable is not empty\n");
+		printf("core.cpp: check_file_conflicts(): table record count = %d",sqlTable.getRecordCount());
+#endif
+//		printf("cycle 2 start\n");
+		for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages who are already installed
+		{
+			package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());
+#ifdef DEBUG
+			printf("checking file %s\n", sqlTable.getValue(k, "file_name").c_str());
+#endif
+			if (package_id!=prev_package_id)
+			{
+				status=get_status(package_id);
+#ifdef DEBUG
+				printf("core.cpp: check_file_conflicts(): package_id=%d, status=%d, file: %s\n", \
+						package_id, status, sqlTable.getValue(k, "file_name").c_str());
+#endif
+				if (status==PKGSTATUS_INSTALLED || status==PKGSTATUS_INSTALL)
 				{
-					package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());
-					get_package(package_id, &tmp, false);
-					if (tmp.get_name() != package->get_name())
-					{
-						debug("File conflict found, aborting...");
-						return package_id;
-					}
+					debug("File conflict found, aborting...");
+					return package_id;
 				}
 			}
 		}
-		else debug("File "+fname+" is not standard, skipping comparsion");
+//		printf("cycle 2 end\n");
 	}
-	debug ("file conflict checking finished.");
-	return 0;
+#ifdef DEBUG
+	else printf("core.cpp: check_file_conflicts(): sqlTable empty\n");
+#endif
+//	printf("core.cpp: check_file_conflicts(): end\n");
+	// If all ok - return 0;
+	return 0;*/ // End of check_file_conflicts (DISABLED)
 }
 
 int mpkgDatabase::check_install_package (PACKAGE *package)
@@ -114,7 +137,7 @@ int mpkgDatabase::check_install_package (PACKAGE *package)
 		{
 			// Very important procedure - if an earlier/newer version of package is installed? (!!!NOT WORKING!!!)
 			string other_ver_id;
-			int other_ver_status;
+			//int other_ver_status;
 			PACKAGE_LIST others;
 			SQLRecord sqlSearch;
 			sqlSearch.addField("package_name", package->get_name());
@@ -226,32 +249,36 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 // Adds location list linked to package_id
 int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locationlist) // returns 0 if ok, anything else if failed.
 {
-	debug("ADDING LOCATION LIST");
+	debug("core.cpp: add_locationlist_record(): begin");
 	int serv_id;
 	SQLTable sqlLocations;
 	SQLRecord sqlLocation;
 	for (int i=0;i<locationlist->size();i++)
 	{
-		debug("Adding location #"+IntToStr(i));
+		debug("core.cpp: add_locationlist_record(): adding location "+IntToStr(i));
 		if (!locationlist->get_location(i)->get_server()->IsEmpty())
 		{
-			debug("Adding SERVER");
+			debug("core.cpp: add_locationlist_record(): adding server");
 			serv_id=add_server_record(locationlist->get_location(i)->get_server());
 			if (serv_id<=0)
 			{
+				debug("core.cpp: add_locationlist_record(): add_server_record() error, returned "+IntToStr(serv_id));
 				return -1;
 			}
+			debug("core.cpp: add_locationlist_record(): serv_id="+IntToStr(serv_id)+", adding location to sqlLocations");
 			sqlLocation.clear();
 			sqlLocation.addField("servers_server_id", IntToStr(serv_id));
 			sqlLocation.addField("packages_package_id", IntToStr(package_id));
 			sqlLocation.addField("location_path", locationlist->get_location(i)->get_path());
 			sqlLocations.addRecord(sqlLocation);
 		}
-		else debug("Location incomplete, cannot add");
+		else debug("core.cpp: add_locationlist_record(): location "+IntToStr(i)+" incomplete (has no server), cannot add this");
 	}
 	int ret=1;
-	if (sqlLocations.empty()) debug ("No valid locations found");
+	if (sqlLocations.empty()) debug ("core.cpp: add_locationlist_record(): No valid locations found for package (Package_ID="+IntToStr(package_id)+")");
 	else ret=db.sql_insert("locations", sqlLocations);
+	if (ret!=0) debug("core.cpp: add_locationlist_record(): db.sql_insert(locations) failed, code="+IntToStr(ret));
+	else debug("core.cpp: add_locationlist_record(): successful end");
 	return ret;
 }
 
@@ -435,6 +462,8 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	
 	// INSERT INTO SCRIPTS
 	add_scripts_record(package_id, package->get_scripts());
+
+	if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
 	return package_id;
 }	
 
@@ -483,6 +512,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 		get_dependencylist(package_id, package->get_dependencies());
 		get_taglist(package_id, package->get_tags());
 		get_scripts(package_id, package->get_scripts());
+		get_configs(package_id, package->get_config_files());
 	}
 	return 0;
 }
@@ -610,7 +640,7 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	if (!id_sqlTable.empty())
 	{
 		sqlSearch.setSearchMode(SEARCH_OR);
-		for (int i=0; i<=id_sqlTable.getRecordCount(); i++)
+		for (int i=0; i<id_sqlTable.getRecordCount(); i++)
 		{
 			sqlSearch.addField("tags_id", sqlTable.getValue(i, "tags_tag_id"));
 		}
@@ -867,13 +897,22 @@ int mpkgDatabase::get_status(int package_id)
 
 int mpkgDatabase::add_scripts_record(int package_id, SCRIPTS *scripts)
 {
+	// Check if data is already in DB
+	SQLTable sqlTable;
+	SQLRecord sqlSearch;
+	SQLRecord sqlFields;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	db.get_sql_vtable(&sqlTable, sqlFields, "scripts", sqlSearch);
+			
 	SQLRecord sqlInsert;
 	sqlInsert.addField("packages_package_id", IntToStr(package_id));
 	sqlInsert.addField("preinstall", scripts->get_preinstall());
 	sqlInsert.addField("postinstall", scripts->get_postinstall());
 	sqlInsert.addField("preremove", scripts->get_preremove());
 	sqlInsert.addField("postremove", scripts->get_postremove());
-	return db.sql_insert("scripts", sqlInsert);
+
+	if (sqlTable.empty()) return db.sql_insert("scripts", sqlInsert);
+	else return db.sql_update("scripts", sqlInsert, sqlSearch);
 }
 
 int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
@@ -905,6 +944,171 @@ int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
 	}
 }
 
+int mpkgDatabase::get_purge(string package_name)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_name", package_name);
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("packages_package_id");
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
+	{
+		return -1;
+	}
+	if (sqlTable.empty())
+	{
+		return 0;
+	}
+	// Check for database error
+	int id=0;
+	for (int i=0; id==0; i++)
+	{
+		id=atoi(sqlTable.getValue(i, "packages_package_id").c_str());
+	}
+#ifdef EXTRA_CHECK
+	for (int i=1; i<sqlTable.getRecordCount(); i++)
+	{
+		if (id!=atoi(sqlTable.getValue(i, "packages_package_id").c_str()) && atoi(sqlTable.getValue(i, "packages_package_id").c_str())!=0)
+		{
+			printf("get_purge(): error in database, multiple ID at same time\n");
+			return -2; // Multiple package versions not purged at same time - error!
+		}
+	}
+#endif
+	return id;
+}
+
+FILE_LIST mpkgDatabase::get_config_files(int package_id)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	SQLRecord sqlFields;
+	sqlFields.addField("configfile_name");
+	SQLTable sqlTable;
+	FILE_LIST ret;
+	FILES file_tmp;
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
+	{
+		debug("get_config_files(): SQL Error");
+		return ret;
+	}
+	for (int i=0; i<sqlTable.getRecordCount(); i++)
+	{
+		file_tmp.set_name(sqlTable.getValue(i, "configfile_name"));
+		ret.add(file_tmp);
+		//file_tmp.clear();
+	}
+	return ret;
+}
+
+int mpkgDatabase::get_configs(int package_id, FILE_LIST *conf_files)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("configfiles_configfile_id");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles_links", sqlSearch)!=0)
+		return -1;
+	if (!sqlTable.empty())
+	{
+		sqlFields.clear();
+		sqlSearch.clear();
+		sqlFields.addField("configfile_name");
+		sqlSearch.setSearchMode(SEARCH_OR);
+		for (int i=0; i<sqlTable.getRecordCount(); i++)
+		{
+			sqlSearch.addField("configfile_id", sqlTable.getValue(i, "configfiles_configfile_id"));
+		}
+		sqlTable.clear();
+		if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
+			return -1;
+		FILES conf_tmp;
+		for (int i=0; i<sqlTable.getRecordCount(); i++)
+		{
+			conf_tmp.set_name(sqlTable.getValue(i, "configfile_name"));
+			conf_files->add(conf_tmp);
+		}
+	}
+	return 0;
+}
+
+
+int mpkgDatabase::set_purge(int package_id)
+{
+	SQLRecord sqlUpdate;
+	sqlUpdate.addField("packages_package_id", "0");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	return db.sql_update("configfiles", sqlUpdate, sqlSearch); 
+}
+
+int mpkgDatabase::add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id)
+{
+	// Check for duplicates
+	SQLTable sqlTable;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_name", package_name);
+	SQLRecord sqlFields;
+	sqlFields.addField("configfile_name");
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
+	{
+		return -1;
+	}
+
+	// Preparing add structure
+	SQLTable sqlInsert;
+	SQLRecord sqlTmpInsert;
+
+	for (int i=0; i<conffiles->size(); i++)
+	{
+		for (int k=0; k<=sqlTable.getRecordCount(); k++)
+		{
+			if (k==sqlTable.getRecordCount())
+			{
+				sqlTmpInsert.addField("configfile_name", conffiles->get_file(i)->get_name());
+				sqlTmpInsert.addField("packages_package_name", package_name);
+				sqlTmpInsert.addField("packages_package_id", IntToStr(package_id));
+				sqlInsert.addRecord(sqlTmpInsert);
+				sqlTmpInsert.clear();
+				break;
+			}
+			if (conffiles->get_file(i)->get_name()==sqlTable.getValue(k, "configfile_name")) break;
+		}
+	}
+	if (!sqlInsert.empty()) db.sql_insert("configfiles", sqlInsert);
+	
+	// Creating links
+	SQLRecord sqlLink;
+	SQLTable sqlConfigLinks;
+
+	SQLTable sqlIdTable;
+	SQLRecord sqlIdSearch;
+	SQLRecord sqlIdFields;
+	sqlIdFields.addField("configfile_id");
+	int conf_id;
+
+	for (int i=0; i<conffiles->size(); i++)
+	{
+		sqlIdSearch.addField("configfile_name", conffiles->get_file(i)->get_name());
+		if (db.get_sql_vtable(&sqlIdTable, sqlIdFields, "configfiles", sqlIdSearch)!=0) return -2;
+		if (sqlIdTable.empty()) return -3;
+		conf_id=atoi(sqlIdTable.getValue(0, "configfile_id").c_str());
+		add_config_link(package_id, conf_id);
+	}
+	return 0;
+}
+
+int mpkgDatabase::add_config_link(int package_id, int conf_id)
+{
+	SQLRecord sqlInsert;
+	sqlInsert.addField("packages_package_id", IntToStr(package_id));
+	sqlInsert.addField("configfiles_configfile_id", IntToStr(conf_id));
+	return db.sql_insert("configfiles_links", sqlInsert);
+}
+
+
+//--------------------------------------SQL PART----------------------------------------
 SQLProxy* mpkgDatabase::getSqlDb()
 {
 	return &db;
@@ -913,7 +1117,7 @@ SQLProxy* mpkgDatabase::getSqlDb()
 vector<string> SQLRecord::getRecordValues()
 {
 	vector<string> output;
-	for (int i=0;i<field.size();i++)
+	for (unsigned int i=0;i<field.size();i++)
 	{
 		output.resize(i+1);
 		output[i]=field[i].value;
@@ -937,7 +1141,7 @@ bool SQLRecord::empty()
 		return false;
 	}
 }
-string SQLRecord::getFieldName(int num)
+string SQLRecord::getFieldName(unsigned int num)
 {
 	if (num<field.size() && num >=0)
 	{
@@ -948,7 +1152,7 @@ string SQLRecord::getFieldName(int num)
 
 string SQLRecord::getValue(string fieldname)
 {
-	for (int i=0;i<field.size();i++)
+	for (unsigned int i=0;i<field.size();i++)
 	{
 		if (field[i].fieldname==fieldname) return field[i].value;
 	}
@@ -958,7 +1162,7 @@ string SQLRecord::getValue(string fieldname)
 
 bool SQLRecord::setValue(string fieldname, string value)
 {
-	for (int i=0; i<field.size(); i++)
+	for (unsigned int i=0; i<field.size(); i++)
 	{
 		if (field[i].fieldname==fieldname)
 		{
@@ -971,25 +1175,16 @@ bool SQLRecord::setValue(string fieldname, string value)
 
 int SQLRecord::addField(string fieldname, string value)
 {
-	// Check if such field already exists
-	for (int i=0; i<field.size(); i++)
-	{
-		if (field[i].fieldname==fieldname)
-		{
-			if (!value.empty()) field[i].value=value;
-			return i;
-		}
-	}
-	// Else, add field and store value
 	int pos;
+	SQLField tmp;
+	tmp.fieldname=fieldname;
+	tmp.value=value;
+	field.push_back(tmp);
 	pos=field.size();
-	field.resize(pos+1);
-	field[pos].fieldname=fieldname;
-	field[pos].value=value;
 	return pos;
 }
 
-string SQLRecord::getValueI(int num)
+string SQLRecord::getValueI(unsigned int num)
 {
 	if (num<field.size() && num>=0)
 	{
@@ -1014,13 +1209,23 @@ int SQLRecord::getSearchMode()
 	return search_type;
 }
 
+void SQLRecord::setEqMode(int mode)
+{
+	eq_type=mode;
+}
+
+int SQLRecord::getEqMode()
+{
+	return eq_type;
+}
+
 SQLRecord::SQLRecord()
 {
 	search_type=SEARCH_AND;
+	eq_type=EQ_EQUAL;
 }
 SQLRecord::~SQLRecord(){}
 
-// TODO: class SQLTable
 
 int SQLTable::getRecordCount()
 {
@@ -1038,7 +1243,7 @@ void SQLTable::clear()
 	table.clear();
 }
 
-string SQLTable::getValue(int num, string fieldname)
+string SQLTable::getValue(unsigned int num, string fieldname)
 {
 	if (num<table.size())
 	{
@@ -1047,9 +1252,16 @@ string SQLTable::getValue(int num, string fieldname)
 	else return "__OVERFLOW__";
 }
 
-SQLRecord SQLTable::getRecord(int num)
+SQLRecord SQLTable::getRecord(unsigned int num)
 {
 	if (num<table.size() && num>=0) return table[num];
+	else
+	{
+		// returning empty...
+		debug("core.cpp: SQLTable::getRecord(): incorrect num");
+		SQLRecord ret;
+		return ret;
+	}
 }
 
 void SQLTable::addRecord(SQLRecord record)

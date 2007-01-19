@@ -1,6 +1,6 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+    $Id: conditions.cpp,v 1.3 2007/01/19 06:08:53 i27249 Exp $
 */
 
 
@@ -14,4 +14,8 @@ int condition2int(string condition)
 	if (condition==COND_NOTEQUAL) return VER_NOTEQUAL;
 	if (condition==COND_XMORE) return VER_XMORE;
 	if (condition==COND_XLESS) return VER_XLESS;
+#ifdef DEBUG
+	printf("conditions.cpp: condition2int(): error input (unknown condition): %s\n", condition.c_str());
+#endif
+	return -1; // SUPER_PUPER_ERROR
 }

@@ -1,5 +1,5 @@
 /* Miscellaneous constants
-    $Id: constants.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+    $Id: constants.h,v 1.3 2007/01/19 06:08:53 i27249 Exp $
 */
 
 
@@ -16,6 +16,7 @@
 #define PKGSTATUS_INSTALLED 6		// Package is installed and no actions will be performed with him
 #define PKGSTATUS_REMOVE_PURGE 7	// Package is installed, marked to remove and purge configuration files
 #define PKGSTATUS_PURGE 8		// Package was removed, and his configuration files are marked to purge
+#define PKGSTATUS_REMOVED 9		// Package was removed, but config files are in touch (UNUSED).
 
 #define CHKINSTALL_NOTFOUND 1
 #define CHKINSTALL_DBERROR 2
@@ -35,5 +36,24 @@
 #define ERR_UNAVAILABLE 14
 #define ERR_UNKNOWN 15
 #define ERR_NOTIMPLEMENTED 16
+
+// Bitmask status definitions
+#define ST_INSTALLED 	110000
+#define ST_REMOVE	101000
+#define ST_INSTALL	100100
+#define ST_PURGE	100010
+#define ST_AVAILABLE	100001
+
+bool stInstalled(int status);
+bool stRemove(int status);
+bool stInstall(int status);
+bool stPurge(int status);
+bool stAvailable(int status);
+
+
+
+
+
+
 
 #endif

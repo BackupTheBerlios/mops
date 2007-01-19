@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.4 2006/12/29 20:56:18 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.5 2007/01/19 06:08:53 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -297,6 +297,16 @@ string PackageConfig::getFile(int file_num)
 	else return "";
 }
 
+string PackageConfig::getConfigFile(int file_num)
+{
+	if (_node.nChildNode("configfiles")!=0 && _node.getChildNode("configfiles").nChildNode("conffile")>file_num)
+	{
+		string a = (string )_node.getChildNode("configfiles").getChildNode("conffile", file_num).getText();
+		return a;
+	}
+	else return "";
+}
+
 vector<string> PackageConfig::getFilelist()
 {
 	vector<string> a;
@@ -306,6 +316,20 @@ vector<string> PackageConfig::getFilelist()
 		for (unsigned int i=0;i<a.size();i++)
 		{
 			a[i]=getFile(i);
+		}
+	}
+	return a;
+}
+
+vector<string> PackageConfig::getConfigFilelist()
+{
+	vector<string> a;
+	if(_node.nChildNode("configfiles")!=0)
+	{
+		a.resize(_node.getChildNode("configfiles").nChildNode());
+		for (unsigned int i=0;i<a.size();i++)
+		{
+			a[i]=getConfigFile(i);
 		}
 	}
 	return a;

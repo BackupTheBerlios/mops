@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.8 2006/12/29 12:57:00 i27249 Exp $
+    $Id: config.h,v 1.9 2007/01/19 06:08:53 i27249 Exp $
 */
 
 
@@ -23,6 +23,7 @@ extern bool DO_NOT_RUN_SCRIPTS; // Prevent executing of scripts - it may be dang
 // System configuration
 extern string SYS_ROOT;// "/root/development/sys_root/"
 extern string SYS_CACHE; //"/root/development/sys_cache/"
+extern string SCRIPTS_DIR;
 extern unsigned int DATABASE;
 extern string DB_FILENAME;
 extern vector<string> REPOSITORY_LIST;

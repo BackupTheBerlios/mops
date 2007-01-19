@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.4 2006/12/29 20:56:18 i27249 Exp $
+ * $Id: repository.cpp,v 1.5 2007/01/19 06:08:54 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 
@@ -35,7 +35,7 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	vec_tmp_conditions=p.getDepConditions();
 	vec_tmp_versions=p.getDepVersions();
 
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		dep_tmp.set_package_name(vec_tmp_names[i]);
 		dep_tmp.set_package_version(vec_tmp_versions[i]);
@@ -48,7 +48,7 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	vec_tmp_conditions=p.getSuggestConditions();
 	vec_tmp_versions=p.getSuggestVersions();
 
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		suggest_tmp.set_package_name(vec_tmp_names[i]);
 		suggest_tmp.set_package_version(vec_tmp_versions[i]);
@@ -59,7 +59,7 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	}
 
 	vec_tmp_names=p.getTags();
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		tag_tmp.set_name(vec_tmp_names[i]);
 		data->get_tags()->add(tag_tmp);
@@ -77,6 +77,17 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	data->set_md5(p.getMd5());
 	data->set_compressed_size(p.getCompressedSize());
 	data->set_installed_size(p.getInstalledSize());
+	
+	vec_tmp_names=p.getFilelist();
+	FILES file_tmp;
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		file_tmp.set_name(vec_tmp_names[i]);
+		data->get_files()->add(file_tmp);
+		//file_tmp.clear();
+	}
+
+
 
 	return 0;
 }
@@ -89,17 +100,18 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 #endif
 	string _package=filename;
        	string ext;
-	for (int i=_package.length()-4;i<_package.length();i++)
+	for (unsigned int i=_package.length()-4;i<_package.length();i++)
 	{
 		ext+=_package[i];
 	}
 
 	if (filetype==FTW_F && ext==".tgz")
 	{
-		printf("indexing file %s\n",filename);
+		printf("indexing file %s...",filename);
 		LocalPackage lp(_package);
 		lp.injectFile(true);
 		_root.addChild(lp.getPackageXMLNode());
+		printf("done\n");
 	}
 	return 0;
 }
@@ -130,10 +142,11 @@ PACKAGE_LIST Repository::get_index(string server_url)
 	string wget_line;
 	string xml_name=get_tmp_file();
 	XMLNode repository_root;
-	wget_line="wget --output-document="+xml_name+" "+server_url+"packages.xml";
+	wget_line="wget -q --output-document="+xml_name+" "+server_url+"packages.xml";
+	printf("[%s]...",server_url.c_str());
 	if (system(wget_line.c_str())==0)
 	{
-		printf("Download success\n");
+		printf("done\n");
 		repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
 		int pkg_count=repository_root.nChildNode("package");
 		if (pkg_count==0)
@@ -153,6 +166,5 @@ PACKAGE_LIST Repository::get_index(string server_url)
 	{
 		printf(_("Download error, check connection and URL"));
 	}
-	// Fetching packages.xml from server, parses it, and returns full packagelist. TODO.
 	return packages;
 }

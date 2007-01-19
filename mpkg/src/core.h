@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.6 2006/12/26 18:57:11 i27249 Exp $
+ *	$Id: core.h,v 1.7 2007/01/19 06:08:54 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -16,7 +16,8 @@
 
 #define SEARCH_OR 	0x01
 #define SEARCH_AND 	0x02
-
+#define EQ_LIKE 0x01
+#define EQ_EQUAL 0x02
 typedef struct
 {
 	string fieldname;
@@ -28,17 +29,20 @@ class SQLRecord
 	private:
 		vector<SQLField> field;
 		int search_type;
+		int eq_type;
 
 	public:
 		int size();
 		bool empty();
 		void clear();
 		vector<string> getRecordValues();
-		string getFieldName(int num);
+		string getFieldName(unsigned int num);
 		string getValue(string fieldname);
-		string getValueI(int num);
+		string getValueI(unsigned int num);
 		void setSearchMode(int mode);
 		int getSearchMode();
+		void setEqMode(int mode);
+		int getEqMode();
 		int addField(string filename, string value="");
 		bool setValue(string fieldname, string value);
 
@@ -54,8 +58,8 @@ class SQLTable
 		int getRecordCount(); 	// returns record count
 		bool empty();		// returns TRUE if table is empty (record count = 0), otherwise returns false
 		void clear();		// clears table
-		string getValue (int num, string fieldname);	// returns value of field called fieldname in num record
-		SQLRecord getRecord(int num);
+		string getValue (unsigned int num, string fieldname);	// returns value of field called fieldname in num record
+		SQLRecord getRecord(unsigned int num);
 
 		void addRecord(SQLRecord record);
 		SQLTable();

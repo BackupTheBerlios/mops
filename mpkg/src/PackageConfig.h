@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.4 2006/12/29 20:56:18 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.5 2007/01/19 06:08:53 i27249 Exp $
  *
  * **********************************************************/
 
@@ -51,6 +51,7 @@ public:
 	string getChangelog(void);
 
 	string getFile(int file_num);
+	string getConfigFile(int file_num);
 
 	vector <string> getDepNames(void);
 	vector <string> getDepConditions(void);
@@ -60,6 +61,7 @@ public:
 	vector <string> getSuggestVersions(void);
 	vector <string> getTags(void);
 	vector <string> getFilelist(void);
+	vector <string> getConfigFilelist(void);
 
 	XMLNode getXMLNode(void);
 

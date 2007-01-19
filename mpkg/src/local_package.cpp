@@ -1,10 +1,11 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.15 2006/12/23 12:31:21 i27249 Exp $
+$Id: local_package.cpp,v 1.16 2007/01/19 06:08:54 i27249 Exp $
 */
 
 #include "local_package.h"
+#include "mpkg.h"
 //#include "oldstyle.h"
 
 LocalPackage::LocalPackage(string _f)
@@ -14,6 +15,41 @@ LocalPackage::LocalPackage(string _f)
 }
 
 LocalPackage::~LocalPackage(){}
+
+int LocalPackage::fill_scripts(PACKAGE *package)
+{
+	debug("get_scripts start");
+	
+	string scripts_dir=SCRIPTS_DIR+"/" + package->get_filename() + "_" + package->get_md5();
+	string tmp_preinstall=scripts_dir+"/preinstall.sh";
+	string tmp_postinstall=scripts_dir+"/doinst.sh";
+	string tmp_preremove=scripts_dir+"/preremove.sh";
+	string tmp_postremove=scripts_dir+"/postremove.sh";
+	string mkdir_pkg="mkdir "+scripts_dir+" 2>/dev/null";
+	system(mkdir_pkg.c_str());
+	string sys_cache=SYS_CACHE;
+	string filename=sys_cache+package->get_filename();
+#ifdef DEBUG
+	printf("extracting scripts for %s, filename: %s\n", package->get_name().c_str(), filename.c_str());
+#endif
+	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall+" 2>/dev/null";
+	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall+" 2>/dev/null";
+	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove+" 2>/dev/null";
+	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove+" 2>/dev/null";
+
+	system(sys_preinstall.c_str());
+	system(sys_postinstall.c_str());
+	system(sys_preremove.c_str());
+	system(sys_postremove.c_str());
+
+	package->get_scripts()->set_preinstall(tmp_preinstall);
+	package->get_scripts()->set_postinstall(tmp_postinstall);
+	package->get_scripts()->set_preremove(tmp_preremove);
+	package->get_scripts()->set_postremove(tmp_postremove);
+	return 0;
+}
+
+
 
 int LocalPackage::get_scripts()
 {
@@ -56,8 +92,12 @@ int LocalPackage::get_xml()
 	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
 	if (!FileNotEmpty(tmp_xml))
 	{
-		printf("Invalid package: no XML data");
-		return 1;
+		// In most cases it means that we have legacy Slackware package.
+		// TODO: work with it =)
+		printf("%s: Invalid package: no XML data. Legacy Slackware packages is not supported yet\n", filename.c_str());
+		return -1;
+//		data.set_name(filename);
+
 		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
 	}
 
@@ -73,6 +113,7 @@ int LocalPackage::get_xml()
 	data.set_description(p.getDescription());
 	data.set_short_description(p.getShortDescription());
 	data.set_changelog(p.getChangelog());
+	
 
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
@@ -86,7 +127,7 @@ int LocalPackage::get_xml()
 	vec_tmp_conditions=p.getDepConditions();
 	vec_tmp_versions=p.getDepVersions();
 
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		dep_tmp.set_package_name(vec_tmp_names[i]);
 		dep_tmp.set_package_version(vec_tmp_versions[i]);
@@ -99,7 +140,7 @@ int LocalPackage::get_xml()
 	vec_tmp_conditions=p.getSuggestConditions();
 	vec_tmp_versions=p.getSuggestVersions();
 
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		suggest_tmp.set_package_name(vec_tmp_names[i]);
 		suggest_tmp.set_package_version(vec_tmp_versions[i]);
@@ -110,19 +151,46 @@ int LocalPackage::get_xml()
 	}
 
 	vec_tmp_names=p.getTags();
-	for (int i=0;i<vec_tmp_names.size();i++)
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		tag_tmp.set_name(vec_tmp_names[i]);
 		data.get_tags()->add(tag_tmp);
 		tag_tmp.clear();
 	}
 
+	vec_tmp_names=p.getConfigFilelist();
+	FILES configfile_tmp;
+	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
+	{
+		configfile_tmp.set_name(vec_tmp_names[i]);
+		data.get_config_files()->add(configfile_tmp);
+		//configfile_tmp.clear();
+	}
 	vec_tmp_names.clear();
 	vec_tmp_conditions.clear();
 	vec_tmp_versions.clear();
 	debug("get_xml end");
 	return 0;
 }
+int LocalPackage::fill_filelist(PACKAGE *package)
+{
+	debug("fill_filelist start");
+	string tmp_flist=get_tmp_file();
+	string tmp_xml_flist=get_tmp_file();
+	FILES file_tmp;
+	CreateFlistNode(tmp_flist, tmp_xml_flist);
+	PackageConfig ftree(tmp_xml_flist);
+	vector <string> vec_tmp_names=ftree.getFilelist();
+	for (unsigned int i=2;i<vec_tmp_names.size();i++)
+	{
+		file_tmp.set_name(vec_tmp_names[i]);
+		package->get_files()->add(file_tmp);
+	}
+	vec_tmp_names.clear();
+	debug("fill_filelist end");
+	return 0;
+}
+
 
 int LocalPackage::get_filelist()
 {
@@ -133,10 +201,13 @@ int LocalPackage::get_filelist()
 	CreateFlistNode(tmp_flist, tmp_xml_flist);
 	PackageConfig ftree(tmp_xml_flist);
 	vector <string> vec_tmp_names=ftree.getFilelist();
-	for (int i=2;i<vec_tmp_names.size();i++)
+	_packageXMLNode.addChild("filelist");
+	for (unsigned int i=2;i<vec_tmp_names.size();i++)
 	{
+		_packageXMLNode.getChildNode("filelist").addChild("file");
+		_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
 		file_tmp.set_name(vec_tmp_names[i]);
-		file_tmp.set_size("0"); // I think store this data about each file is idiotizm
+		//file_tmp.set_size("0"); // I think store this data about each file is idiotizm
 		data.get_files()->add(file_tmp);
 	}
 	vec_tmp_names.clear();
@@ -226,7 +297,7 @@ int LocalPackage::set_additional_data()
 		{
 			fpath+=data.get_filename()[i];
 		}
-		for (int i=fname_start;i<data.get_filename().length();i++)
+		for (unsigned int i=fname_start;i<data.get_filename().length();i++)
 		{
 			fname+=data.get_filename()[i];
 		}
@@ -259,65 +330,65 @@ int LocalPackage::injectFile(bool index)
 {
 	// Injecting data from file!
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
-	int ret=0;
-	debug("injectFile start");
+	//int ret=0;
+	debug("local_package.cpp: injectFile(): start");
 	if (get_xml()!=0)
 	{
-		debug("get_xml FAILED");
-		return 3;
+		debug("local_package.cpp: injectFile(): get_xml FAILED");
+		return -3;
 	}
 
 	if (get_size()!=0)
 	{
-		debug("get_size() FAILED");
-		return 1;
+		debug("local_package.cpp: injectFile(): get_size() FAILED");
+		return -1;
 	}
 	if (create_md5()!=0)
 	{
-		debug("create_md5 FAILED");
-		return 2;
+		debug("local_package.cpp: injectFile(): create_md5 FAILED");
+		return -2;
 	}
 	
-	debug("filename is "+ filename);
+	debug("local_package.cpp: injectFile(): filename is "+ filename);
 	data.set_filename(filename);
 	
 	if (!index)
 	{
 		if (get_scripts()!=0)
 		{
-			debug("get_scripts FAILED");
-			return 4;
+			debug("local_package.cpp: injectFile(): get_scripts FAILED");
+			return -4;
 		}
 	}
-	if (!index)
+	if (!index) // Changed due to check_file_conflicts remastering
 	{
 		if (get_filelist()!=0)
 		{
-			debug("get_filelist FAILED");
-			return 5;
+			debug("local_package.cpp: injectFile(): get_filelist FAILED");
+			return -5;
 		}
 	}
 	if (set_additional_data()!=0)
 	{
-		debug("set_additional_data FAILED");
-		return 6;
+		debug("local_package.cpp: injectFile(): set_additional_data FAILED");
+		return -6;
 	}
 	
-	debug("injectFile end");
+	debug("local_package.cpp: injectFile(): end");
 	return 0;
 }
 
 int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 {
-	debug("CreateFlistNode start");
+	debug("local_package.cpp: CreateFlistNode(): begin");
 	string tar_cmd;
 	debug("flist tmpfile: "+fname);
-	tar_cmd="tar ztf "+filename+" > "+fname;
+	tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
 	system(tar_cmd.c_str());
 	string sed_cmd;
 	sed_cmd="echo '<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>file_list_header' > "+tmp_xml+" && cat "+ fname +" | sed -e i'</file>\\n<file>'  >> "+tmp_xml+" && echo '</file></filelist></package>' >> "+tmp_xml;
 	system(sed_cmd.c_str());
-	debug("CreateFlistNode end");
+	debug("local_package.cpp: CreateFlistNode(): end");
 	return 0;
 }
 

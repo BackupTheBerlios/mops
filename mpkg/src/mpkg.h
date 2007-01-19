@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.6 2006/12/29 12:57:00 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.7 2007/01/19 06:08:54 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -47,6 +47,15 @@ class mpkgDatabase
 		int add_scripts_record(int package_id, SCRIPTS *scripts);
 		int update_package_data(int package_id, PACKAGE *package);
 
+		// Purge functions
+		int get_purge(string package_name);
+		FILE_LIST get_config_files(int package_id);
+		int get_configs(int package_id, FILE_LIST *conf_files);
+		int set_purge(int package_id);
+		int add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id);
+		int add_config_link(int package_id, int conf_id);
+		
+
 		int clean_package_filelist (PACKAGE *package);
 	private:
 		SQLProxy db;
@@ -57,6 +66,7 @@ class mpkgDatabase
 		int fetch_package(PACKAGE *package); // Downloads package to local cache, returns 0 if ok, 1 if failed. Also, checks if package is already downloaded.
 		int install_package(PACKAGE *package); // PHYSICALLY install package (extract, execute scripts)
 		int remove_package(PACKAGE *package); // PHYSICALLY remove package (delete files, execute remove scripts)
+		int purge_package(PACKAGE *package); // removes config files
 		int uninstall(vector<string> pkgnames); // Wrapper, uninstalls all packages with given names.
 		int updateRepositoryData(PACKAGE_LIST *newPackages);
 		PACKAGE get_installed_package(string pkg_name); // Returns installed package

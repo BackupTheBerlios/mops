@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.8 2006/12/29 12:57:00 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.9 2007/01/19 06:08:54 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -30,7 +30,7 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 
 	else 
 	{
-		printf("Database integrity OK\n");
+//		printf("Database integrity OK\n");
 		return true;
 	}
 }
@@ -40,14 +40,12 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 {
 #ifdef _SQL_DEBUG_
 	debug("get_sql_table:");
-	debug(*sql_query);
+	printf("%s\n", sql_query->c_str());
 #endif
 	sqlite3 *db;
 	char *errmsg=0;
 	int sql_return;
 	int query_return;
-	int _rows;
-	int _cols;
 	sql_return=sqlite3_open(db_filename.c_str(),&db);
 	
 	if (sql_return) // Means error
@@ -58,12 +56,13 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 		sqlErrMsg="Cannot open database file "+db_filename;
 	       	return 1;
        	}
-	lastSQLQuery=*sql_query;
+	//lastSQLQuery=*sql_query;
 	query_return=sqlite3_get_table(db, sql_query->c_str(), table, rows, cols, &errmsg);
 	
 	if (query_return!=SQLITE_OK) // Means error
 	{
-		printf("SQL error while querying database: %s\n", errmsg);
+		printf("sql_pool.cpp: get_sql_table(): SQL error while querying database: %s\n", errmsg);
+		printf("The query was: %s\n", sql_query->c_str());
 		sqlError=query_return;
 		sqlErrMsg=errmsg;
 		sqlite3_close(db);
@@ -106,7 +105,8 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 	
 	if (query_return!=SQLITE_OK) // Means error
 	{
-		printf("SQL error while querying database: %s\n", sql_errmsg);
+		printf("sql_pool.cpp: sql_exec(): SQL error while querying database: %s\n", sql_errmsg);
+		printf("The query was: %s\n", sql_query.c_str());
 		sqlError=query_return;
 		sqlErrMsg=sql_errmsg;
 		free(sql_errmsg);
@@ -122,6 +122,84 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 
 RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
+#define USE_STL
+#ifdef USE_CH
+	char *sql_query;
+	char *sql_fields="";
+	char *sql_from=strMerge("from ", table_name.c_str());
+//	char *sql_where="where ";
+
+	char **table;
+	int cols;
+	int rows;
+	// Do what?
+	char *sql_action="select";
+
+
+	// Get what?
+	if (fields.empty()) // If fields is empty, just get all fields
+	{
+		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
+		for (unsigned int i=0;i<fieldnames.size();i++)
+			fields.addField(fieldnames[i]);
+	}
+	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
+	{
+		sql_fields=strMerge(sql_fields, fields.getFieldName(i).c_str());
+		if (i!=fields.size()-1) sql_fields=strMerge(sql_fields, ", ");
+	}
+
+	//sql_from = "from "+table_name;
+	if (!search.empty())
+	{
+		char *sql_where="where ";
+		for (int i=0;i<search.size();i++)
+		{
+			sql_where=strMerge(sql_where, strMerge(search.getFieldName(i).c_str(), strMerge("='", strMerge(search.getValueI(i).c_str(), "'"))));
+			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where=strMerge(sql_where, " and ");
+			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where=strMerge(sql_where, " or ");
+		}
+		sql_query=strMerge(sql_action, strMerge(" ", strMerge(sql_fields, strMerge(" ", strMerge(sql_from, strMerge(" ", strMerge(sql_where,";")))))));
+	}
+	else
+	{
+		sql_query=strMerge(sql_action, strMerge(" ", strMerge(sql_fields, strMerge(" ", strMerge(sql_from, ";")))));
+	}
+
+
+	
+	//lastSQLQuery=sql_query;
+
+	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
+	free(sql_query);
+//	free(sql_where);
+	free(sql_fields);
+	free(sql_from);
+	
+	if (sql_ret==0)
+	{
+		output->clear(); // Ensure that output is clean and empty
+		SQLRecord row; 	// One row of data
+		int field_num=0;
+		for (int current_row=1; current_row<=rows; current_row++)
+		{
+			field_num=0;
+			row=fields;
+			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
+			{
+				row.setValue(fields.getFieldName(field_num), (string) table[value_pos]);
+				field_num++;
+			}
+			output->addRecord(row);
+		}
+		sqlite3_free_table(table);
+		return 0;
+	}
+	else return sql_ret;
+
+#endif
+
+#ifdef USE_STL
 	string sql_query;
 	string sql_action;
 	string sql_fields;
@@ -137,12 +215,10 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	// Get what?
 	if (fields.empty()) // If fields is empty, just get all fields
 	{
-		//sql_fields+="*";
 		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
-		for (int i=0;i<fieldnames.size();i++)
+		for (unsigned int i=0;i<fieldnames.size();i++)
 			fields.addField(fieldnames[i]);
 	}
-
 	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
 	{
 		sql_fields+=fields.getFieldName(i);
@@ -150,13 +226,13 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	}
 
 	sql_from = "from "+table_name;
-
 	if (!search.empty())
 	{
 		sql_where="where ";
 		for (int i=0;i<search.size();i++)
 		{
-			sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
+			if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
+			if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
 		}
@@ -164,7 +240,6 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 
 	sql_query=sql_action+" "+sql_fields+" "+sql_from+" "+sql_where+";";
 
-//	printf("[vtable] %s\n", sql_query.c_str());
 	
 	lastSQLQuery=sql_query;
 
@@ -173,10 +248,6 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	{
 		output->clear(); // Ensure that output is clean and empty
 		SQLRecord row; 	// One row of data
-		//string _fieldname;
-		
-		// value == cols*row_num + shift;
-		// TODO: ERROR IS SOMETHERE HERE....	
 		int field_num=0;
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
@@ -187,16 +258,13 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 				row.setValue(fields.getFieldName(field_num), (string) table[value_pos]);
 				field_num++;
 			}
-			/*for (int z=0;z<row.size();z++)
-			{
-				//printf("%s: %s\n\n", row.getFieldName(z).c_str(), row.getValueI(z).c_str());
-			}*/
 			output->addRecord(row);
 		}
 		sqlite3_free_table(table);
 		return 0;
 	}
 	else return sql_ret;
+#endif
 }
 
 int SQLiteDB::getLastError()
@@ -245,7 +313,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 	{
 		fieldNames.push_back("file_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 		fieldNames.push_back("file_name");//  TEXT NOT NULL,
-		fieldNames.push_back("file_size");//  TEXT NOT NULL,
+		//fieldNames.push_back("file_size");//  TEXT NOT NULL,
 		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL
 	}
  	if(table_name=="locations")
@@ -297,6 +365,19 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("dependency_package_name");//  TEXT NOT NULL,
 		fieldNames.push_back("dependency_package_version");//  TEXT NULL
 	}
+	if(table_name=="configfiles")
+	{
+		fieldNames.push_back("configfile_id");
+		fieldNames.push_back("packages_package_id");
+		fieldNames.push_back("packages_package_name");
+		fieldNames.push_back("configfile_name");
+	}
+	if(table_name=="configfiles_links")
+	{
+		fieldNames.push_back("configfiles_link_id");
+		fieldNames.push_back("configfiles_configfile_id");
+		fieldNames.push_back("packages_package_id");
+	}
 	return fieldNames;
 
 	
@@ -333,7 +414,7 @@ int SQLiteDB::sql_insert(string table_name, SQLRecord values)
 	
 	vector<string> fieldNames=getFieldNames(table_name);
 	string sql_query="insert into "+table_name+" values( NULL, ";
-	for (int i=1; i<fieldNames.size();i++)
+	for (unsigned int i=1; i<fieldNames.size();i++)
 	{
 		sql_query+="'"+values.getValue(fieldNames[i])+"'";
 		if (i!=fieldNames.size()-1) sql_query+=", ";
@@ -351,7 +432,7 @@ int SQLiteDB::sql_insert(string table_name, SQLTable values)
 	for (int k=0; k<values.getRecordCount(); k++)
 	{
 		sql_query+="insert into "+table_name+" values(NULL, ";
-		for (int i=1; i<fieldNames.size();i++)
+		for (unsigned int i=1; i<fieldNames.size();i++)
 		{
 			sql_query+="'"+values.getValue(k, fieldNames[i])+"'";
 			if (i!=fieldNames.size()-1) sql_query+=", ";
@@ -371,6 +452,11 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 	{
 		sql_query+=fields.getFieldName(i)+"='"+fields.getValue(fields.getFieldName(i))+"'";
 		if (i!=fields.size()-1) sql_query+=", ";
+	}
+	if (fields.empty()) 
+	{
+		debug("Fields are empty, cannot update SQL data");
+		return -1;
 	}
 	if (!search.empty())
 	{
@@ -430,11 +516,6 @@ RESULT SQLProxy::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	return sqliteDB.get_sql_vtable(output, fields, table_name, search);
 }
 
-/*RESULT SQLProxy::sql_exec (string sql_query);
-{
-	return sql_exec(sql_query);
-}*/
-
 int SQLProxy::sql_insert(string table_name, SQLRecord values)
 {
 	return sqliteDB.sql_insert(table_name, values);
@@ -452,7 +533,7 @@ int SQLProxy::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 
 int SQLProxy::sql_delete(string table_name, SQLRecord search)
 {
-	sqliteDB.sql_delete(table_name, search);
+	return sqliteDB.sql_delete(table_name, search);
 }
 
 SQLProxy::SQLProxy(){}

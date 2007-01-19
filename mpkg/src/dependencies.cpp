@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.6 2006/12/26 18:57:11 i27249 Exp $
+$Id: dependencies.cpp,v 1.7 2007/01/19 06:08:54 i27249 Exp $
 */
 
 
@@ -22,7 +22,7 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 
 void DependencyTracker::PrintFailure(PACKAGE* package)
 {
-	string dep_type;
+/*	string dep_type;
 	for (int i=0; i<package->get_dependencies()->size();i++)
 	{
 		dep_type=package->get_dependencies()->get_dependency(i)->get_type();
@@ -34,6 +34,28 @@ void DependencyTracker::PrintFailure(PACKAGE* package)
 				package->get_dependencies()->get_dependency(i)->get_package_version().c_str(), \
 				package->get_dependencies()->get_dependency(i)->get_vbroken().c_str());
 	}
+	*/
+	switch (package->get_err_type())
+	{
+		case DEP_OK: printf("OK\n");
+			     break;
+
+		case DEP_BROKEN: printf("broken dependencies\n");
+				 break;
+
+		case DEP_CHILD: printf("broken dependencies (child packages)\n");
+				break;
+
+		case DEP_FILECONFLICT: printf("file conflict\n");
+				       break;
+
+		case DEP_UNAVAILABLE: printf("package unavailable\n");
+				      break;
+
+		default:
+				      printf("unknown error code %d\n", package->get_err_type());
+	}
+
 }
 
 
@@ -123,6 +145,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	{
 		debug("Package is unavailable");
 		package->set_id(db->get_package_id(package));
+		package->set_err_type(DEP_UNAVAILABLE);
 		failure_list.add(*package);
 		return DEP_UNAVAILABLE;
 	}
@@ -130,18 +153,21 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	{
 		debug("File conflict detected");
 		package->set_id(db->get_package_id(package));
+		package->set_err_type(DEP_FILECONFLICT);
 		failure_list.add(*package);
 		return DEP_FILECONFLICT;
 	}
 	if (status==CHKINSTALL_DBERROR)	// Database error...
 	{
 		debug ("Database error detected, maybe multiple package records?");
+		package->set_err_type(DEP_DBERROR);
 		failure_list.add(*package);
 		return DEP_DBERROR;
 	}
 	if (status==CHKINSTALL_NOTFOUND) // No such package... WTF? :-)
 	{
 		debug("Package not found! WTF? Error adding to DB?....");
+		package->set_err_type(DEP_NOTFOUND);
 		failure_list.add(*package);
 		return DEP_NOTFOUND;
 	}
@@ -268,17 +294,23 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 				set=true;
 			}
 		}
-		if (!set) failure_list.add(*package); 	// add package to failed list (it will contain all dependency error records)
+		if (!set)
+		{
+			package->set_err_type(DEP_BROKEN);
+			failure_list.add(*package); 	// add package to failed list (it will contain all dependency error records)
+		}
 		return DEP_BROKEN;		// return failure code
 	}
 } // DependencyTracker::merge end.
 
-RESULT DependencyTracker::unmerge(PACKAGE *package)
+RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge)
 {
 	debug("Dependency UNMERGE: "+package->get_name());
 	PACKAGE_LIST package_list;
 	PACKAGE_LIST required_by;
-	package->set_status(PKGSTATUS_REMOVE);
+	if (do_purge==0)
+		package->set_status(PKGSTATUS_REMOVE);
+	else package->set_status(PKGSTATUS_REMOVE_PURGE);
 	
 	remove_list.add(*package);
 	SQLTable dep_sqlTable;
@@ -306,7 +338,7 @@ RESULT DependencyTracker::unmerge(PACKAGE *package)
 			return -2;
 		for (int i=0; i<package_list.size(); i++)
 		{
-			if (package_list.get_package(i)->get_status()==PKGSTATUS_INSTALLED) unmerge(package_list.get_package(i));
+			if (package_list.get_package(i)->get_status()==PKGSTATUS_INSTALLED) unmerge(package_list.get_package(i), do_purge);
 		}
 	}
 	return 0;

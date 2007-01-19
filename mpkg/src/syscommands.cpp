@@ -41,9 +41,10 @@ void runShellCommand(std::string cmd)
 
 void spawn(char* proc, char* args)
 {
-	pid_t child;
-	pid_t pid;
-	int status;
+	//TODO
+	//pid_t child;
+	//pid_t pid;
+	//int status;
 
 }
 

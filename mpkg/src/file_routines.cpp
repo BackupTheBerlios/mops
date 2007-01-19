@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.4 2006/12/29 12:57:00 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.5 2007/01/19 06:08:54 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -35,7 +35,7 @@ void delete_tmp_files()
 {
 	debug("preparing to remove temp files");
 
-	for ( int i = 0; i < temp_files.size(); i++ ) {
+	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
 		if ( unlink( temp_files[i].c_str() ) != 0 ) {
 			debug("cannot delete temp file ");
 			debug( temp_files[i] );
@@ -95,7 +95,7 @@ int WriteFile(string filename, string data)
 	FILE* output=fopen(filename.c_str(),"w");
 	if (output)
 	{
-		for (int i=0;i<data.length();i++)
+		for (unsigned int i=0;i<data.length();i++)
 		{
 			fputc(data[i],output);
 		}

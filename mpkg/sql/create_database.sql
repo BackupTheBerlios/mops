@@ -28,7 +28,6 @@ create table scripts (
 create table files (
 	file_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	file_name TEXT NOT NULL,
-	file_size TEXT NULL,
 	packages_package_id INTEGER NOT NULL
 );
 
@@ -75,3 +74,17 @@ create table dependencies (
 	dependency_package_name TEXT NOT NULL,
 	dependency_package_version TEXT NULL
 );
+
+create table configfiles (
+	configfile_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	packages_package_id INTEGER NOT NULL,
+	packages_package_name TEXT NOT NULL,
+	configfile_name TEXT NOT NULL
+);
+
+create table configfiles_links (
+	configfiles_link_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	configfiles_configfile_id INTEGER NOT NULL,
+	packages_package_id INTEGER NOT NULL
+);
+

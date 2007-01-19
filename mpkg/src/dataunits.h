@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.6 2006/12/29 12:57:00 i27249 Exp $
+	$Id: dataunits.h,v 1.7 2007/01/19 06:08:54 i27249 Exp $
 */
 
 
@@ -238,7 +238,6 @@ class FILES
 	// INTERNAL DATA //
 	int file_id;
 	string file_name;
-	string file_size;
 
 	// EXTERNAL DATA //
 	//PACKAGE_LIST *file_packages;
@@ -247,11 +246,9 @@ class FILES
 	bool operator == (FILES nfile);
 	int get_id();
 	string get_name(bool sql=true);
-	string get_size(bool sql=true);
 
 	int set_id(int id);
 	int set_name(string name);
-	int set_size(string size);
 
 	// CLASS ROUTINES //
 	bool IsEmpty();
@@ -371,6 +368,7 @@ class PACKAGE
 	int package_status;
 	string package_md5;
 	string package_filename;
+	int package_err_type;
     public:
 	int get_id();
 	string get_name(bool sql=true);
@@ -388,6 +386,7 @@ class PACKAGE
 	string get_vstatus();
 	string get_md5(bool sql=true);
 	string get_filename(bool sql=true);
+	int get_err_type();
 
 	int set_id(int id);
 	int set_name(string name);
@@ -404,14 +403,18 @@ class PACKAGE
 	int set_status(int status);
 	int set_md5(string md5);
 	int set_filename(string filename);
+	int set_err_type(int err);
+
     private:
 	// EXTERNAL DATA //
 	FILE_LIST package_files;
+	FILE_LIST config_files;
 	LOCATION_LIST package_locations;
 	DEPENDENCY_LIST package_dependencies;
 	TAG_LIST package_tags;
 	SCRIPTS package_scripts;
     public:
+	FILE_LIST* get_config_files();
 	FILE_LIST* get_files();
 	LOCATION_LIST* get_locations();
 	DEPENDENCY_LIST* get_dependencies();
@@ -421,6 +424,7 @@ class PACKAGE
 	bool operator == (PACKAGE npkg);
 	bool operator != (PACKAGE npkg);
 
+	int set_config_files(FILE_LIST conf_files);
 	int set_files(FILE_LIST files);
 	int set_locations(LOCATION_LIST locations);
 	int set_dependencies(DEPENDENCY_LIST dependencies);
@@ -428,7 +432,7 @@ class PACKAGE
 	int set_scripts(SCRIPTS scripts);
 
 	int add_dependency(string package_name, string dep_condition, string package_version);
-	int add_file(string file_name, string file_size);
+	int add_file(string file_name);
 	int add_tag(string tag);
 
 	// CLASS ROUTINES //
