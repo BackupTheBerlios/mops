@@ -1,0 +1,13 @@
+<!--MOPSLinux configuration file. Should be placed in /etc
+    $Id: mpkg.xml,v 1.1 2007/01/19 06:19:55 i27249 Exp $                                                                -->
+<?xml version="1.0" encoding="utf-8"?>
+<mpkgconfig>
+	<run_scripts>no</run_scripts>
+	<sys_root>/root/development/sys_root</sys_root>
+	<sys_cache>/root/development/sys_cache</sys_cache>
+	<database_url>sqlite://var/log/packages.db</database>
+	<repository_list>
+		<repository>ftp://192.168.2.8/mpkg_repository</repository>
+	</repository_list>
+</mpkgconfig>
+
