@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.13 2007/01/19 06:08:53 i27249 Exp $
+ *	$Id: core.cpp,v 1.14 2007/01/22 00:38:47 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -426,7 +426,7 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	pkg_status=package->get_status();
 	// INSERT INTO PACKAGES
 	SQLRecord sqlInsert;
-	
+	//db.sqlBegin();
 	
 	sqlInsert.addField("package_name", package->get_name());
 	sqlInsert.addField("package_version", package->get_version());
@@ -442,7 +442,61 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	sqlInsert.addField("package_status", IntToStr(package->get_status()));
 	sqlInsert.addField("package_md5", package->get_md5());
 	sqlInsert.addField("package_filename", package->get_filename());
+
 	db.sql_insert("packages", sqlInsert);
+	
+	// Retrieving package ID
+	int package_id=get_last_id("packages", "package_id");
+	if (package_id==0) exit(-100);
+	
+	// INSERT INTO FILES
+	if (!package->get_files()->IsEmpty()) add_filelist_record(package_id, package->get_files());
+	
+	// INSERT INTO LOCATIONS
+	if (!package->get_locations()->IsEmpty()) add_locationlist_record(package_id, package->get_locations());
+
+	//INSERT INTO DEPENDENCIES
+	if (!package->get_dependencies()->IsEmpty()) add_dependencylist_record(package_id, package->get_dependencies());
+
+	// INSERT INTO TAGS
+	if (!package->get_tags()->IsEmpty()) add_taglist_record(package_id, package->get_tags());
+	
+	// INSERT INTO SCRIPTS
+	add_scripts_record(package_id, package->get_scripts());
+
+	if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
+	//db.sqlCommit();
+	return package_id;
+}	
+
+/*int mpkgDatabase::add_packagelist_record (PACKAGE_list *packagelist)
+{
+	//int pkg_status;
+	//pkg_status=package->get_status();
+	// INSERT INTO PACKAGES
+	SQLTable sqlInsertTable;
+	SQLRecord sqlInsert;
+	
+	for (int i=0; i<packagelist.size(); i++)
+	{
+		sqlInsert.addField("package_name", packagelist->get_package(i)->get_name());
+		sqlInsert.addField("package_version", packagelist->get_package(i)->get_version());
+		sqlInsert.addField("package_arch", packagelist->get_package(i)->get_arch());
+		sqlInsert.addField("package_build", packagelist->get_package(i)->get_build());
+		sqlInsert.addField("package_compressed_size", packagelist->get_package(i)->get_compressed_size());
+		sqlInsert.addField("package_installed_size", packagelist->get_package(i)->get_installed_size());
+		sqlInsert.addField("package_short_description", packagelist->get_package(i)->get_short_description());
+		sqlInsert.addField("package_description", packagelist->get_package(i)->get_description());
+		sqlInsert.addField("package_changelog", packagelist->get_package(i)->get_changelog());
+		sqlInsert.addField("package_packager", packagelist->get_package(i)->get_packager());
+		sqlInsert.addField("package_packager_email", packagelist->get_package(i)->get_packager_email());
+		sqlInsert.addField("package_status", IntToStr(packagelist->get_package(i)->get_status()));
+		sqlInsert.addField("package_md5", packagelist->get_package(i)->get_md5());
+		sqlInsert.addField("package_filename", packagelist->get_package(i)->get_filename());
+		sqlInsertTable.addRecord(sqlInsert);
+		sqlInsert.clear();
+	}
+	db.sql_insert("packages", sqlInsertTable);
 	
 	// Retrieving package ID
 	int package_id=get_last_id("packages", "package_id");
@@ -466,6 +520,7 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
 	return package_id;
 }	
+*/
 
 
 //--------------------Mid-level functions-------------------------

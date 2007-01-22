@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.15 2007/01/19 14:32:42 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.16 2007/01/22 00:38:47 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -359,6 +359,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		no_purge=true;
 	}
 	lp.fill_scripts(package);
+	lp.fill_filelist(package);
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 	string sys;
 	debug("Preparing scripts");

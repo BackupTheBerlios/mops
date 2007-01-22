@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.9 2007/01/19 06:08:54 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.10 2007/01/22 00:38:47 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -61,6 +61,7 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 	
 	if (query_return!=SQLITE_OK) // Means error
 	{
+		perror("SQLite INTERNAL ERROR");
 		printf("sql_pool.cpp: get_sql_table(): SQL error while querying database: %s\n", errmsg);
 		printf("The query was: %s\n", sql_query->c_str());
 		sqlError=query_return;
@@ -78,6 +79,21 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 	return 0;
 }	
 
+int SQLiteDB::sqlBegin()
+{
+	string begin = "begin transaction;";
+	return sql_exec(begin);
+}
+
+int SQLiteDB::sqlCommit()
+{
+	string commit = "commit transaction;";
+	return sql_exec(commit);
+}
+/*int SQLiteDB::init()
+{
+	return sqlite3_open(db_filename.c_str(), &db);
+}*/
 RESULT SQLiteDB::sql_exec (string sql_query)
 {
 	string transaction="begin transaction; "+sql_query+" commit transaction;";
@@ -99,7 +115,7 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 	       	return 1;
        	}
 
-	lastSQLQuery=sql_query;
+//	lastSQLQuery=sql_query;
 
 	query_return=sqlite3_exec(db,sql_query.c_str(),NULL, NULL, &sql_errmsg);
 	
@@ -117,6 +133,7 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 	sqlite3_close(db);
 	sqlError=0;
 	sqlErrMsg.clear();
+//	printf("sql_exec OK\n");
 	return 0;
 }
 
@@ -491,15 +508,43 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 
 SQLiteDB::SQLiteDB(string filename)
 {
+	//printf("sql constructor called\n");
 #ifdef DEBUG
 	printf("Database filename: %s\n", filename.c_str());
 #endif
 	db_filename=filename;
 	sqlError=0;
+	// Open database
+	//sqlite3_extended_result_codes(db, 1);
+//	int sql_return=init();
+	
+	//printf("sql_return = %d\n", sql_return);
+	
+/*	if (sql_return) // Means error
+	{
+		sqlError=sql_return;
+		sqlErrMsg="Error opening database file "+db_filename+", aborting.";
+		printf("%s\n", sqlErrMsg.c_str());
+	       	sqlite3_close(db);
+	       	abort();
+       	}*/
 	CheckDatabaseIntegrity();
 }
 
-SQLiteDB::~SQLiteDB(){}
+SQLiteDB::~SQLiteDB(){
+	//printf("sql destructor called\n");
+	//sqlite3_close(db);
+}
+
+int SQLProxy::sqlCommit()
+{
+	return sqliteDB.sqlCommit();
+}
+
+int SQLProxy::sqlBegin()
+{
+	return sqliteDB.sqlBegin();
+}
 
 int SQLProxy::getLastError()
 {

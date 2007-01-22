@@ -1,8 +1,9 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.1 2007/01/19 06:13:59 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.2 2007/01/22 00:38:47 i27249 Exp $
  * ********************************************************/
 
+#include "string_operations.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,72 @@ char * strMerge(const char *part1, const char *part2)
 	printf("ret: [%s]\n", ret);
 #endif
 	return ret;
+}
+
+bool mstring::operator += (string str2)
+{
+	string tmp;
+	tmp=str+str2;
+	str=tmp;
+	tmp.clear();
+	return true;
+}
+
+bool mstring::operator += (const char *str2)
+{
+	string tmp = str + (string) str2;
+	str=tmp;
+	tmp.clear();
+	return true;
+}
+
+bool mstring::operator == (string str2)
+{
+	if (str==str2) return true;
+	return false;
+}
+
+bool mstring::operator == (const char *str2)
+{
+	if (str==(string) str2) return true;
+	return false;
+}
+
+bool mstring::operator != (string str2)
+{
+	if (str!=str2) return true;
+	return false;
+}
+
+bool mstring::operator != (const char *str2)
+{
+	if (str!=(string) str2) return true;
+	return false;
+}
+
+char mstring::operator [] (int i)
+{
+	return str[i];
+}
+
+void mstring::clear()
+{
+	str.clear();
+}
+
+bool mstring::empty()
+{
+	return str.empty();
+}
+
+const char * mstring::c_str()
+{
+	return str.c_str();
+}
+
+string mstring::s_str()
+{
+	return str;
 }
 
 /*

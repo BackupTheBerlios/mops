@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.6 2007/01/19 06:08:54 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.7 2007/01/22 00:38:47 i27249 Exp $
  ************************************************************************************/
 
 
@@ -23,12 +23,16 @@ class SQLiteDB
 		string lastSQLQuery;
 		RESULT sql_exec (string sql_query);
 		bool CheckDatabaseIntegrity(); // Checks database integrity
-		RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table using 
+		RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table
+//		sqlite3 *db; //Database is open all the time during work (added: aix27249, for optimization reasons)
 	public:
 		vector<string> getFieldNames(string table_name);
 		int getLastError();
 		string getLastErrMsg();
 		RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+//		int init();
+		int sqlBegin();
+		int sqlCommit();
 		int sql_insert(string table_name, SQLRecord values);
 		int sql_insert(string table_name, SQLTable values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);
@@ -50,6 +54,8 @@ class SQLProxy
 		int sql_insert(string table_name, SQLTable values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);
 		int sql_delete(string table_name, SQLRecord search);
+		int sqlCommit();
+		int sqlBegin();
 
 
 		SQLProxy();

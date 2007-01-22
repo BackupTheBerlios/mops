@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.7 2007/01/19 06:08:54 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.8 2007/01/22 00:38:47 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -44,6 +44,7 @@ class mpkgDatabase
 		int add_taglist_record(int package_id, TAG_LIST *taglist);
 		int add_tag_link(int package_id, int tag_id);
 		int add_package_record(PACKAGE *package);
+//		int add_packagelist_record(PACKAGE_LIST *packagelist);
 		int add_scripts_record(int package_id, SCRIPTS *scripts);
 		int update_package_data(int package_id, PACKAGE *package);
 
