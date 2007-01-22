@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.8 2007/01/22 00:38:47 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.9 2007/01/22 00:56:00 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -55,8 +55,9 @@ class mpkgDatabase
 		int set_purge(int package_id);
 		int add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id);
 		int add_config_link(int package_id, int conf_id);
-		
 
+		
+		int cleanFileList(int package_id);
 		int clean_package_filelist (PACKAGE *package);
 	private:
 		SQLProxy db;

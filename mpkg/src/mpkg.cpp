@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.16 2007/01/22 00:38:47 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.17 2007/01/22 00:55:59 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -361,6 +361,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	lp.fill_scripts(package);
 	lp.fill_filelist(package);
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
+	add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	debug("Preparing scripts");
 	if (!DO_NOT_RUN_SCRIPTS)
@@ -567,9 +568,17 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 //		printf("Package %s purged successfully\n",package->get_name());
 	}
 	else set_status(package->get_id(), PKGSTATUS_AVAILABLE);
+	cleanFileList(package->get_id());
 	printf("done\n");
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
+}
+
+int mpkgDatabase::cleanFileList(int package_id)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	return db.sql_delete("files", sqlSearch);
 }
 
 int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
