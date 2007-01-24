@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.17 2007/01/19 14:32:42 i27249 Exp $
+$Id: local_package.cpp,v 1.18 2007/01/24 15:16:25 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -360,7 +360,7 @@ int LocalPackage::injectFile(bool index)
 			return -4;
 		}
 	}
-	if (!index) // Changed due to check_file_conflicts remastering
+	if (index) // Building file list on server
 	{
 		if (get_filelist()!=0)
 		{

@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.2 2007/01/22 00:38:47 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.3 2007/01/24 15:16:26 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -60,6 +60,18 @@ bool mstring::operator == (const char *str2)
 	return false;
 }
 
+bool mstring::operator = (string str2)
+{
+	str=str2;
+	return true;
+}
+
+bool mstring::operator = (const char *str2)
+{
+	str = (string) str2;
+	return true;
+}
+
 bool mstring::operator != (string str2)
 {
 	if (str!=str2) return true;
@@ -97,6 +109,13 @@ string mstring::s_str()
 	return str;
 }
 
+unsigned int mstring::length()
+{
+	return str.length();
+}
+
+mstring::mstring(){}
+mstring::~mstring(){}
 /*
 int main()
 {

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.14 2007/01/22 00:38:47 i27249 Exp $
+ *	$Id: core.cpp,v 1.15 2007/01/24 15:16:25 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -13,7 +13,7 @@
 
 
 //------------------Library front-end--------------------------------
-
+#define ENABLE_CONFLICT_CHECK
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
@@ -25,13 +25,15 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	// 
 	// Because of all this, I disabled this function now. It will be always return 0
 	// PLEASE NOTE: for now, NO CONFLICTS ARE CHECKED!
-	
+#ifndef ENABLE_CONFLICT_CHECK
 	return 0;
-	/*
+#endif
+
+//#ifdef ENABLE_CONFLICT_CHECK
+
 //	printf("core.cpp: check_file_conflicts(): package->get_id()=%d\n", package->get_id());
 	int package_id;
 	int prev_package_id=package->get_id();
-//	PACKAGE tmp;
 	string fname;
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
@@ -39,8 +41,12 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlSearch.setSearchMode(SEARCH_OR);
 	int status;
 //	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
+	printf("size=%d\n", package->get_files()->size());
+	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
 	for (int i=0;i<package->get_files()->size();i++)
 	{
+
+		printf("Checking [%s]\n", fname.c_str()); 
 #ifdef DEBUG
 		printf("[%d] request for file %s", i, package->get_files()->get_file(i)->get_name().c_str());
 #endif
@@ -49,19 +55,25 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		fname=package->get_files()->get_file(i)->get_name();
 		if (fname[fname.length()-1]!='/') 
 		{
+
+			printf("[%s] is file\n", fname.c_str()); 
 			sqlSearch.addField("file_name", package->get_files()->get_file(i)->get_name());
 #ifdef DEBUG
 			printf("done\n");
 #endif
 		}
+		else
+		{
+			printf("%s is a directory\n", fname.c_str());
 #ifdef DEBUG
-		else printf("failed\n");
+			printf("failed\n");
 #endif
+		}
 	}
 //	printf("core.cpp: check_file_conflicts(): cycle end, running SQL query\n");
-	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
+	printf("sql_table returns %d\n", db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch));
 //	printf("core.cpp: check_file_conflicts(): SQL end\n");
-			
+	printf("sqlTable size = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
 #ifdef DEBUG
@@ -84,6 +96,8 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 #endif
 				if (status==PKGSTATUS_INSTALLED || status==PKGSTATUS_INSTALL)
 				{
+					printf("File %s conflicts with package ID %d\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
+
 					debug("File conflict found, aborting...");
 					return package_id;
 				}
@@ -96,7 +110,8 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 #endif
 //	printf("core.cpp: check_file_conflicts(): end\n");
 	// If all ok - return 0;
-	return 0;*/ // End of check_file_conflicts (DISABLED)
+	return 0; // End of check_file_conflicts (DISABLED)
+//#endif
 }
 
 int mpkgDatabase::check_install_package (PACKAGE *package)

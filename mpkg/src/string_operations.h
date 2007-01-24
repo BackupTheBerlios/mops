@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.2 2007/01/22 00:38:47 i27249 Exp $
+ * $Id: string_operations.h,v 1.3 2007/01/24 15:16:26 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -19,11 +19,16 @@ class mstring
 		bool operator != (const char *str2);
 		bool operator + (string str2);
 		bool operator + (const char *str2);
+		bool operator = (const mstring str2);
+		bool operator = (string str2);
+		bool operator = (const char *str2);
+
 
 		char operator [] (int i);
 		void clear();
 		bool empty();
 		const char * c_str();
+		unsigned int length();
 		string s_str();
 		mstring();
 		~mstring();

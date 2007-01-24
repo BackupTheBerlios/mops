@@ -1,9 +1,9 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.5 2007/01/19 06:08:54 i27249 Exp $
+ * $Id: repository.cpp,v 1.6 2007/01/24 15:16:26 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
-
+#include <iostream>
 Repository::Repository(){}
 Repository::~Repository(){}
 
@@ -107,7 +107,8 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 
 	if (filetype==FTW_F && ext==".tgz")
 	{
-		printf("indexing file %s...",filename);
+		cout<< "indexing file " << filename << "..."<<endl;
+//		printf("indexing file %s...\t", filename);
 		LocalPackage lp(_package);
 		lp.injectFile(true);
 		_root.addChild(lp.getPackageXMLNode());
@@ -132,6 +133,8 @@ int Repository::build_index(string server_url)
 
 	// Finally, write our XML tree to file
 	_root.writeToFile("packages.xml");
+	// Compress file
+	if (system("gzip -f packages.xml")==0) printf("Repository index created successfully\n");
 	return 0;
 }
 
@@ -140,12 +143,16 @@ PACKAGE_LIST Repository::get_index(string server_url)
 	PACKAGE_LIST packages;
 	PACKAGE pkg;
 	string wget_line;
+	string gzip_line;
 	string xml_name=get_tmp_file();
+	string gzxml_name=xml_name+".gz";
 	XMLNode repository_root;
-	wget_line="wget -q --output-document="+xml_name+" "+server_url+"packages.xml";
+	wget_line="wget -q --output-document="+gzxml_name+" "+server_url+"packages.xml.gz";
+	gzip_line="gunzip -f "+gzxml_name;
 	printf("[%s]...",server_url.c_str());
-	if (system(wget_line.c_str())==0)
+	if (system(wget_line.c_str())==0 && system(gzip_line.c_str())==0)
 	{
+		
 		printf("done\n");
 		repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
 		int pkg_count=repository_root.nChildNode("package");
