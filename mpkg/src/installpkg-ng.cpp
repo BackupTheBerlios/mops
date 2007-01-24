@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.20 2007/01/19 14:32:42 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.21 2007/01/24 13:43:45 i27249 Exp $
  */
 
 #include "config.h"
@@ -41,6 +41,7 @@ int clean_cache();
 void ShowBanner();
 int convert_directory();
 int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
+int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
 
 void ShowBanner()
 {
@@ -181,7 +182,12 @@ int main (int argc, char **argv)
 		return 0;
 	}
 	if (action == ACT_UPGRADE ) {
-		printf("Upgrade not implemented yet\n");
+		for (int i = optind; i < argc; i++)
+		{
+			pname=argv[i];
+			upgrade(pname, &db, &DepTracker);
+		}
+		//printf("Upgrade not implemented yet\n");
 		delete_tmp_files();
 		return 0;
 	}
@@ -476,6 +482,19 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 		return 0;
 	}
 	DepTracker->unmerge(&package, do_purge);
+	return 0;
+}
+
+int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	// Alpha realization: bad algorithm (поплывет по зависимостям)
+	uninstall(pkgname, db, DepTracker, false);
+	DepTracker->commitToDb();
+	db->commit_actions();
+
+	install(pkgname, db, DepTracker);
+	DepTracker->commitToDb();
+	db->commit_actions();
 	return 0;
 }
 

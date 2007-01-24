@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.10 2007/01/19 14:32:42 i27249 Exp $
+	$Id: dataunits.cpp,v 1.11 2007/01/24 13:43:45 i27249 Exp $
 */
 
 
@@ -436,7 +436,9 @@ bool LOCATION_LIST::operator != (LOCATION_LIST nloc)
 #endif
 	if (size()!=nloc.size())
 	{
+#ifdef DEBUG
 		printf("returned true due to size mismatch");
+#endif
 		return true;
 	}
 	bool r;
