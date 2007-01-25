@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.21 2007/01/24 13:43:45 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.22 2007/01/25 09:51:44 i27249 Exp $
  */
 
 #include "config.h"
@@ -383,9 +383,9 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 	printf("installpkg-ng.cpp: (update_repository_data): Sending %d packages to db->updateRepositoryData()\n", availablePackages.size());
 #endif
 	// Go merging to DB
-	printf("updateRepositoryData...");
+	printf(_("Importing new data...\n"));
 	int ret=db->updateRepositoryData(&availablePackages);
-	printf("end\n");
+	printf("Import complete.\n");
 	return ret;
 	
 }

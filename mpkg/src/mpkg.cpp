@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.17 2007/01/22 00:55:59 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.18 2007/01/25 09:51:44 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -175,10 +175,10 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 	debug("INIT/Fetching...");
 	LOCATION_LIST locationlist; 	// Sorted location list
 	LOCATION location;
-	int min_priority; int min_priority_id; int prev_min;
+	int min_priority=0; int min_priority_id=0; int prev_min=0;
 	min_priority=0;
 	prev_min=-1;
-	int server_priority;
+	int server_priority=0;
 
 	int _srv_type;
 	string _fname;
@@ -360,6 +360,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 	lp.fill_scripts(package);
 	lp.fill_filelist(package);
+	if (check_file_conflicts(package)!=0)
+	{
+		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
+		return -5;
+	}
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 	add_filelist_record(package->get_id(), package->get_files());
 	string sys;
@@ -710,7 +715,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	for (int i=0; i< newPackages->size(); i++)
 	{
 		//printf("for (int i=0; i< newPackages->size(); i++) i=%d\n", i);
-		printf("#");
+		//printf("#");
 
 		package_id=get_package_id(newPackages->get_package(i));
 		if (package_id>0)
@@ -765,7 +770,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			}
 		}
 	}
-	printf("\n");
+	//printf("\n");
 
 	// Step 3. Clean up servers and tags (remove unused items)
 	// TODO

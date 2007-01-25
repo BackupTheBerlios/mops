@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.2 2007/01/19 14:32:42 i27249 Exp $
+ * $Id: converter.cpp,v 1.3 2007/01/25 09:51:44 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -12,9 +12,9 @@ int slack_convert(string filename, string xml_output)
 	package.set_filename(filename);
 	// Resolving name, version, arch and build
 	string tmp;
-	int pos;
+	int pos=0;
 	// NAME
-	int name_start;
+	int name_start=0;
 	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
 	{
 		name_start=i;
@@ -228,7 +228,7 @@ int convert_package(string filename, string output_dir)
 {
 //	char tmp[1000];
 	printf("converting package %s...", filename.c_str());
-	int name_start;
+	int name_start=0;
 	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
 	{
 		name_start=i;

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.15 2007/01/24 15:16:25 i27249 Exp $
+ *	$Id: core.cpp,v 1.16 2007/01/25 09:51:44 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -41,12 +41,10 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlSearch.setSearchMode(SEARCH_OR);
 	int status;
 //	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
-	printf("size=%d\n", package->get_files()->size());
 	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
-		printf("Checking [%s]\n", fname.c_str()); 
 #ifdef DEBUG
 		printf("[%d] request for file %s", i, package->get_files()->get_file(i)->get_name().c_str());
 #endif
@@ -56,7 +54,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		if (fname[fname.length()-1]!='/') 
 		{
 
-			printf("[%s] is file\n", fname.c_str()); 
 			sqlSearch.addField("file_name", package->get_files()->get_file(i)->get_name());
 #ifdef DEBUG
 			printf("done\n");
@@ -64,16 +61,15 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		}
 		else
 		{
-			printf("%s is a directory\n", fname.c_str());
 #ifdef DEBUG
 			printf("failed\n");
 #endif
 		}
 	}
 //	printf("core.cpp: check_file_conflicts(): cycle end, running SQL query\n");
-	printf("sql_table returns %d\n", db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch));
+	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
 //	printf("core.cpp: check_file_conflicts(): SQL end\n");
-	printf("sqlTable size = %d\n", sqlTable.getRecordCount());
+//	printf("sqlTable size = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
 #ifdef DEBUG
@@ -163,8 +159,8 @@ int mpkgDatabase::check_install_package (PACKAGE *package)
 				debug(IntToStr(others.size())+" OTHER installed VERSIONS FOUND");
 				return CHKINSTALL_AVAILABLE;
 			}	
-			if (check_file_conflicts(package)==0) return CHKINSTALL_AVAILABLE;
-			else return CHKINSTALL_FILECONFLICT;
+			/*if (check_file_conflicts(package)==0) */return CHKINSTALL_AVAILABLE;
+			//else return CHKINSTALL_FILECONFLICT;
 		}
 		if (package_status==PKGSTATUS_UNAVAILABLE)
 		{
@@ -220,11 +216,11 @@ string mpkgDatabase::_install_package (PACKAGE *package)
 		}
 		
 		//Check file conflicts
-		if (check_file_conflicts(package)==0)
-		{
+		//if (check_file_conflicts(package)==0)
+		//{
 			set_status(package_id, PKGSTATUS_INSTALL);
-		}
-		else return "FILE_CONFLICT";
+		//}
+		//else return "FILE_CONFLICT";
 		return IntToStr(package_id);
 	}
 }
@@ -392,7 +388,7 @@ int mpkgDatabase::add_dependencylist_record(int package_id, DEPENDENCY_LIST *dep
 // Adds tag list linked to package_id. It checks existance of tag in tags table, and creates if not. Next, it calls add_tag_link() to link package and tags
 int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 {
-	int tag_id;
+	int tag_id=0;
 	SQLRecord sqlInsert;
 	SQLTable sqlTable;
 	SQLRecord sqlSearch;

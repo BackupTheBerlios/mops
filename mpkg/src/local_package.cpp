@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.18 2007/01/24 15:16:25 i27249 Exp $
+$Id: local_package.cpp,v 1.19 2007/01/25 09:51:44 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -285,7 +285,7 @@ int LocalPackage::set_additional_data()
 	getcwd(pwd, MAXPATHLEN);
 	string fpath;
 	string fname;
-	int fname_start;
+	int fname_start=0;
 	for(int i=data.get_filename().length()-1;i>=0 && data.get_filename()[i]!='/'; i--)
 	{
 		fname_start=i;
@@ -360,7 +360,7 @@ int LocalPackage::injectFile(bool index)
 			return -4;
 		}
 	}
-	if (index) // Building file list on server
+	if (!index) // NOT Building file list on server, build locally
 	{
 		if (get_filelist()!=0)
 		{

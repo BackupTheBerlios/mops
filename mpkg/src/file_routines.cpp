@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.6 2007/01/19 14:32:42 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.7 2007/01/25 09:51:44 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -68,7 +68,7 @@ string ReadFile(string filename, int max_count)
 	//printf("ReadFILE: %s\n", filename.c_str());
 	FILE *src=fopen(filename.c_str(),"r");
 	string ret;
-	char buf;
+	char buf='a';
 	ret.clear();
 	if (src)
 	{
