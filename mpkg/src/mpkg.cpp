@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.18 2007/01/25 09:51:44 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.19 2007/01/25 10:05:09 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -581,6 +581,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 int mpkgDatabase::cleanFileList(int package_id)
 {
+	printf("Cleaning up...\n");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
 	return db.sql_delete("files", sqlSearch);
