@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.7 2007/01/19 06:08:54 i27249 Exp $
+$Id: dependencies.cpp,v 1.8 2007/01/25 14:17:13 i27249 Exp $
 */
 
 
@@ -40,7 +40,14 @@ void DependencyTracker::PrintFailure(PACKAGE* package)
 		case DEP_OK: printf("OK\n");
 			     break;
 
-		case DEP_BROKEN: printf("broken dependencies\n");
+		case DEP_BROKEN: printf("broken dependencies:\n");
+				 for (int i=0; i<package->get_dependencies()->size(); i++)
+				 {
+					 printf("%s %s %s: %s\n", package->get_dependencies()->get_dependency(i)->get_package_name().c_str(), \
+							 package->get_dependencies()->get_dependency(i)->get_vcondition().c_str(), \
+							 package->get_dependencies()->get_dependency(i)->get_package_version().c_str(), \
+							 package->get_dependencies()->get_dependency(i)->get_vbroken().c_str());
+				 }
 				 break;
 
 		case DEP_CHILD: printf("broken dependencies (child packages)\n");

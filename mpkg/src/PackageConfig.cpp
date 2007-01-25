@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.5 2007/01/19 06:08:53 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.6 2007/01/25 14:17:13 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -133,7 +133,7 @@ string PackageConfig::getDependencyCondition(int dep_num)
 		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("condition").getText();
 		return a;
 	}
-	else return "";
+	else return "any";
 }
 
 string PackageConfig::getDependencyVersion(int dep_num)
@@ -166,7 +166,7 @@ string PackageConfig::getSuggestCondition(int suggest_num)
 		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("condition").getText();
 		return a;
 	}
-	else return "";
+	else return "any";
 }
 
 string PackageConfig::getSuggestVersion(int suggest_num)
@@ -195,7 +195,7 @@ vector<string> PackageConfig::getDepNames()
 	vector<string> a_name;
 	if (_node.nChildNode("dependencies")!=0)
 	{
-		a_name.resize(_node.getChildNode("dependencies").nChildNode());
+		a_name.resize(_node.getChildNode("dependencies").nChildNode("dep"));
 		for (unsigned int i=0;i<a_name.size();i++)
 		{
 			a_name[i]=getDependencyName(i);
@@ -209,7 +209,7 @@ vector<string> PackageConfig::getDepConditions()
 	vector<string> a_cond;
 	if(_node.nChildNode("dependencies")!=0)
 	{
-		a_cond.resize(_node.getChildNode("dependencies").nChildNode());
+		a_cond.resize(_node.getChildNode("dependencies").nChildNode("dep"));
 		for (unsigned int i=0;i<a_cond.size();i++)
 		{
 			a_cond[i]=getDependencyCondition(i);
@@ -223,7 +223,7 @@ vector<string> PackageConfig::getDepVersions()
 	vector<string> a_ver;
 	if(_node.nChildNode("dependencies")!=0)
 	{
-		a_ver.resize(_node.getChildNode("dependencies").nChildNode());
+		a_ver.resize(_node.getChildNode("dependencies").nChildNode("dep"));
 		for (unsigned int i=0;i<a_ver.size();i++)
 		{
 			a_ver[i]=getDependencyVersion(i);
@@ -237,7 +237,7 @@ vector<string> PackageConfig::getSuggestNames()
 	vector<string> a_name;
 	if(_node.nChildNode("suggests")!=0)
 	{
-		a_name.resize(_node.getChildNode("suggests").nChildNode());
+		a_name.resize(_node.getChildNode("suggests").nChildNode("suggest"));
 		for (unsigned int i=0;i<a_name.size();i++)
 		{
 			a_name[i]=getSuggestName(i);
@@ -250,7 +250,7 @@ vector<string> PackageConfig::getSuggestConditions()
 	vector<string> a_cond;
 	if(_node.nChildNode("suggests")!=0)
 	{
-		a_cond.resize(_node.getChildNode("suggests").nChildNode());
+		a_cond.resize(_node.getChildNode("suggests").nChildNode("suggest"));
 		for (unsigned int i=0;i<a_cond.size();i++)
 		{
 			a_cond[i]=getSuggestCondition(i);
@@ -264,7 +264,7 @@ vector<string> PackageConfig::getSuggestVersions()
 	vector<string> a_ver;
 	if(_node.nChildNode("suggests")!=0)
 	{
-		a_ver.resize(_node.getChildNode("suggests").nChildNode());
+		a_ver.resize(_node.getChildNode("suggests").nChildNode("suggest"));
 		for (unsigned int i=0;i<a_ver.size();i++)
 		{
 			a_ver[i]=getSuggestVersion(i);
@@ -278,7 +278,7 @@ vector<string> PackageConfig::getTags()
 	vector<string> a;
 	if(_node.nChildNode("tags")!=0)
 	{
-		a.resize(_node.getChildNode("tags").nChildNode());
+		a.resize(_node.getChildNode("tags").nChildNode("tag"));
 		for (unsigned int i=0;i<a.size();i++)
 		{
 			a[i]=getTag(i);
@@ -312,7 +312,7 @@ vector<string> PackageConfig::getFilelist()
 	vector<string> a;
 	if(_node.nChildNode("filelist")!=0)
 	{
-		a.resize(_node.getChildNode("filelist").nChildNode());
+		a.resize(_node.getChildNode("filelist").nChildNode("file"));
 		for (unsigned int i=0;i<a.size();i++)
 		{
 			a[i]=getFile(i);
@@ -326,7 +326,7 @@ vector<string> PackageConfig::getConfigFilelist()
 	vector<string> a;
 	if(_node.nChildNode("configfiles")!=0)
 	{
-		a.resize(_node.getChildNode("configfiles").nChildNode());
+		a.resize(_node.getChildNode("configfiles").nChildNode("conffile"));
 		for (unsigned int i=0;i<a.size();i++)
 		{
 			a[i]=getConfigFile(i);

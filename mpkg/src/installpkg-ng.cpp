@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.22 2007/01/25 09:51:44 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.23 2007/01/25 14:17:13 i27249 Exp $
  */
 
 #include "config.h"
@@ -42,7 +42,23 @@ void ShowBanner();
 int convert_directory();
 int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
+int build_package();
 
+int build_package()
+{
+    printf("building package...\n");
+    if (FileNotEmpty("install/data.xml"))
+    {
+	    PackageConfig p("install/data.xml");
+	    string pkgname;
+	    string sysline;
+	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
+	    printf("Creating package %s\n", pkgname.c_str());
+	    sysline="makepkg -l y -c n "+pkgname+".tgz";
+	    system(sysline.c_str());
+    }
+    return 0;
+}
 void ShowBanner()
 {
 	char *version="0.1 alpha 4";
@@ -52,6 +68,12 @@ void ShowBanner()
 
 int main (int argc, char **argv)
 {
+	if ((string) argv[0] == "buildpkg")
+	{
+	    build_package();
+	    return 0;
+	}
+	
 	ShowBanner();
 	loadGlobalConfig();
 	setlocale(LC_ALL, "C");
@@ -487,11 +509,8 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	// Alpha realization: bad algorithm (поплывет по зависимостям)
-	uninstall(pkgname, db, DepTracker, false);
+	uninstall(pkgname, db, DepTracker, 0);
 	DepTracker->commitToDb();
-	db->commit_actions();
-
 	install(pkgname, db, DepTracker);
 	DepTracker->commitToDb();
 	db->commit_actions();

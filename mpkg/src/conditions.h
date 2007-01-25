@@ -1,6 +1,6 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+    $Id: conditions.h,v 1.3 2007/01/25 14:17:13 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
@@ -12,6 +12,7 @@
 #define VER_NOTEQUAL 4	// !=
 #define VER_XMORE 5	// >=
 #define VER_XLESS 6	// <=
+#define VER_ANY 7	// any
 
 #define COND_MORE 	"more"		// >	1
 #define COND_LESS 	"less"		// <	2
@@ -19,6 +20,7 @@
 #define COND_NOTEQUAL 	"notequal"	// !=	4
 #define COND_XMORE 	"atleast"	// >=	5
 #define COND_XLESS 	"notmore"	// <=	6
+#define COND_ANY	"any"		// any	7
 
 #include <string>
 using namespace std;
