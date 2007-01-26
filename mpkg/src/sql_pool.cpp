@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.12 2007/01/24 15:16:26 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.13 2007/01/26 12:42:50 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -42,21 +42,8 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 	debug("get_sql_table:");
 	printf("%s\n", sql_query->c_str());
 #endif
-	//sqlite3 *db;
 	char *errmsg=0;
-	//int sql_return;
 	int query_return;
-	//sql_return=sqlite3_open(db_filename.c_str(),&db);
-	
-	/*if (sql_return) // Means error
-       	{
-		sqlite3_close(db);
-	       	printf("SQL Error: cannot open database /var/log/packages.db\n");
-		sqlError=sql_return;
-		sqlErrMsg="Cannot open database file "+db_filename;
-	       	return 1;
-       	}*/
-	//lastSQLQuery=*sql_query;
 	query_return=sqlite3_get_table(db, sql_query->c_str(), table, rows, cols, &errmsg);
 	
 	if (query_return!=SQLITE_OK) // Means error
@@ -66,7 +53,6 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 		printf("The query was: %s\n", sql_query->c_str());
 		sqlError=query_return;
 		sqlErrMsg=errmsg;
-	//	sqlite3_close(db);
 		free(errmsg);
 		return query_return;
 	}
@@ -75,7 +61,6 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 	free(errmsg);
 	sqlError=0;
 	sqlErrMsg.clear();
-	//sqlite3_close(db);
 	return 0;
 }	
 
@@ -94,36 +79,18 @@ int SQLiteDB::init()
 {
 	int ret;
 	ret = sqlite3_open(db_filename.c_str(), &db);
-	/*if (!ret)
-	{*/
 		sqlBegin();
-	//}
 	return ret;
 
 }
 RESULT SQLiteDB::sql_exec (string sql_query)
 {
-	//string transaction="begin transaction; "+sql_query+" commit transaction;";
-	//sql_query=transaction;
 #ifdef _SQL_DEBUG_
 	debug("sql_exec: "+sql_query);
 #endif
-	//sqlite3 *db;
 	char *sql_errmsg=0;
-	//int sql_return;
 	int query_return;
-	//sql_return=sqlite3_open(db_filename.c_str(),&db);
 	
-	/*if (sql_return) // Means error
-	{
-		sqlError=sql_return;
-		sqlErrMsg="Error opening database file "+db_filename;
-	       	//sqlite3_close(db);
-	       	return 1;
-       	}*/
-
-//	lastSQLQuery=sql_query;
-
 	query_return=sqlite3_exec(db,sql_query.c_str(),NULL, NULL, &sql_errmsg);
 	
 	if (query_return!=SQLITE_OK) // Means error
@@ -133,97 +100,16 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 		sqlError=query_return;
 		sqlErrMsg=sql_errmsg;
 		free(sql_errmsg);
-	//	sqlite3_close(db);
 		return query_return;
 	}
 
-	//sqlite3_close(db);
 	sqlError=0;
 	sqlErrMsg.clear();
-//	printf("sql_exec OK\n");
 	return 0;
 }
 
 RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
-#define USE_STL
-#ifdef USE_CH
-	char *sql_query;
-	char *sql_fields="";
-	char *sql_from=strMerge("from ", table_name.c_str());
-//	char *sql_where="where ";
-
-	char **table;
-	int cols;
-	int rows;
-	// Do what?
-	char *sql_action="select";
-
-
-	// Get what?
-	if (fields.empty()) // If fields is empty, just get all fields
-	{
-		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
-		for (unsigned int i=0;i<fieldnames.size();i++)
-			fields.addField(fieldnames[i]);
-	}
-	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
-	{
-		sql_fields=strMerge(sql_fields, fields.getFieldName(i).c_str());
-		if (i!=fields.size()-1) sql_fields=strMerge(sql_fields, ", ");
-	}
-
-	//sql_from = "from "+table_name;
-	if (!search.empty())
-	{
-		char *sql_where="where ";
-		for (int i=0;i<search.size();i++)
-		{
-			sql_where=strMerge(sql_where, strMerge(search.getFieldName(i).c_str(), strMerge("='", strMerge(search.getValueI(i).c_str(), "'"))));
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where=strMerge(sql_where, " and ");
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where=strMerge(sql_where, " or ");
-		}
-		sql_query=strMerge(sql_action, strMerge(" ", strMerge(sql_fields, strMerge(" ", strMerge(sql_from, strMerge(" ", strMerge(sql_where,";")))))));
-	}
-	else
-	{
-		sql_query=strMerge(sql_action, strMerge(" ", strMerge(sql_fields, strMerge(" ", strMerge(sql_from, ";")))));
-	}
-
-
-	
-	//lastSQLQuery=sql_query;
-
-	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
-	free(sql_query);
-//	free(sql_where);
-	free(sql_fields);
-	free(sql_from);
-	
-	if (sql_ret==0)
-	{
-		output->clear(); // Ensure that output is clean and empty
-		SQLRecord row; 	// One row of data
-		int field_num=0;
-		for (int current_row=1; current_row<=rows; current_row++)
-		{
-			field_num=0;
-			row=fields;
-			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
-			{
-				row.setValue(fields.getFieldName(field_num), (string) table[value_pos]);
-				field_num++;
-			}
-			output->addRecord(row);
-		}
-		sqlite3_free_table(table);
-		return 0;
-	}
-	else return sql_ret;
-
-#endif
-
-#ifdef USE_STL
 	string sql_query;
 	string sql_action;
 	mstring sql_fields;
@@ -288,7 +174,6 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 		return 0;
 	}
 	else return sql_ret;
-#endif
 }
 
 int SQLiteDB::getLastError()
@@ -337,7 +222,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 	{
 		fieldNames.push_back("file_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 		fieldNames.push_back("file_name");//  TEXT NOT NULL,
-		//fieldNames.push_back("file_size");//  TEXT NOT NULL,
+		fieldNames.push_back("file_type");//  INTEGER NOT NULL,
 		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL
 	}
  	if(table_name=="locations")
@@ -403,34 +288,6 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("packages_package_id");
 	}
 	return fieldNames;
-
-	
-	/*
-
-	//printf("Searching fields in %s table", table_name.c_str());
-	char **table;
-	int cols;
-	int rows;
-	vector<string> fieldNames;
-	string sql_query="select * from "+table_name+";";
-	printf("%s\n", sql_query.c_str());
-	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
-	if (sql_ret!=0)
-	{
-		printf("error querying table names\n");
-		sqlite3_free_table(table);
-		exit(1);
-		return fieldNames;
-	}
-	for (int i=0; i<=cols; i++)
-	{
-	//	printf("FECHING FIELDS...%d found", cols);
-		fieldNames.resize(i+1);
-		fieldNames[i]=(string) table[i];
-		printf("[getFieldNames] got %s, wrote %s\n", table[i], fieldNames[i].c_str());
-	}
-	sqlite3_free_table(table);
-	return fieldNames;*/
 }
 
 int SQLiteDB::sql_insert(string table_name, SQLRecord values)
@@ -444,7 +301,6 @@ int SQLiteDB::sql_insert(string table_name, SQLRecord values)
 		if (i!=fieldNames.size()-1) sql_query+=", ";
 	}
 	sql_query+=");";
-//	printf("[sql_insert] %s\n", sql_query.c_str());
 	return sql_exec(sql_query);
 }
 
@@ -452,7 +308,6 @@ int SQLiteDB::sql_insert(string table_name, SQLTable values)
 {
 	vector<string> fieldNames=getFieldNames(table_name);
 	string sql_query;
-	//printf("fields: %i\n", fieldNames.size());
 	for (int k=0; k<values.getRecordCount(); k++)
 	{
 		sql_query+="insert into "+table_name+" values(NULL, ";
@@ -463,8 +318,6 @@ int SQLiteDB::sql_insert(string table_name, SQLTable values)
 		}
 		sql_query+=");";
 	}
-//	printf("[sql_insert] %s\n", sql_query.c_str());
-
 	return sql_exec(sql_query);
 }
 
@@ -515,18 +368,13 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 
 SQLiteDB::SQLiteDB(string filename)
 {
-	//printf("sql constructor called\n");
 #ifdef DEBUG
 	printf("Database filename: %s\n", filename.c_str());
 #endif
 	db_filename=filename;
 	sqlError=0;
-	// Open database
-	//sqlite3_extended_result_codes(db, 1);
 	int sql_return;
 	sql_return=init();
-	
-	//printf("sql_return = %d\n", sql_return);
 	
 	if (sql_return) // Means error
 	{
@@ -540,7 +388,6 @@ SQLiteDB::SQLiteDB(string filename)
 }
 
 SQLiteDB::~SQLiteDB(){
-	//printf("sql destructor called\n");
 	sqlCommit();
 	sqlite3_close(db);
 }

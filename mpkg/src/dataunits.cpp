@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.12 2007/01/25 14:17:13 i27249 Exp $
+	$Id: dataunits.cpp,v 1.13 2007/01/26 12:42:50 i27249 Exp $
 */
 
 
@@ -771,6 +771,7 @@ bool FILES::IsEmpty()
 FILES::FILES()
 {
 	file_id=0;
+	file_type=0;
 }
 FILES::~FILES(){}
 
