@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.14 2007/01/26 14:00:16 i27249 Exp $
+	$Id: dataunits.cpp,v 1.15 2007/01/26 16:49:38 i27249 Exp $
 */
 
 
@@ -1337,6 +1337,8 @@ string PACKAGE::get_vstatus()
 	if (package_status==PKGSTATUS_UNAVAILABLE) return "UNAVAILABLE";
 	if (package_status==PKGSTATUS_AVAILABLE) return "AVAILABLE";
 	if (package_status==PKGSTATUS_UNKNOWN) return "UNKNOWN";
+	if (package_status==PKGSTATUS_REMOVED_AVAILABLE) return "PKGSTATUS_REMOVED_AVAILABLE";
+	if (package_status==PKGSTATUS_REMOVED_UNAVAILABLE) return "PKGSTATUS_REMOVED_UNAVAILABLE";
 	return "Unknown status";
 }
 
@@ -1438,6 +1440,7 @@ int PACKAGE::set_packager_email(string packager_email)
 
 int PACKAGE::set_status(int status)
 {
+	debug("setting status "+IntToStr(status)+" to package "+package_name);
 	package_status=status;
 	return 0;
 }
@@ -1499,17 +1502,32 @@ int PACKAGE::set_config_files(FILE_LIST conf_files)
 
 void PACKAGE::sync()
 {
+	printf("sync start: %d config files, %d package files\n", config_files.size(), package_files.size());
 	for (int i=0; i< config_files.size(); i++)
 	{
-		for (int t=0; t<package_files.size(); i++)
+		printf("Searching file %s\n", config_files.get_file(i)->get_name().c_str());
+		for (int t=0; t<package_files.size(); t++)
 		{
-			if (config_files.get_file(i)->get_name()==package_files.get_file(t)->get_name())
+			if (config_files.get_file(i)->get_name()=='/' + package_files.get_file(t)->get_name())
 			{
+				printf("config file %s\n", config_files.get_file(i)->get_name().c_str());
 				package_files.get_file(t)->set_type(FTYPE_CONFIG);
-				i++;
+				break;
 			}
 		}
 	}
+
+	if (config_files.IsEmpty())
+	{
+		for (int i=0; i < package_files.size(); i++)
+		{
+			if (package_files.get_file(i)->get_type()==FTYPE_CONFIG)
+			{
+				config_files.add(*package_files.get_file(i));
+			}
+		}
+	}
+	printf("sync end\n");
 }
 
 int PACKAGE::set_dependencies(DEPENDENCY_LIST dependencies)

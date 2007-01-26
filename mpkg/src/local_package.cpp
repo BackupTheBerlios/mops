@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.20 2007/01/26 14:00:16 i27249 Exp $
+$Id: local_package.cpp,v 1.21 2007/01/26 16:49:38 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -84,6 +84,7 @@ int LocalPackage::get_scripts()
 
 int LocalPackage::get_xml()
 {
+	printf("get_xml\n");
 	debug("get_xml start");
 	string tmp_xml=get_tmp_file();
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
@@ -171,6 +172,7 @@ int LocalPackage::get_xml()
 	debug("get_xml end");
 	return 0;
 }
+
 int LocalPackage::fill_filelist(PACKAGE *package)
 {
 	debug("fill_filelist start");
@@ -187,6 +189,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	}
 	vec_tmp_names.clear();
 	debug("fill_filelist end");
+	printf("fill_filelist");
 	package->sync();
 	return 0;
 }
@@ -210,6 +213,7 @@ int LocalPackage::get_filelist()
 		data.get_files()->add(file_tmp);
 	}
 	vec_tmp_names.clear();
+	printf("get_filelist\n");
 	data.sync();
 	debug("get_filelist end");
 	return 0;
@@ -326,6 +330,42 @@ int LocalPackage::set_additional_data()
 	return 0;
 }
 
+int LocalPackage::fill_configfiles(PACKAGE *package)
+{
+	string tmp_xml=get_tmp_file();
+	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
+	system(sys.c_str());
+	
+	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
+	if (!FileNotEmpty(tmp_xml))
+	{
+		// In most cases it means that we have legacy Slackware package.
+		// TODO: work with it =)
+		printf("%s: Invalid package: no XML data. Legacy Slackware packages is not supported yet\n", filename.c_str());
+		return -1;
+//		data.set_name(filename);
+
+		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
+	}
+
+	PackageConfig p(tmp_xml);
+//	_packageXMLNode = p.getXMLNode(); // To be indexing work
+
+	vector<string> vec_tmp_names=p.getConfigFilelist();
+	FILES configfile_tmp;
+	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
+	{
+		configfile_tmp.set_name(vec_tmp_names[i]);
+		package->get_config_files()->add(configfile_tmp);
+	}
+	vec_tmp_names.clear();
+	//vec_tmp_conditions.clear();
+	//vec_tmp_versions.clear();
+	package->sync();
+	debug("get_xml end");
+	return 0;
+
+}
 int LocalPackage::injectFile(bool index)
 {
 	// Injecting data from file!

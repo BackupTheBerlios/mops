@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.20 2007/01/26 14:00:16 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.21 2007/01/26 16:49:38 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -114,19 +114,30 @@ void mpkgDatabase::commit_actions()
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
 	get_packagelist(sqlSearch, &remove_list);
 	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	for (int i=0;i<remove_list.size();i++)
 	{
 		remove_package(remove_list.get_package(i));
 	}
+	sqlSearch.clear();
 
+	PACKAGE_LIST purge_list;
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
+	get_packagelist(sqlSearch, &purge_list);
+	printf("purge list size = %d\n", purge_list.size());
+	for (int i=0; i<purge_list.size(); i++)
+	{
+		purge_package(purge_list.get_package(i));
+	}
+	sqlSearch.clear();
 
 	// Second: installing required packages
 	PACKAGE_LIST install_list;
-	sqlSearch.setValue("package_status", IntToStr(PKGSTATUS_INSTALL));
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
 	get_packagelist(sqlSearch, &install_list);
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
@@ -346,20 +357,17 @@ int mpkgDatabase::install_package(PACKAGE* package)
 #ifdef IDEBUG
 	printf("calling fill_scripts\n");
 #endif
-	/*bool no_purge;
+	bool no_purge=true;
 	FILE_LIST old_config_files;
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
+	debug("purge_id="+IntToStr(purge_id));
 	if (purge_id==0)
 	{
 		no_purge=false;
 	}
-	else
-	{
-		old_config_files=get_config_files(purge_id);
-		no_purge=true;
-	}*/
 	lp.fill_scripts(package);
 	lp.fill_filelist(package);
+	lp.fill_configfiles(package);
 	if (check_file_conflicts(package)!=0)
 	{
 		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
@@ -384,9 +392,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	system(create_root.c_str());
 	printf("Extracting package %s\n",package->get_name().c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install";
-	// If previous version isn't purged, do not overwrite config files
-	/*if (no_purge)
+	//If previous version isn't purged, do not overwrite config files
+	if (no_purge)
 	{
+		debug("no_purge flag IS SET, config files count = "+IntToStr(package->get_config_files()->size()));
 		for (int i=0; i<package->get_config_files()->size(); i++)
 		{
 			// Writing new config files, skipping old
@@ -394,11 +403,12 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			{
 				if (package->get_config_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
 				{
+					debug("excluding file "+package->get_config_files()->get_file(i)->get_name());
 					sys+=" --exclude "+package->get_config_files()->get_file(i)->get_name();
 				}
 			}
 		}
-	}*/
+	}
 	sys+=" > /dev/null)";
 	system(sys.c_str());
 	
@@ -414,26 +424,24 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	return 0;
 }
 
-/*int mpkgDatabase::purge_package(PACKAGE* package)
+int mpkgDatabase::purge_package(PACKAGE* package)
 {
-	// removing package
-	debug("calling purge");
+	// purging package config files.
+	printf("calling purge\n");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	string fname;
-	printf("Removing configuration files of package %s...",package->get_name().c_str());
+	printf("Removing configuration files of package %s...\n", package->get_name().c_str());
 	debug("Package has "+IntToStr(package->get_config_files()->size())+" config files");
 
 	FILE_LIST remove_files=*package->get_config_files();
+	printf("remove_files size = %d\n", remove_files.size());
 
 	for (int i=0; i<remove_files.size(); i++)
 	{
 		fname=sys_root + remove_files.get_file(i)->get_name(false);
 		
-		if (fname[fname.length()-1]=='/')
-		{
-		}
-		else
+		if (fname[fname.length()-1]!='/')
 		{
 			if (unlink (fname.c_str())!=0)
 			{
@@ -467,11 +475,14 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	printf("done\n");
-	set_purge(package->get_id());
-	set_status(package->get_id(), PKGSTATUS_AVAILABLE);
+	//set_purge(package->get_id());
+	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_UNAVAILABLE);
+	else set_status(package->get_id(), PKGSTATUS_AVAILABLE);
+	cleanFileList(package->get_id());
+
 	debug("*********************************************\n*        Package purged sussessfully     *\n*********************************************");
 	return 0;
-}*/
+}
 
 
 
@@ -496,39 +507,15 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 		// purge will be implemented in mpkgDatabase::purge_package(PACKAGE *package); so we skip config files here
 		FILE_LIST remove_files=*package->get_files();
-/*		
-		for (int i=0; i<package->get_files()->size(); i++)
-		{
-			for (int k=0; k<=package->get_config_files()->size(); k++)
-			{
-				if (k==package->get_config_files()->size())
-				{
-					remove_files.add(*package->get_files()->get_file(i));
-					break;
-				}
-				if (package->get_files()->get_file(i)->get_name()==package->get_config_files()->get_file(k)->get_name()) break;
-			}
-		}
-*/
 		for (int i=0; i<remove_files.size(); i++)
 		{
 			fname=sys_root + remove_files.get_file(i)->get_name(false);
-			
-			if (fname[fname.length()-1]=='/')
-			{
-	/*			rm_ret=rmdir(fname.c_str());
-				if (rm_ret!=0)
-				{
-					//if (rm_ret!=ENOTEMPTY) debug ("failed to delete directory");
-				}
-				*/
-			}
 			if (remove_files.get_file(i)->get_type()==FTYPE_PLAIN && fname[fname.length()-1]!='/')
 			{
 				if (unlink (fname.c_str())!=0)
 				{
 					printf("Cannot delete file %s: ", fname.c_str());
-					//perror("");
+					perror("Reason: ");
 				}
 			}
 		}
@@ -564,12 +551,8 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			system(postrem.c_str());
 		}
 	}
-	if (package->get_status()==PKGSTATUS_PURGE || package->get_status()==PKGSTATUS_REMOVE_PURGE)
-	{
-		//purge_package(package);
-//		printf("Package %s purged successfully\n",package->get_name());
-	}
-	else set_status(package->get_id(), PKGSTATUS_AVAILABLE);
+	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_REMOVED_UNAVAILABLE);
+	else set_status(package->get_id(), PKGSTATUS_REMOVED_AVAILABLE);
 	cleanFileList(package->get_id());
 	printf("done\n");
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
@@ -579,8 +562,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 int mpkgDatabase::cleanFileList(int package_id)
 {
 	printf("Cleaning up...\n");
+	int status=get_status(package_id);
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	if (status==PKGSTATUS_REMOVED_AVAILABLE || status==PKGSTATUS_REMOVED_UNAVAILABLE) sqlSearch.addField("file_type", IntToStr(FTYPE_PLAIN));
 	return db.sql_delete("files", sqlSearch);
 }
 
@@ -747,7 +732,8 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	for (int i=0; i<currentPackages.size(); i++)
 	{
 		if (currentPackages.get_package(i)->get_status()==PKGSTATUS_INSTALL \
-				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_AVAILABLE)
+				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_AVAILABLE \
+				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_REMOVED_AVAILABLE)
 		{
 			package_num=0;
 			for (int s=0; s<newPackages->size(); s++)
@@ -767,7 +753,12 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 				debug("mpkg.cpp: updateRepositoryData(): package_num=0, clearing package with id "+\
 						IntToStr(currentPackages.get_package(i)->get_id()));
 				currentPackages.get_package(i)->get_locations()->clear();
-				currentPackages.get_package(i)->set_status(PKGSTATUS_UNAVAILABLE);
+				
+				if (currentPackages.get_package(i)->get_status()==PKGSTATUS_REMOVED_AVAILABLE)
+					currentPackages.get_package(i)->set_status(PKGSTATUS_REMOVED_UNAVAILABLE);
+				else
+					currentPackages.get_package(i)->set_status(PKGSTATUS_UNAVAILABLE);
+
 				update_package_data(currentPackages.get_package(i)->get_id(), currentPackages.get_package(i));
 			}
 		}

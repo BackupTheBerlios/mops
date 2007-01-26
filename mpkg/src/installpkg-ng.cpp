@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.24 2007/01/26 14:00:16 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.25 2007/01/26 16:49:38 i27249 Exp $
  */
 
 #include "config.h"
@@ -423,21 +423,26 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 	PACKAGE_LIST candidates;
 	PACKAGE tmp_pkg;
 	db->get_packagelist(sqlSearch, &candidates);
+	debug("candidates size = "+IntToStr(candidates.size()));
 	bool alreadyInstalled=false;
 	if (candidates.size()>0)
 	{
 		for (int i=0; i<candidates.size(); i++)
 		{
+			debug("Candidate #"+IntToStr(i)+": "+candidates.get_package(i)->get_name()+" with ID "+IntToStr(candidates.get_package(i)->get_id())+" and status "+ \
+					candidates.get_package(i)->get_vstatus());
 			if (candidates.get_package(i)->get_status()==PKGSTATUS_INSTALLED)
 			{
 				alreadyInstalled=true;
 				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_version().c_str());
 				break;
 			}
-			if (candidates.get_package(i)->get_status()==PKGSTATUS_AVAILABLE)
+			if (candidates.get_package(i)->get_status() == PKGSTATUS_AVAILABLE || candidates.get_package(i)->get_status() == PKGSTATUS_REMOVED_AVAILABLE)
 			{
-				if (tmp_pkg.get_version()<candidates.get_package(i)->get_version() || tmp_pkg.IsEmpty())
+				debug("Status passed to installation");
+				if (tmp_pkg.IsEmpty() || tmp_pkg.get_version()<candidates.get_package(i)->get_version())
 				{
+					debug("tmp stored successfully");
 					tmp_pkg=*candidates.get_package(i);
 				}
 			}
@@ -449,7 +454,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 		DepTracker->merge(&tmp_pkg);
 		return 0;
 	}
-	
+	debug("LOCAL INSTALL ATTEMPT DETECTED");
 	// If reached this point, the package isn't in the database. Install from local file.
 	// Part 0. Check if file exists.
 	if (!CheckFileType(fname))
@@ -489,10 +494,14 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 	PACKAGE package=db->get_installed_package(pkg_name);
 	if (package.IsEmpty())
 	{
-		int id=0; //db->get_purge(pkg_name);
+		printf("package.empty()\n");
+		int id;
+		if (do_purge==1) id=db->get_purge(pkg_name);
+		else id=0;
 		if (id==0)
 		{
-			printf(_("Package %s is not installed\n"), pkg_name.c_str());
+			if (do_purge) printf(_("Package %s is already purged\n"), pkg_name.c_str());
+			else printf(_("Package %s is not installed\n"), pkg_name.c_str());
 			return 0;
 		}
 		if (id<0)
@@ -500,6 +509,7 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 			printf("Internal error while calling get_purge(): error code = %d\n", id);
 			return id;
 		}
+		printf("setting status to purge for ID %d\n", id);
 		db->set_status(id, PKGSTATUS_PURGE);
 		return 0;
 	}

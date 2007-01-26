@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.17 2007/01/26 14:00:16 i27249 Exp $
+ *	$Id: core.cpp,v 1.18 2007/01/26 16:49:38 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -116,6 +116,7 @@ int mpkgDatabase::check_install_package (PACKAGE *package)
 	//Searching in DB
 	int package_id;
 	package_id=get_package_id(package);
+	debug("package id = "+IntToStr(package_id));
 	if (package_id<0)
 	{
 		printf("Cannot install package: database error\n");
@@ -144,7 +145,7 @@ int mpkgDatabase::check_install_package (PACKAGE *package)
 		{
 			return CHKINSTALL_REMOVE;
 		}
-		if (package_status==PKGSTATUS_AVAILABLE)
+		if (package_status==PKGSTATUS_AVAILABLE || package_status == PKGSTATUS_REMOVED_AVAILABLE)
 		{
 			// Very important procedure - if an earlier/newer version of package is installed? (!!!NOT WORKING!!!)
 			string other_ver_id;
@@ -162,9 +163,9 @@ int mpkgDatabase::check_install_package (PACKAGE *package)
 			/*if (check_file_conflicts(package)==0) */return CHKINSTALL_AVAILABLE;
 			//else return CHKINSTALL_FILECONFLICT;
 		}
-		if (package_status==PKGSTATUS_UNAVAILABLE)
+		if (package_status==PKGSTATUS_UNAVAILABLE || package_status == PKGSTATUS_REMOVED_UNAVAILABLE)
 		{
-			if (package->get_locations()->get_location(0)->get_local()) return CHKINSTALL_AVAILABLE; // Local install - we can install!
+			if (!package->get_locations()->IsEmpty() && package->get_locations()->get_location(0)->get_local()) return CHKINSTALL_AVAILABLE; // Local install - we can install!
 			return CHKINSTALL_UNAVAILABLE;
 		}
 		if (package_status==PKGSTATUS_REMOVE_PURGE)
@@ -621,6 +622,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		{
 			//printf("Getting extra info, package_id=%d\n",package.get_id());
 			get_filelist(package.get_id(), package.get_files());
+			package.sync();
 			get_locationlist(package.get_id(), package.get_locations());
 			get_dependencylist(package.get_id(), package.get_dependencies());
 			get_taglist(package.get_id(), package.get_tags());
@@ -654,6 +656,7 @@ int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist)
 		file.set_type(atoi(sqlTable.getValue(row, "file_type").c_str()));
 		filelist->add(file);
 	}
+
 	return 0;
 }
 
@@ -928,6 +931,7 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 
 int mpkgDatabase::set_status(int package_id, int status)
 {
+	printf("setting status %d\n", status);
        	SQLRecord sqlUpdate;
 	sqlUpdate.addField("package_status", IntToStr(status));
 	SQLRecord sqlSearch;
@@ -1013,28 +1017,53 @@ int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
 	}
 }
 
-/*int mpkgDatabase::get_purge(string package_name)
+int mpkgDatabase::get_purge(string package_name)
 {
+	debug("get_purge start");
 	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_name", package_name);
+	sqlSearch.addField("package_name", package_name);
 	SQLTable sqlTable;
+	SQLTable sqlTableFiles;
 	SQLRecord sqlFields;
-	sqlFields.addField("packages_package_id");
-	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
+	sqlFields.addField("package_id");
+	sqlFields.addField("package_status");
+	if (db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch)!=0)
 	{
 		return -1;
 	}
 	if (sqlTable.empty())
 	{
+		debug("Nothing found");
 		return 0;
 	}
-	// Check for database error
 	int id=0;
-	for (int i=0; id==0; i++)
+	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
-		id=atoi(sqlTable.getValue(i, "packages_package_id").c_str());
+		debug("searching..."); // HERE IS AN ERROR: IF IT WAS SAME PACKAGE, THEN AT THIS MOMENT, PACKAGE HAS ALREADY STATUS "INSTALL". NEED FIX
+		if (sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_REMOVED_AVAILABLE) || \
+				sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_REMOVED_UNAVAILABLE))
+		{
+			id=atoi(sqlTable.getValue(i, "package_id").c_str());
+			debug("id set to "+IntToStr(id));
+			break;
+		}
+		if (sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_INSTALL))
+		{
+			sqlSearch.clear();
+			sqlFields.clear();
+
+			sqlSearch.addField("packages_package_id", sqlTable.getValue(i, "package_id"));
+			sqlSearch.addField("file_type", IntToStr(FTYPE_CONFIG));
+			db.get_sql_vtable(&sqlTableFiles, sqlFields, "files", sqlSearch);
+			if (!sqlTableFiles.empty())
+			{
+				id=atoi(sqlTable.getValue(i, "package_id").c_str());
+				break;
+			}
+		}
+		else debug("Status "+ sqlTable.getValue(i, "package_status")+"not conforming..");
 	}
-#ifdef EXTRA_CHECK
+/*#ifdef EXTRA_CHECK
 	for (int i=1; i<sqlTable.getRecordCount(); i++)
 	{
 		if (id!=atoi(sqlTable.getValue(i, "packages_package_id").c_str()) && atoi(sqlTable.getValue(i, "packages_package_id").c_str())!=0)
@@ -1043,10 +1072,10 @@ int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
 			return -2; // Multiple package versions not purged at same time - error!
 		}
 	}
-#endif
+#endif*/
 	return id;
 }
-
+/*
 FILE_LIST mpkgDatabase::get_config_files(int package_id) // Needs remastering
 {
 	SQLRecord sqlSearch;

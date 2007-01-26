@@ -1,5 +1,5 @@
 /* Miscellaneous constants
-    $Id: constants.h,v 1.4 2007/01/26 12:42:50 i27249 Exp $
+    $Id: constants.h,v 1.5 2007/01/26 16:49:38 i27249 Exp $
 */
 
 
@@ -16,7 +16,8 @@
 #define PKGSTATUS_INSTALLED 6		// Package is installed and no actions will be performed with him
 #define PKGSTATUS_REMOVE_PURGE 7	// Package is installed, marked to remove and purge configuration files
 #define PKGSTATUS_PURGE 8		// Package was removed, and his configuration files are marked to purge
-#define PKGSTATUS_REMOVED 9		// Package was removed, but config files are in touch (UNUSED).
+#define PKGSTATUS_REMOVED_AVAILABLE 9		// Package was removed, but config files are in touch, and package is available to install again.
+#define PKGSTATUS_REMOVED_UNAVAILABLE 10	// Package was removed, but config files are in touch, but package is unavailable to install back.
 
 #define CHKINSTALL_NOTFOUND 1
 #define CHKINSTALL_DBERROR 2
