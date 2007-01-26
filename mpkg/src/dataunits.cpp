@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.13 2007/01/26 12:42:50 i27249 Exp $
+	$Id: dataunits.cpp,v 1.14 2007/01/26 14:00:16 i27249 Exp $
 */
 
 
@@ -750,6 +750,17 @@ string FILES::get_name(bool sql)
 	return file_name;
 }
 
+int FILES::get_type()
+{
+	return file_type;
+}
+
+bool FILES::config()
+{
+	if (file_type==FTYPE_CONFIG) return true;
+	else return false;
+}
+
 int FILES::set_id(int id)
 {
 	file_id=id;
@@ -762,6 +773,11 @@ int FILES::set_name(string name)
 	return 0;
 }
 
+int FILES::set_type(int type)
+{
+	file_type=type;
+	return 0;
+}
 bool FILES::IsEmpty()
 {
 	if (file_name.empty()) return true;
@@ -771,7 +787,7 @@ bool FILES::IsEmpty()
 FILES::FILES()
 {
 	file_id=0;
-	file_type=0;
+	file_type=FTYPE_PLAIN;
 }
 FILES::~FILES(){}
 
@@ -1481,6 +1497,20 @@ int PACKAGE::set_config_files(FILE_LIST conf_files)
 	return 0;
 }
 
+void PACKAGE::sync()
+{
+	for (int i=0; i< config_files.size(); i++)
+	{
+		for (int t=0; t<package_files.size(); i++)
+		{
+			if (config_files.get_file(i)->get_name()==package_files.get_file(t)->get_name())
+			{
+				package_files.get_file(t)->set_type(FTYPE_CONFIG);
+				i++;
+			}
+		}
+	}
+}
 
 int PACKAGE::set_dependencies(DEPENDENCY_LIST dependencies)
 {

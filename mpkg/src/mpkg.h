@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.9 2007/01/22 00:56:00 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.10 2007/01/26 14:00:16 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -49,12 +49,12 @@ class mpkgDatabase
 		int update_package_data(int package_id, PACKAGE *package);
 
 		// Purge functions
-		int get_purge(string package_name);
-		FILE_LIST get_config_files(int package_id);
-		int get_configs(int package_id, FILE_LIST *conf_files);
-		int set_purge(int package_id);
-		int add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id);
-		int add_config_link(int package_id, int conf_id);
+		//int get_purge(string package_name);
+		//FILE_LIST get_config_files(int package_id);
+		//int get_configs(int package_id, FILE_LIST *conf_files);
+		//int set_purge(int package_id);
+		//int add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id);
+		//int add_config_link(int package_id, int conf_id);
 
 		
 		int cleanFileList(int package_id);

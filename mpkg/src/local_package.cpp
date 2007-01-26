@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.19 2007/01/25 09:51:44 i27249 Exp $
+$Id: local_package.cpp,v 1.20 2007/01/26 14:00:16 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -164,7 +164,6 @@ int LocalPackage::get_xml()
 	{
 		configfile_tmp.set_name(vec_tmp_names[i]);
 		data.get_config_files()->add(configfile_tmp);
-		//configfile_tmp.clear();
 	}
 	vec_tmp_names.clear();
 	vec_tmp_conditions.clear();
@@ -188,6 +187,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	}
 	vec_tmp_names.clear();
 	debug("fill_filelist end");
+	package->sync();
 	return 0;
 }
 
@@ -207,10 +207,10 @@ int LocalPackage::get_filelist()
 		_packageXMLNode.getChildNode("filelist").addChild("file");
 		_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
 		file_tmp.set_name(vec_tmp_names[i]);
-		//file_tmp.set_size("0"); // I think store this data about each file is idiotizm
 		data.get_files()->add(file_tmp);
 	}
 	vec_tmp_names.clear();
+	data.sync();
 	debug("get_filelist end");
 	return 0;
 }
@@ -248,8 +248,8 @@ int LocalPackage::get_size()
 		printf(_("Unable to extract size of package\n"));
 		return 1;
 	}
-	char c_size[40000];
-	char i_size[40000];
+	char c_size[40000]; //FIXME: Overflow are possible here
+	char i_size[40000]; //FIXME: Same problem
 	debug("reading file...");
 
 	for (int i=1; i<=5; i++)

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.8 2007/01/26 12:42:50 i27249 Exp $
+	$Id: dataunits.h,v 1.9 2007/01/26 14:00:16 i27249 Exp $
 */
 
 
@@ -412,13 +412,13 @@ class PACKAGE
     private:
 	// EXTERNAL DATA //
 	FILE_LIST package_files;
-	//FILE_LIST config_files;
+	FILE_LIST config_files;
 	LOCATION_LIST package_locations;
 	DEPENDENCY_LIST package_dependencies;
 	TAG_LIST package_tags;
 	SCRIPTS package_scripts;
     public:
-	//FILE_LIST* get_config_files();
+	FILE_LIST* get_config_files();
 	FILE_LIST* get_files();
 	LOCATION_LIST* get_locations();
 	DEPENDENCY_LIST* get_dependencies();
@@ -428,7 +428,7 @@ class PACKAGE
 	bool operator == (PACKAGE npkg);
 	bool operator != (PACKAGE npkg);
 
-	//int set_config_files(FILE_LIST conf_files);
+	int set_config_files(FILE_LIST conf_files);
 	int set_files(FILE_LIST files);
 	int set_locations(LOCATION_LIST locations);
 	int set_dependencies(DEPENDENCY_LIST dependencies);
@@ -443,6 +443,7 @@ class PACKAGE
 	void destroy();
 	void clear();
 	bool IsEmpty();
+	void sync();
 	PACKAGE();
 	~PACKAGE();
 };

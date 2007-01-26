@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.16 2007/01/25 09:51:44 i27249 Exp $
+ *	$Id: core.cpp,v 1.17 2007/01/26 14:00:16 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -248,6 +248,7 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 		sqlValues.clear();
 		sqlValues.addField("file_name", filelist->get_file(i)->get_name());
 		sqlValues.addField("packages_package_id", IntToStr(package_id));
+		sqlValues.addField("file_type", IntToStr(filelist->get_file(i)->get_type()));
 		sqlTable.addRecord(sqlValues);
 	}
 	if (!sqlTable.empty())
@@ -475,7 +476,7 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	// INSERT INTO SCRIPTS
 	add_scripts_record(package_id, package->get_scripts());
 
-	if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
+	//if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
 	//db.sqlCommit();
 	return package_id;
 }	
@@ -578,7 +579,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 		get_dependencylist(package_id, package->get_dependencies());
 		get_taglist(package_id, package->get_tags());
 		get_scripts(package_id, package->get_scripts());
-		get_configs(package_id, package->get_config_files());
+		//get_configs(package_id, package->get_config_files());
 	}
 	return 0;
 }
@@ -636,6 +637,7 @@ int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist)
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("file_name");
+	sqlFields.addField("file_type");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
 	FILES file;
@@ -649,6 +651,7 @@ int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist)
 	for (int row=0;row<sqlTable.getRecordCount();row++)
 	{
 		file.set_name(sqlTable.getValue(row, "file_name"));
+		file.set_type(atoi(sqlTable.getValue(row, "file_type").c_str()));
 		filelist->add(file);
 	}
 	return 0;
@@ -1010,7 +1013,7 @@ int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
 	}
 }
 
-int mpkgDatabase::get_purge(string package_name)
+/*int mpkgDatabase::get_purge(string package_name)
 {
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_name", package_name);
@@ -1044,7 +1047,7 @@ int mpkgDatabase::get_purge(string package_name)
 	return id;
 }
 
-FILE_LIST mpkgDatabase::get_config_files(int package_id)
+FILE_LIST mpkgDatabase::get_config_files(int package_id) // Needs remastering
 {
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
@@ -1067,7 +1070,7 @@ FILE_LIST mpkgDatabase::get_config_files(int package_id)
 	return ret;
 }
 
-int mpkgDatabase::get_configs(int package_id, FILE_LIST *conf_files)
+int mpkgDatabase::get_configs(int package_id, FILE_LIST *conf_files) // Needs remastering too
 {
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
@@ -1172,7 +1175,7 @@ int mpkgDatabase::add_config_link(int package_id, int conf_id)
 	sqlInsert.addField("configfiles_configfile_id", IntToStr(conf_id));
 	return db.sql_insert("configfiles_links", sqlInsert);
 }
-
+*/
 
 //--------------------------------------SQL PART----------------------------------------
 SQLProxy* mpkgDatabase::getSqlDb()

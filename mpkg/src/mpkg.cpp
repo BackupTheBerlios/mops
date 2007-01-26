@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.19 2007/01/25 10:05:09 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.20 2007/01/26 14:00:16 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -346,7 +346,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 #ifdef IDEBUG
 	printf("calling fill_scripts\n");
 #endif
-	bool no_purge;
+	/*bool no_purge;
 	FILE_LIST old_config_files;
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
 	if (purge_id==0)
@@ -357,7 +357,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		old_config_files=get_config_files(purge_id);
 		no_purge=true;
-	}
+	}*/
 	lp.fill_scripts(package);
 	lp.fill_filelist(package);
 	if (check_file_conflicts(package)!=0)
@@ -385,7 +385,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	printf("Extracting package %s\n",package->get_name().c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install";
 	// If previous version isn't purged, do not overwrite config files
-	if (no_purge)
+	/*if (no_purge)
 	{
 		for (int i=0; i<package->get_config_files()->size(); i++)
 		{
@@ -398,10 +398,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				}
 			}
 		}
-	}
+	}*/
 	sys+=" > /dev/null)";
 	system(sys.c_str());
-
+	
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
@@ -414,7 +414,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	return 0;
 }
 
-int mpkgDatabase::purge_package(PACKAGE* package)
+/*int mpkgDatabase::purge_package(PACKAGE* package)
 {
 	// removing package
 	debug("calling purge");
@@ -471,7 +471,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	set_status(package->get_id(), PKGSTATUS_AVAILABLE);
 	debug("*********************************************\n*        Package purged sussessfully     *\n*********************************************");
 	return 0;
-}
+}*/
 
 
 
@@ -495,7 +495,8 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		debug("Package has "+IntToStr(package->get_files()->size())+" files");
 
 		// purge will be implemented in mpkgDatabase::purge_package(PACKAGE *package); so we skip config files here
-		FILE_LIST remove_files;
+		FILE_LIST remove_files=*package->get_files();
+/*		
 		for (int i=0; i<package->get_files()->size(); i++)
 		{
 			for (int k=0; k<=package->get_config_files()->size(); k++)
@@ -508,7 +509,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				if (package->get_files()->get_file(i)->get_name()==package->get_config_files()->get_file(k)->get_name()) break;
 			}
 		}
-
+*/
 		for (int i=0; i<remove_files.size(); i++)
 		{
 			fname=sys_root + remove_files.get_file(i)->get_name(false);
@@ -522,18 +523,14 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				}
 				*/
 			}
-			else
+			if (remove_files.get_file(i)->get_type()==FTYPE_PLAIN && fname[fname.length()-1]!='/')
 			{
 				if (unlink (fname.c_str())!=0)
 				{
-					//printf("Cannot delete file %s\n", fname.c_str());
+					printf("Cannot delete file %s: ", fname.c_str());
+					//perror("");
 				}
 			}
-	/*		if ((i-gauss*step)/step > 1)
-			{
-				printf(">");
-				gauss++;
-			}*/
 		}
 	
 		// Run 2: clearing empty directories
@@ -569,7 +566,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	}
 	if (package->get_status()==PKGSTATUS_PURGE || package->get_status()==PKGSTATUS_REMOVE_PURGE)
 	{
-		purge_package(package);
+		//purge_package(package);
 //		printf("Package %s purged successfully\n",package->get_name());
 	}
 	else set_status(package->get_id(), PKGSTATUS_AVAILABLE);
@@ -656,6 +653,10 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 		{
 			debug("mpkg.cpp: update_package_data(): unable to add new locations: error in add_locationlist_record()");
 			return -3;
+		}
+		if (old_package.get_status()!=PKGSTATUS_INSTALLED && package->get_locations()->IsEmpty())
+		{
+			set_status(old_package.get_id(), PKGSTATUS_UNAVAILABLE);
 		}
 	}
 
