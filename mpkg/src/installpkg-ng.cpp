@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.25 2007/01/26 16:49:38 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.26 2007/01/29 14:35:07 i27249 Exp $
  */
 
 #include "config.h"
@@ -494,7 +494,7 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 	PACKAGE package=db->get_installed_package(pkg_name);
 	if (package.IsEmpty())
 	{
-		printf("package.empty()\n");
+		debug("Not installed package");
 		int id;
 		if (do_purge==1) id=db->get_purge(pkg_name);
 		else id=0;

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.21 2007/01/26 16:49:38 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.22 2007/01/29 14:35:07 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -395,6 +395,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	//If previous version isn't purged, do not overwrite config files
 	if (no_purge)
 	{
+		debug("retrieving old config files");
+		get_filelist(purge_id, &old_config_files, true);
 		debug("no_purge flag IS SET, config files count = "+IntToStr(package->get_config_files()->size()));
 		for (int i=0; i<package->get_config_files()->size(); i++)
 		{
@@ -433,8 +435,14 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	string fname;
 	printf("Removing configuration files of package %s...\n", package->get_name().c_str());
 	debug("Package has "+IntToStr(package->get_config_files()->size())+" config files");
+#ifdef PURGE_METHOD_1
+	debug("purging using method 1");
+	FILE_LIST remove_files=*package->get_config_files(); // Try to remove only config files
+#else
+	debug("Purging using method 2");
+	FILE_LIST remove_files=*package->get_files(); // Try to remove ALL files
+#endif
 
-	FILE_LIST remove_files=*package->get_config_files();
 	printf("remove_files size = %d\n", remove_files.size());
 
 	for (int i=0; i<remove_files.size(); i++)

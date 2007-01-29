@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.11 2007/01/26 16:49:38 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.12 2007/01/29 14:35:07 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -16,7 +16,7 @@ class mpkgDatabase
 		// Functions to get data
 		int get_package(int package_id, PACKAGE *package, bool GetExtraInfo=true);
 		int get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=true);
-		int get_filelist (int package_id, FILE_LIST *filelist);
+		int get_filelist (int package_id, FILE_LIST *filelist, bool config_only=false);
 		int get_dependencylist(int package_id, DEPENDENCY_LIST *deplist);
 		int get_taglist(int package_id, TAG_LIST *taglist);
 		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);

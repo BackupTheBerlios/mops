@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.18 2007/01/26 16:49:38 i27249 Exp $
+ *	$Id: core.cpp,v 1.19 2007/01/29 14:35:07 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -634,7 +634,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 
 }
 
-int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist)
+int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist, bool config_only)
 {
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
@@ -647,16 +647,27 @@ int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist)
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
 	if (sql_ret!=0) 
 	{
-		return 1;
+		return -1;
 	}
 
 	for (int row=0;row<sqlTable.getRecordCount();row++)
 	{
-		file.set_name(sqlTable.getValue(row, "file_name"));
-		file.set_type(atoi(sqlTable.getValue(row, "file_type").c_str()));
-		filelist->add(file);
+		if (!config_only)
+		{
+			file.set_name(sqlTable.getValue(row, "file_name"));
+			file.set_type(atoi(sqlTable.getValue(row, "file_type").c_str()));
+			filelist->add(file);
+		}
+		else
+		{
+			if (sqlTable.getValue(row, "file_type")==IntToStr(FTYPE_CONFIG))
+			{
+				file.set_name(sqlTable.getValue(row, "file_name"));
+				file.set_type(atoi(sqlTable.getValue(row, "file_type").c_str()));
+				filelist->add(file);
+			}
+		}
 	}
-
 	return 0;
 }
 
