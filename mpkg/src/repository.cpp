@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.6 2007/01/24 15:16:26 i27249 Exp $
+ * $Id: repository.cpp,v 1.7 2007/01/31 11:46:12 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -84,7 +84,6 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	{
 		file_tmp.set_name(vec_tmp_names[i]);
 		data->get_files()->add(file_tmp);
-		//file_tmp.clear();
 	}
 
 
@@ -108,7 +107,6 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	if (filetype==FTW_F && ext==".tgz")
 	{
 		cout<< "indexing file " << filename << "..."<<endl;
-//		printf("indexing file %s...\t", filename);
 		LocalPackage lp(_package);
 		lp.injectFile(true);
 		_root.addChild(lp.getPackageXMLNode());
@@ -129,12 +127,13 @@ int Repository::build_index(string server_url)
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
 	// and build an XML tree for whole repository, then write it to ./packages.xml
 	
-	ftw(".", ProcessPackage, 100);
+	ftw(".", ProcessPackage, 600);
 
 	// Finally, write our XML tree to file
 	_root.writeToFile("packages.xml");
 	// Compress file
 	if (system("gzip -f packages.xml")==0) printf("Repository index created successfully\n");
+	else printf("Error creating repository index!\n");
 	return 0;
 }
 

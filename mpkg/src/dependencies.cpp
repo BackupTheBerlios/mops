@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.8 2007/01/25 14:17:13 i27249 Exp $
+$Id: dependencies.cpp,v 1.9 2007/01/31 11:46:12 i27249 Exp $
 */
 
 
@@ -285,6 +285,12 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 				}
 			}
 		}
+		// And, at last of all, check if any package was broken without this package and can be restored.
+		
+		// Conception: get all packages who depends on this and have status PKGSTATUS_REMOVE, and restore them to PKGSTATUS_INSTALLED state
+		// Also, on the way, check if these packages doesn't depend on any unavailable package...
+		// Other way is to use "normalize" function to resolve all dependencies.
+
 		return DEP_OK;			// return success code
 	}
 	else	// If not...
@@ -350,6 +356,38 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge)
 	}
 	return 0;
 }
+
+int DependencyTracker::normalize()
+{
+#ifdef DEP_NORMALIZE
+	PACKAGE_LIST install_list;
+	PACKAGE_LIST remove_list;
+	PACKAGE_LIST available_list;
+
+	SQLRecord installSearch, removeSearch, availableSearch;
+	installSearch.setSearchMode(SEARCH_OR);
+	removeSearch.setSearchMode(SEARCH_OR);
+	availableSearch.setSearchMode(SEARCH_OR);
+
+	installSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
+	installSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALLED));
+
+	removeSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
+	removeSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
+	removeSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
+
+	availableSearch.addField("package_status", IntToStr(PKGSTATUS_AVAILABLE));
+	availableSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVED_AVAILABLE));
+
+	db->get_packagelist(installSearch, &install_list);
+	db->get_packagelist(removeSearch, &remove_list);
+	db->get_packagelist(availableSearch, &available_list);
+#endif
+	return 0;
+
+
+}
+	
 
 DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
 {

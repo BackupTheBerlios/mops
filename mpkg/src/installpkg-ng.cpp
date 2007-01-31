@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.26 2007/01/29 14:35:07 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.27 2007/01/31 11:46:12 i27249 Exp $
  */
 
 #include "config.h"
@@ -520,7 +520,7 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
 	uninstall(pkgname, db, DepTracker, 0);
-	DepTracker->commitToDb();
+	//DepTracker->commitToDb();
 	install(pkgname, db, DepTracker);
 	DepTracker->commitToDb();
 	db->commit_actions();

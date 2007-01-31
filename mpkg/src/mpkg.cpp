@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.22 2007/01/29 14:35:07 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.23 2007/01/31 11:46:12 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -422,6 +422,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	set_status(package->get_id(), PKGSTATUS_INSTALLED);
+	if (get_status(purge_id)==PKGSTATUS_REMOVED_AVAILABLE) set_status(purge_id, PKGSTATUS_AVAILABLE);
+	if (get_status(purge_id)==PKGSTATUS_REMOVED_UNAVAILABLE) set_status(purge_id, PKGSTATUS_UNAVAILABLE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	return 0;
 }

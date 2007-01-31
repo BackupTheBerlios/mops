@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.4 2007/01/19 06:08:54 i27249 Exp $
+$Id: dependencies.h,v 1.5 2007/01/31 11:46:12 i27249 Exp $
 */
 
 
@@ -35,6 +35,7 @@ class DependencyTracker
 		PACKAGE_LIST* get_failure_list();
 		RESULT merge(PACKAGE *package, bool suggest_skip=true);
 		RESULT unmerge(PACKAGE *package, int do_purge=0);
+		int normalize();
 		bool commitToDb();
 		void PrintFailure(PACKAGE *package);
 		bool checkVersion(string version1, int condition, string version2);
