@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.15 2007/01/26 16:49:38 i27249 Exp $
+	$Id: dataunits.cpp,v 1.16 2007/01/31 15:47:33 i27249 Exp $
 */
 
 
@@ -417,12 +417,12 @@ bool LOCATION::operator == (LOCATION location)
 	}*/
 	if (location_path!=location.get_path())
 	{
-		printf("dataunits.cpp: LOCATION::operator !=(): path mismatch\n");
+		//printf("dataunits.cpp: LOCATION::operator !=(): path mismatch\n");
 	       	return false;
 	}
 	if (server!=*location.get_server())
 	{
-		printf("dataunits.cpp: LOCATION::operator !=(): server mismatch\n");
+		//printf("dataunits.cpp: LOCATION::operator !=(): server mismatch\n");
 		return false;
 	}
 	return true;
@@ -1502,15 +1502,15 @@ int PACKAGE::set_config_files(FILE_LIST conf_files)
 
 void PACKAGE::sync()
 {
-	printf("sync start: %d config files, %d package files\n", config_files.size(), package_files.size());
+	//printf("sync start: %d config files, %d package files\n", config_files.size(), package_files.size());
 	for (int i=0; i< config_files.size(); i++)
 	{
-		printf("Searching file %s\n", config_files.get_file(i)->get_name().c_str());
+		//printf("Searching file %s\n", config_files.get_file(i)->get_name().c_str());
 		for (int t=0; t<package_files.size(); t++)
 		{
 			if (config_files.get_file(i)->get_name()=='/' + package_files.get_file(t)->get_name())
 			{
-				printf("config file %s\n", config_files.get_file(i)->get_name().c_str());
+				//printf("config file %s\n", config_files.get_file(i)->get_name().c_str());
 				package_files.get_file(t)->set_type(FTYPE_CONFIG);
 				break;
 			}
@@ -1527,7 +1527,7 @@ void PACKAGE::sync()
 			}
 		}
 	}
-	printf("sync end\n");
+	//printf("sync end\n");
 }
 
 int PACKAGE::set_dependencies(DEPENDENCY_LIST dependencies)
@@ -1583,7 +1583,11 @@ string IntToStr(int num)
 	  ss=s;
 	  free(s);
   }
-  else printf("Error: malloc() failed!!!\n");
+  else 
+  {
+	  printf("Error: malloc() failed!!!\n");
+	  abort();
+  }
   return ss;
 }
 

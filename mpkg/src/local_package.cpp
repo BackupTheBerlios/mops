@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.21 2007/01/26 16:49:38 i27249 Exp $
+$Id: local_package.cpp,v 1.22 2007/01/31 15:47:33 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -189,7 +189,6 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	}
 	vec_tmp_names.clear();
 	debug("fill_filelist end");
-	printf("fill_filelist");
 	package->sync();
 	return 0;
 }

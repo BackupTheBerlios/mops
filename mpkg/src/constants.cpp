@@ -1,11 +1,21 @@
 /*************************************************************************
  * System constants - bitmask operators and functions
- * $Id: constants.cpp,v 1.1 2007/01/19 06:11:04 i27249 Exp $
+ * $Id: constants.cpp,v 1.2 2007/01/31 15:47:33 i27249 Exp $
  * ***********************************************************************/
 #include <string>
 #include "dataunits.h"
+#include "constants.h"
 using namespace std;
 
+bool IsAvailable(int status)
+{
+	if (status == PKGSTATUS_REMOVED_AVAILABLE || \
+			status == PKGSTATUS_AVAILABLE)
+		return true;
+	else return false;
+}
+
+/*
 bool stInstalled(int status)
 {
 	string tmp;
@@ -61,4 +71,4 @@ bool stAvailable(int status)
 	if (tmp[5]=='1') return true;
 	else return false;
 }
-
+*/

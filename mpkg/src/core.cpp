@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.19 2007/01/29 14:35:07 i27249 Exp $
+ *	$Id: core.cpp,v 1.20 2007/01/31 15:47:33 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -942,7 +942,7 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 
 int mpkgDatabase::set_status(int package_id, int status)
 {
-	printf("setting status %d\n", status);
+	//printf("setting status %d\n", status);
        	SQLRecord sqlUpdate;
 	sqlUpdate.addField("package_status", IntToStr(status));
 	SQLRecord sqlSearch;

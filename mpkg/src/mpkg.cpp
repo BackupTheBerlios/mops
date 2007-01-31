@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.23 2007/01/31 11:46:12 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.24 2007/01/31 15:47:33 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -127,7 +127,7 @@ void mpkgDatabase::commit_actions()
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
 	get_packagelist(sqlSearch, &purge_list);
-	printf("purge list size = %d\n", purge_list.size());
+	//printf("purge list size = %d\n", purge_list.size());
 	for (int i=0; i<purge_list.size(); i++)
 	{
 		purge_package(purge_list.get_package(i));
@@ -374,7 +374,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		return -5;
 	}
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
-	add_filelist_record(package->get_id(), package->get_files());
+
+// Filtering file list...
+	FILE_LIST package_files;
+	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	debug("Preparing scripts");
 	if (!DO_NOT_RUN_SCRIPTS)
@@ -410,6 +413,24 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				}
 			}
 		}
+		for (int i=0; i<package->get_files()->size(); i++)
+		{
+			for (int k=0; k <= old_config_files.size(); k++)
+			{
+				if (k==old_config_files.size()) 
+				{
+					package_files.add(*package->get_files()->get_file(i));
+					break;
+				}
+				if (package->get_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
+				{
+					debug("Skipping file "+package->get_files()->get_file(i)->get_name());
+					break;
+				}
+			}
+		}
+		debug("package_files size: "+IntToStr(package_files.size())+", package->get_files size: "+IntToStr(package->get_files()->size()));
+		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
 	system(sys.c_str());

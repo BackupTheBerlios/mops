@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.27 2007/01/31 11:46:12 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.28 2007/01/31 15:47:33 i27249 Exp $
  */
 
 #include "config.h"
@@ -32,8 +32,8 @@ string output_dir;
 int setup_action(char* act);
 int check_action(char* act);
 void print_usage(FILE* stream, int exit_code);
-int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker);
-int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge);
+int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade=false);
+int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade=false);
 int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
 int list(mpkgDatabase *db, DependencyTracker *DepTracker, vector<string> search);
 int _clean(const char *filename, const struct stat *file_status, int filetype);
@@ -412,7 +412,7 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 	
 }
 
-int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
+int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
 
 
@@ -431,7 +431,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 		{
 			debug("Candidate #"+IntToStr(i)+": "+candidates.get_package(i)->get_name()+" with ID "+IntToStr(candidates.get_package(i)->get_id())+" and status "+ \
 					candidates.get_package(i)->get_vstatus());
-			if (candidates.get_package(i)->get_status()==PKGSTATUS_INSTALLED)
+			if (!do_upgrade && candidates.get_package(i)->get_status()==PKGSTATUS_INSTALLED)
 			{
 				alreadyInstalled=true;
 				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_version().c_str());
@@ -486,7 +486,7 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker)
 }
 
 
-int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge)
+int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
 {
 	if (do_purge==0) printf(_("You are going to uninstall package %s\n"), pkg_name.c_str());
 	if (do_purge==1) printf(_("You are going to purge package %s\n"), pkg_name.c_str());
@@ -513,15 +513,15 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 		db->set_status(id, PKGSTATUS_PURGE);
 		return 0;
 	}
-	DepTracker->unmerge(&package, do_purge);
+	DepTracker->unmerge(&package, do_purge, do_upgrade);
 	return 0;
 }
 
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	uninstall(pkgname, db, DepTracker, 0);
-	//DepTracker->commitToDb();
-	install(pkgname, db, DepTracker);
+	uninstall(pkgname, db, DepTracker, 0, true);
+	install(pkgname, db, DepTracker, true);
+	DepTracker->normalize();
 	DepTracker->commitToDb();
 	db->commit_actions();
 	return 0;

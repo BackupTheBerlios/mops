@@ -1,5 +1,5 @@
 /* Miscellaneous constants
-    $Id: constants.h,v 1.5 2007/01/26 16:49:38 i27249 Exp $
+    $Id: constants.h,v 1.6 2007/01/31 15:47:33 i27249 Exp $
 */
 
 
@@ -45,12 +45,14 @@
 #define ST_PURGE	100010
 #define ST_AVAILABLE	100001
 
-bool stInstalled(int status);
+bool IsAvailable(int status);
+
+/*bool stInstalled(int status);
 bool stRemove(int status);
 bool stInstall(int status);
 bool stPurge(int status);
 bool stAvailable(int status);
-
+*/
 // File type definitions
 #define FTYPE_PLAIN	0
 #define FTYPE_CONFIG	1

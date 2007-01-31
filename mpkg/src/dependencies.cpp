@@ -1,10 +1,11 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.9 2007/01/31 11:46:12 i27249 Exp $
+$Id: dependencies.cpp,v 1.10 2007/01/31 15:47:33 i27249 Exp $
 */
 
 
 #include "dependencies.h"
 #include "debug.h"
+#include "constants.h"
 PACKAGE_LIST* DependencyTracker::get_install_list()
 {
 	return &install_list;
@@ -119,7 +120,7 @@ bool DependencyTracker::checkVersion(string version1, int condition, string vers
 }
 
 // Emerge :-)
-RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
+RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_normalize)
 {
 	//Step 1. Check install (maybe, package is already installed?)
 	//Actions: 	if package is already installed - do nothing
@@ -135,10 +136,13 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	RESULT status=0;
 	status=db->check_install_package(package); // Checking status of package - is it principially possible to be installed?
 	debug("Checking status of package...");
-	if (status==CHKINSTALL_INSTALLED || status==CHKINSTALL_INSTALL) // If package is already installed or already marked for install - it is already good :-)
+	if (!do_normalize)
 	{
-		printf("Package %s is already installed or marked for install\n", package->get_name().c_str());
-		return DEP_OK;
+		if (status==CHKINSTALL_INSTALLED || status==CHKINSTALL_INSTALL) // If package is already installed or already marked for install - it is already good :-)
+		{
+			printf("Package %s is already installed or marked for install\n", package->get_name().c_str());
+			return DEP_OK;
+		}
 	}
 	if (status==CHKINSTALL_REMOVE_PURGE || status==CHKINSTALL_REMOVE) // Package is installed, but someone wants to remove it - but changes his desigion - ok ;-)
 	{
@@ -229,8 +233,9 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 		
 		for (int p=0; p<package_list.size()&&!already_resolved&&!this_dep_failed; p++) // Checking version condition for all the packages
 		{
-			// Does the package meets version requirements?
-			if (checkVersion(package_list.get_package(p)->get_version(), \
+			// Does the package meets requirements?
+			if (IsAvailable(package_list.get_package(p)->get_status()) && \
+					checkVersion(package_list.get_package(p)->get_version(), \
 					 atoi(package->get_dependencies()->get_dependency(i)->get_condition().c_str()), \
 					 package->get_dependencies()->get_dependency(i)->get_package_version()))
 			{
@@ -266,7 +271,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 		debug("dep ok, adding to install list");
 		package->set_id(db->get_package_id(package));
 		package->set_status(PKGSTATUS_INSTALL);
-		install_list.add(*package); 	// Add to install list
+		if (!do_normalize) install_list.add(*package); 	// Add to install list
 		// One thing we have forgotten - is there any packages in broken list, who awaited this package?
 		for (int f=0;f<failure_list.size();f++)
 		{
@@ -316,9 +321,10 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip)
 	}
 } // DependencyTracker::merge end.
 
-RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge)
+RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge, bool do_upgrade)
 {
 	debug("Dependency UNMERGE: "+package->get_name());
+	
 	PACKAGE_LIST package_list;
 	PACKAGE_LIST required_by;
 	if (do_purge==0)
@@ -326,6 +332,7 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge)
 	else package->set_status(PKGSTATUS_REMOVE_PURGE);
 	
 	remove_list.add(*package);
+	if (do_upgrade) return 0; // Exit here if we making upgrade
 	SQLTable dep_sqlTable;
 	SQLRecord dep_sqlFields;
 	SQLRecord dep_sqlSearch;
@@ -360,9 +367,10 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge)
 int DependencyTracker::normalize()
 {
 #ifdef DEP_NORMALIZE
-	PACKAGE_LIST install_list;
-	PACKAGE_LIST remove_list;
-	PACKAGE_LIST available_list;
+	PACKAGE_LIST ninstall_list;
+	PACKAGE_LIST nremove_list;
+	PACKAGE_LIST navailable_list;
+	PACKAGE_LIST doremove_list;
 
 	SQLRecord installSearch, removeSearch, availableSearch;
 	installSearch.setSearchMode(SEARCH_OR);
@@ -379,9 +387,22 @@ int DependencyTracker::normalize()
 	availableSearch.addField("package_status", IntToStr(PKGSTATUS_AVAILABLE));
 	availableSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVED_AVAILABLE));
 
-	db->get_packagelist(installSearch, &install_list);
-	db->get_packagelist(removeSearch, &remove_list);
-	db->get_packagelist(availableSearch, &available_list);
+	db->get_packagelist(installSearch, &ninstall_list);
+	db->get_packagelist(removeSearch, &nremove_list);
+	db->get_packagelist(availableSearch, &navailable_list);
+
+	for (int i=0; i<ninstall_list.size(); i++)
+	{
+		if (merge(ninstall_list.get_package(i), true, true)!=DEP_OK)
+		{
+			doremove_list.add(*ninstall_list.get_package(i));
+		}
+	}
+	//install_list.clear();
+	for (int i=0; i<doremove_list.size(); i++)
+	{
+		unmerge(doremove_list.get_package(i), 0, true);
+	}
 #endif
 	return 0;
 
