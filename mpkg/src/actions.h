@@ -13,5 +13,6 @@
 #define ACT_PURGE	0x0b
 #define ACT_CONVERT	0x0c
 #define ACT_CONVERT_DIR	0x0d
+#define ACT_LIST_REP	0x0e
 #endif
 

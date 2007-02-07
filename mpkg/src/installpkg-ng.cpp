@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.28 2007/01/31 15:47:33 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.29 2007/02/07 14:01:03 i27249 Exp $
  */
 
 #include "config.h"
@@ -43,6 +43,7 @@ int convert_directory();
 int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
 int build_package();
+int list_rep();
 
 int build_package()
 {
@@ -283,6 +284,11 @@ int main (int argc, char **argv)
 		}
 	}
 
+	if ( action == ACT_LIST_REP ) {
+		list_rep();
+		return 0;
+	}
+
 	// ACTION SUMMARY - NEED TO FIX!
 	if (!DepTracker.get_install_list()->IsEmpty())
 	{
@@ -335,6 +341,8 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tpurge      purge selected package\n"));
 	fprintf(stream,_("\tupdate     update packages info\n"));
 	fprintf(stream,_("\tlist       list installed packages\n"));
+	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
+
 	fprintf(stream,_("\tsearch     search package\n"));
 	fprintf(stream,_("\tclean      remove all packages from cache\n"));
 	fprintf(stream,_("Repository maintaining functions:\n"));
@@ -527,6 +535,16 @@ int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 	return 0;
 }
 
+int list_rep()
+{
+	printf("Repository list:\n");
+	for (int i=0; i<REPOSITORY_LIST.size(); i++)
+	{
+		printf("[%d] %s\n", i+1, REPOSITORY_LIST[i].c_str());
+	}
+	return 0;
+}
+
 int list(mpkgDatabase *db, DependencyTracker *DepTracker, vector<string> search)
 {
 	PACKAGE_LIST pkglist;
@@ -626,7 +644,8 @@ int check_action(char* act)
 		&& _act != "index"
 		&& _act != "purge"
 		&& _act != "convert"
-		&& _act != "convert-dir"
+		&& _act != "convert_dir"
+		&& _act != "list_rep"
 	  	&& _act != "clean" ) {
 		res = -1;
 	}
@@ -676,8 +695,11 @@ int setup_action(char* act)
 	if (_act == "convert")
 		return ACT_CONVERT;
 
-	if (_act == "convert-dir")
+	if (_act == "convert_dir")
 		return ACT_CONVERT_DIR;
+
+	if (_act == "list_rep")
+		return ACT_LIST_REP;
 
 	return ACT_NONE;
 }
