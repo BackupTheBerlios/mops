@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.12 2007/01/29 14:35:07 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.13 2007/02/09 14:26:38 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -25,12 +25,11 @@ class mpkgDatabase
 		int get_last_id(string table_name, string id_field="");
 		int get_package_id(PACKAGE *package);
 		int get_status(int package_id);
-		/* SQL_EXEC int add_scripts_record(int package_id, SCRIPTS *scripts); */
 		int get_scripts(int package_id, SCRIPTS *scripts);
 		
 		// Checking functions
 		int check_file_conflicts (PACKAGE *package);
-		int check_install_package(PACKAGE *package); // TODO: change return values to INT (have to define)
+		int check_install_package(PACKAGE *package); 
 
 		// Action functions
 		string _install_package(PACKAGE *package);
@@ -44,25 +43,19 @@ class mpkgDatabase
 		int add_taglist_record(int package_id, TAG_LIST *taglist);
 		int add_tag_link(int package_id, int tag_id);
 		int add_package_record(PACKAGE *package);
-//		int add_packagelist_record(PACKAGE_LIST *packagelist);
 		int add_scripts_record(int package_id, SCRIPTS *scripts);
 		int update_package_data(int package_id, PACKAGE *package);
 
 		// Purge functions
 		int get_purge(string package_name);
-		//FILE_LIST get_config_files(int package_id);
-		//int get_configs(int package_id, FILE_LIST *conf_files);
-		//int set_purge(int package_id);
-		//int add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id);
-		//int add_config_link(int package_id, int conf_id);
-
-		
+	
+		// Cleanup functions
 		int cleanFileList(int package_id);
 		int clean_package_filelist (PACKAGE *package);
 	private:
 		SQLProxy db;
 	public:
-		void commit_actions(); // Commits ALL actions planned in database
+		int commit_actions(); // Commits ALL actions planned in database
 		int set_status(int package_id, int status);
 		int emerge_to_db(PACKAGE *package);	// Adds new package to database, filtering data
 		int fetch_package(PACKAGE *package); // Downloads package to local cache, returns 0 if ok, 1 if failed. Also, checks if package is already downloaded.
@@ -73,7 +66,6 @@ class mpkgDatabase
 		int updateRepositoryData(PACKAGE_LIST *newPackages);
 		PACKAGE get_installed_package(string pkg_name); // Returns installed package
 
-//		int update_package(int removing_id, string install_filename); // Updates a package. Meta-function: first remove old, next install new
 		string get_file_md5(string filename);
 		SQLProxy *getSqlDb();
 		mpkgDatabase();

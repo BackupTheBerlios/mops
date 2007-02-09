@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.2 2007/02/09 09:42:01 i27249 Exp $
+ * $Id: config.cpp,v 1.3 2007/02/09 14:26:38 i27249 Exp $
  *
  * ***************************************************/
 
@@ -50,7 +50,8 @@ int loadGlobalConfig(string config_file)
 	}
 	else
 	{
-		printf("Configuration file /etc/mpkg.xml not found, using defaults\n");
+		printf("Configuration file /etc/mpkg.xml not found, using defaults and creating config\n");
+		mpkgconfig::initConfig();
 	}
 	// parsing results
 	
@@ -86,3 +87,152 @@ int loadGlobalConfig(string config_file)
 
 	return 0;
 }
+
+XMLNode mpkgconfig::getXMLConfig(string conf_file)
+{
+	XMLNode config;
+	if (access(conf_file.c_str(), R_OK)==0)
+	{
+		config=XMLNode::openFileHelper(conf_file.c_str(), "mpkgconfig");
+	}
+
+	if (config.nChildNode("run_scripts")==0)
+	{
+		config.addChild("run_scripts");
+		if (get_runscripts()) config.getChildNode("run_scripts").addText("yes");
+		else config.getChildNode("run_scripts").addText("no");
+	}
+
+	if (config.nChildNode("sys_root")==0)
+	{
+		config.addChild("sys_root");
+		config.getChildNode("sys_root").addText(get_sysroot().c_str());
+	}
+
+	if (config.nChildNode("sys_cache")==0)
+	{
+		config.addChild("sys_cache");
+		config.getChildNode("sys_cache").addText(get_syscache().c_str());
+	}
+
+	if (config.nChildNode("database_url")==0)
+	{
+		config.addChild("database_url");
+		config.getChildNode("database_url").addText(get_dburl().c_str());
+	}
+
+	if (config.nChildNode("repository_list")==0)
+	{
+		config.addChild("repository_list");
+	}
+
+	if (config.nChildNode("scripts_dir")==0)
+	{
+		config.addChild("scripts_dir");
+		config.getChildNode("scripts_dir").addText(get_scriptsdir().c_str());
+	}
+	return config;
+}
+
+int mpkgconfig::initConfig()
+{
+	XMLNode tmp=getXMLConfig();
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
+{
+	xmlConfig.writeToFile(conf_file.c_str());
+	return 0;
+}
+
+string mpkgconfig::get_sysroot()
+{
+	return SYS_ROOT;
+}
+
+string mpkgconfig::get_syscache()
+{
+	return SYS_CACHE;
+}
+
+vector<string> mpkgconfig::get_repositorylist()
+{
+	return REPOSITORY_LIST;
+}
+
+string mpkgconfig::get_dburl()
+{
+	return "sqlite://"+DB_FILENAME;
+}
+
+string mpkgconfig::get_scriptsdir()
+{
+	return SCRIPTS_DIR;
+}
+
+bool mpkgconfig::get_runscripts()
+{
+	return !DO_NOT_RUN_SCRIPTS;
+}
+
+int mpkgconfig::set_repositorylist(vector<string> newrepositorylist)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("repository_list").deleteNodeContent(1);
+	tmp.addChild("repository_list");
+	for (unsigned int i=0; i<newrepositorylist.size(); i++)
+	{
+		tmp.getChildNode("repository_list").addChild("repository");
+		tmp.getChildNode("repository_list").getChildNode("repository", i).addText(newrepositorylist[i].c_str());
+	}
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::set_sysroot(string newsysroot)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("sys_root").addText(newsysroot.c_str());
+	return setXMLConfig(tmp);
+}
+
+
+int mpkgconfig::set_syscache(string newsyscache)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("sys_cache").addText(newsyscache.c_str());
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::set_dburl(string newdburl)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("database_url").addText(newdburl.c_str());
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::set_scriptsdir(string newscriptsdir)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("scripts_dir").addText(newscriptsdir.c_str());
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::set_runscripts(bool dorun)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	if (dorun) tmp.getChildNode("run_scripts").addText("yes");
+	else tmp.getChildNode("run_scripts").addText("no");
+	return setXMLConfig(tmp);
+}
+
+
+
+
+

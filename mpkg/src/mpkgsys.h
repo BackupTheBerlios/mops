@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.1 2007/02/09 10:35:51 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.2 2007/02/09 14:26:38 i27249 Exp $
  * ******************************************************/
 
 
@@ -23,17 +23,17 @@
 
 
 namespace mpkgSys {
-int clean_cache();
-int build_package();
-int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade=false);
-int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade=false);
-int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
-int _clean(const char *filename, const struct stat *file_status, int filetype);
-int clean_cache();
-int convert_directory(string output_dir);
-int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
-int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
-int build_package();
+	int build_package();
+	int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade=false);
+	int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade=false);
+	int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
+	int _clean(const char *filename, const struct stat *file_status, int filetype);
+	int clean_cache();
+	int convert_directory(string output_dir);
+	int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
+	int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
+	int build_package();
+
 }
 
 #endif //MPKGSYS_H_

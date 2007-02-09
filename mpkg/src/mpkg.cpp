@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.24 2007/01/31 15:47:33 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.25 2007/02/09 14:26:38 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -106,7 +106,7 @@ string mpkgDatabase::get_file_md5(string filename)
 	return md5str;
 }
 
-void mpkgDatabase::commit_actions()
+int mpkgDatabase::commit_actions()
 {
 	// Zero: purging required packages
 	// First: removing required packages
@@ -114,11 +114,11 @@ void mpkgDatabase::commit_actions()
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
-	get_packagelist(sqlSearch, &remove_list);
+	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
 	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	for (int i=0;i<remove_list.size();i++)
 	{
-		remove_package(remove_list.get_package(i));
+		if (remove_package(remove_list.get_package(i))!=0) return -2;
 	}
 	sqlSearch.clear();
 
@@ -126,11 +126,11 @@ void mpkgDatabase::commit_actions()
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
-	get_packagelist(sqlSearch, &purge_list);
+	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
 	//printf("purge list size = %d\n", purge_list.size());
 	for (int i=0; i<purge_list.size(); i++)
 	{
-		purge_package(purge_list.get_package(i));
+		if (purge_package(purge_list.get_package(i))!=0) return -4;
 	}
 	sqlSearch.clear();
 
@@ -138,20 +138,21 @@ void mpkgDatabase::commit_actions()
 	PACKAGE_LIST install_list;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
-	get_packagelist(sqlSearch, &install_list);
+	if (get_packagelist(sqlSearch, &install_list)!=0) return -5;
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
 	for (int i=0; i<install_list.size(); i++)
 	{
 		debug("Fetching package #"+IntToStr(i+1)+" with "+IntToStr(install_list.get_package(i)->get_locations()->size())+" locations");
-		fetch_package(install_list.get_package(i));
+		if (fetch_package(install_list.get_package(i))!=0) return -6;
 	}
 	debug("Calling INSTALL");
 	for (int i=0;i<install_list.size();i++)
 	{
-		install_package(install_list.get_package(i));
+		if (install_package(install_list.get_package(i))!=0) return -7;
 	}
+	return 0;
 }
 
 int mpkgDatabase::fetch_package(PACKAGE *package)

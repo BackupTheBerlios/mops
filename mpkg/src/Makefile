@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.22 2007/02/09 10:35:51 i27249 Exp $
+# $Id: Makefile,v 1.23 2007/02/09 14:26:38 i27249 Exp $
 #
 
 CC=gcc
@@ -13,7 +13,7 @@ LDFLAGS=-L/sw/lib -lsqlite3
 SOURCES=config.cpp installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
 	   	dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp \
 	   	local_package.cpp sql_pool.cpp file_routines.cpp repository.cpp syscommands.cpp \
-		string_operations.cpp converter.cpp constants.cpp mpkgsys.cpp
+		string_operations.cpp converter.cpp constants.cpp mpkgsys.cpp libmpkg.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 

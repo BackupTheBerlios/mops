@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.9 2007/01/19 06:08:53 i27249 Exp $
+    $Id: config.h,v 1.10 2007/02/09 14:26:38 i27249 Exp $
 */
 
 
@@ -29,8 +29,32 @@ extern string DB_FILENAME;
 extern vector<string> REPOSITORY_LIST;
 #include <libintl.h>
 #include <locale.h>
+#include "xmlParser.h"
 
 int loadGlobalConfig(string config_file="/etc/mpkg.xml");
+
+namespace mpkgconfig
+{
+	int initConfig();
+	XMLNode getXMLConfig(string conf_file="/etc/mpkg.xml");
+	int setXMLConfig(XMLNode xmlConfig, string conf_file="/etc/mpkg.xml");
+
+	vector<string> get_repositorylist();
+	string get_sysroot();
+	string get_syscache();
+	string get_dburl();
+	string get_scriptsdir();
+	bool get_runscripts();
+
+	int set_repositorylist(vector<string> newrepositorylist);
+	int set_sysroot(string newsysroot);
+	int set_syscache(string newsyscache);
+	int set_dburl(string newdburl);
+	int set_scriptsdir(string newscriptsdir);
+	int set_runscripts(bool dorun);
+}
+
+
 #define _(string) gettext(string)
 
 #endif
