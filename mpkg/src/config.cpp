@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.3 2007/02/09 14:26:38 i27249 Exp $
+ * $Id: config.cpp,v 1.4 2007/02/09 14:37:53 i27249 Exp $
  *
  * ***************************************************/
 
@@ -21,9 +21,10 @@ int loadGlobalConfig(string config_file)
 	string sys_root="/root/development/sys_root/";
 	string sys_cache="/root/development/sys_cache/";
 	string db_url="sqlite://var/log/mpkg/packages.db";
-	string scripts_dir="/var/log/mpkg/scripts";
+	string scripts_dir="/var/log/mpkg/scripts/";
 	string sql_type;
 	vector<string> repository_list;
+	bool conf_init=false;
 	if (access(config_file.c_str(), R_OK)==0)
 	{
 		XMLNode config=XMLNode::openFileHelper(config_file.c_str(), "mpkgconfig");
@@ -50,8 +51,8 @@ int loadGlobalConfig(string config_file)
 	}
 	else
 	{
+		conf_init=true;
 		printf("Configuration file /etc/mpkg.xml not found, using defaults and creating config\n");
-		mpkgconfig::initConfig();
 	}
 	// parsing results
 	
@@ -84,17 +85,20 @@ int loadGlobalConfig(string config_file)
 	printf("System configuration:\n\trun_scripts: %s\n\tsys_root: %s\n\tsys_cache: %s\n\tSQL type: %s\n\tSQL filename: %s\n", \
 			run_scripts.c_str(), sys_root.c_str(), sys_cache.c_str(), sql_type.c_str(), db_url.c_str());
 #endif
+	if (conf_init) mpkgconfig::initConfig();
 
 	return 0;
 }
 
 XMLNode mpkgconfig::getXMLConfig(string conf_file)
 {
+	debug("getXMLConfig");
 	XMLNode config;
 	if (access(conf_file.c_str(), R_OK)==0)
 	{
 		config=XMLNode::openFileHelper(conf_file.c_str(), "mpkgconfig");
 	}
+	else config=XMLNode::createXMLTopNode("mpkgconfig");
 
 	if (config.nChildNode("run_scripts")==0)
 	{
@@ -131,6 +135,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		config.addChild("scripts_dir");
 		config.getChildNode("scripts_dir").addText(get_scriptsdir().c_str());
 	}
+	debug("getXMLConfig end");
 	return config;
 }
 
