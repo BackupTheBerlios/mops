@@ -1,7 +1,3 @@
-<!--
-Example configuration file for MPKG. See help for details.
-$Id: mpkg.xml,v 1.2 2007/01/22 00:57:56 i27249 Exp $
--->
 <?xml version="1.0" encoding="utf-8"?>
 <mpkgconfig>
 	<run_scripts>no</run_scripts>
@@ -10,7 +6,10 @@ $Id: mpkg.xml,v 1.2 2007/01/22 00:57:56 i27249 Exp $
 	<database_url>sqlite://var/log/mpkg/packages.db</database_url>
 	<scripts_dir>/var/log/mpkg/scripts/</scripts_dir>
 	<repository_list>
-		<repository>ftp://localhost/mpkg-current/</repository>
+		<nrepository>ftp://192.168.2.27/repository/</nrepository>
+		<nrepository>ftp://192.168.2.27/repository2/</nrepository>
+		<nrepository>ftp://localhost/mpkg-current/</nrepository>
+		<repository>ftp://localhost/purge/</repository>
 	</repository_list>
 </mpkgconfig>
 
