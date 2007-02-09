@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.13 2007/01/26 12:42:50 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.14 2007/02/09 10:35:51 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -11,6 +11,7 @@
 
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
+	// TODO: check if all required field exists.
 	if (\
 			sql_exec("select * from dependencies;")!=0 || \
 			sql_exec("select * from files;")!=0 || \
@@ -24,13 +25,11 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select * from tags_links;")!=0 \
 			)
 	{
-		printf("Database integrity error!");
 		return false;
 	}
 
 	else 
 	{
-//		printf("Database integrity OK\n");
 		return true;
 	}
 }
@@ -79,7 +78,12 @@ int SQLiteDB::init()
 {
 	int ret;
 	ret = sqlite3_open(db_filename.c_str(), &db);
-		sqlBegin();
+	if (ret!=SQLITE_OK)
+	{
+		printf("Error opening database, cannot continue\n");
+		return 1;
+	}
+	sqlBegin();
 	return ret;
 
 }
@@ -376,7 +380,7 @@ SQLiteDB::SQLiteDB(string filename)
 	int sql_return;
 	sql_return=init();
 	
-	if (sql_return) // Means error
+	if (sql_return==1) // Means error
 	{
 		sqlError=sql_return;
 		sqlErrMsg="Error opening database file "+db_filename+", aborting.";
@@ -384,7 +388,12 @@ SQLiteDB::SQLiteDB(string filename)
 	       	sqlite3_close(db);
 	       	abort();
        	}
-	CheckDatabaseIntegrity();
+	if (!CheckDatabaseIntegrity())
+	{
+		printf("Integrity check failed, aborting\n");
+		sqlite3_close(db);
+		abort();
+	}
 }
 
 SQLiteDB::~SQLiteDB(){

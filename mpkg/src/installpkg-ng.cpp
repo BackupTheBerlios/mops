@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng.cpp,v 1.29 2007/02/07 14:01:03 i27249 Exp $
+ *	$Id: installpkg-ng.cpp,v 1.30 2007/02/09 10:35:51 i27249 Exp $
  */
 
 #include "config.h"
@@ -14,7 +14,7 @@
 #include "repository.h"
 #include "actions.h"
 #include "converter.h"
-
+#include "mpkgsys.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,7 +26,7 @@
 const char* program_name;
 extern char* optarg;
 extern int optind, opterr, optopt;
-string output_dir;
+//string output_dir;
 //static LoggerPtr rootLogger;
 
 int setup_action(char* act);
@@ -39,7 +39,7 @@ int list(mpkgDatabase *db, DependencyTracker *DepTracker, vector<string> search)
 int _clean(const char *filename, const struct stat *file_status, int filetype);
 int clean_cache();
 void ShowBanner();
-int convert_directory();
+int convert_directory(string out_dir);
 int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
 int build_package();
@@ -47,18 +47,7 @@ int list_rep();
 
 int build_package()
 {
-    printf("building package...\n");
-    if (FileNotEmpty("install/data.xml"))
-    {
-	    PackageConfig p("install/data.xml");
-	    string pkgname;
-	    string sysline;
-	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
-	    printf("Creating package %s\n", pkgname.c_str());
-	    sysline="makepkg -l y -c n "+pkgname+".tgz";
-	    system(sysline.c_str());
-    }
-    return 0;
+	return mpkgSys::build_package();
 }
 void ShowBanner()
 {
@@ -228,8 +217,8 @@ int main (int argc, char **argv)
 	if ( action == ACT_CONVERT_DIR ) {
 		if (optind < argc )
 		{
-			output_dir=(string) argv[optind];
-			convert_directory();
+			//output_dir=(string) argv[optind];
+			convert_directory((string) argv[optind]);
 		}
 		else 
 		{
@@ -356,6 +345,8 @@ void print_usage(FILE* stream, int exit_code)
 
 int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+	return mpkgSys::update_repository_data(db, DepTracker);
+	/*
 	Repository rep;
 	PACKAGE_LIST availablePackages;
 	PACKAGE_LIST tmpPackages;
@@ -417,12 +408,13 @@ int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Import complete.\n");
 	return ret;
-	
+	*/
 }
 
 int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
-
+	return mpkgSys::install(fname, db, DepTracker, do_upgrade);
+/*
 
 	//printf(_("Querying the database, please wait...\n"));
 	// Step 1. Checking if it is just a name of a package
@@ -490,12 +482,14 @@ int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool 
 	db->emerge_to_db(&lp.data);
 	DepTracker->merge(&lp.data);
 	return 0;
-	
+*/	
 }
 
 
 int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
 {
+	return mpkgSys::uninstall(pkg_name, db, DepTracker, do_purge, do_upgrade);
+	/*
 	if (do_purge==0) printf(_("You are going to uninstall package %s\n"), pkg_name.c_str());
 	if (do_purge==1) printf(_("You are going to purge package %s\n"), pkg_name.c_str());
 	
@@ -523,22 +517,26 @@ int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, 
 	}
 	DepTracker->unmerge(&package, do_purge, do_upgrade);
 	return 0;
+	*/
 }
 
 int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+	return upgrade (pkgname, db, DepTracker);
+	/*
 	uninstall(pkgname, db, DepTracker, 0, true);
 	install(pkgname, db, DepTracker, true);
 	DepTracker->normalize();
 	DepTracker->commitToDb();
 	db->commit_actions();
 	return 0;
+	*/
 }
 
 int list_rep()
 {
 	printf("Repository list:\n");
-	for (int i=0; i<REPOSITORY_LIST.size(); i++)
+	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
 		printf("[%d] %s\n", i+1, REPOSITORY_LIST[i].c_str());
 	}
@@ -579,6 +577,7 @@ int list(mpkgDatabase *db, DependencyTracker *DepTracker, vector<string> search)
 
 int _clean(const char *filename, const struct stat *file_status, int filetype)
 {
+	/*
 	switch(filetype)
 	{
 		case FTW_F:
@@ -590,21 +589,23 @@ int _clean(const char *filename, const struct stat *file_status, int filetype)
 		default:
 			unlink(filename);
 	}
-//	printf("."); //Optional =)
+//	printf("."); //Optional =)*/
 	return 0;
 }
 
 int clean_cache()
 {
+	return mpkgSys::clean_cache();
+	/*
 	printf("Cleaning cache...");
 	ftw(SYS_CACHE.c_str(), _clean, 100);
-	printf("done\n");
+	printf("done\n");*/
 	return 0;
 }
 
 int _conv_dir(const char *filename, const struct stat *file_status, int filetype)
 {
-	string _package=filename;
+/*	string _package=filename;
        	string ext;
 	for (unsigned int i=_package.length()-4;i<_package.length();i++)
 	{
@@ -616,14 +617,16 @@ int _conv_dir(const char *filename, const struct stat *file_status, int filetype
 		convert_package(_package, output_dir);
 	}
 	return 0;
-
+*/
+return 0;
 }
 
 
-int convert_directory()
+int convert_directory(string out_dir)
 {
-	ftw("./", _conv_dir, 100);
-	return 0;
+//	ftw("./", _conv_dir, 100);
+	return mpkgSys::convert_directory(out_dir);
+	//return 0;
 }
 
 int check_action(char* act)
