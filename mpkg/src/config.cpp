@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.1 2007/01/19 06:13:59 i27249 Exp $
+ * $Id: config.cpp,v 1.2 2007/02/09 09:42:01 i27249 Exp $
  *
  * ***************************************************/
 
@@ -24,27 +24,34 @@ int loadGlobalConfig(string config_file)
 	string scripts_dir="/var/log/mpkg/scripts";
 	string sql_type;
 	vector<string> repository_list;
-	XMLNode config=XMLNode::openFileHelper(config_file.c_str(), "mpkgconfig");
-	if (config.nChildNode("run_scripts")!=0)
-		run_scripts=(string) config.getChildNode("run_scripts").getText();
-	if (config.nChildNode("sys_root")!=0)
-		sys_root=(string) config.getChildNode("sys_root").getText();
-	if (config.nChildNode("sys_cache")!=0)
-		sys_cache=(string) config.getChildNode("sys_cache").getText();
-	if (config.nChildNode("database_url")!=0)
-		db_url=(string) config.getChildNode("database_url").getText();
-	if (config.nChildNode("repository_list")!=0)
+	if (access(config_file.c_str(), R_OK)==0)
 	{
-		for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
+		XMLNode config=XMLNode::openFileHelper(config_file.c_str(), "mpkgconfig");
+		if (config.nChildNode("run_scripts")!=0)
+			run_scripts=(string) config.getChildNode("run_scripts").getText();
+		if (config.nChildNode("sys_root")!=0)
+			sys_root=(string) config.getChildNode("sys_root").getText();
+		if (config.nChildNode("sys_cache")!=0)
+			sys_cache=(string) config.getChildNode("sys_cache").getText();
+		if (config.nChildNode("database_url")!=0)
+			db_url=(string) config.getChildNode("database_url").getText();
+		if (config.nChildNode("repository_list")!=0)
 		{
-			repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
+			for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
+			{
+				repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
+			}
 		}
-	}
-	if (config.nChildNode("scripts_dir")!=0)
-	{
-		scripts_dir = (string) config.getChildNode("scripts_dir").getText();
-	}
+		if (config.nChildNode("scripts_dir")!=0)
+		{
+			scripts_dir = (string) config.getChildNode("scripts_dir").getText();
+		}
 
+	}
+	else
+	{
+		printf("Configuration file /etc/mpkg.xml not found, using defaults\n");
+	}
 	// parsing results
 	
 	// run_scripts
