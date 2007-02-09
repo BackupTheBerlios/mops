@@ -1,0 +1,2 @@
+#!/bin/sh
+make && make lib && make shared && make install
