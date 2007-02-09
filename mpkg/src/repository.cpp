@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.7 2007/01/31 11:46:12 i27249 Exp $
+ * $Id: repository.cpp,v 1.8 2007/02/09 16:11:12 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -120,7 +120,7 @@ int Repository::build_index(string server_url)
 {
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	_root=XMLNode::createXMLTopNode("repository");
-	_root.addAttribute("server_url", server_url.c_str());
+	if (!server_url.empty()) _root.addAttribute("server_url", server_url.c_str());
 	
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:

@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.24 2007/02/09 14:37:53 i27249 Exp $
+# $Id: Makefile,v 1.25 2007/02/09 16:11:12 i27249 Exp $
 #
 
 CC=gcc
@@ -7,7 +7,7 @@ CXX=g++
 CFLAGS=-c -Wall -std=c99 -g
 
 # VERY BAD HACK!!!
-CXXFLAGS=-c -g -DDEBUG -DDEP_NORMALIZE -Wall -I/sw/include 
+CXXFLAGS=-c -DDEP_NORMALIZE -Wall -I/sw/include 
 LDFLAGS=-L/sw/lib -lsqlite3 
 
 SOURCES=config.cpp installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
@@ -17,7 +17,7 @@ SOURCES=config.cpp installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
-EXECUTABLE=installpkg-ng
+EXECUTABLE=installpkg-ng-static
 
 all: $(SOURCES) $(EXECUTABLE)
 
@@ -33,6 +33,8 @@ clean:
 	rm -f installpkg-ng
 	rm -f *.o
 	rm -f *~
+	rm -f libmpkg.so
+	rm -f libmpkg.a
 
 sqlinit:
 	rm ../sql/packages.db
@@ -40,4 +42,14 @@ sqlinit:
 
 sqlclean:
 	cp ../sql/packages.db /var/log/mpkg/
+
+lib:
+	make -f Makefile.lib
+
+shared:
+	make -f Makefile.installpkg
+
+install:
+	cp libmpkg.so /usr/local/lib/
+	ldconfig
 

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.25 2007/02/09 14:26:38 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.26 2007/02/09 16:11:12 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -347,7 +347,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		}
 	}
 	// If we reach this point - this means that we cannot get package. Returning error...
-	return 1;
+	return 0;
 } // End of mpkgDatabase::fetch_package();
 
 int mpkgDatabase::install_package(PACKAGE* package)

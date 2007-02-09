@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.1 2007/02/09 14:26:38 i27249 Exp $
+ * $Id: libmpkg.h,v 1.2 2007/02/09 16:11:12 i27249 Exp $
  * *****************************************************************************/
 
 #ifndef LIBMPKG_H_
@@ -30,13 +30,16 @@ class mpkg
 		// Constructor & destructor
 		mpkg();
 		~mpkg();
-		
+		bool init_ok;
 		// Interface transports - current status messages
 		string current_status;
 
 		// Package building
 		int build_package();
 		int convert_directory(string output_dir);
+
+		// Repository building
+		Repository rep;
 		
 		// Package installation, removing, upgrade
 		int install(vector<string> fname);
@@ -78,7 +81,6 @@ class mpkg
 		// Finalizing
 		int commit();
 
-	private:
 		mpkgDatabase *db;
 		DependencyTracker *DepTracker;
 

@@ -1,6 +1,6 @@
 /*****************************************************************
  * Repository working tools: creating index, decrypts data, etc.
- * $Id: repository.h,v 1.1 2006/12/21 18:09:17 i27249 Exp $
+ * $Id: repository.h,v 1.2 2007/02/09 16:11:12 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
@@ -10,7 +10,7 @@
 class Repository
 {
 	public:
-		int build_index(string server_url); // builds index of packages (creates packages.xml), consuming REPOSITORY_ROOT is current dir
+		int build_index(string server_url=""); // builds index of packages (creates packages.xml), consuming REPOSITORY_ROOT is current dir
 		PACKAGE_LIST get_index(string server_url);
 
 		Repository();

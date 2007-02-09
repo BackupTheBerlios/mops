@@ -1,16 +1,18 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.1 2007/02/09 14:26:38 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.2 2007/02/09 16:11:12 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
 
 mpkg::mpkg()
 {
+	debug("creating core");
 	current_status="Loading database...";
 	loadGlobalConfig();
 	db = new mpkgDatabase();
 	DepTracker = new DependencyTracker(db);
+	init_ok=true;
 }
 
 mpkg::~mpkg()
@@ -144,7 +146,7 @@ int mpkg::set_scriptsdir(string newscriptsdir)
 {
 	return mpkgconfig::set_scriptsdir(newscriptsdir);
 }
-int set_runscripts(bool dorun)
+int mpkg::set_runscripts(bool dorun)
 {
 	return mpkgconfig::set_runscripts(dorun);
 }
@@ -152,8 +154,9 @@ int set_runscripts(bool dorun)
 // Finalizing
 int mpkg::commit()
 {
-	if (DepTracker->commitToDb()!=0) return -1;
-	if (db->commit_actions()!=0) return -2;
+	printf("committing...\n");
+	DepTracker->commitToDb();
+	printf("commit = %d\n", db->commit_actions());
 	return 0;
 }
 
