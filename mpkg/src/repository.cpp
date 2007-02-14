@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.8 2007/02/09 16:11:12 i27249 Exp $
+ * $Id: repository.cpp,v 1.9 2007/02/14 06:50:58 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -137,9 +137,9 @@ int Repository::build_index(string server_url)
 	return 0;
 }
 
-PACKAGE_LIST Repository::get_index(string server_url)
+int Repository::get_index(string server_url, PACKAGE_LIST *packages)
 {
-	PACKAGE_LIST packages;
+	//PACKAGE_LIST packages;
 	PACKAGE pkg;
 	string wget_line;
 	string gzip_line;
@@ -157,20 +157,21 @@ PACKAGE_LIST Repository::get_index(string server_url)
 		int pkg_count=repository_root.nChildNode("package");
 		if (pkg_count==0)
 		{
-			printf(_("Repository has no packages, aborting"));
-			return packages;
+			printf(_("Repository has no packages\n"));
+			return 0;
 		}
 		for (int i=0; i<pkg_count; i++)
 		{
 			pkg.clear();
 			xml2package(repository_root.getChildNode("package", i), &pkg);
-			packages.add(pkg);
+			packages->add(pkg);
 		}
 
 	}
 	else
 	{
-		printf(_("Download error, check connection and URL"));
+		printf(_("FAILED\n"));
+		return -1;
 	}
-	return packages;
+	return 0;;
 }

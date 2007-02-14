@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.1 2007/02/09 10:35:51 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.2 2007/02/14 06:50:58 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -46,15 +46,16 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
 		//printf("cycle i=%d\n", i);
-		tmpPackages = rep.get_index(REPOSITORY_LIST[i]);
-		if (i+1==REPOSITORY_LIST.size())
+		tmpPackages.clear();
+		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);
+		if (i+1==REPOSITORY_LIST.size() && !tmpPackages.IsEmpty())
 		{
 			printf("Download completed. Processing data, please wait...\n");
 		}
 		if (tmpPackages.IsEmpty())
 		{
-			printf("No packages found at %s: repository error, or connection error\n", REPOSITORY_LIST[i].c_str());
-			break;
+			//printf("No packages found at %s: repository error, or connection error\n", REPOSITORY_LIST[i].c_str());
+			//break;
 		}
 		else
 		{

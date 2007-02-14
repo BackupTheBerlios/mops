@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.14 2007/02/09 10:35:51 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.15 2007/02/14 06:50:58 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -22,7 +22,10 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select * from servers;")!=0 || \
 			sql_exec("select * from tags;")!=0 || \
 			sql_exec("select * from scripts;")!=0 || \
-			sql_exec("select * from tags_links;")!=0 \
+			sql_exec("select * from tags_links;")!=0 || \
+			sql_exec("select * from descriptions;")!=0 || \
+			sql_exec("select * from changelogs;")!=0 || \
+			sql_exec("select * from ratings;")!=0 \
 			)
 	{
 		return false;
@@ -290,6 +293,26 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("configfiles_link_id");
 		fieldNames.push_back("configfiles_configfile_id");
 		fieldNames.push_back("packages_package_id");
+	}
+	
+	if (table_name=="descriptions") {
+		fieldNames.push_back("description_id");
+		fieldNames.push_back("packages_package_id");
+		fieldNames.push_back("description_language");
+		fieldNames.push_back("description_text");
+	}
+	
+	if (table_name=="changelogs") {
+		fieldNames.push_back("changelog_id");
+		fieldNames.push_back("packages_package_id");
+		fieldNames.push_back("changelog_language");
+		fieldNames.push_back("changelog_text");
+	}
+	
+	if (table_name=="ratings") {
+		fieldNames.push_back("rating_id");
+		fieldNames.push_back("rating_value");
+		fieldNames.push_back("packages_package_name");
 	}
 	return fieldNames;
 }

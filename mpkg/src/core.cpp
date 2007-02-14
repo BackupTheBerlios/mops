@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.20 2007/01/31 15:47:33 i27249 Exp $
+ *	$Id: core.cpp,v 1.21 2007/02/14 06:50:58 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -237,6 +237,30 @@ int mpkgDatabase::clean_package_filelist (PACKAGE *package)
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package->get_id()));
 	return db.sql_delete("files", sqlSearch);
+}
+
+int mpkgDatabase::add_descriptionlist_record(int package_id, DESCRIPTION_LIST *desclist)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlValues;
+	for (unsigned int i=0; i<desclist->size(); i++)
+	{
+		sqlValues.clear();
+		sqlValues.addField("description_language", desclist->get_description(i)->get_language());
+		sqlValues.addField("description_short_text", desclist->get_description(i)->get_shorttext());
+		sqlValues.addField("description_text", desclist->get_description(i)->get_text());
+		sqlValues.addField("packages_package_id", IntToStr(package_id));
+		sqlTable.addRecord(sqlValues);
+	}
+	if (!sqlTable.empty())
+	{
+		return db.sql_insert("descriptions", sqlTable);
+	}
+	else
+	{
+		 return 0;
+	}
+
 }
 
 // Adds file list linked to package_id (usually for package adding)
@@ -477,63 +501,12 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	// INSERT INTO SCRIPTS
 	add_scripts_record(package_id, package->get_scripts());
 
-	//if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
-	//db.sqlCommit();
+	// INSERT INTO DESCRIPTIONS
+	add_descriptionlist_record(package_id, package->get_descriptions());
+
 	return package_id;
 }	
 
-/*int mpkgDatabase::add_packagelist_record (PACKAGE_list *packagelist)
-{
-	//int pkg_status;
-	//pkg_status=package->get_status();
-	// INSERT INTO PACKAGES
-	SQLTable sqlInsertTable;
-	SQLRecord sqlInsert;
-	
-	for (int i=0; i<packagelist.size(); i++)
-	{
-		sqlInsert.addField("package_name", packagelist->get_package(i)->get_name());
-		sqlInsert.addField("package_version", packagelist->get_package(i)->get_version());
-		sqlInsert.addField("package_arch", packagelist->get_package(i)->get_arch());
-		sqlInsert.addField("package_build", packagelist->get_package(i)->get_build());
-		sqlInsert.addField("package_compressed_size", packagelist->get_package(i)->get_compressed_size());
-		sqlInsert.addField("package_installed_size", packagelist->get_package(i)->get_installed_size());
-		sqlInsert.addField("package_short_description", packagelist->get_package(i)->get_short_description());
-		sqlInsert.addField("package_description", packagelist->get_package(i)->get_description());
-		sqlInsert.addField("package_changelog", packagelist->get_package(i)->get_changelog());
-		sqlInsert.addField("package_packager", packagelist->get_package(i)->get_packager());
-		sqlInsert.addField("package_packager_email", packagelist->get_package(i)->get_packager_email());
-		sqlInsert.addField("package_status", IntToStr(packagelist->get_package(i)->get_status()));
-		sqlInsert.addField("package_md5", packagelist->get_package(i)->get_md5());
-		sqlInsert.addField("package_filename", packagelist->get_package(i)->get_filename());
-		sqlInsertTable.addRecord(sqlInsert);
-		sqlInsert.clear();
-	}
-	db.sql_insert("packages", sqlInsertTable);
-	
-	// Retrieving package ID
-	int package_id=get_last_id("packages", "package_id");
-	if (package_id==0) exit(-100);
-	
-	// INSERT INTO FILES
-	if (!package->get_files()->IsEmpty()) add_filelist_record(package_id, package->get_files());
-	
-	// INSERT INTO LOCATIONS
-	if (!package->get_locations()->IsEmpty()) add_locationlist_record(package_id, package->get_locations());
-
-	//INSERT INTO DEPENDENCIES
-	if (!package->get_dependencies()->IsEmpty()) add_dependencylist_record(package_id, package->get_dependencies());
-
-	// INSERT INTO TAGS
-	if (!package->get_tags()->IsEmpty()) add_taglist_record(package_id, package->get_tags());
-	
-	// INSERT INTO SCRIPTS
-	add_scripts_record(package_id, package->get_scripts());
-
-	if (!package->get_config_files()->IsEmpty()) add_configfiles_record(package->get_config_files(), package->get_name(), package_id);
-	return package_id;
-}	
-*/
 
 
 //--------------------Mid-level functions-------------------------
@@ -574,19 +547,15 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	package->set_filename(sqlTable.getValue(0,"package_filename"));
 	if (GetExtraInfo)
 	{
-		//printf("[get_package] Getting extra info, package_id=%d\n",package->get_id());
 		get_filelist(package_id, package->get_files());
 		get_locationlist(package_id, package->get_locations());
 		get_dependencylist(package_id, package->get_dependencies());
 		get_taglist(package_id, package->get_tags());
 		get_scripts(package_id, package->get_scripts());
-		//get_configs(package_id, package->get_config_files());
+		get_descriptionlist(package_id, package->get_descriptions());
 	}
 	return 0;
 }
-
-
-
 
 int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo)
 {
@@ -602,7 +571,6 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
 		package.clear();
-		//printf("ID[str]: %s, ID[int]: %d\n", sqlTable.getValue(i, "package_id").c_str(), atoi(sqlTable.getValue(i, "package_id").c_str()));
 		package.set_id(atoi(sqlTable.getValue(i, "package_id").c_str()));
 		package.set_name(sqlTable.getValue(i, "package_name"));
 		package.set_version(sqlTable.getValue(i, "package_version"));
@@ -620,18 +588,48 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_filename(sqlTable.getValue(i, "package_filename"));
 		if (GetExtraInfo)
 		{
-			//printf("Getting extra info, package_id=%d\n",package.get_id());
 			get_filelist(package.get_id(), package.get_files());
 			package.sync();
 			get_locationlist(package.get_id(), package.get_locations());
 			get_dependencylist(package.get_id(), package.get_dependencies());
 			get_taglist(package.get_id(), package.get_tags());
 			get_scripts(package.get_id(), package.get_scripts());
+			get_descriptionlist(package.get_id(), package.get_descriptions());
 		}
 		packagelist->add(package);
 	}
 	return 0;
 
+}
+
+int mpkgDatabase::get_descriptionlist(int package_id, DESCRIPTION_LIST *desclist, string language)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("description_language");
+	sqlFields.addField("short_description_text");
+	sqlFields.addField("description_text");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	if (!language.empty()) sqlSearch.addField("description_language", language);
+	
+	DESCRIPTION desc;
+	
+	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "descriptions", sqlSearch);
+	if (sql_ret!=0)
+	{
+		return -1;
+	}
+	
+	for (int row=0; row<sqlTable.getRecordCount(); row++)
+	{
+		desc.set_language(sqlTable.getValue(row, "description_language"));
+		desc.set_text(sqlTable.getValue(row, "description_text"));
+		desc.set_shorttext(sqlTable.getValue(row, "short_description_text"));
+		desclist->add(desc);
+		desc.clear();
+	}
+	return 0;
 }
 
 int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist, bool config_only)

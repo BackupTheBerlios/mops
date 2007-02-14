@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.5 2007/01/19 06:08:53 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.6 2007/02/14 06:50:58 i27249 Exp $
  *
  * **********************************************************/
 
@@ -19,6 +19,7 @@
 #include <cassert>
 
 #include "xmlParser.h"
+#include "dataunits.h"
 using namespace std;
 
 class PackageConfig
@@ -40,8 +41,12 @@ public:
 	string getSuggestCondition(int suggest_num);
 	string getSuggestVersion(int suggest_num);
 
-	string getDescription(void);
-	string getShortDescription(void);
+	string getDescription(string lang="");
+	string getDescriptionI(int num=0);
+	string getShortDescription(string lang="");
+	string getShortDescriptionI(int num=0);
+	DESCRIPTION_LIST getDescriptions();
+	vector<string>getShortDescriptions();
 
 	string getDependencyName(int dep_num);
 	string getDependencyCondition(int dep_num);

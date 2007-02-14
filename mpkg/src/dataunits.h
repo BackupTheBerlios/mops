@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.9 2007/01/26 14:00:16 i27249 Exp $
+	$Id: dataunits.h,v 1.10 2007/02/14 06:50:58 i27249 Exp $
 */
 
 
@@ -352,6 +352,41 @@ class SCRIPTS
 	~SCRIPTS();
 };
 
+class DESCRIPTION
+{
+	private:
+		int description_id;
+		string description_language;
+		string short_description_text;
+		string description_text;
+	public:
+		DESCRIPTION();
+		~DESCRIPTION();
+		int set_id(int id);
+		int set_language(string language);
+		int set_text(string text);
+		int set_shorttext(string short_text);
+		int get_id();
+		string get_language();
+		string get_text(bool sql=true);
+		string get_shorttext(bool sql=true);
+		void clear();
+};
+
+class DESCRIPTION_LIST
+{
+	private:
+		vector<DESCRIPTION> descriptions;
+	public:
+		DESCRIPTION *get_description(unsigned int num);
+		int set_description(unsigned int num, DESCRIPTION description);
+		int add(DESCRIPTION description);
+		DESCRIPTION_LIST();
+		~DESCRIPTION_LIST();
+		unsigned int size();
+		bool empty();
+		void clear();
+};
 
 class PACKAGE
 {
@@ -415,9 +450,12 @@ class PACKAGE
 	FILE_LIST config_files;
 	LOCATION_LIST package_locations;
 	DEPENDENCY_LIST package_dependencies;
+	DESCRIPTION_LIST package_descriptions;
 	TAG_LIST package_tags;
 	SCRIPTS package_scripts;
     public:
+	DESCRIPTION_LIST* get_descriptions();
+	int set_descriptions(DESCRIPTION_LIST desclist);
 	FILE_LIST* get_config_files();
 	FILE_LIST* get_files();
 	LOCATION_LIST* get_locations();

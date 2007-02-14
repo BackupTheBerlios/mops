@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.16 2007/01/31 15:47:33 i27249 Exp $
+	$Id: dataunits.cpp,v 1.17 2007/02/14 06:50:58 i27249 Exp $
 */
 
 
@@ -1173,24 +1173,6 @@ bool PACKAGE::operator == (PACKAGE npkg)
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void PACKAGE::clear()
 {
 	package_id=0;
@@ -1454,6 +1436,17 @@ int PACKAGE::set_md5(string md5)
 int PACKAGE::set_filename(string filename)
 {
 	package_filename=filename;
+	return 0;
+}
+
+DESCRIPTION_LIST* PACKAGE::get_descriptions()
+{
+	return &package_descriptions;
+}
+
+int PACKAGE::set_descriptions(DESCRIPTION_LIST desclist)
+{
+	package_descriptions=desclist;
 	return 0;
 }
 
@@ -1789,3 +1782,110 @@ PACKAGE_LIST::~PACKAGE_LIST()
 {
 }
 
+
+int DESCRIPTION::set_id(int id)
+{
+	description_id=id;
+	return 0;
+}
+
+int DESCRIPTION::set_language(string language)
+{
+	description_language=language;
+	return 0;
+}
+
+int DESCRIPTION::set_text(string text)
+{
+	description_text=text;
+	return 0;
+}
+
+int DESCRIPTION::set_shorttext(string shorttext)
+{
+	short_description_text=shorttext;
+	return 0;
+}
+
+
+int DESCRIPTION::get_id()
+{
+	return description_id;
+}
+
+string DESCRIPTION::get_language()
+{
+	return description_language;
+}
+
+string DESCRIPTION::get_text( bool sql)
+{
+	if (sql) return PrepareSql(description_text);
+	else return description_text;
+}
+
+string DESCRIPTION::get_shorttext( bool sql)
+{
+	if (sql) return PrepareSql(short_description_text);
+	else return short_description_text;
+}
+
+void DESCRIPTION::clear()
+{
+	description_id=0;
+	description_language.clear();
+	description_text.clear();
+}
+
+DESCRIPTION::DESCRIPTION(){}
+DESCRIPTION::~DESCRIPTION()
+{
+	description_id=0;
+}
+
+DESCRIPTION * DESCRIPTION_LIST::get_description(unsigned int num)
+{
+	if (num>=0 && num <descriptions.size())
+	{
+		return &descriptions[num];
+	}
+	else
+	{
+		printf("DESCRIPTION_LIST: Error in range!\n");
+		abort();
+	}
+}
+
+int DESCRIPTION_LIST::set_description(unsigned int num, DESCRIPTION description)
+{
+	if (num>=0 && num < descriptions.size())
+	{
+		descriptions[num]=description;
+		return 0;
+	}
+	else return -1;
+}
+
+int DESCRIPTION_LIST::add(DESCRIPTION description)
+{
+	descriptions.push_back(description);
+	return 0;
+}
+
+unsigned int DESCRIPTION_LIST::size()
+{
+	return descriptions.size();
+}
+
+bool DESCRIPTION_LIST::empty()
+{
+	return descriptions.empty();
+}
+
+void DESCRIPTION_LIST::clear()
+{
+	descriptions.clear();
+}
+
+DESCRIPTION_LIST::DESCRIPTION_LIST(){}
+DESCRIPTION_LIST::~DESCRIPTION_LIST(){}

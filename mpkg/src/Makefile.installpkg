@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile.installpkg,v 1.1 2007/02/09 16:11:12 i27249 Exp $
+# $Id: Makefile.installpkg,v 1.2 2007/02/14 06:50:58 i27249 Exp $
 #
 
 CC=gcc
@@ -8,7 +8,7 @@ CFLAGS=-c -Wall -std=c99 -g
 
 # VERY BAD HACK!!!
 CXXFLAGS=-c -DDEP_NORMALIZE -Wall -I/sw/include 
-LDFLAGS=-L/sw/lib -lsqlite3 -lmpkg -L. 
+LDFLAGS=-L/sw/lib -lsqlite3 -lmpkg -lintl -L. 
 
 SOURCES=installpkg-ng2.cpp 
 

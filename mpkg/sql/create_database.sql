@@ -75,4 +75,25 @@ create table dependencies (
 	dependency_package_name TEXT NOT NULL,
 	dependency_package_version TEXT NULL
 );
+-- INTERNATIONAL SUPPORT
 
+create table descriptions (
+	description_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	packages_package_id INTEGER NOT NULL,
+	description_language TEXT NOT NULL,
+	description_text TEXT NOT NULL
+);
+
+create table changelogs (
+	changelog_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	packages_package_id INTEGER NOT NULL,
+	changelog_language TEXT NOT NULL,
+	changelog_text TEXT NOT NULL
+);
+
+-- RATING SYSTEM - SUPPORT FOR FUTURE
+create table ratings (
+	rating_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	rating_value INTEGER NOT NULL,
+	packages_package_name TEXT NOT NULL
+);

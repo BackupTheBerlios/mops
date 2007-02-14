@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.6 2007/01/25 14:17:13 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.7 2007/02/14 06:50:58 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -94,24 +94,92 @@ string PackageConfig::getChangelog()
 	else return "";
 }
 
-string PackageConfig::getDescription()
+string PackageConfig::getDescription(string lang)
 {
 	if (_node.nChildNode("description")!=0)
 	{
-		string a = (string )_node.getChildNode("description").getText();
+		if (lang.empty())
+		{
+			string a = (string )_node.getChildNode("description").getText();
+			return a;
+		}
+		else {
+			string a = (string)_node.getChildNodeWithAttribute("description", "lang", lang.c_str()).getText();
+			return a;
+		}
+	}
+	else return "";
+}
+
+string PackageConfig::getDescriptionI(int num)
+{
+	if (_node.nChildNode("description")>num)
+	{
+		string a = (string )_node.getChildNode("description", num).getText();
 		return a;
 	}
 	else return "";
 }
 
-string PackageConfig::getShortDescription()
+
+DESCRIPTION_LIST PackageConfig::getDescriptions()
+{
+	DESCRIPTION desc;
+	DESCRIPTION_LIST descriptions;
+	
+	for (int i=0; i<_node.nChildNode("description"); i++)
+	{
+		if (_node.nChildNode("description")>i)
+		{
+			desc.set_text((string )_node.getChildNode("description", i).getText());
+			if (_node.getChildNode("description",i).nAttribute()!=0)
+			{
+				desc.set_language((string)_node.getChildNode("description", i).getAttributeValue(0));
+				desc.set_shorttext((string )_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).getText());
+			}
+		}
+		descriptions.add(desc);
+	}
+	return descriptions;
+}
+		
+	
+
+string PackageConfig::getShortDescription(string lang)
 {
 	if (_node.nChildNode("short_description")!=0)
 	{
-		string a = (string )_node.getChildNode("short_description").getText();
+		if (lang.empty())
+		{
+			string a = (string )_node.getChildNode("short_description").getText();
+			return a;
+		}
+		else {
+			string a = (string)_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).getText();
+			return a;
+		}
+	}
+	else return "";
+}
+
+string PackageConfig::getShortDescriptionI(int num)
+{
+	if (_node.nChildNode("short_description")>num)
+	{
+		string a = (string )_node.getChildNode("short_description", num).getText();
 		return a;
 	}
 	else return "";
+}
+
+vector<string> PackageConfig::getShortDescriptions()
+{
+	vector<string> descriptions;
+	for (int i=0; i<_node.nChildNode("short_description"); i++)
+	{
+		descriptions.push_back(getShortDescriptionI(i));
+	}
+	return descriptions;
 }
 
 string PackageConfig::getDependencyName(int dep_num)
