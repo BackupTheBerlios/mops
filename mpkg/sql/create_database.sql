@@ -81,7 +81,8 @@ create table descriptions (
 	description_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	packages_package_id INTEGER NOT NULL,
 	description_language TEXT NOT NULL,
-	description_text TEXT NOT NULL
+	description_text TEXT NOT NULL,
+	short_description_text TEXT NOT NULL
 );
 
 create table changelogs (

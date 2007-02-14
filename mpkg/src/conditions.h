@@ -1,6 +1,6 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.3 2007/01/25 14:17:13 i27249 Exp $
+    $Id: conditions.h,v 1.4 2007/02/14 14:33:58 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
@@ -22,7 +22,17 @@
 #define COND_XLESS 	"notmore"	// <=	6
 #define COND_ANY	"any"		// any	7
 
+#define HCOND_MORE 	">"
+#define HCOND_LESS 	"<"
+#define HCOND_EQUAL 	"=="
+#define HCOND_NOTEQUAL 	"!="
+#define HCOND_XMORE 	">="
+#define HCOND_XLESS 	"<="
+#define HCOND_ANY	"any"
+
+
 #include <string>
 using namespace std;
 int condition2int(string condition);
+string hcondition2xml(string condition);
 #endif //CONDITIONS_H_
