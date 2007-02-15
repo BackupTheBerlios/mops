@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.7 2007/01/25 09:51:44 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.8 2007/02/15 08:38:45 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -81,15 +81,12 @@ string ReadFile(string filename, int max_count)
 			if (i==max_count-1) break; // This will stop reading if we reach max_count of bytes read. Also, it will continue until end if max_count==0.
 		}
 		fclose(src);
-		//printf("[%s]\n",ret.c_str());
 		return ret;
 	}
 	else
 	{
 		perror("file_routines.cpp: ReadFile()");
-		//fclose(src);
 		printf("Cannot open file %s\n", filename.c_str());
-		abort();
 		return "";
 	}
 }
