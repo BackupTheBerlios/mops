@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.4 2007/02/15 09:48:40 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.5 2007/02/15 10:14:08 i27249 Exp $
  * ***************************************************************/
 
 
@@ -34,6 +34,8 @@ void Form::loadData()
 		ui.ShortDescriptionEdit->setText(pkg.get_short_description().c_str());
 		ui.DescriptionEdit->setText(pkg.get_description().c_str());
 		ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
+		ui.MaintainerNameEdit->setText(pkg.get_packager().c_str());
+		ui.MaintainerMailEdit->setText(pkg.get_packager_email().c_str());
 	
 
 		//QTableWidgetItem tmp;
@@ -74,6 +76,7 @@ void Form::saveData()
 	node.getChildNode("short_description").addText(ui.ShortDescriptionEdit->text().toStdString().c_str());
 	node.addChild("dependencies");
 
+	node.addChild("suggests");
 	int dcurr=0;
 	int scurr=0;
 	for (int i=0; i<ui.DepTableWidget->rowCount(); i++)
@@ -89,13 +92,14 @@ void Form::saveData()
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
 			dcurr++;
 		}
-		if (ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGESTION")
+		if (ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGESTION" ||
+				ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGEST")
 		{
 			node.getChildNode("suggests").addChild("suggest");
 			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("name");
 			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("name").addText(ui.DepTableWidget->item(i,0)->text().toStdString().c_str());
 			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("condition");
-			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("condition").addText(ui.DepTableWidget->item(i,1)->text().toStdString().c_str());
+			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("condition").addText(hcondition2xml(ui.DepTableWidget->item(i,1)->text().toStdString()).c_str());
 			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("version");
 			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
 			scurr++;
@@ -112,11 +116,17 @@ void Form::saveData()
 	}
 
 	node.getChildNode("changelog").addText(ui.ChangelogEdit->toPlainText().toStdString().c_str());
-	node.addChild("maintainer");
-	node.getChildNode("maintainer").addChild("name");
-	node.getChildNode("maintainer").addChild("email");
-	node.getChildNode("maintainer").getChildNode("name").addText(ui.MaintainerNameEdit->text().toStdString().c_str());
-	node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
+	if (!ui.MaintainerNameEdit->text().isEmpty())
+	{
+		node.addChild("maintainer");
+		node.getChildNode("maintainer").addChild("name");
+		node.getChildNode("maintainer").getChildNode("name").addText(ui.MaintainerNameEdit->text().toStdString().c_str());
+		if (!ui.MaintainerMailEdit->text().isEmpty())
+		{
+			node.getChildNode("maintainer").addChild("email");
+			node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
+		}
+	}
 	
 	(new QDir())->mkdir("install");
 	node.writeToFile("install/data.xml");

@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.3 2007/02/15 09:48:40 i27249 Exp $
+ *     $Id: main.cpp,v 1.4 2007/02/15 10:14:08 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -25,7 +25,7 @@
 	QObject::connect(mw.ui.VersionEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.BuildEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.ArchComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
-
+	QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &app, SLOT(quit()));
 
 
      return app.exec();
