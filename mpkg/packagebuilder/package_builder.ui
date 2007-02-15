@@ -151,7 +151,75 @@
       <property name="spacing" >
        <number>6</number>
       </property>
-      <item row="1" column="0" colspan="6" >
+      <item row="1" column="5" >
+       <widget class="QPushButton" name="DepDeleteButton" >
+        <property name="text" >
+         <string>Delete</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_9" >
+        <property name="text" >
+         <string>Tags:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="4" >
+       <widget class="QLineEdit" name="TagEdit" />
+      </item>
+      <item row="2" column="5" >
+       <widget class="QPushButton" name="TagAddButton" >
+        <property name="text" >
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="5" >
+       <widget class="QPushButton" name="TagDeleteButton" >
+        <property name="text" >
+         <string>Delete</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="4" >
+       <widget class="QListWidget" name="TagListWidget" />
+      </item>
+      <item row="0" column="5" >
+       <widget class="QPushButton" name="DepAddButton" >
+        <property name="text" >
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="6" >
+       <widget class="Line" name="line" >
+        <property name="orientation" >
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2" colspan="4" >
+       <widget class="QLineEdit" name="MaintainerMailEdit" />
+      </item>
+      <item row="6" column="0" colspan="2" >
+       <widget class="QLineEdit" name="MaintainerNameEdit" />
+      </item>
+      <item row="5" column="0" colspan="2" >
+       <widget class="QLabel" name="label_10" >
+        <property name="text" >
+         <string>Maintainer name:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2" >
+       <widget class="QLabel" name="label_11" >
+        <property name="text" >
+         <string>Maintainer e-mail:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="5" >
        <widget class="QTableWidget" name="DepTableWidget" >
         <property name="sizePolicy" >
          <sizepolicy>
@@ -183,7 +251,7 @@
         </column>
        </widget>
       </item>
-      <item row="0" column="2" colspan="2" >
+      <item row="0" column="2" >
        <widget class="QLineEdit" name="DepNameEdit" />
       </item>
       <item row="0" column="0" colspan="2" >
@@ -200,35 +268,17 @@
         </item>
        </widget>
       </item>
-      <item row="5" column="3" >
-       <widget class="QLabel" name="label_11" >
-        <property name="text" >
-         <string>Maintainer e-mail:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="3" >
-       <widget class="QLabel" name="label_10" >
-        <property name="text" >
-         <string>Maintainer name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0" colspan="3" >
-       <widget class="QLineEdit" name="MaintainerNameEdit" />
-      </item>
-      <item row="6" column="3" colspan="4" >
-       <widget class="QLineEdit" name="MaintainerMailEdit" />
-      </item>
-      <item row="4" column="0" colspan="7" >
-       <widget class="Line" name="line" >
-        <property name="orientation" >
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="4" >
+       <widget class="QLineEdit" name="DepVersionEdit" />
+      </item>
+      <item row="0" column="3" >
        <widget class="QComboBox" name="DepConditionComboBox" >
+        <property name="minimumSize" >
+         <size>
+          <width>50</width>
+          <height>0</height>
+         </size>
+        </property>
         <item>
          <property name="text" >
           <string>any</string>
@@ -259,50 +309,6 @@
           <string>&lt;</string>
          </property>
         </item>
-       </widget>
-      </item>
-      <item row="0" column="5" >
-       <widget class="QLineEdit" name="DepVersionEdit" />
-      </item>
-      <item row="0" column="6" >
-       <widget class="QPushButton" name="DepAddButton" >
-        <property name="text" >
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1" colspan="5" >
-       <widget class="QListWidget" name="TagListWidget" />
-      </item>
-      <item row="3" column="6" >
-       <widget class="QPushButton" name="TagDeleteButton" >
-        <property name="text" >
-         <string>Delete</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="6" >
-       <widget class="QPushButton" name="TagAddButton" >
-        <property name="text" >
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1" colspan="5" >
-       <widget class="QLineEdit" name="TagEdit" />
-      </item>
-      <item row="2" column="0" >
-       <widget class="QLabel" name="label_9" >
-        <property name="text" >
-         <string>Tags:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="6" >
-       <widget class="QPushButton" name="DepDeleteButton" >
-        <property name="text" >
-         <string>Delete</string>
-        </property>
        </widget>
       </item>
      </layout>
