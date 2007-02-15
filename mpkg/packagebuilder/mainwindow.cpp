@@ -1,12 +1,13 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.3 2007/02/15 08:38:20 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.4 2007/02/15 09:48:40 i27249 Exp $
  * ***************************************************************/
 
 
 #include <QtGui>
 #include "mainwindow.h"
+#include <QDir>
 #include <mpkg/libmpkg.h>
 Form::Form(QWidget *parent)
 {
@@ -77,18 +78,18 @@ void Form::saveData()
 	int scurr=0;
 	for (int i=0; i<ui.DepTableWidget->rowCount(); i++)
 	{
-		if (ui.DepTableWidget->item(i,3)->text()== "Dependency")
+		if (ui.DepTableWidget->item(i,3)->text().toUpper()== "DEPENDENCY")
 		{
 			node.getChildNode("dependencies").addChild("dep");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("name");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("name").addText(ui.DepTableWidget->item(i,0)->text().toStdString().c_str());
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("condition");
-			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("condition").addText(ui.DepTableWidget->item(i,1)->text().toStdString().c_str());
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("condition").addText(hcondition2xml(ui.DepTableWidget->item(i,1)->text().toStdString()).c_str());
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("version");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
 			dcurr++;
 		}
-		if (ui.DepTableWidget->item(i,3)->text()=="Suggestion")
+		if (ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGESTION")
 		{
 			node.getChildNode("suggests").addChild("suggest");
 			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("name");
@@ -116,6 +117,8 @@ void Form::saveData()
 	node.getChildNode("maintainer").addChild("email");
 	node.getChildNode("maintainer").getChildNode("name").addText(ui.MaintainerNameEdit->text().toStdString().c_str());
 	node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
+	
+	(new QDir())->mkdir("install");
 	node.writeToFile("install/data.xml");
 }
 
@@ -144,4 +147,30 @@ void Form::deleteTag()
 {
 	int i=ui.TagListWidget->currentRow();
 	ui.TagListWidget->takeItem(i);
+}
+
+void Form::deleteDependency()
+{
+	int i=ui.DepTableWidget->currentRow();
+	ui.DepTableWidget->removeRow(i);
+}
+
+void Form::changeHeader(const QString & text)
+{
+	QString FLabel="MOPSLinux package builder";
+
+	if (!ui.NameEdit->text().isEmpty())
+	{
+		FLabel+=": "+ui.NameEdit->text();
+		if (!ui.VersionEdit->text().isEmpty())
+		{
+			FLabel+="-"+ui.VersionEdit->text()+"-"+ui.ArchComboBox->currentText();
+			if (!ui.BuildEdit->text().isEmpty())
+			{
+				FLabel+="-"+ui.BuildEdit->text();
+			}
+		}
+	}
+
+	setWindowTitle(FLabel);
 }
