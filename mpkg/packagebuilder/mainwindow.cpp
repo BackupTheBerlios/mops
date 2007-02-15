@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.5 2007/02/15 10:14:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.6 2007/02/15 10:28:41 i27249 Exp $
  * ***************************************************************/
 
 
@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include <QDir>
 #include <mpkg/libmpkg.h>
+#include <QFileDialog>
 Form::Form(QWidget *parent)
 {
 	ui.setupUi(this);
@@ -19,10 +20,11 @@ void Form::loadData()
 	XMLNode node;
 	PACKAGE pkg;
 	string tag_tmp;
+	QString xmlFilename = QFileDialog::getOpenFileName(this, "Choose package index (data.xml):", ".", "Package index (data.xml)");
 
-	if (FileNotEmpty("install/data.xml"))
+	if (FileNotEmpty(xmlFilename.toStdString()))
 	{
-		PackageConfig p("install/data.xml");
+		PackageConfig p(xmlFilename.toStdString().c_str());
 		xml2package(p.getXMLNode(), &pkg);
 	
 

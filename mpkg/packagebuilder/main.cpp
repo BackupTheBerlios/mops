@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.4 2007/02/15 10:14:08 i27249 Exp $
+ *     $Id: main.cpp,v 1.5 2007/02/15 10:28:41 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -14,6 +14,7 @@
      QApplication app(argc, argv);
 
      Form mw;
+
 	mw.show();
 	QObject::connect(mw.ui.LoadButton, SIGNAL(clicked()), &mw, SLOT(loadData()));
 	QObject::connect(mw.ui.TagAddButton, SIGNAL(clicked()), &mw, SLOT(addTag()));
