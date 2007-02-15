@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>618</width>
-    <height>742</height>
+    <width>630</width>
+    <height>674</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -130,12 +130,17 @@
         <widget class="QComboBox" name="ArchComboBox" >
          <item>
           <property name="text" >
-           <string>i386</string>
+           <string>i486</string>
           </property>
          </item>
          <item>
           <property name="text" >
-           <string>i486</string>
+           <string>i686</string>
+          </property>
+         </item>
+         <item>
+          <property name="text" >
+           <string>i386</string>
           </property>
          </item>
          <item>
@@ -332,8 +337,17 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
+        <property name="alternatingRowColors" >
+         <bool>true</bool>
+        </property>
         <property name="selectionBehavior" >
          <enum>QAbstractItemView::SelectRows</enum>
+        </property>
+        <property name="gridStyle" >
+         <enum>Qt::SolidLine</enum>
+        </property>
+        <property name="sortingEnabled" >
+         <bool>true</bool>
         </property>
         <column>
          <property name="text" >
