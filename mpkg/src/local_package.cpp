@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.23 2007/02/14 06:50:58 i27249 Exp $
+$Id: local_package.cpp,v 1.24 2007/02/15 13:50:39 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -115,9 +115,9 @@ int LocalPackage::get_xml()
 	data.set_short_description(p.getShortDescription());
 	data.set_changelog(p.getChangelog());
 	
-#ifdef INTERNATIONAL_DESCRIPTIONS
+	// This line enables international descriptions
 	data.set_descriptions(p.getDescriptions());
-#endif
+	
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
 	TAG tag_tmp;

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.7 2007/02/15 13:19:19 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.8 2007/02/15 13:50:39 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -79,7 +79,6 @@ void Form::loadData()
 		ui.MaintainerMailEdit->setText(pkg.get_packager_email().c_str());
 	
 
-		//QTableWidgetItem tmp;
 		for (int i=0; i<pkg.get_dependencies()->size(); i++)
 		{
 			ui.DepTableWidget->insertRow(0);

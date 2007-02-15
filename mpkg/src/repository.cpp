@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.9 2007/02/14 06:50:58 i27249 Exp $
+ * $Id: repository.cpp,v 1.10 2007/02/15 13:50:39 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -19,6 +19,8 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	data->set_build(p.getBuild());
 	data->set_packager(p.getAuthorName());
 	data->set_packager_email(p.getAuthorEmail());
+	data->set_descriptions(p.getDescriptions());
+
 	data->set_description(p.getDescription());
 	data->set_short_description(p.getShortDescription());
 	data->set_changelog(p.getChangelog());
