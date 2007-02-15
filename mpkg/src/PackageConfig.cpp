@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.8 2007/02/15 14:28:22 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.9 2007/02/15 21:55:40 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -27,7 +27,7 @@ PackageConfig::~PackageConfig()
 
 string PackageConfig::getName()
 {
-	if (_node.nChildNode("name")!=0)
+	if (_node.nChildNode("name")!=0 && _node.getChildNode("name").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("name").getText();
 		return a;
@@ -37,7 +37,7 @@ string PackageConfig::getName()
 
 string PackageConfig::getVersion()
 {
-	if (_node.nChildNode("version")!=0)
+	if (_node.nChildNode("version")!=0 && _node.getChildNode("version").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("version").getText();
 		return a;
@@ -47,7 +47,7 @@ string PackageConfig::getVersion()
 
 string PackageConfig::getArch()
 {
-	if (_node.nChildNode("arch")!=0)
+	if (_node.nChildNode("arch")!=0 && _node.getChildNode("arch").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("arch").getText();
 		return a;
@@ -57,7 +57,7 @@ string PackageConfig::getArch()
 
 string PackageConfig::getBuild()
 {
-	if (_node.nChildNode("build")!=0)
+	if (_node.nChildNode("build")!=0 && _node.getChildNode("build").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("build").getText();
 		return a;
@@ -67,7 +67,7 @@ string PackageConfig::getBuild()
 
 string PackageConfig::getAuthorName()
 {
-	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("name")!=0)
+	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("name")!=0  && _node.getChildNode("maintainer").getChildNode("name").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("maintainer").getChildNode("name").getText();
 		return a;
@@ -77,7 +77,7 @@ string PackageConfig::getAuthorName()
 
 string PackageConfig::getAuthorEmail()
 {
-	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("email")!=0)
+	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("email")!=0 && _node.getChildNode("maintainer").getChildNode("email").nText()!=0)
 	{
 		string a =  (string )_node.getChildNode("maintainer").getChildNode("email").getText();
 		return a;
@@ -87,7 +87,7 @@ string PackageConfig::getAuthorEmail()
 
 string PackageConfig::getChangelog()
 {
-	if (_node.nChildNode("changelog")!=0)
+	if (_node.nChildNode("changelog")!=0 && _node.getChildNode("changelog").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("changelog").getText();
 		return a;
@@ -101,12 +101,21 @@ string PackageConfig::getDescription(string lang)
 	{
 		if (lang.empty())
 		{
-			string a = (string )_node.getChildNode("description").getText();
-			return a;
+			if (_node.getChildNode("description").nText()!=0)
+			{
+
+				string a = (string )_node.getChildNode("description").getText();
+				return a;
+			}
+			else return "";	
 		}
 		else {
-			string a = (string)_node.getChildNodeWithAttribute("description", "lang", lang.c_str()).getText();
-			return a;
+			if (_node.getChildNodeWithAttribute("description","lang",lang.c_str()).nText()!=0)
+			{
+				string a = (string)_node.getChildNodeWithAttribute("description", "lang", lang.c_str()).getText();
+				return a;
+			}
+			else return "";
 		}
 	}
 	else return "";
@@ -114,7 +123,7 @@ string PackageConfig::getDescription(string lang)
 
 string PackageConfig::getDescriptionI(int num)
 {
-	if (_node.nChildNode("description")>num)
+	if (_node.nChildNode("description")>num && _node.getChildNode("description",num).nText()!=0)
 	{
 		string a = (string )_node.getChildNode("description", num).getText();
 		return a;
@@ -132,11 +141,12 @@ DESCRIPTION_LIST PackageConfig::getDescriptions()
 	{
 		if (_node.nChildNode("description")>i)
 		{
-			desc.set_text((string )_node.getChildNode("description", i).getText());
+			if (_node.getChildNode("description",i).nText()!=0) desc.set_text((string )_node.getChildNode("description", i).getText());
 			if (_node.getChildNode("description",i).nAttribute()!=0)
 			{
 				desc.set_language((string)_node.getChildNode("description", i).getAttributeValue(0));
-				desc.set_shorttext((string )_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).getText());
+				if (_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).nText()!=0)
+					desc.set_shorttext((string )_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).getText());
 			}
 		}
 		descriptions.add(desc);
@@ -152,12 +162,20 @@ string PackageConfig::getShortDescription(string lang)
 	{
 		if (lang.empty())
 		{
-			string a = (string )_node.getChildNode("short_description").getText();
-			return a;
+			if (_node.getChildNode("short_description").nText()!=0)
+			{
+				string a = (string )_node.getChildNode("short_description").getText();
+				return a;
+			}
+			else return "";
 		}
 		else {
-			string a = (string)_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).getText();
-			return a;
+			if (_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).nText()!=0)
+			{
+				string a = (string)_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).getText();
+				return a;
+			}
+			else return "";
 		}
 	}
 	else return "";
@@ -165,7 +183,7 @@ string PackageConfig::getShortDescription(string lang)
 
 string PackageConfig::getShortDescriptionI(int num)
 {
-	if (_node.nChildNode("short_description")>num)
+	if (_node.nChildNode("short_description")>num && _node.getChildNode("short_description", num).nText()!=0)
 	{
 		string a = (string )_node.getChildNode("short_description", num).getText();
 		return a;
@@ -186,7 +204,8 @@ vector<string> PackageConfig::getShortDescriptions()
 string PackageConfig::getDependencyName(int dep_num)
 {
 	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("name")!=0)
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("name")!=0 && \
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("name").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("name").getText();
 		return a;
@@ -197,7 +216,8 @@ string PackageConfig::getDependencyName(int dep_num)
 string PackageConfig::getDependencyCondition(int dep_num)
 {
 	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("condition")!=0)
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("condition")!=0 && \
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("condition").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("condition").getText();
 		return a;
@@ -208,7 +228,8 @@ string PackageConfig::getDependencyCondition(int dep_num)
 string PackageConfig::getDependencyVersion(int dep_num)
 {
 	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("version")!=0)
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("version")!=0 && \
+			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("version").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("version").getText();
 		return a;
@@ -219,7 +240,8 @@ string PackageConfig::getDependencyVersion(int dep_num)
 string PackageConfig::getSuggestName(int suggest_num)
 {
 	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("name")!=0)
+			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("name")!=0 && \
+			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("name").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("name").getText();
 		return a;
@@ -230,7 +252,8 @@ string PackageConfig::getSuggestName(int suggest_num)
 string PackageConfig::getSuggestCondition(int suggest_num)
 {
 	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("condition")!=0)
+		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("condition")!=0 && \
+		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("condition").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("condition").getText();
 		return a;
@@ -241,7 +264,8 @@ string PackageConfig::getSuggestCondition(int suggest_num)
 string PackageConfig::getSuggestVersion(int suggest_num)
 {
 	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("version")!=0)
+		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("version")!=0 && \
+		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("version").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("version").getText();
 		return a;
@@ -251,7 +275,7 @@ string PackageConfig::getSuggestVersion(int suggest_num)
 
 string PackageConfig::getTag(int tag_num)
 {
-	if (_node.nChildNode("tags")!=0 && _node.getChildNode("tags").nChildNode("tag")>tag_num)
+	if (_node.nChildNode("tags")!=0 && _node.getChildNode("tags").nChildNode("tag")>tag_num && _node.getChildNode("tags").getChildNode("tag",tag_num).nText()!=0)
 	{
 		string a = (string )_node.getChildNode("tags").getChildNode("tag", tag_num).getText();
 		return a;
@@ -358,7 +382,7 @@ vector<string> PackageConfig::getTags()
 
 string PackageConfig::getFile(int file_num)
 {
-	if (_node.nChildNode("filelist")!=0 && _node.getChildNode("filelist").nChildNode("file")>file_num)
+	if (_node.nChildNode("filelist")!=0 && _node.getChildNode("filelist").nChildNode("file")>file_num && _node.getChildNode("filelist").getChildNode("file", file_num).nText()!=0)
 	{
 		string a = (string )_node.getChildNode("filelist").getChildNode("file", file_num).getText();
 		return a;
@@ -368,7 +392,7 @@ string PackageConfig::getFile(int file_num)
 
 string PackageConfig::getConfigFile(int file_num)
 {
-	if (_node.nChildNode("configfiles")!=0 && _node.getChildNode("configfiles").nChildNode("conffile")>file_num)
+	if (_node.nChildNode("configfiles")!=0 && _node.getChildNode("configfiles").nChildNode("conffile")>file_num && _node.getChildNode("configfiles").getChildNode("conffile").nText()!=0)
 	{
 		string a = (string )_node.getChildNode("configfiles").getChildNode("conffile", file_num).getText();
 		return a;
@@ -411,7 +435,7 @@ XMLNode PackageConfig::getXMLNode()
 
 string PackageConfig::getMd5()
 {
-	if (_node.nChildNode("md5")!=0)
+	if (_node.nChildNode("md5")!=0 && _node.getChildNode("md5").nText()!=0)
 	{
 		string a = (string) _node.getChildNode("md5").getText();
 		return a;
@@ -421,7 +445,7 @@ string PackageConfig::getMd5()
 
 string PackageConfig::getCompressedSize()
 {
-	if (_node.nChildNode("compressed_size")!=0)
+	if (_node.nChildNode("compressed_size")!=0 && _node.getChildNode("compressed_size").nText()!=0)
 	{
 		string a = (string) _node.getChildNode("compressed_size").getText();
 		return a;
@@ -431,7 +455,7 @@ string PackageConfig::getCompressedSize()
 
 string PackageConfig::getInstalledSize()
 {
-	if (_node.nChildNode("installed_size")!=0)
+	if (_node.nChildNode("installed_size")!=0 && _node.getChildNode("installed_size").nText()!=0)
 	{
 		string a = (string) _node.getChildNode("installed_size").getText();
 		return a;
@@ -441,7 +465,7 @@ string PackageConfig::getInstalledSize()
 
 string PackageConfig::getFilename()
 {
-	if (_node.nChildNode("filename")!=0)
+	if (_node.nChildNode("filename")!=0 && _node.getChildNode("filename").nText()!=0)
 	{
 		string a = (string) _node.getChildNode("filename").getText();
 		return a;
@@ -451,7 +475,7 @@ string PackageConfig::getFilename()
 
 string PackageConfig::getLocation()
 {
-	if (_node.nChildNode("location")!=0)
+	if (_node.nChildNode("location")!=0 && _node.getChildNode("location").nText()!=0)
 	{
 		string a = (string) _node.getChildNode("location").getText();
 		return a;

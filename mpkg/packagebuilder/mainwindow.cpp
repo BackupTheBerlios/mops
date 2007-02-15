@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.10 2007/02/15 14:28:22 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.11 2007/02/15 21:55:40 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -200,6 +200,7 @@ void Form::saveData()
 	(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
 	setWindowTitle(windowTitle()+" (saved)");
+	modified=false;
 }
 
 void Form::addTag(){
