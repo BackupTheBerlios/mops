@@ -114,15 +114,17 @@ void Form::saveData()
 }
 
 void Form::addTag(){
-	ui.TagListWidget->addItem(ui.TagEdit->text());
+	if (!ui.TagEdit->text().isEmpty()) ui.TagListWidget->addItem(ui.TagEdit->text());
 }
 void Form::addDependency(){
 
-	ui.DepTableWidget->insertRow(0);
-	ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(ui.DepSuggestComboBox->currentText()));
-	ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
-	ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
-	ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
+	if (!ui.DepNameEdit->text().isEmpty() && !ui.DepVersionEdit->text().isEmpty())
+	{	ui.DepTableWidget->insertRow(0);
+		ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(ui.DepSuggestComboBox->currentText()));
+		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
+		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
+		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
+	}
 }
 
 void Form::deleteTag()
