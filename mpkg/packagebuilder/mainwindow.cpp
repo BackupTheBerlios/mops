@@ -1,10 +1,10 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.6 2007/02/15 10:28:41 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.7 2007/02/15 13:19:19 i27249 Exp $
  * ***************************************************************/
 
-
+#include <QTextCodec>
 #include <QtGui>
 #include "mainwindow.h"
 #include <QDir>
@@ -12,6 +12,10 @@
 #include <QFileDialog>
 Form::Form(QWidget *parent)
 {
+	modified=false;
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+	short_description.resize(2);
+	description.resize(2);
 	ui.setupUi(this);
 }
 
@@ -20,10 +24,11 @@ void Form::loadData()
 	XMLNode node;
 	PACKAGE pkg;
 	string tag_tmp;
-	QString xmlFilename = QFileDialog::getOpenFileName(this, "Choose package index (data.xml):", ".", "Package index (data.xml)");
+	xmlFilename = QFileDialog::getOpenFileName(this, "Choose package index (data.xml):", ".", "Package index (data.xml)");
 
 	if (FileNotEmpty(xmlFilename.toStdString()))
 	{
+		modified=true;
 		PackageConfig p(xmlFilename.toStdString().c_str());
 		xml2package(p.getXMLNode(), &pkg);
 	
@@ -34,7 +39,41 @@ void Form::loadData()
 		ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch().c_str()));
 		ui.BuildEdit->setText(pkg.get_build().c_str());
 		ui.ShortDescriptionEdit->setText(pkg.get_short_description().c_str());
-		ui.DescriptionEdit->setText(pkg.get_description().c_str());
+		
+		for (int i=0; i<pkg.get_descriptions()->size(); i++)
+		{
+			printf("id=%d, lang = %s\n",i,pkg.get_descriptions()->get_description(i)->get_language().c_str());
+			if (pkg.get_descriptions()->get_description(i)->get_language()=="en")
+			{
+				short_description[0]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
+				description[0]=pkg.get_descriptions()->get_description(i)->get_text().c_str();
+			}
+			if (pkg.get_descriptions()->get_description(i)->get_language()=="ru")
+			{
+				short_description[1]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
+				description[1]=pkg.get_descriptions()->get_description(i)->get_text().c_str();
+			}
+		}
+		if (!short_description[1].isEmpty() || !description[1].isEmpty())
+		{
+			ui.ShortDescriptionEdit->setText(short_description[1]);
+			ui.DescriptionEdit->setText(description[1]);
+			printf("ru default\n");
+		}
+		else if (!short_description[0].isEmpty() || !description[0].isEmpty())
+		{
+			ui.DescriptionLanguageComboBox->setCurrentIndex(0);
+			ui.ShortDescriptionEdit->setText(short_description[1]);
+			ui.DescriptionEdit->setText(description[1]);
+			printf("en default\n");
+			
+		}
+		else
+		{
+			ui.DescriptionEdit->setText(pkg.get_description().c_str());
+			printf("no default\n");
+		}
+
 		ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
 		ui.MaintainerNameEdit->setText(pkg.get_packager().c_str());
 		ui.MaintainerMailEdit->setText(pkg.get_packager_email().c_str());
@@ -61,6 +100,16 @@ void Form::loadData()
 
 void Form::saveData()
 {
+	if (xmlFilename.isEmpty())
+	{
+		xmlFilename = QFileDialog::getSaveFileName(this, "Choose where to save package index (data.xml):", ".", "Package index (data.xml)");
+	}
+	if (xmlFilename.isEmpty())
+	{
+		return;
+	}
+
+
 	XMLNode node;
 	node = XMLNode::createXMLTopNode("package");
 	node.addChild("name");
@@ -72,10 +121,22 @@ void Form::saveData()
 	node.addChild("build");
 	node.getChildNode("build").addText(ui.BuildEdit->text().toStdString().c_str());
 
+	storeCurrentDescription();
+
 	node.addChild("description");
-	node.getChildNode("description").addText(ui.DescriptionEdit->toPlainText().toStdString().c_str());
+	node.getChildNode("description",0).addAttribute("lang", "en");
+	node.getChildNode("description",0).addText(description[0].toStdString().c_str());
+	node.addChild("description");
+	node.getChildNode("description",1).addAttribute("lang", "ru");
+	node.getChildNode("description",1).addText(description[1].toStdString().c_str());
+
 	node.addChild("short_description");
-	node.getChildNode("short_description").addText(ui.ShortDescriptionEdit->text().toStdString().c_str());
+	node.getChildNode("short_description",0).addAttribute("lang", "en");
+	node.getChildNode("short_description",0).addText(short_description[0].toStdString().c_str());
+	node.addChild("short_description");
+	node.getChildNode("short_description",1).addAttribute("lang", "ru");
+	node.getChildNode("short_description",1).addText(short_description[1].toStdString().c_str());
+
 	node.addChild("dependencies");
 
 	node.addChild("suggests");
@@ -131,7 +192,8 @@ void Form::saveData()
 	}
 	
 	(new QDir())->mkdir("install");
-	node.writeToFile("install/data.xml");
+	node.writeToFile(xmlFilename.toStdString().c_str());
+	setWindowTitle(windowTitle()+" (saved)");
 }
 
 void Form::addTag(){
@@ -166,9 +228,32 @@ void Form::deleteDependency()
 	int i=ui.DepTableWidget->currentRow();
 	ui.DepTableWidget->removeRow(i);
 }
+void Form::changeHeader()
+{
+	printf("headerChange\n");
+	modified=true;
+
+	QString FLabel="MOPSLinux package builder";
+
+	if (!ui.NameEdit->text().isEmpty())
+	{
+		FLabel+=": "+ui.NameEdit->text();
+		if (!ui.VersionEdit->text().isEmpty())
+		{
+			FLabel+="-"+ui.VersionEdit->text()+"-"+ui.ArchComboBox->currentText();
+			if (!ui.BuildEdit->text().isEmpty())
+			{
+				FLabel+="-"+ui.BuildEdit->text();
+			}
+		}
+	}
+	setWindowTitle(FLabel);
+}
 
 void Form::changeHeader(const QString & text)
 {
+	printf("headerChange\n");
+	modified=true;
 	QString FLabel="MOPSLinux package builder";
 
 	if (!ui.NameEdit->text().isEmpty())
@@ -186,3 +271,71 @@ void Form::changeHeader(const QString & text)
 
 	setWindowTitle(FLabel);
 }
+
+void Form::swapLanguage()
+{
+	int i;
+	int i2;
+	if (ui.DescriptionLanguageComboBox->currentText()=="ru")
+	{
+		i=0;
+		i2=1;
+	}
+	else 
+	{
+		i=1;
+		i2=0;
+	}
+
+	short_description[i]=ui.ShortDescriptionEdit->text();
+	description[i]=ui.DescriptionEdit->toPlainText();
+	ui.ShortDescriptionEdit->setText(short_description[i2]);
+	ui.DescriptionEdit->setPlainText(description[i2]);
+}
+
+void Form::storeCurrentDescription()
+{
+	printf("stored\n");
+	int i;
+	if (ui.DescriptionLanguageComboBox->currentText()=="ru")
+	{
+		i=1;
+	}
+	else 
+	{
+		i=0;
+	}
+
+	short_description[i]=ui.ShortDescriptionEdit->text();
+	description[i]=ui.DescriptionEdit->toPlainText();
+
+}
+
+void Form::quitApp()
+{
+	int ret;
+	if (modified)
+	{
+		printf("modified\n");
+		ret = QMessageBox::warning(this, tr("MOPSLinux package builder"),
+                   tr("The document has been modified.\n"
+                      "Do you want to save your changes?"),
+                   QMessageBox::Save | QMessageBox::Discard
+                   | QMessageBox::Cancel,
+                   QMessageBox::Save);
+		printf("ret = %d\n", ret);
+		switch(ret)
+		{
+			case QMessageBox::Save: saveData();
+				qApp->quit();
+				break;
+			case QMessageBox::Discard:
+				qApp->quit();
+				break;
+			case QMessageBox::Cancel:
+				break;
+		}
+	}
+	else qApp->quit();
+}
+

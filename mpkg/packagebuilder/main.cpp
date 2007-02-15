@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.5 2007/02/15 10:28:41 i27249 Exp $
+ *     $Id: main.cpp,v 1.6 2007/02/15 13:19:19 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -25,8 +25,24 @@
 	QObject::connect(mw.ui.NameEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.VersionEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.BuildEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
-	QObject::connect(mw.ui.ArchComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
-	QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &app, SLOT(quit()));
+	QObject::connect(mw.ui.ArchComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &mw, SLOT(quitApp()));
+	QObject::connect(mw.ui.DescriptionLanguageComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(swapLanguage()));
+	QObject::connect(mw.ui.ShortDescriptionEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
+	QObject::connect(mw.ui.DescriptionEdit, SIGNAL(textChanged()), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.ChangelogEdit, SIGNAL(textChanged()), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.TagEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
+	QObject::connect(mw.ui.DepAddButton, SIGNAL(clicked()), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.DepDeleteButton, SIGNAL(clicked()), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.TagAddButton, SIGNAL(clicked()), &mw, SLOT(changeHeader()));
+	QObject::connect(mw.ui.TagDeleteButton, SIGNAL(clicked()), &mw, SLOT(changeHeader()));
+
+
+
+
+
+
+
 
 
      return app.exec();
