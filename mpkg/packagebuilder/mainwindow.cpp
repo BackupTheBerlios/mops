@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.8 2007/02/15 13:50:39 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.9 2007/02/15 13:52:43 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -28,7 +28,6 @@ void Form::loadData()
 
 	if (FileNotEmpty(xmlFilename.toStdString()))
 	{
-		modified=true;
 		PackageConfig p(xmlFilename.toStdString().c_str());
 		xml2package(p.getXMLNode(), &pkg);
 	
