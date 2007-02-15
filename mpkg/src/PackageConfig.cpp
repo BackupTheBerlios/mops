@@ -1,12 +1,13 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.7 2007/02/14 06:50:58 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.8 2007/02/15 14:28:22 i27249 Exp $
 */
 
 #include "PackageConfig.h"
 #include "debug.h"
 using namespace std;
 
+//TODO: Add check for text!!!!!!!!!
 PackageConfig::PackageConfig(string _f)
 {
 	this->fileName = _f;

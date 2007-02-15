@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.9 2007/02/15 13:52:43 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.10 2007/02/15 14:28:22 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -10,6 +10,9 @@
 #include <QDir>
 #include <mpkg/libmpkg.h>
 #include <QFileDialog>
+#include <QtXml/QXmlSimpleReader>
+#include <QtXml/QXmlInputSource>
+
 Form::Form(QWidget *parent)
 {
 	modified=false;
@@ -26,7 +29,11 @@ void Form::loadData()
 	string tag_tmp;
 	xmlFilename = QFileDialog::getOpenFileName(this, "Choose package index (data.xml):", ".", "Package index (data.xml)");
 
-	if (FileNotEmpty(xmlFilename.toStdString()))
+	QXmlInputSource xmlsrc;
+	xmlsrc.setData((QString) ReadFile(xmlFilename.toStdString()).c_str());
+
+	QXmlSimpleReader *xmlReader = new QXmlSimpleReader;
+	if (xmlReader->parse(xmlsrc))
 	{
 		PackageConfig p(xmlFilename.toStdString().c_str());
 		xml2package(p.getXMLNode(), &pkg);
@@ -94,6 +101,7 @@ void Form::loadData()
 			tag_tmp.clear();
 		}
 	}
+	modified=false;
 }
 
 void Form::saveData()
