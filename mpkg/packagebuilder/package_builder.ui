@@ -406,6 +406,32 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>NameEdit</tabstop>
+  <tabstop>VersionEdit</tabstop>
+  <tabstop>ArchComboBox</tabstop>
+  <tabstop>BuildEdit</tabstop>
+  <tabstop>ShortDescriptionEdit</tabstop>
+  <tabstop>DescriptionEdit</tabstop>
+  <tabstop>DescriptionLanguageComboBox</tabstop>
+  <tabstop>ChangelogEdit</tabstop>
+  <tabstop>DepSuggestComboBox</tabstop>
+  <tabstop>DepNameEdit</tabstop>
+  <tabstop>DepConditionComboBox</tabstop>
+  <tabstop>DepVersionEdit</tabstop>
+  <tabstop>DepAddButton</tabstop>
+  <tabstop>TagEdit</tabstop>
+  <tabstop>TagAddButton</tabstop>
+  <tabstop>MaintainerNameEdit</tabstop>
+  <tabstop>MaintainerMailEdit</tabstop>
+  <tabstop>LoadButton</tabstop>
+  <tabstop>BuildButton</tabstop>
+  <tabstop>quitButton</tabstop>
+  <tabstop>DepTableWidget</tabstop>
+  <tabstop>DepDeleteButton</tabstop>
+  <tabstop>TagListWidget</tabstop>
+  <tabstop>TagDeleteButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
