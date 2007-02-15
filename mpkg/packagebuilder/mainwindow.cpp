@@ -1,3 +1,10 @@
+/*******************************************************************
+ * MOPSLinux packaging system
+ * Package builder
+ * $Id: mainwindow.cpp,v 1.3 2007/02/15 08:38:20 i27249 Exp $
+ * ***************************************************************/
+
+
 #include <QtGui>
 #include "mainwindow.h"
 #include <mpkg/libmpkg.h>
@@ -10,42 +17,41 @@ void Form::loadData()
 {
 	XMLNode node;
 	PACKAGE pkg;
+	string tag_tmp;
+
 	if (FileNotEmpty("install/data.xml"))
 	{
 		PackageConfig p("install/data.xml");
 		xml2package(p.getXMLNode(), &pkg);
-	}
-
-	// Filling data 
-	ui.NameEdit->setText(pkg.get_name().c_str());
-	ui.VersionEdit->setText(pkg.get_version().c_str());
-	ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch().c_str()));
-	ui.BuildEdit->setText(pkg.get_build().c_str());
-	ui.ShortDescriptionEdit->setText(pkg.get_short_description().c_str());
-	ui.DescriptionEdit->setText(pkg.get_description().c_str());
-	ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
 	
 
-	QTableWidgetItem tmp;
-	for (int i=0; i<pkg.get_dependencies()->size(); i++)
-	{
-		ui.DepTableWidget->insertRow(0);
-		ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_type().c_str()));
-		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_name().c_str()));
-		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_vcondition().c_str()));
-		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_version().c_str()));
+		// Filling data 
+		ui.NameEdit->setText(pkg.get_name().c_str());
+		ui.VersionEdit->setText(pkg.get_version().c_str());
+		ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch().c_str()));
+		ui.BuildEdit->setText(pkg.get_build().c_str());
+		ui.ShortDescriptionEdit->setText(pkg.get_short_description().c_str());
+		ui.DescriptionEdit->setText(pkg.get_description().c_str());
+		ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
+	
+
+		//QTableWidgetItem tmp;
+		for (int i=0; i<pkg.get_dependencies()->size(); i++)
+		{
+			ui.DepTableWidget->insertRow(0);
+			ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_type().c_str()));
+			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_name().c_str()));
+			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_vcondition().c_str()));
+			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_version().c_str()));
+		}
+
+		for (int i=0; i<pkg.get_tags()->size(); i++)
+		{
+			tag_tmp=pkg.get_tags()->get_tag(i)->get_name();
+			ui.TagListWidget->addItem(tag_tmp.c_str());
+			tag_tmp.clear();
+		}
 	}
-
-	string tag_tmp;
-	for (int i=0; i<pkg.get_tags()->size(); i++)
-	{
-		tag_tmp=pkg.get_tags()->get_tag(i)->get_name();
-		ui.TagListWidget->addItem(tag_tmp.c_str());
-		tag_tmp.clear();
-	}
-
-
-
 }
 
 void Form::saveData()
@@ -114,7 +120,10 @@ void Form::saveData()
 }
 
 void Form::addTag(){
-	if (!ui.TagEdit->text().isEmpty()) ui.TagListWidget->addItem(ui.TagEdit->text());
+	if (!ui.TagEdit->text().isEmpty()) {
+	       ui.TagListWidget->addItem(ui.TagEdit->text());
+	       ui.TagEdit->clear();
+	}
 }
 void Form::addDependency(){
 
@@ -124,6 +133,10 @@ void Form::addDependency(){
 		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
 		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
 		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
+		ui.DepNameEdit->clear();
+		ui.DepVersionEdit->clear();
+		ui.DepSuggestComboBox->setCurrentIndex(0);
+		ui.DepConditionComboBox->setCurrentIndex(0);
 	}
 }
 

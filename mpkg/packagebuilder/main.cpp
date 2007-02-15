@@ -1,6 +1,8 @@
-/*     Mockup for QT face of mpkg
- *     $Id: main.cpp,v 1.1 2007/02/14 14:33:58 i27249 Exp $
- *     */
+/****************************************************************
+ *     MOPSLinux packaging system
+ *     Package builder - main file
+ *     $Id: main.cpp,v 1.2 2007/02/15 08:38:20 i27249 Exp $
+ ***************************************************************/
 
 #include <QApplication>
  #include <QPushButton>
