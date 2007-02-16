@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>704</width>
-    <height>642</height>
+    <width>714</width>
+    <height>683</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -33,7 +33,7 @@
       <property name="title" >
        <string>Package search</string>
       </property>
-      <layout class="QHBoxLayout" >
+      <layout class="QVBoxLayout" >
        <property name="margin" >
         <number>9</number>
        </property>
@@ -237,17 +237,34 @@
             </layout>
            </item>
            <item>
-            <spacer>
-             <property name="orientation" >
-              <enum>Qt::Vertical</enum>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
              </property>
-             <property name="sizeHint" >
-              <size>
-               <width>20</width>
-               <height>20</height>
-              </size>
+             <property name="spacing" >
+              <number>6</number>
              </property>
-            </spacer>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>141</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton" >
+               <property name="text" >
+                <string>Search</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
@@ -257,7 +274,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QSplitter" name="splitter_2" >
+     <widget class="QSplitter" name="splitter_3" >
       <property name="orientation" >
        <enum>Qt::Vertical</enum>
       </property>
@@ -283,15 +300,107 @@
           <number>6</number>
          </property>
          <item>
-          <widget class="QTreeWidget" name="treeWidget" >
-           <property name="sizePolicy" >
-            <sizepolicy>
-             <hsizetype>7</hsizetype>
-             <vsizetype>7</vsizetype>
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+          <widget class="QListWidget" name="listWidget" >
+           <item>
+            <property name="text" >
+             <string>Libraries</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Archivers</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Console stuff</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>System components</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Drivers</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Games</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Music players</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Video players</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Graphics</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Office</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Development tools</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Server software</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Utilities</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>System tools</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Emulators</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Internet: Web browsers</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Internet: IM clients</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Internet: VoIP</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Multimedia editors</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Updates</string>
+            </property>
+           </item>
           </widget>
          </item>
         </layout>
@@ -359,7 +468,7 @@
        <property name="sizePolicy" >
         <sizepolicy>
          <hsizetype>5</hsizetype>
-         <vsizetype>0</vsizetype>
+         <vsizetype>5</vsizetype>
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -373,7 +482,7 @@
        <property name="title" >
         <string>Info about package</string>
        </property>
-       <layout class="QHBoxLayout" >
+       <layout class="QVBoxLayout" >
         <property name="margin" >
          <number>9</number>
         </property>
@@ -381,24 +490,75 @@
          <number>6</number>
         </property>
         <item>
-         <widget class="QTabWidget" name="tabWidget" >
-          <property name="currentIndex" >
-           <number>2</number>
+         <widget class="QSplitter" name="splitter_2" >
+          <property name="orientation" >
+           <enum>Qt::Horizontal</enum>
           </property>
-          <widget class="QWidget" name="tab" >
-           <attribute name="title" >
-            <string>Overview</string>
-           </attribute>
+          <widget class="QTextEdit" name="textEdit" >
+           <property name="sizePolicy" >
+            <sizepolicy>
+             <hsizetype>5</hsizetype>
+             <vsizetype>4</vsizetype>
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
           </widget>
-          <widget class="QWidget" name="tab_2" >
-           <attribute name="title" >
-            <string>Details</string>
-           </attribute>
-          </widget>
-          <widget class="QWidget" name="tab_3" >
-           <attribute name="title" >
-            <string>Dependencies</string>
-           </attribute>
+          <widget class="QTabWidget" name="tabWidget" >
+           <property name="tabPosition" >
+            <enum>QTabWidget::North</enum>
+           </property>
+           <property name="currentIndex" >
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab" >
+            <attribute name="title" >
+             <string>Overview</string>
+            </attribute>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QTextEdit" name="textEdit_2" />
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_2" >
+            <attribute name="title" >
+             <string>Details</string>
+            </attribute>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QTextEdit" name="textEdit_3" />
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="tab_3" >
+            <attribute name="title" >
+             <string>Dependencies</string>
+            </attribute>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>9</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QTreeWidget" name="treeWidget" />
+             </item>
+            </layout>
+           </widget>
           </widget>
          </widget>
         </item>
@@ -413,7 +573,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>704</width>
+     <width>714</width>
      <height>22</height>
     </rect>
    </property>
