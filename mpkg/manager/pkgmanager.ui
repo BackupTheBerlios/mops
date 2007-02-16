@@ -577,8 +577,152 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuRepositories" >
+    <property name="title" >
+     <string>Repositories</string>
+    </property>
+    <addaction name="actionAdd_remove_repositories" />
+   </widget>
+   <widget class="QMenu" name="menuFilters" >
+    <property name="title" >
+     <string>Filters</string>
+    </property>
+    <addaction name="actionShow_installed" />
+    <addaction name="actionShow_available" />
+    <addaction name="actionShow_broken" />
+    <addaction name="actionShow_removed" />
+    <addaction name="actionShow_unavailable" />
+    <addaction name="actionCustom_filter" />
+   </widget>
+   <widget class="QMenu" name="menuHelp" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp_topics" />
+    <addaction name="actionMini_FAQ" />
+    <addaction name="actionAbout" />
+   </widget>
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
+     <string>File</string>
+    </property>
+    <addaction name="actionPreferences" />
+    <addaction name="actionCore_settings" />
+    <addaction name="separator" />
+    <addaction name="actionCommit_changes" />
+    <addaction name="actionReset_changes" />
+    <addaction name="actionReset_all_queue" />
+    <addaction name="separator" />
+    <addaction name="actionSave_queue" />
+    <addaction name="separator" />
+    <addaction name="actionQuit" />
+   </widget>
+   <addaction name="menuFile" />
+   <addaction name="menuRepositories" />
+   <addaction name="menuFilters" />
+   <addaction name="menuHelp" />
   </widget>
   <widget class="QStatusBar" name="statusbar" />
+  <action name="actionAdd_remove_repositories" >
+   <property name="text" >
+    <string>Add/remove repositories</string>
+   </property>
+  </action>
+  <action name="actionInstalled" >
+   <property name="text" >
+    <string>Installed</string>
+   </property>
+  </action>
+  <action name="actionAvailable" >
+   <property name="text" >
+    <string>Installed</string>
+   </property>
+  </action>
+  <action name="actionAvailable_2" >
+   <property name="text" >
+    <string>Available</string>
+   </property>
+  </action>
+  <action name="actionShow_installed" >
+   <property name="text" >
+    <string>Show installed</string>
+   </property>
+  </action>
+  <action name="actionShow_available" >
+   <property name="text" >
+    <string>Show available</string>
+   </property>
+  </action>
+  <action name="actionShow_broken" >
+   <property name="text" >
+    <string>Show broken</string>
+   </property>
+  </action>
+  <action name="actionShow_removed" >
+   <property name="text" >
+    <string>Show removed</string>
+   </property>
+  </action>
+  <action name="actionShow_unavailable" >
+   <property name="text" >
+    <string>Show unavailable</string>
+   </property>
+  </action>
+  <action name="actionCustom_filter" >
+   <property name="text" >
+    <string>Custom filter...</string>
+   </property>
+  </action>
+  <action name="actionHelp_topics" >
+   <property name="text" >
+    <string>Help topics</string>
+   </property>
+  </action>
+  <action name="actionMini_FAQ" >
+   <property name="text" >
+    <string>Mini-FAQ</string>
+   </property>
+  </action>
+  <action name="actionAbout" >
+   <property name="text" >
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="actionPreferences" >
+   <property name="text" >
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="actionCore_settings" >
+   <property name="text" >
+    <string>Core settings</string>
+   </property>
+  </action>
+  <action name="actionCommit_changes" >
+   <property name="text" >
+    <string>Commit changes</string>
+   </property>
+  </action>
+  <action name="actionReset_changes" >
+   <property name="text" >
+    <string>Reset changes</string>
+   </property>
+  </action>
+  <action name="actionReset_all_queue" >
+   <property name="text" >
+    <string>Reset all queue</string>
+   </property>
+  </action>
+  <action name="actionSave_queue" >
+   <property name="text" >
+    <string>Save queue</string>
+   </property>
+  </action>
+  <action name="actionQuit" >
+   <property name="text" >
+    <string>Quit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
