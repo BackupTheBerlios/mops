@@ -1,0 +1,68 @@
+<ui version="4.0" >
+ <class>aboutBox</class>
+ <widget class="QWidget" name="aboutBox" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>385</width>
+    <height>237</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>About MOPSLinux package manager</string>
+  </property>
+  <widget class="QLabel" name="label" >
+   <property name="geometry" >
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>369</width>
+     <height>136</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>MOPSLinux package manager 0.1 (codename "Warp")
+Development preview - mega-alpha-not-even-prerelease!
+
+Enjoy testing!
+
+Developed in RPUNet (www.rpunet.ru) by:
+ Bogdan "AiX" Kokorev (i27249@gmail.com)
+ Andrew Diakin (adiakin@gmail.com)</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="closeButton" >
+   <property name="geometry" >
+    <rect>
+     <x>130</x>
+     <y>190</y>
+     <width>109</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>Kewl! =)</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>closeButton</sender>
+   <signal>clicked()</signal>
+   <receiver>aboutBox</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>184</x>
+     <y>205</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>192</x>
+     <y>118</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
