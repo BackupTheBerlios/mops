@@ -1,14 +1,17 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.2 2007/02/16 06:23:30 i27249 Exp $
+ * $Id: mainwindow.h,v 1.3 2007/02/16 09:54:22 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
 #define MV_H
 #include "ui_pkgmanager.h"
 #include "ui_aboutbox.h"
-
+#include "ui_preferencesbox.h"
+#include "ui_loading.h"
+#include <mpkg/libmpkg.h>
+#include "loading.h"
 class MainWindow: public QMainWindow
 {
 	Q_OBJECT
@@ -24,6 +27,7 @@ class MainWindow: public QMainWindow
 		void resetQueue();
 		void saveQueue();
 		void showAddRemoveRepositories();
+		void showCustomFilter();
 		void setInstalledFilter(bool showThis=false);
 		void setAvailableFilter(bool showThis=false);
 		void setBrokenFilter(bool showThis=false);
@@ -35,7 +39,13 @@ class MainWindow: public QMainWindow
 	public:
 		Ui::MainWindow ui;
 		Ui::aboutBox _aboutBox;
+		LoadBox *loadBox;
+		//Ui::loadingBox loadBox;
 	private:
 		void loadData();
+		mpkg *mDb;
+		
+		PACKAGE_LIST packagelist;
+
 };
 #endif
