@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.3 2007/02/16 09:54:22 i27249 Exp $
+ * $Id: mainwindow.h,v 1.4 2007/02/18 03:10:34 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -39,7 +39,7 @@ class MainWindow: public QMainWindow
 	public:
 		Ui::MainWindow ui;
 		Ui::aboutBox _aboutBox;
-		LoadBox *loadBox;
+		LoadingBox *loadBox;
 		//Ui::loadingBox loadBox;
 	private:
 		void loadData();

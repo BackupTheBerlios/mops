@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.3 2007/02/16 09:54:22 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.4 2007/02/18 03:10:34 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -22,7 +22,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.setupUi(this);
 
 	mDb = new mpkg;
-	loadBox = new LoadBox;
+	loadBox = new LoadingBox;
 	if (!mDb->init_ok)
 	{
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -37,7 +37,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 void MainWindow::showPreferences()
 {
 	PreferencesBox *prefbox = new PreferencesBox;
-	prefbox->show();
+	prefbox->loadData(mDb);
+	prefbox->openInterface();
 }
 
 void MainWindow::showAbout()

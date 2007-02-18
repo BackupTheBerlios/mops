@@ -1,6 +1,6 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.2 2007/02/16 09:54:22 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.3 2007/02/18 03:10:34 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
@@ -15,7 +15,11 @@ class PreferencesBox: public QWidget
 		Ui::preferencesBox ui;
 	public slots:
 		void openAccounts();
+		void openCore();
+		void openUpdates();
 		void openRepositories();
 		void openInterface();
+		void loadData(mpkg *mDb);
+		void applyConfig(mpkg *mDb);
 };
 #endif

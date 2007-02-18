@@ -22,7 +22,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -64,7 +64,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit" />
+            <widget class="QLineEdit" name="sysrootEdit" />
            </item>
           </layout>
          </item>
@@ -84,7 +84,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_2" />
+            <widget class="QLineEdit" name="syscacheEdit" />
            </item>
           </layout>
          </item>
@@ -104,7 +104,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_3" />
+            <widget class="QLineEdit" name="dbfileEdit" />
            </item>
           </layout>
          </item>
@@ -124,12 +124,12 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_4" />
+            <widget class="QLineEdit" name="scriptsfolderEdit" />
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox" >
+          <widget class="QCheckBox" name="runscriptsCheckBox" >
            <property name="text" >
             <string>Run scripts</string>
            </property>
@@ -208,7 +208,7 @@
             </layout>
            </item>
            <item>
-            <widget class="QListWidget" name="listWidget" />
+            <widget class="QListWidget" name="repositoryList" />
            </item>
           </layout>
          </item>
