@@ -1,13 +1,33 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.3 2007/02/18 03:10:34 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.4 2007/02/18 04:38:50 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
 
-PreferencesBox::PreferencesBox(QWidget *parent)
+PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 {
+	//QObject::connect(ui.delRepositoryButton, SIGNAL(clicked()), this, SLOT(delRepository()));
+	//QObject::connect(ui.okButton, SIGNAL(clicked()), this, SLOT(okProcess()));
+	//QObject::connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelProcess()));
 	ui.setupUi(this);
+	QObject::connect(ui.applyButton, SIGNAL(clicked()), this, SLOT(applyConfig()));
+	QObject::connect(ui.addRepositoryButton, SIGNAL(clicked()), this, SLOT(addRepository()));
+	QObject::connect(ui.editRepositoryButton, SIGNAL(clicked()), this, SLOT(editRepository()));
+	QObject::connect(ui.repositoryList, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(editRepository()));
+	
+}
+
+void PreferencesBox::addRepository()
+{
+	ui.repositoryList->addItem(ui.repositoryEdit->text());
+	ui.repositoryEdit->clear();
+}
+
+void PreferencesBox::editRepository()
+{
+	ui.repositoryEdit->setText(ui.repositoryList->takeItem(ui.repositoryList->currentRow())->text());
+	
 }
 
 void PreferencesBox::openAccounts()
@@ -25,7 +45,7 @@ void PreferencesBox::openInterface()
 	show();
 }
 
-void PreferencesBox::loadData(mpkg *mDb)
+void PreferencesBox::loadData()
 {
 	// Load interface
 	// Load core
@@ -55,7 +75,7 @@ void PreferencesBox::openUpdates()
 	show();
 }
 
-void PreferencesBox::applyConfig(mpkg *mDb)
+void PreferencesBox::applyConfig()
 {
 	mDb->set_sysroot(ui.sysrootEdit->text().toStdString());
 	mDb->set_syscache(ui.syscacheEdit->text().toStdString());

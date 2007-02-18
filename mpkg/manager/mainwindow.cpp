@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.4 2007/02/18 03:10:34 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.5 2007/02/18 04:38:50 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -36,8 +36,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 void MainWindow::showPreferences()
 {
-	PreferencesBox *prefbox = new PreferencesBox;
-	prefbox->loadData(mDb);
+	PreferencesBox *prefbox = new PreferencesBox(mDb);
+	prefbox->loadData();
 	prefbox->openInterface();
 }
 
