@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.16 2007/02/14 14:33:58 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.17 2007/02/18 06:11:11 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -421,6 +421,7 @@ SQLiteDB::SQLiteDB(string filename)
 }
 
 SQLiteDB::~SQLiteDB(){
+	printf("closing database and committing\n");
 	sqlCommit();
 	sqlite3_close(db);
 }

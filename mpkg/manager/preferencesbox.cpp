@@ -1,21 +1,37 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.4 2007/02/18 04:38:50 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.5 2007/02/18 06:11:11 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
 
 PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 {
-	//QObject::connect(ui.delRepositoryButton, SIGNAL(clicked()), this, SLOT(delRepository()));
-	//QObject::connect(ui.okButton, SIGNAL(clicked()), this, SLOT(okProcess()));
-	//QObject::connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelProcess()));
+
 	ui.setupUi(this);
 	QObject::connect(ui.applyButton, SIGNAL(clicked()), this, SLOT(applyConfig()));
 	QObject::connect(ui.addRepositoryButton, SIGNAL(clicked()), this, SLOT(addRepository()));
 	QObject::connect(ui.editRepositoryButton, SIGNAL(clicked()), this, SLOT(editRepository()));
 	QObject::connect(ui.repositoryList, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(editRepository()));
-	
+	QObject::connect(ui.delRepositoryButton, SIGNAL(clicked()), this, SLOT(delRepository()));
+	QObject::connect(ui.okButton, SIGNAL(clicked()), this, SLOT(okProcess()));
+	QObject::connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelProcess()));	
+}
+
+void PreferencesBox::delRepository()
+{
+	ui.repositoryList->takeItem(ui.repositoryList->currentRow());
+}
+
+void PreferencesBox::okProcess()
+{
+	applyConfig();
+	this->close();
+}
+
+void PreferencesBox::cancelProcess()
+{
+	this->close();
 }
 
 void PreferencesBox::addRepository()

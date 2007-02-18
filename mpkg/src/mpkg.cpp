@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.26 2007/02/09 16:11:12 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.27 2007/02/18 06:11:11 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -157,6 +157,7 @@ int mpkgDatabase::commit_actions()
 
 int mpkgDatabase::fetch_package(PACKAGE *package)
 {
+	printf("Fetching...\n");
 		// Смотрим все доступные locations пакета, точнее - их сервера. 
 		// Сервера подразделяются по типам на следующие группы:
 		// cache - это локальный кеш пакетов. URL: cache://

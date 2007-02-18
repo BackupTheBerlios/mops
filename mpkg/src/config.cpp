@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.4 2007/02/09 14:37:53 i27249 Exp $
+ * $Id: config.cpp,v 1.5 2007/02/18 06:11:11 i27249 Exp $
  *
  * ***************************************************/
 
@@ -147,7 +147,8 @@ int mpkgconfig::initConfig()
 
 int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
 {
-	xmlConfig.writeToFile(conf_file.c_str());
+	if (xmlConfig.writeToFile(conf_file.c_str())!=0) printf("error writing config file");
+	//loadGlobalConfig();
 	return 0;
 }
 
@@ -199,6 +200,8 @@ int mpkgconfig::set_sysroot(string newsysroot)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
+	tmp.getChildNode("sys_root").deleteNodeContent(1);
+	tmp.addChild("sys_root");
 	tmp.getChildNode("sys_root").addText(newsysroot.c_str());
 	return setXMLConfig(tmp);
 }
@@ -208,6 +211,8 @@ int mpkgconfig::set_syscache(string newsyscache)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
+	tmp.getChildNode("sys_cache").deleteNodeContent(1);
+	tmp.addChild("sys_cache");
 	tmp.getChildNode("sys_cache").addText(newsyscache.c_str());
 	return setXMLConfig(tmp);
 }
@@ -216,6 +221,8 @@ int mpkgconfig::set_dburl(string newdburl)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
+	tmp.getChildNode("database_url").deleteNodeContent(1);
+	tmp.addChild("database_url");
 	tmp.getChildNode("database_url").addText(newdburl.c_str());
 	return setXMLConfig(tmp);
 }
@@ -224,6 +231,8 @@ int mpkgconfig::set_scriptsdir(string newscriptsdir)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
+	tmp.getChildNode("scripts_dir").deleteNodeContent(1);
+	tmp.addChild("scripts_dir");
 	tmp.getChildNode("scripts_dir").addText(newscriptsdir.c_str());
 	return setXMLConfig(tmp);
 }
@@ -232,6 +241,8 @@ int mpkgconfig::set_runscripts(bool dorun)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
+	tmp.getChildNode("run_scripts").deleteNodeContent(1);
+	tmp.addChild("run_scripts");
 	if (dorun) tmp.getChildNode("run_scripts").addText("yes");
 	else tmp.getChildNode("run_scripts").addText("no");
 	return setXMLConfig(tmp);

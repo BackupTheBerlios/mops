@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.11 2007/02/09 14:37:53 i27249 Exp $
+    $Id: config.h,v 1.12 2007/02/18 06:11:11 i27249 Exp $
 */
 
 
@@ -31,13 +31,14 @@ extern vector<string> REPOSITORY_LIST;
 #include <locale.h>
 #include "xmlParser.h"
 #include "debug.h"
-int loadGlobalConfig(string config_file="/etc/mpkg.xml");
+#define CONFIG_FILE "/Users/aix/mpkg.xml"
+int loadGlobalConfig(string config_file=CONFIG_FILE);
 
 namespace mpkgconfig
 {
 	int initConfig();
-	XMLNode getXMLConfig(string conf_file="/etc/mpkg.xml");
-	int setXMLConfig(XMLNode xmlConfig, string conf_file="/etc/mpkg.xml");
+	XMLNode getXMLConfig(string conf_file=CONFIG_FILE);
+	int setXMLConfig(XMLNode xmlConfig, string conf_file=CONFIG_FILE);
 
 	vector<string> get_repositorylist();
 	string get_sysroot();

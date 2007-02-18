@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.5 2007/02/18 04:38:50 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.6 2007/02/18 06:11:11 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -31,7 +31,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 		delete mDb;
 		qApp->quit();
 	}
-	loadData();
+	loadData(false);
 }
 
 void MainWindow::showPreferences()
@@ -48,7 +48,25 @@ void MainWindow::showAbout()
 	abox->show();
 
 }
-void MainWindow::quitApp(){}
+
+void MainWindow::clearForm()
+{
+	ui.packageTable->clear();
+}
+
+void MainWindow::updateData()
+{
+	clearForm();
+	mDb->update_repository_data();
+	loadData(true);
+}
+	
+void MainWindow::quitApp()
+{
+	delete mDb;
+	qApp->quit();
+
+}
 void MainWindow::showCoreSettings(){}
 void MainWindow::commitChanges(){}
 void MainWindow::resetChanges(){}
@@ -63,7 +81,8 @@ void MainWindow::setUnavailableFilter(bool showThis){}
 void MainWindow::setRemovedFilter(bool showThis){}
 void MainWindow::showHelpTopics(){}
 void MainWindow::showFaq(){}
-void MainWindow::loadData()
+
+void MainWindow::loadData(bool internal)
 {
 
 
@@ -79,10 +98,16 @@ void MainWindow::loadData()
 
 	ui.packageTable->setSortingEnabled(false);
 	unsigned int count = packagelist.size();
-	loadBox->show();
-	ui.progressBar->hide();
-	loadBox->ui.progressBar->setValue(0);
-	loadBox->ui.progressBar->setMaximum(count);
+	if (internal)
+	{
+		initProgressBar(ui.progressBar);
+		ui.progressBar->show();
+	}
+	else {
+		initProgressBar(loadBox->ui.progressBar, count);
+		ui.progressBar->hide();
+		loadBox->show();
+	}
 
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
@@ -94,16 +119,26 @@ void MainWindow::loadData()
 		ui.packageTable->setItem(i,4, new QTableWidgetItem(packagelist.get_package(i)->get_build().c_str()));
 		ui.packageTable->setItem(i,5, new QTableWidgetItem("!"));
 		ui.packageTable->setItem(i,6, new QTableWidgetItem(packagelist.get_package(i)->get_short_description().c_str()));
-		loadBox->ui.progressBar->setValue(i);
+		if (internal) setBarValue(ui.progressBar, i);
+		else setBarValue(loadBox->ui.progressBar, i);
 	}
 	ui.packageTable->setSortingEnabled(true);
 	
-	loadBox->hide();
+	if (internal) ui.progressBar->hide();
+	else loadBox->hide();
 	this->show();
 
 }
 
+void MainWindow::initProgressBar(QProgressBar *Bar, int stepCount)
+{
+	Bar->setValue(0);
+	Bar->setMaximum(stepCount);
+}
 
-
+void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
+{
+	Bar->setValue(stepValue);
+}
 
        	

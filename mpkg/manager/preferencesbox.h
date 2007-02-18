@@ -1,6 +1,6 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.4 2007/02/18 04:38:50 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.5 2007/02/18 06:11:11 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
@@ -24,6 +24,9 @@ class PreferencesBox: public QWidget
 		
 		void addRepository();
 		void editRepository();
+		void delRepository();
+		void okProcess();
+		void cancelProcess();
 		
 	private:
 		mpkg *mDb;

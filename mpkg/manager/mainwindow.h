@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.4 2007/02/18 03:10:34 i27249 Exp $
+ * $Id: mainwindow.h,v 1.5 2007/02/18 06:11:11 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -35,6 +35,8 @@ class MainWindow: public QMainWindow
 		void setRemovedFilter(bool showThis=false);
 		void showHelpTopics();
 		void showFaq();
+		void clearForm();
+		void updateData();
 	
 	public:
 		Ui::MainWindow ui;
@@ -42,9 +44,10 @@ class MainWindow: public QMainWindow
 		LoadingBox *loadBox;
 		//Ui::loadingBox loadBox;
 	private:
-		void loadData();
+		void loadData(bool internal=false);
 		mpkg *mDb;
-		
+		void initProgressBar(QProgressBar *Bar, int stepCount = 100);
+		void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST packagelist;
 
 };
