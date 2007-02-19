@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.7 2007/02/19 05:14:10 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.8 2007/02/19 10:09:32 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -44,7 +44,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 void MainWindow::showPackageInfo()
 {
-	ui.visualInfoTextEdit->setPlainText(packagelist.get_package(ui.packageTable->item(ui.packageTable->currentRow(), 7)->text().toLong())->get_name().c_str());
+	long id = ui.packageTable->item(ui.packageTable->currentRow(), 7)->text().toLong();
+	PACKAGE *pkg = packagelist.get_package(id);
+	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
+	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
+	
+	ui.visualInfoTextEdit->setHtml(info.c_str());
 }
 
 void MainWindow::execMenu()
@@ -55,8 +60,14 @@ void MainWindow::execMenu()
 
 void MainWindow::initPackageTable()
 {
-	QCheckBox *chh = new QCheckBox;
-	ui.packageTable->setCellWidget(0,0,chh);
+	//QCheckBox *chh = new QCheckBox;
+	//ui.packageTable->setCellWidget(0,0,chh);
+	//ui.packageTable->resizeColumnsToContents();
+	//ui.packageTable->resizeRowsToContents();
+}
+
+void MainWindow::fitTable()
+{
 	ui.packageTable->resizeColumnsToContents();
 	ui.packageTable->resizeRowsToContents();
 }
@@ -117,11 +128,12 @@ void MainWindow::loadData(bool internal)
 
 
 	SQLRecord sqlSearch;
+	packagelist.clear();
 	
 	if (mDb->get_packagelist(sqlSearch, &packagelist, true)!=0)
 	{
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
-				tr("Error querying package list.\nPossibly database is damaged"),
+				tr("Error querying package list.\nProbably database is damaged"),
 				QMessageBox::Ok, QMessageBox::Ok);
 		return;
 	}
@@ -138,7 +150,8 @@ void MainWindow::loadData(bool internal)
 		ui.progressBar->hide();
 		loadBox->show();
 	}
-
+	ui.packageTable->clearContents();
+	ui.packageTable->setRowCount(1);
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
 		ui.packageTable->insertRow(i);
@@ -149,6 +162,7 @@ void MainWindow::loadData(bool internal)
 		ui.packageTable->setItem(i,4, new QTableWidgetItem(packagelist.get_package(i)->get_build().c_str()));
 		ui.packageTable->setItem(i,5, new QTableWidgetItem("!"));
 		ui.packageTable->setItem(i,6, new QTableWidgetItem(packagelist.get_package(i)->get_short_description().c_str()));
+		ui.packageTable->setItem(i,7, new QTableWidgetItem(IntToStr(i).c_str()));
 		if (internal) setBarValue(ui.progressBar, i);
 		else setBarValue(loadBox->ui.progressBar, i);
 	}
@@ -157,6 +171,7 @@ void MainWindow::loadData(bool internal)
 	if (internal) ui.progressBar->hide();
 	else loadBox->hide();
 	this->show();
+	fitTable();
 
 }
 
