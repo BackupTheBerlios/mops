@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.3 2007/01/24 15:16:26 i27249 Exp $
+ * $Id: string_operations.h,v 1.4 2007/02/19 05:14:10 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -13,6 +13,7 @@ class mstring
 	public:
 		bool operator += (string str2);
 		bool operator += (const char *str2);
+		bool operator += (char str2);
 		bool operator == (string str2);
 		bool operator == (const char *str2);
 		bool operator != (string str2);

@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.3 2007/01/24 15:16:26 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.4 2007/02/19 05:14:10 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -43,6 +43,14 @@ bool mstring::operator += (string str2)
 bool mstring::operator += (const char *str2)
 {
 	string tmp = str + (string) str2;
+	str=tmp;
+	tmp.clear();
+	return true;
+}
+
+bool mstring::operator += (char str2)
+{
+	string tmp = str + str2;
 	str=tmp;
 	tmp.clear();
 	return true;

@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.2 2007/02/09 16:11:12 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.3 2007/02/19 05:14:10 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -42,6 +42,13 @@ int mpkg::install(vector<string> fname)
 		ret+=mpkgSys::install(fname[i], db, DepTracker);
 	}
 	return ret;
+}
+
+int mpkg::install(string fname)
+{
+	vector<string> fname2;
+	fname2.push_back(fname);
+	return install(fname2);
 }
 
 // Packages removing

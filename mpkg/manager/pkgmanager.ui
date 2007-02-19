@@ -429,6 +429,12 @@
          </property>
          <item>
           <widget class="QTableWidget" name="packageTable" >
+           <property name="contextMenuPolicy" >
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="editTriggers" >
+            <set>QAbstractItemView::NoEditTriggers</set>
+           </property>
            <property name="selectionMode" >
             <enum>QAbstractItemView::SingleSelection</enum>
            </property>
@@ -471,6 +477,16 @@
            <column>
             <property name="text" >
              <string>Info</string>
+            </property>
+           </column>
+           <column>
+            <property name="text" >
+             <string>Install</string>
+            </property>
+           </column>
+           <column>
+            <property name="text" >
+             <string>ID</string>
             </property>
            </column>
           </widget>
@@ -596,7 +612,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_2" >
+       <widget class="QPushButton" name="applyButton" >
         <property name="text" >
          <string>Apply</string>
         </property>
@@ -637,14 +653,14 @@
          <number>6</number>
         </property>
         <item>
-         <widget class="QPushButton" name="pushButton_3" >
+         <widget class="QPushButton" name="applyExitButton" >
           <property name="text" >
            <string>Apply&amp;&amp;Exit</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_4" >
+         <widget class="QPushButton" name="quitButton" >
           <property name="text" >
            <string>Quit</string>
           </property>

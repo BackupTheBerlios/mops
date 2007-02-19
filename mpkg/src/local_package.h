@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.10 2007/01/26 16:49:38 i27249 Exp $
+$Id: local_package.h,v 1.11 2007/02/19 05:14:10 i27249 Exp $
 */
 
 
@@ -26,6 +26,7 @@ class LocalPackage
 		int fill_configfiles(PACKAGE *package);
 
 	private:
+		string files2xml(string input);
 		string filename;
 		XMLNode _packageXMLNode;
 		int create_md5();

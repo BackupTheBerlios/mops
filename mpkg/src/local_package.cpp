@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.24 2007/02/15 13:50:39 i27249 Exp $
+$Id: local_package.cpp,v 1.25 2007/02/19 05:14:10 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -15,6 +15,23 @@ LocalPackage::LocalPackage(string _f)
 }
 
 LocalPackage::~LocalPackage(){}
+
+string LocalPackage::files2xml(string input)
+{
+	mstring output;
+	output="<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>";
+	for (int i=0; i<input.length(); i++)
+	{
+		if (input[i]=='\n') 
+		{
+			output+="</file>\n";
+			if (i<input.length()-1) output+="<file>";
+		}
+		else output+=input[i];
+	}
+	output+="</filelist></package>";
+	return output.s_str();
+}
 
 int LocalPackage::fill_scripts(PACKAGE *package)
 {
@@ -426,9 +443,14 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	debug("flist tmpfile: "+fname);
 	tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
 	system(tar_cmd.c_str());
+#ifdef USE_INTERNAL_SED
+	WriteFile(tmp_xml, files2xml(ReadFile(fname)));
+#endif	
+#ifdef USE_SYSTEM_SED
 	string sed_cmd;
 	sed_cmd="echo '<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>file_list_header' > "+tmp_xml+" && cat "+ fname +" | sed -e i'</file>\\n<file>'  >> "+tmp_xml+" && echo '</file></filelist></package>' >> "+tmp_xml;
 	system(sed_cmd.c_str());
+#endif
 	debug("local_package.cpp: CreateFlistNode(): end");
 	return 0;
 }

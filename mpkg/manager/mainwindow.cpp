@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.6 2007/02/18 06:11:11 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.7 2007/02/19 05:14:10 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -23,6 +23,13 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	mDb = new mpkg;
 	loadBox = new LoadingBox;
+	tableMenu = new QMenu;
+	installPackageAction = tableMenu->addAction(tr("Install"));
+	removePackageAction = tableMenu->addAction(tr("Remove"));
+	purgePackageAction = tableMenu->addAction(tr("Purge"));
+	upgradePackageAction = tableMenu->addAction(tr("Upgrade"));
+	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
+	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	if (!mDb->init_ok)
 	{
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -32,6 +39,26 @@ MainWindow::MainWindow(QMainWindow *parent)
 		qApp->quit();
 	}
 	loadData(false);
+	initPackageTable();
+}
+
+void MainWindow::showPackageInfo()
+{
+	ui.visualInfoTextEdit->setPlainText(packagelist.get_package(ui.packageTable->item(ui.packageTable->currentRow(), 7)->text().toLong())->get_name().c_str());
+}
+
+void MainWindow::execMenu()
+{
+	
+	tableMenu->exec(QCursor::pos());
+}
+
+void MainWindow::initPackageTable()
+{
+	QCheckBox *chh = new QCheckBox;
+	ui.packageTable->setCellWidget(0,0,chh);
+	ui.packageTable->resizeColumnsToContents();
+	ui.packageTable->resizeRowsToContents();
 }
 
 void MainWindow::showPreferences()
@@ -52,6 +79,7 @@ void MainWindow::showAbout()
 void MainWindow::clearForm()
 {
 	ui.packageTable->clear();
+	ui.packageTable->setRowCount(0);
 }
 
 void MainWindow::updateData()
@@ -67,7 +95,9 @@ void MainWindow::quitApp()
 	qApp->quit();
 
 }
-void MainWindow::showCoreSettings(){}
+void MainWindow::showCoreSettings()
+{
+}
 void MainWindow::commitChanges(){}
 void MainWindow::resetChanges(){}
 void MainWindow::resetQueue(){}
@@ -87,7 +117,7 @@ void MainWindow::loadData(bool internal)
 
 
 	SQLRecord sqlSearch;
-	PACKAGE_LIST packagelist;
+	
 	if (mDb->get_packagelist(sqlSearch, &packagelist, true)!=0)
 	{
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -141,4 +171,14 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 	Bar->setValue(stepValue);
 }
 
-       	
+void MainWindow::markToInstall()
+{
+	int i = ui.packageTable->currentRow();
+	if (ui.packageTable->item(i,0)->text() == "AVAILABLE" || ui.packageTable->item(i,0)->text()=="REMOVED_AVAILABLE")
+	{
+		// Build Dep tree
+		
+		//Interface changes
+		ui.packageTable->item(ui.packageTable->currentRow(),0)->setText("INSTALL");
+	}
+}

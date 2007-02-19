@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.4 2007/02/14 14:33:58 i27249 Exp $
+ * $Id: libmpkg.h,v 1.5 2007/02/19 05:14:10 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -127,6 +127,8 @@ class mpkg
 		 * Returns 0 if all ok, <0 if fails.
 		 * @@*/
 
+		// Dependency tree
+		int getDependencyTree(PACKAGE_LIST *tree);
 		// Server data retrieving
 		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);
 		int get_server(int server_id, SERVER *server);
