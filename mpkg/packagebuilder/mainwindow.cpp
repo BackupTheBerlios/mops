@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.11 2007/02/15 21:55:40 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.12 2007/02/19 04:58:09 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -101,6 +101,8 @@ void Form::loadData()
 			tag_tmp.clear();
 		}
 	}
+	ui.DepTableWidget->resizeRowsToContents();
+	ui.DepTableWidget->resizeColumnsToContents();
 	modified=false;
 }
 
