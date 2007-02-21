@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.2 2007/02/14 06:50:58 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.3 2007/02/21 16:01:28 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -13,6 +13,20 @@ int mpkgSys::clean_cache()
 	ftw(SYS_CACHE.c_str(), _clean, 100);
 	return 0;
 }
+
+int mpkgSys::clean_queue(mpkgDatabase *db)
+{
+	PACKAGE_LIST toInstall;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
+	db->get_packagelist(sqlSearch, &toInstall);
+	for (int i=0; i<toInstall.size();i++)
+	{
+		db->set_status(toInstall.get_package(i)->get_id(), PKGSTATUS_AVAILABLE);
+	}
+}
+
+
 
 int mpkgSys::build_package()
 {
@@ -94,6 +108,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 
 int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
+	printf("install...%s\n", fname.c_str());
 
 
 	//printf(_("Querying the database, please wait...\n"));
@@ -129,11 +144,14 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 		}
 		if (alreadyInstalled)
 		{
+			printf("already installed\n");
 			return 0;
 		}
+		printf("running deptracker\n");
 		DepTracker->merge(&tmp_pkg);
 		return 0;
 	}
+	else printf("no candidates");
 	debug("LOCAL INSTALL ATTEMPT DETECTED");
 	// If reached this point, the package isn't in the database. Install from local file.
 	// Part 0. Check if file exists.
@@ -164,7 +182,6 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 	return 0;
 	
 }
-
 
 int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
 {

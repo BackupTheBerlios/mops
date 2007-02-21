@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.2 2007/02/09 14:26:38 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.3 2007/02/21 16:01:28 i27249 Exp $
  * ******************************************************/
 
 
@@ -29,6 +29,7 @@ namespace mpkgSys {
 	int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
 	int _clean(const char *filename, const struct stat *file_status, int filetype);
 	int clean_cache();
+	int clean_queue(mpkgDatabase *db);
 	int convert_directory(string output_dir);
 	int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
 	int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);

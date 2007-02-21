@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.7 2007/02/19 10:09:32 i27249 Exp $
+ *     $Id: main.cpp,v 1.8 2007/02/21 16:01:28 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -17,13 +17,15 @@
 
 	QObject::connect(mw.ui.actionQuit, SIGNAL(triggered()), &mw, SLOT(quitApp()));
 	 QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &mw, SLOT(quitApp()));
+	 QObject::connect(mw.ui.applyButton, SIGNAL(clicked()), &mw, SLOT(commitChanges()));
 	QObject::connect(mw.ui.actionAbout, SIGNAL(triggered()), &mw, SLOT(showAbout()));
+	QObject::connect(mw.ui.actionReset_all_queue, SIGNAL(triggered()), &mw, SLOT(resetQueue()));
 	QObject::connect(mw.ui.actionPreferences, SIGNAL(triggered()), &mw, SLOT(showPreferences()));
 	QObject::connect(mw.ui.actionAdd_remove_repositories, SIGNAL(triggered()), &mw, SLOT(showAddRemoveRepositories()));
 	QObject::connect(mw.ui.actionCore_settings, SIGNAL(triggered()), &mw, SLOT(showCoreSettings()));
 	QObject::connect(mw.ui.actionCustom_filter, SIGNAL(triggered()), &mw, SLOT(showCustomFilter()));
 	 QObject::connect(mw.ui.updateButton, SIGNAL(clicked()), &mw, SLOT(updateData()));
-	 QObject::connect(mw.ui.packageTable, SIGNAL(cellDoubleClicked(int, int)), &mw, SLOT(markToInstall()));
+	 //QObject::connect(mw.ui.packageTable, SIGNAL(cell(int, int)), &mw, SLOT(markChanges(int, int)));
 	 QObject::connect(mw.ui.packageTable, SIGNAL(cellClicked(int, int)), &mw, SLOT(showPackageInfo()));
      return app.exec();
  } 

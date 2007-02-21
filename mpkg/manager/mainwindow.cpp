@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.9 2007/02/21 11:51:10 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.10 2007/02/21 16:01:28 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -15,13 +15,15 @@
 #include "aboutbox.h"
 #include "preferencesbox.h"
 #include "loading.h"
+#include "db.h"
 #include <stdio.h>
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
 
-	mDb = new mpkg;
+	dbBox = new DatabaseBox;
+	mDb = dbBox->mDb;
 	loadBox = new LoadingBox;
 	tableMenu = new QMenu;
 	installPackageAction = tableMenu->addAction(tr("Install"));
@@ -42,9 +44,15 @@ MainWindow::MainWindow(QMainWindow *parent)
 	initPackageTable();
 }
 
+void MainWindow::resetQueue()
+{
+	mDb->clean_queue();
+	loadData();
+}
+
 void MainWindow::showPackageInfo()
 {
-	long id = ui.packageTable->item(ui.packageTable->currentRow(), 7)->text().toLong();
+	long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
 	PACKAGE *pkg = packagelist.get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
@@ -60,10 +68,48 @@ void MainWindow::execMenu()
 
 void MainWindow::initPackageTable()
 {
-	//QCheckBox *chh = new QCheckBox;
-	//ui.packageTable->setCellWidget(0,0,chh);
-	//ui.packageTable->resizeColumnsToContents();
-	//ui.packageTable->resizeRowsToContents();
+
+    if (ui.packageTable->columnCount() < 9)
+    	ui.packageTable->setColumnCount(9);
+    QTableWidgetItem *__colItem0 = new QTableWidgetItem();
+    __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
+
+    QTableWidgetItem *__colItem = new QTableWidgetItem();
+    __colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
+
+    QTableWidgetItem *__colItem1 = new QTableWidgetItem();
+    __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
+
+    QTableWidgetItem *__colItem2 = new QTableWidgetItem();
+    __colItem2->setText(QApplication::translate("MainWindow", "Version", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_VERSION, __colItem2);
+
+    QTableWidgetItem *__colItem3 = new QTableWidgetItem();
+    __colItem3->setText(QApplication::translate("MainWindow", "Arch", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_ARCH, __colItem3);
+
+    QTableWidgetItem *__colItem4 = new QTableWidgetItem();
+    __colItem4->setText(QApplication::translate("MainWindow", "Build", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_BUILD, __colItem4);
+
+    QTableWidgetItem *__colItem5 = new QTableWidgetItem();
+    __colItem5->setText(QApplication::translate("MainWindow", "Avail.", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_MAXAVAILABLE, __colItem5);
+
+    QTableWidgetItem *__colItem6 = new QTableWidgetItem();
+    __colItem6->setText(QApplication::translate("MainWindow", "Info", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_INFO, __colItem6);
+
+    QTableWidgetItem *__colItem7 = new QTableWidgetItem();
+    __colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
+
+    QTableWidgetItem *__colItem8 = new QTableWidgetItem();
+    __colItem8->setText(QApplication::translate("MainWindow", "Other data", 0, QApplication::UnicodeUTF8));
+    ui.packageTable->setHorizontalHeaderItem(9, __colItem8);
 }
 
 void MainWindow::fitTable()
@@ -91,6 +137,7 @@ void MainWindow::clearForm()
 {
 	ui.packageTable->clear();
 	ui.packageTable->setRowCount(0);
+	initPackageTable();
 }
 
 void MainWindow::updateData()
@@ -109,9 +156,35 @@ void MainWindow::quitApp()
 void MainWindow::showCoreSettings()
 {
 }
-void MainWindow::commitChanges(){}
+void MainWindow::commitChanges()
+{
+	for (unsigned int i = 0; i< newStatus.size(); i++)
+	{
+		if (packagelist.get_package(i)->get_status()!=newStatus[i])
+		{
+			switch(newStatus[i])
+			{
+				case PKGSTATUS_INSTALL:
+					install_queue.push_back(packagelist.get_package(i)->get_name());
+					break;
+				case PKGSTATUS_REMOVE:
+					remove_queue.push_back(packagelist.get_package(i)->get_name());
+					break;
+			}
+		}
+	}
+	printf("install_queue size = %d\n", install_queue.size());
+	mDb->uninstall(remove_queue);
+	mDb->install(install_queue);
+	ui.statusbar->showMessage("Committing changes...");
+	mDb->commit();
+	mDb = dbBox->recreateDb();
+	install_queue.clear();
+	remove_queue.clear();
+	loadData();
+	ui.statusbar->showMessage("All operations completed");
+}
 void MainWindow::resetChanges(){}
-void MainWindow::resetQueue(){}
 void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){}
 void MainWindow::showCustomFilter(){}
@@ -123,26 +196,83 @@ void MainWindow::setRemovedFilter(bool showThis){}
 void MainWindow::showHelpTopics(){}
 void MainWindow::showFaq(){}
 
+void MainWindow::markChanges(int x, Qt::CheckState state)
+{
+	printf("markChanges! x = %d, newStatus size = %d\n", x, newStatus.size());
+		long i = ui.packageTable->item(x, PT_ID)->text().toLong();
+		if (i >= newStatus.size())
+		{
+			printf("i is out of range: i=%d, max = %d\n", i, packagelist.size());
+			return;
+		}
+		switch(packagelist.get_package(i)->get_status())
+		{
+			case PKGSTATUS_AVAILABLE:
+				if (state == Qt::Checked)
+				{
+					newStatus[i]=PKGSTATUS_INSTALL;
+					ui.statusbar->showMessage("Package added to install queue");
+				}
+				else
+				{
+					newStatus[i]=PKGSTATUS_AVAILABLE;
+					ui.statusbar->showMessage("Package removed from install queue");
+				}
+				printf("status set\n");
+				break;
+			case PKGSTATUS_REMOVED_AVAILABLE:
+				if (state == Qt::Checked)
+				{
+					newStatus[i]=PKGSTATUS_INSTALL;
+					ui.statusbar->showMessage("Package added to install queue");
+				}
+				else
+				{
+					newStatus[i]=PKGSTATUS_REMOVED_AVAILABLE;
+					ui.statusbar->showMessage("Package removed from install queue");
+				}
+				printf("status set\n");
+				break;
 
+			case PKGSTATUS_INSTALLED:
+				if (state != Qt::Checked)
+				{
+					newStatus[i]=PKGSTATUS_PURGE;
+					ui.statusbar->showMessage("Package added to remove queue");
+				}
+				else
+				{
+					newStatus[i]=PKGSTATUS_INSTALLED;
+					ui.statusbar->showMessage("Package removed from remove queue");
+				}
+				printf("ins set\n");
+				break;
+		}
+}
 void MainWindow::insertPackageIntoTable(unsigned int package_num)
 {
-	unsigned int i = ui.packageTable->rowCount()-1;
+	unsigned int i = ui.packageTable->rowCount();
 	ui.packageTable->insertRow(i);
-	ui.packageTable->setCellWidget(i,0, new QCheckBox(packagelist.get_package(package_num)->get_vstatus().c_str()));
-//	ui.packageTable->setItem(i,0, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
-	ui.packageTable->setItem(i,1, new QTableWidgetItem(packagelist.get_package(package_num)->get_name().c_str()));
-	ui.packageTable->setItem(i,2, new QTableWidgetItem(packagelist.get_package(package_num)->get_version().c_str()));
-	ui.packageTable->setItem(i,3, new QTableWidgetItem(packagelist.get_package(package_num)->get_arch().c_str()));
-	ui.packageTable->setItem(i,4, new QTableWidgetItem(packagelist.get_package(package_num)->get_build().c_str()));
-	ui.packageTable->setItem(i,5, new QTableWidgetItem("!"));
-	ui.packageTable->setItem(i,6, new QTableWidgetItem(packagelist.get_package(package_num)->get_short_description().c_str()));
-	ui.packageTable->setItem(i,7, new QTableWidgetItem(IntToStr(package_num).c_str()));
+	CheckBox *stat = new CheckBox(this);
+	stat->row = package_num;
+	if (packagelist.get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
+			packagelist.get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos) stat->setCheckState(Qt::Checked);
+	ui.packageTable->setCellWidget(i,PT_INSTALLCHECK, stat);
+	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
+	ui.packageTable->setItem(i,PT_STATUS, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
+	ui.packageTable->setItem(i,PT_NAME, new QTableWidgetItem(packagelist.get_package(package_num)->get_name().c_str()));
+	ui.packageTable->setItem(i,PT_VERSION, new QTableWidgetItem(packagelist.get_package(package_num)->get_version().c_str()));
+	ui.packageTable->setItem(i,PT_ARCH, new QTableWidgetItem(packagelist.get_package(package_num)->get_arch().c_str()));
+	ui.packageTable->setItem(i,PT_BUILD, new QTableWidgetItem(packagelist.get_package(package_num)->get_build().c_str()));
+	ui.packageTable->setItem(i,PT_MAXAVAILABLE, new QTableWidgetItem("!"));
+	ui.packageTable->setItem(i,PT_INFO, new QTableWidgetItem(packagelist.get_package(package_num)->get_short_description().c_str()));
+	ui.packageTable->setItem(i,PT_ID, new QTableWidgetItem(IntToStr(package_num).c_str()));
 }
 
 void MainWindow::searchPackagesByTag(QString tag)
 {
 	ui.packageTable->clearContents();
-	ui.packageTable->setRowCount(1);
+	ui.packageTable->setRowCount(0);
 
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
@@ -163,6 +293,8 @@ void MainWindow::loadData(bool internal)
 
 	SQLRecord sqlSearch;
 	packagelist.clear();
+	//stateChanged.clear();
+	newStatus.clear();
 	
 	if (mDb->get_packagelist(sqlSearch, &packagelist, true)!=0)
 	{
@@ -185,9 +317,11 @@ void MainWindow::loadData(bool internal)
 		loadBox->show();
 	}
 	ui.packageTable->clearContents();
-	ui.packageTable->setRowCount(1);
+	ui.packageTable->setRowCount(0);
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
+	//	stateChanged.push_back(false);
+		newStatus.push_back(packagelist.get_package(i)->get_status());
 		insertPackageIntoTable(i);
 		if (internal) setBarValue(ui.progressBar, i);
 		else setBarValue(loadBox->ui.progressBar, i);
@@ -197,7 +331,7 @@ void MainWindow::loadData(bool internal)
 	else loadBox->hide();
 	this->show();
 	fitTable();
-
+	//printf("stCh.size = %d, plist.size = %d\n", stateChanged.size(), packagelist.size());
 }
 
 void MainWindow::initProgressBar(QProgressBar *Bar, int stepCount)
@@ -214,11 +348,20 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 void MainWindow::markToInstall()
 {
 	int i = ui.packageTable->currentRow();
-	if (ui.packageTable->item(i,0)->text() == "AVAILABLE" || ui.packageTable->item(i,0)->text()=="REMOVED_AVAILABLE")
+	//ui.packageTable->item(i,0)->setCheckState(Qt::Checked);
+/*	if (ui.packageTable->item(i,0)->text() == "AVAILABLE" || ui.packageTable->item(i,0)->text()=="REMOVED_AVAILABLE")
 	{
-		// Build Dep tree
-		
-		//Interface changes
-		ui.packageTable->item(ui.packageTable->currentRow(),0)->setText("INSTALL");
-	}
+i		ui.packageTable->item(ui.packageTable->currentRow(),0)->setText("INSTALL");
+	}*/
+}
+
+void CheckBox::markChanges()
+{
+	printf("row = %d\n",row);
+	mw->markChanges(row, checkState());
+}
+
+CheckBox::CheckBox(MainWindow *parent)
+{
+	mw = parent;
 }

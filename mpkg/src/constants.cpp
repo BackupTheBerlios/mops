@@ -1,6 +1,6 @@
 /*************************************************************************
  * System constants - bitmask operators and functions
- * $Id: constants.cpp,v 1.2 2007/01/31 15:47:33 i27249 Exp $
+ * $Id: constants.cpp,v 1.3 2007/02/21 16:01:28 i27249 Exp $
  * ***********************************************************************/
 #include <string>
 #include "dataunits.h"
@@ -10,7 +10,8 @@ using namespace std;
 bool IsAvailable(int status)
 {
 	if (status == PKGSTATUS_REMOVED_AVAILABLE || \
-			status == PKGSTATUS_AVAILABLE)
+			status == PKGSTATUS_AVAILABLE || \
+			status == PKGSTATUS_INSTALLED)
 		return true;
 	else return false;
 }

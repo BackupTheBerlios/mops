@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.3 2007/02/19 05:14:10 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.4 2007/02/21 16:01:28 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -20,6 +20,11 @@ mpkg::~mpkg()
 	delete DepTracker;
 	delete db;
 	delete_tmp_files();
+}
+
+int mpkg::clean_queue()
+{
+	return mpkgSys::clean_queue(db);
 }
 
 // Package building

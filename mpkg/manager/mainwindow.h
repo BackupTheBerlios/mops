@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.8 2007/02/21 11:51:10 i27249 Exp $
+ * $Id: mainwindow.h,v 1.9 2007/02/21 16:01:28 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -12,6 +12,22 @@
 #include "ui_loading.h"
 #include <mpkg/libmpkg.h>
 #include "loading.h"
+#include "db.h"
+
+// TABLE INDEX
+#define PT_INSTALLCHECK 0
+#define PT_STATUS 1
+#define PT_NAME 2
+#define PT_VERSION 3
+#define PT_ARCH 4
+#define PT_BUILD 5
+#define PT_MAXAVAILABLE 6
+#define PT_INFO 7
+#define PT_ID 8
+
+
+
+
 class MainWindow: public QMainWindow
 {
 	Q_OBJECT
@@ -41,11 +57,14 @@ class MainWindow: public QMainWindow
 		void execMenu();
 		void showPackageInfo();
 		void fitTable();
+		void markChanges(int x, Qt::CheckState state);
+		//void MainWindow::resetQueue();
 	
 	public:
 		Ui::MainWindow ui;
 		Ui::aboutBox _aboutBox;
 		LoadingBox *loadBox;
+		DatabaseBox *dbBox;
 		QMenu *tableMenu;
 		QAction *installPackageAction;
 		QAction *removePackageAction;
@@ -62,9 +81,29 @@ class MainWindow: public QMainWindow
 		PACKAGE_LIST packagelist;
 		void insertPackageIntoTable(unsigned int package_num);
 		void searchPackagesByTag(QString tag);
-		
+		vector<string> install_queue;
+		vector<string> remove_queue;
+		vector<string> purge_queue;
+		vector<bool>stateChanged;
+		vector<int>newStatus;
 		
 		void initPackageTable();
 
 };
+
+
+class CheckBox: public QCheckBox
+{
+	Q_OBJECT
+	public:
+		CheckBox(MainWindow *parent);
+		//CheckBox(const QString & text, QWidget *parent = 0);
+	public slots:
+		void markChanges();
+	public:
+	int row;
+	MainWindow *mw;
+	
+};
+
 #endif

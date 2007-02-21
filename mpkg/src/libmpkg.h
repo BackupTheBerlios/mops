@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.6 2007/02/21 08:07:56 i27249 Exp $
+ * $Id: libmpkg.h,v 1.7 2007/02/21 16:01:28 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -35,8 +35,10 @@ class mpkg
 		mpkg();
 		~mpkg();
 
+		// Cleaning
+		int clean_queue();
 		// Error checking
-
+		
 		bool init_ok;
 		/* Boolean value:
 		 * TRUE if all initialized OK (database is opened and passed integrity check, etc)

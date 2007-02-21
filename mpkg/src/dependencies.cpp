@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.10 2007/01/31 15:47:33 i27249 Exp $
+$Id: dependencies.cpp,v 1.11 2007/02/21 16:01:28 i27249 Exp $
 */
 
 
@@ -86,6 +86,8 @@ bool DependencyTracker::commitToDb()
 
 bool DependencyTracker::checkVersion(string version1, int condition, string version2)
 {
+	printf("checkVersion");
+
 	debug("checkVersion "+version1 + " vs " + version2);
 	switch (condition)
 	{
@@ -189,7 +191,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 			return DEP_OK;
 	}
 
-	debug("CHECK passed. Continue with dependencies");
+	debug("Status check passed. Continue with dependencies");
 	package->set_status(PKGSTATUS_INSTALL);
 	// In all other cases - continue with full procedure
 	PACKAGE_LIST package_list;	// Used to store list of packages with name required by dependency, independent to version
@@ -233,16 +235,28 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 		
 		for (int p=0; p<package_list.size()&&!already_resolved&&!this_dep_failed; p++) // Checking version condition for all the packages
 		{
+			debug("found "+IntToStr(package_list.size()) + " packages with required name, filtering...");
 			// Does the package meets requirements?
-			if (IsAvailable(package_list.get_package(p)->get_status()) && \
-					checkVersion(package_list.get_package(p)->get_version(), \
+			if (IsAvailable(package_list.get_package(p)->get_status()))
+			{
+				debug("availability check passed");
+				if (this->checkVersion(package_list.get_package(p)->get_version(), \
 					 atoi(package->get_dependencies()->get_dependency(i)->get_condition().c_str()), \
 					 package->get_dependencies()->get_dependency(i)->get_package_version()))
-			{
-				// if it meets the requirements and not already installed - add it to candidates!
-				if (package_list.get_package(p)->get_status()!=PKGSTATUS_INSTALLED) candidates.add(*package_list.get_package(p));
-				else already_resolved=true; // But, if it is installed - just keep it untouched, and mark that this dep is already resolved.
+				{
+					// if it meets the requirements and not already installed - add it to candidates!
+					debug("Package meets requirements, adding to candidates");
+					if (package_list.get_package(p)->get_status()!=PKGSTATUS_INSTALLED) candidates.add(*package_list.get_package(p));
+					else already_resolved=true; // But, if it is installed - just keep it untouched, and mark that this dep is already resolved.
+				}
 			}
+#ifdef DEBUG
+			else 
+			{
+				if (!IsAvailable(package_list.get_package(p)->get_status())) debug ("Package is unavailable");
+				else debug("package has wrong version");
+			}
+#endif
 		}
 
 		if (candidates.size()==0 && !already_resolved && !this_dep_failed) // If no candidates found, and no other failures was up, and not already resolved 
@@ -316,6 +330,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 		{
 			package->set_err_type(DEP_BROKEN);
 			failure_list.add(*package); 	// add package to failed list (it will contain all dependency error records)
+			PrintFailure(package);
 		}
 		return DEP_BROKEN;		// return failure code
 	}
