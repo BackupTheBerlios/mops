@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.31 2007/02/18 06:17:10 i27249 Exp $
+# $Id: Makefile,v 1.32 2007/02/21 12:05:08 i27249 Exp $
 #
 
 CC=gcc
@@ -7,7 +7,7 @@ CXX=g++
 CFLAGS=-c -Wall -std=c99 -g
 
 # VERY BAD HACK!!!
-CXXFLAGS=-c -DDEP_NORMALIZE -Wall -I/sw/include 
+CXXFLAGS=-c -DDEP_NORMALIZE -DUSE_INTERNAL_SED -Wall -I/sw/include 
 LDFLAGS=-L/sw/lib -lsqlite3
 
 SOURCES=config.cpp installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
