@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile.lib,v 1.8 2007/02/18 06:11:11 i27249 Exp $
+# $Id: Makefile.lib,v 1.9 2007/02/21 08:07:56 i27249 Exp $
 #
 
 CC=gcc
@@ -8,7 +8,7 @@ CFLAGS=-c -Wall -std=c99 -g
 
 # VERY BAD HACK!!!
 CXXFLAGS=-c -DDEP_NORMALIZE -Wall -I/sw/include 
-LDFLAGS=-L/sw/lib -lsqlite3 -lintl
+LDFLAGS=-L/sw/lib -lsqlite3
 
 SOURCES=config.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
 	   	dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp \
@@ -25,7 +25,7 @@ LIBA=libmpkg.a
 all: $(SOURCES) $(LIB) $(LIBA)
 
 $(LIB): $(OBJECTS)
-	$(CXX) $(LDFLAGS) $(OBJECTS) -fPIC -dynamiclib -o $@
+	$(CXX) $(LDFLAGS) $(OBJECTS) -fPIC -shared -o $@
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
