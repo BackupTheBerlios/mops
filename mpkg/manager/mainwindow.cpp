@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.8 2007/02/19 10:09:32 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.9 2007/02/21 11:51:10 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -123,6 +123,40 @@ void MainWindow::setRemovedFilter(bool showThis){}
 void MainWindow::showHelpTopics(){}
 void MainWindow::showFaq(){}
 
+
+void MainWindow::insertPackageIntoTable(unsigned int package_num)
+{
+	unsigned int i = ui.packageTable->rowCount()-1;
+	ui.packageTable->insertRow(i);
+	ui.packageTable->setCellWidget(i,0, new QCheckBox(packagelist.get_package(package_num)->get_vstatus().c_str()));
+//	ui.packageTable->setItem(i,0, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
+	ui.packageTable->setItem(i,1, new QTableWidgetItem(packagelist.get_package(package_num)->get_name().c_str()));
+	ui.packageTable->setItem(i,2, new QTableWidgetItem(packagelist.get_package(package_num)->get_version().c_str()));
+	ui.packageTable->setItem(i,3, new QTableWidgetItem(packagelist.get_package(package_num)->get_arch().c_str()));
+	ui.packageTable->setItem(i,4, new QTableWidgetItem(packagelist.get_package(package_num)->get_build().c_str()));
+	ui.packageTable->setItem(i,5, new QTableWidgetItem("!"));
+	ui.packageTable->setItem(i,6, new QTableWidgetItem(packagelist.get_package(package_num)->get_short_description().c_str()));
+	ui.packageTable->setItem(i,7, new QTableWidgetItem(IntToStr(package_num).c_str()));
+}
+
+void MainWindow::searchPackagesByTag(QString tag)
+{
+	ui.packageTable->clearContents();
+	ui.packageTable->setRowCount(1);
+
+	for (unsigned int i=0; i<packagelist.size(); i++)
+	{
+		for (unsigned int t=0; t<packagelist.get_package(i)->get_tags()->size(); t++)
+		{
+			if (packagelist.get_package(i)->get_tags()->get_tag(t)->get_name() == tag.toStdString())
+			{
+				insertPackageIntoTable(i);
+			}
+		}
+		setBarValue(ui.progressBar, i);
+	}
+}
+
 void MainWindow::loadData(bool internal)
 {
 
@@ -154,19 +188,10 @@ void MainWindow::loadData(bool internal)
 	ui.packageTable->setRowCount(1);
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
-		ui.packageTable->insertRow(i);
-		ui.packageTable->setItem(i,0, new QTableWidgetItem(packagelist.get_package(i)->get_vstatus().c_str()));
-		ui.packageTable->setItem(i,1, new QTableWidgetItem(packagelist.get_package(i)->get_name().c_str()));
-		ui.packageTable->setItem(i,2, new QTableWidgetItem(packagelist.get_package(i)->get_version().c_str()));
-		ui.packageTable->setItem(i,3, new QTableWidgetItem(packagelist.get_package(i)->get_arch().c_str()));
-		ui.packageTable->setItem(i,4, new QTableWidgetItem(packagelist.get_package(i)->get_build().c_str()));
-		ui.packageTable->setItem(i,5, new QTableWidgetItem("!"));
-		ui.packageTable->setItem(i,6, new QTableWidgetItem(packagelist.get_package(i)->get_short_description().c_str()));
-		ui.packageTable->setItem(i,7, new QTableWidgetItem(IntToStr(i).c_str()));
+		insertPackageIntoTable(i);
 		if (internal) setBarValue(ui.progressBar, i);
 		else setBarValue(loadBox->ui.progressBar, i);
 	}
-	ui.packageTable->setSortingEnabled(true);
 	
 	if (internal) ui.progressBar->hide();
 	else loadBox->hide();

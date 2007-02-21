@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.12 2007/02/18 06:11:11 i27249 Exp $
+    $Id: config.h,v 1.13 2007/02/21 11:51:10 i27249 Exp $
 */
 
 
@@ -31,7 +31,7 @@ extern vector<string> REPOSITORY_LIST;
 #include <locale.h>
 #include "xmlParser.h"
 #include "debug.h"
-#define CONFIG_FILE "/Users/aix/mpkg.xml"
+#define CONFIG_FILE "/etc/mpkg.xml"
 int loadGlobalConfig(string config_file=CONFIG_FILE);
 
 namespace mpkgconfig
