@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.10 2007/02/21 16:01:28 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.11 2007/02/22 12:52:44 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -40,8 +40,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 		delete mDb;
 		qApp->quit();
 	}
+	clearForm();
 	loadData(false);
-	initPackageTable();
 }
 
 void MainWindow::resetQueue()
@@ -66,24 +66,30 @@ void MainWindow::execMenu()
 	tableMenu->exec(QCursor::pos());
 }
 
+
+
 void MainWindow::initPackageTable()
 {
 
-    if (ui.packageTable->columnCount() < 9)
-    	ui.packageTable->setColumnCount(9);
+    if (ui.packageTable->columnCount() < 4)
+    	ui.packageTable->setColumnCount(4);
     QTableWidgetItem *__colItem0 = new QTableWidgetItem();
     __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
+    ui.packageTable->setColumnWidth(PT_INSTALLCHECK, 10);
 
     QTableWidgetItem *__colItem = new QTableWidgetItem();
     __colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
+    ui.packageTable->setColumnHidden(PT_STATUS, true);
 
     QTableWidgetItem *__colItem1 = new QTableWidgetItem();
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
+    ui.packageTable->setColumnWidth(PT_NAME, 200);
 
-    QTableWidgetItem *__colItem2 = new QTableWidgetItem();
+
+/*    QTableWidgetItem *__colItem2 = new QTableWidgetItem();
     __colItem2->setText(QApplication::translate("MainWindow", "Version", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_VERSION, __colItem2);
 
@@ -102,20 +108,21 @@ void MainWindow::initPackageTable()
     QTableWidgetItem *__colItem6 = new QTableWidgetItem();
     __colItem6->setText(QApplication::translate("MainWindow", "Info", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INFO, __colItem6);
-
+*/
     QTableWidgetItem *__colItem7 = new QTableWidgetItem();
     __colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
+    ui.packageTable->setColumnHidden(PT_ID, true);
 
-    QTableWidgetItem *__colItem8 = new QTableWidgetItem();
+
+/*    QTableWidgetItem *__colItem8 = new QTableWidgetItem();
     __colItem8->setText(QApplication::translate("MainWindow", "Other data", 0, QApplication::UnicodeUTF8));
-    ui.packageTable->setHorizontalHeaderItem(9, __colItem8);
+    ui.packageTable->setHorizontalHeaderItem(9, __colItem8);*/
 }
 
 void MainWindow::fitTable()
 {
-	ui.packageTable->resizeColumnsToContents();
-	ui.packageTable->resizeRowsToContents();
+
 }
 
 void MainWindow::showPreferences()
@@ -170,12 +177,19 @@ void MainWindow::commitChanges()
 				case PKGSTATUS_REMOVE:
 					remove_queue.push_back(packagelist.get_package(i)->get_name());
 					break;
+				case PKGSTATUS_PURGE:
+					purge_queue.push_back(packagelist.get_package(i)->get_name());
+					break;
+				default:
+					printf("Unknown status %d\n", newStatus[i]);
 			}
 		}
 	}
 	printf("install_queue size = %d\n", install_queue.size());
+	printf("remove_queue size = %d\n", remove_queue.size());
 	mDb->uninstall(remove_queue);
 	mDb->install(install_queue);
+	mDb->purge(purge_queue);
 	ui.statusbar->showMessage("Committing changes...");
 	mDb->commit();
 	mDb = dbBox->recreateDb();
@@ -205,6 +219,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			printf("i is out of range: i=%d, max = %d\n", i, packagelist.size());
 			return;
 		}
+		
 		switch(packagelist.get_package(i)->get_status())
 		{
 			case PKGSTATUS_AVAILABLE:
@@ -254,18 +269,27 @@ void MainWindow::insertPackageIntoTable(unsigned int package_num)
 	unsigned int i = ui.packageTable->rowCount();
 	ui.packageTable->insertRow(i);
 	CheckBox *stat = new CheckBox(this);
+	//QIcon *icon = new QIcon ("/home/ftp/img.png");
+	QTextBrowser *pkgName = new QTextBrowser();
+	//pkgName->setTextFormat(Qt::RichText);
+	PACKAGE *_p = packagelist.get_package(package_num);
+	string pName = "<img src = \"/home/ftp/img.png\"></img><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description();
+	pkgName->setText(pName.c_str());
+	ui.packageTable->setCellWidget(i, PT_NAME, pkgName);
 	stat->row = package_num;
 	if (packagelist.get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
 			packagelist.get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos) stat->setCheckState(Qt::Checked);
 	ui.packageTable->setCellWidget(i,PT_INSTALLCHECK, stat);
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	ui.packageTable->setItem(i,PT_STATUS, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
-	ui.packageTable->setItem(i,PT_NAME, new QTableWidgetItem(packagelist.get_package(package_num)->get_name().c_str()));
-	ui.packageTable->setItem(i,PT_VERSION, new QTableWidgetItem(packagelist.get_package(package_num)->get_version().c_str()));
-	ui.packageTable->setItem(i,PT_ARCH, new QTableWidgetItem(packagelist.get_package(package_num)->get_arch().c_str()));
-	ui.packageTable->setItem(i,PT_BUILD, new QTableWidgetItem(packagelist.get_package(package_num)->get_build().c_str()));
-	ui.packageTable->setItem(i,PT_MAXAVAILABLE, new QTableWidgetItem("!"));
-	ui.packageTable->setItem(i,PT_INFO, new QTableWidgetItem(packagelist.get_package(package_num)->get_short_description().c_str()));
+	//ui.packageTable->setItem(i,PT_NAME, new QTableWidgetItem(packagelist.get_package(package_num)->get_name().c_str()));
+	//ui.packageTable->item(i,PT_NAME)->setIcon(*icon);
+
+	//ui.packageTable->setItem(i,PT_VERSION, new QTableWidgetItem(packagelist.get_package(package_num)->get_version().c_str()));
+	//ui.packageTable->setItem(i,PT_ARCH, new QTableWidgetItem(packagelist.get_package(package_num)->get_arch().c_str()));
+	//ui.packageTable->setItem(i,PT_BUILD, new QTableWidgetItem(packagelist.get_package(package_num)->get_build().c_str()));
+	//ui.packageTable->setItem(i,PT_MAXAVAILABLE, new QTableWidgetItem("!"));
+	//ui.packageTable->setItem(i,PT_INFO, new QTableWidgetItem(packagelist.get_package(package_num)->get_short_description().c_str()));
 	ui.packageTable->setItem(i,PT_ID, new QTableWidgetItem(IntToStr(package_num).c_str()));
 }
 

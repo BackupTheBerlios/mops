@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.9 2007/02/21 16:01:28 i27249 Exp $
+ * $Id: mainwindow.h,v 1.10 2007/02/22 12:52:44 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -18,12 +18,12 @@
 #define PT_INSTALLCHECK 0
 #define PT_STATUS 1
 #define PT_NAME 2
-#define PT_VERSION 3
-#define PT_ARCH 4
-#define PT_BUILD 5
-#define PT_MAXAVAILABLE 6
-#define PT_INFO 7
-#define PT_ID 8
+//#define PT_VERSION 3
+//#define PT_ARCH 4
+//#define PT_BUILD 5
+//#define PT_MAXAVAILABLE 6
+//#define PT_INFO 7
+#define PT_ID 3
 
 
 

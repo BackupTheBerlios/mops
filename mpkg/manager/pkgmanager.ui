@@ -444,51 +444,6 @@
            <property name="sortingEnabled" >
             <bool>false</bool>
            </property>
-           <column>
-            <property name="text" >
-             <string>Status</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Version</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Arch</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Build</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Avail.</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Info</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Install</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>ID</string>
-            </property>
-           </column>
           </widget>
          </item>
         </layout>
