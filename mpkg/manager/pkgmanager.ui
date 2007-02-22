@@ -301,109 +301,178 @@
          </property>
          <item>
           <widget class="QListWidget" name="listWidget" >
+           <property name="iconSize" >
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
            <item>
             <property name="text" >
              <string>[all]</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/penguin.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Libraries</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Archivers</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/package.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Console stuff</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>System components</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Drivers</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Games</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/bluefish.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Music players</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmsound.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Video players</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/xawtv.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Graphics</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/colors.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Office</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/abiword.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Development tools</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/alevt.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Server software</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/gnomemeeting.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Utilities</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>System tools</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/package_utilities.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Emulators</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/wine.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Internet: Web browsers</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/firefox.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Internet: IM clients</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/licq.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Internet: VoIP</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
              <string>Multimedia editors</string>
             </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/designer.png</iconset>
+            </property>
            </item>
            <item>
             <property name="text" >
              <string>Updates</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/superkaramba.png</iconset>
             </property>
            </item>
           </widget>
@@ -429,8 +498,23 @@
          </property>
          <item>
           <widget class="QTableWidget" name="packageTable" >
+           <property name="baseSize" >
+            <size>
+             <width>0</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="mouseTracking" >
+            <bool>true</bool>
+           </property>
            <property name="contextMenuPolicy" >
             <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="frameShape" >
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="horizontalScrollBarPolicy" >
+            <enum>Qt::ScrollBarAlwaysOff</enum>
            </property>
            <property name="editTriggers" >
             <set>QAbstractItemView::NoEditTriggers</set>
@@ -440,6 +524,15 @@
            </property>
            <property name="selectionBehavior" >
             <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="verticalScrollMode" >
+            <enum>QAbstractItemView::ScrollPerItem</enum>
+           </property>
+           <property name="horizontalScrollMode" >
+            <enum>QAbstractItemView::ScrollPerItem</enum>
+           </property>
+           <property name="gridStyle" >
+            <enum>Qt::DotLine</enum>
            </property>
            <property name="sortingEnabled" >
             <bool>false</bool>
@@ -636,12 +729,6 @@
      <height>28</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuRepositories" >
-    <property name="title" >
-     <string>Repositories</string>
-    </property>
-    <addaction name="actionAdd_remove_repositories" />
-   </widget>
    <widget class="QMenu" name="menuFile" >
     <property name="title" >
      <string>File</string>
@@ -657,14 +744,6 @@
     <addaction name="separator" />
     <addaction name="actionQuit" />
    </widget>
-   <widget class="QMenu" name="menuHelp" >
-    <property name="title" >
-     <string>Help</string>
-    </property>
-    <addaction name="actionHelp_topics" />
-    <addaction name="actionMini_FAQ" />
-    <addaction name="actionAbout" />
-   </widget>
    <widget class="QMenu" name="menuFilters" >
     <property name="title" >
      <string>Filters</string>
@@ -675,6 +754,20 @@
     <addaction name="actionShow_removed" />
     <addaction name="actionShow_unavailable" />
     <addaction name="actionCustom_filter" />
+   </widget>
+   <widget class="QMenu" name="menuRepositories" >
+    <property name="title" >
+     <string>Repositories</string>
+    </property>
+    <addaction name="actionAdd_remove_repositories" />
+   </widget>
+   <widget class="QMenu" name="menuHelp" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp_topics" />
+    <addaction name="actionMini_FAQ" />
+    <addaction name="actionAbout" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />

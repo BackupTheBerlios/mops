@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.8 2007/02/21 16:01:28 i27249 Exp $
+ *     $Id: main.cpp,v 1.9 2007/02/22 14:32:24 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -26,6 +26,6 @@
 	QObject::connect(mw.ui.actionCustom_filter, SIGNAL(triggered()), &mw, SLOT(showCustomFilter()));
 	 QObject::connect(mw.ui.updateButton, SIGNAL(clicked()), &mw, SLOT(updateData()));
 	 //QObject::connect(mw.ui.packageTable, SIGNAL(cell(int, int)), &mw, SLOT(markChanges(int, int)));
-	 QObject::connect(mw.ui.packageTable, SIGNAL(cellClicked(int, int)), &mw, SLOT(showPackageInfo()));
+	 QObject::connect(mw.ui.packageTable, SIGNAL(itemSelectionChanged()), &mw, SLOT(showPackageInfo()));
      return app.exec();
  } 
