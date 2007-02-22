@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.4 2007/01/19 14:32:42 i27249 Exp $
+ $Id: debug.cpp,v 1.5 2007/02/22 12:51:19 adiakin Exp $
  */
  
 
@@ -7,15 +7,6 @@
 #include "debug.h"
 
 
-/*
-void debug(std::string str)
-{
-#ifdef DEBUG
-	str+="\n";
-	printf(str.c_str()); // Comment out this strings to disable debug output
-#endif
-}
-*/
 
 void DbgPrint(char* file, int line, std::string message) {
 #ifdef DEBUG

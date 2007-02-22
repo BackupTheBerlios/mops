@@ -1,9 +1,10 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.27 2007/02/18 06:11:11 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.28 2007/02/22 12:51:19 adiakin Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
 #include "syscommands.h"
+#include "DownloadManager.h"
 
 /** Scans database and do actions. Actually, packages will install in SYS_ROOT folder (for testing).
  * In real systems, set SYS_ROOT to "/"
@@ -201,6 +202,14 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 	debug("Sorting...");
 
 
+	locationlist=*package->get_locations();
+	/*
+#ifdef DEBUG
+	for (int i=0; i<package->get_locations()->size(); i++)
+	{
+			debug(package->get_locations()->get_location(i)->get_server()->get_url());
+	}
+#endif
 
 	for (int x=0; x<package->get_locations()->size();x++)
 	{
@@ -215,18 +224,23 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		}
 		for (int i=0; i<package->get_locations()->size(); i++)
 		{
-			if (i==min_priority_id) locationlist.add(*package->get_locations()->get_location(i));
+			if (i==min_priority_id)
+			{
+					debug("adding "+package->get_locations()->get_location(i)->get_server()->get_url());
+					locationlist.add(*package->get_locations()->get_location(i));
+			}
 		}
 		prev_min=min_priority;
 	}
 	debug("Sorted. We have got "+IntToStr(locationlist.size())+" locations sorted.");
 
-#ifdef ENABLE_DEBUG
+#ifdef DEBUG
 	for (int i=0; i<locationlist.size();i++)
 	{
 		debug("Priority: "+locationlist.get_location(i)->get_server()->get_priority());
 	}
 #endif
+*/
 	for (int i=0; i<locationlist.size(); i++) // First, searching local file servers.
 	{
 		debug("Searching file sources");
@@ -265,9 +279,14 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 	} // End of searching local file servers
 
 	string wget_sys;
-	for (int i=0; i<locationlist.size(); i++) // Second: looking for all other servers ordering by priority.
+	std::string __file_url;
+	DownloadResults res = DOWNLOAD_ERROR;
+	for (int i=0; i<locationlist.size() && res != DOWNLOAD_OK; i++) // Second: looking for all other servers ordering by priority.
 	{
 		_srv_type=locationlist.get_location(i)->get_server()->get_type();
+		__file_url = "";
+		__file_url = locationlist.get_location(i)->get_server()->get_url() + locationlist.get_location(i)->get_path() + package->get_filename();
+		debug("requested file: " + __file_url);
 		switch (_srv_type)
 		{
 			case SRV_CACHE:
@@ -299,49 +318,69 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				// Not implemented yet.
 				debug("Fetching from CD-COM is not implemented yet");
 				break;
+			
+//			case SRV_HTTP:
+//				// Not implemented yet.
+//				// temporary tech: wget =)
+//				// TODO: usage of cache, md5 checking
+//				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
+//					  + locationlist.get_location(i)->get_server()->get_url() \
+//					  + locationlist.get_location(i)->get_path() \
+//					  + package->get_filename();
+//				printf(_("Downloading package %s..."), package->get_filename().c_str());
+//				if (system(wget_sys.c_str())==0)
+//				{
+//					printf(_("done.\n"));
+//				}
+//				else printf(_("FAILED\n"));
+//				
+//				debug("Fetching from HTTP is half-implemented yet");
+//				break;
+//			case SRV_FTP:
+//				/*// temporary tech: wget =)*/
+//				// TODO: same as all others - cache, md5...
+//				
+//				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
+//					  + locationlist.get_location(i)->get_server()->get_url() \
+//					  + locationlist.get_location(i)->get_path() \
+//					  + package->get_filename();
+//				printf(_("Downloading package %s..."), package->get_filename().c_str());
+//				if (system(wget_sys.c_str())==0)
+//				{
+//					printf(_("done.\n"));
+//				}
+//				else printf(_("FAILED\n"));
+//	
+//				// Not implemented yet.
+//				debug("Fetching from FTP is temporary implemented yet");
+//				break;
+//			case SRV_SMB:
+//				// Not implemented yet.
+//				debug("Fetching from SMB is not implemented yet");
+//				break;
+//			case SRV_HTTPS:
+//				// Not implemented yet.
+//				debug("Fetching from HTTPS is not implemented yet");
+//				break;
+//
 			case SRV_HTTP:
-				// Not implemented yet.
-				// temporary tech: wget =)
-				// TODO: usage of cache, md5 checking
-				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
-					  + locationlist.get_location(i)->get_server()->get_url() \
-					  + locationlist.get_location(i)->get_path() \
-					  + package->get_filename();
-				printf(_("Downloading package %s..."), package->get_filename().c_str());
-				if (system(wget_sys.c_str())==0)
-				{
-					printf(_("done.\n"));
-				}
-				else printf(_("FAILED\n"));
-				
-				debug("Fetching from HTTP is half-implemented yet");
-				break;
 			case SRV_FTP:
-				/*// temporary tech: wget =)*/
-				// TODO: same as all others - cache, md5...
-				
-				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
-					  + locationlist.get_location(i)->get_server()->get_url() \
-					  + locationlist.get_location(i)->get_path() \
-					  + package->get_filename();
-				printf(_("Downloading package %s..."), package->get_filename().c_str());
-				if (system(wget_sys.c_str())==0)
-				{
-					printf(_("done.\n"));
-				}
-				else printf(_("FAILED\n"));
-	
-				// Not implemented yet.
-				debug("Fetching from FTP is temporary implemented yet");
-				break;
 			case SRV_SMB:
-				// Not implemented yet.
-				debug("Fetching from SMB is not implemented yet");
-				break;
 			case SRV_HTTPS:
-				// Not implemented yet.
-				debug("Fetching from HTTPS is not implemented yet");
-				break;
+				res = CommonGetFile(
+							__file_url, 
+							SYS_CACHE + package->get_filename()
+							);
+
+				if ( res == DOWNLOAD_OK ) {
+					printf(_("%s downloaded successfull\n"), __file_url.c_str());
+				} else {
+					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
+					break;
+				}
+
+								
+			
 			default:
 				debug ("Server type not recognized or not supported");
 				break;

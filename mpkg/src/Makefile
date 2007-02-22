@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.33 2007/02/21 16:01:28 i27249 Exp $
+# $Id: Makefile,v 1.34 2007/02/22 12:51:19 adiakin Exp $
 #
 
 CC=gcc
@@ -8,12 +8,13 @@ CFLAGS=-c -Wall -std=c99 -g
 
 # VERY BAD HACK!!!
 CXXFLAGS=-c -g -DDEBUG -DDEP_NORMALIZE -DUSE_SYSTEM_SED -Wall -I/sw/include 
-LDFLAGS=-L/sw/lib -lsqlite3
+LDFLAGS=-L/sw/lib -lsqlite3 -ldl
 
 SOURCES=config.cpp installpkg-ng.cpp mpkg.cpp core.cpp dataunits.cpp conditions.cpp \
 	   	dependencies.cpp xmlParser.cpp PackageConfig.cpp debug.cpp \
 	   	local_package.cpp sql_pool.cpp file_routines.cpp repository.cpp syscommands.cpp \
-		string_operations.cpp converter.cpp constants.cpp mpkgsys.cpp libmpkg.cpp
+		string_operations.cpp converter.cpp constants.cpp mpkgsys.cpp libmpkg.cpp \
+		DownloadManager.cpp DownloadFactory.cpp
 
 OBJECTS=$(SOURCES:.cpp=.o)
 
@@ -54,4 +55,8 @@ install:
 	mkdir -p /usr/local/include/mpkg
 	cp *.h /usr/local/include/mpkg/
 	ldconfig
+
+http-lib:
+	$(CXX) -fPIC -c -ldl -DDEBUG -lcurl HttpDownload.cpp libmpkg-http.cxx
+	$(CXX) -shared -fPIC -ldl -lcurl -g libmpkg-http.o HttpDownload.o -o libmpkg-http.so
 

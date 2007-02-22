@@ -1,9 +1,10 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.10 2007/02/15 13:50:39 i27249 Exp $
+ * $Id: repository.cpp,v 1.11 2007/02/22 12:51:19 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
+#include "DownloadManager.h"
 Repository::Repository(){}
 Repository::~Repository(){}
 
@@ -151,7 +152,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages)
 	wget_line="wget -q --output-document="+gzxml_name+" "+server_url+"packages.xml.gz";
 	gzip_line="gunzip -f "+gzxml_name;
 	printf("[%s]...",server_url.c_str());
-	if (system(wget_line.c_str())==0 && system(gzip_line.c_str())==0)
+//	if (system(wget_line.c_str())==0 && system(gzip_line.c_str())==0)
+		DownloadResults result = CommonGetFile(server_url + "packages.xml.gz", gzxml_name);
+	if ( result == DOWNLOAD_OK && system(gzip_line.c_str()) == 0 )
 	{
 		
 		printf("done\n");

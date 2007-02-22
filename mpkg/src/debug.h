@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.5 2007/01/19 14:32:42 i27249 Exp $
+$Id: debug.h,v 1.6 2007/02/22 12:51:19 adiakin Exp $
 */
 
 
@@ -8,20 +8,16 @@ $Id: debug.h,v 1.5 2007/01/19 14:32:42 i27249 Exp $
 
 #include <string>
 #include <stdlib.h>
-/*
-#include <log4cxx/logger.h>
-#include <log4cxx/ndc.h>
-#include <log4cxx/helpers/exception.h>
-#include <log4cxx/basicconfigurator.h>
-*/
 #include "config.h"
-/*
-using namespace log4cxx;
-using namespace log4cxx::helpers;
-*/
 typedef int DEBUG_LEVEL;
 
 #define debug(m) DbgPrint(__FILE__, __LINE__, m)
+
+#ifdef DEBUG
+#define ASSERT(m) (assert(m))
+#else
+#define ASSERT(m)
+#endif
 
 void DbgPrint(char* file, int line, std::string message);
 
