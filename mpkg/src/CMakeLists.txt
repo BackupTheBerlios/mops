@@ -1,6 +1,7 @@
-# The name of our project is "HELLO".  CMakeLists files in this project can
-# refer to the root source directory of the project as ${HELLO_SOURCE_DIR} and
-# to the root binary directory of the project as ${HELLO_BINARY_DIR}.
+#
+# MOPSLinux packaging system core
+# $Id: CMakeLists.txt,v 1.2 2007/02/26 12:00:37 i27249 Exp $
+#
 
 PROJECT(LIBMPKG)
 SET(BUILD_SHARED_LIBS ON)
