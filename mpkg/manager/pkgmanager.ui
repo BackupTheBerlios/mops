@@ -21,259 +21,6 @@
      <number>6</number>
     </property>
     <item>
-     <widget class="QGroupBox" name="groupBox_4" >
-      <property name="sizePolicy" >
-       <sizepolicy>
-        <hsizetype>5</hsizetype>
-        <vsizetype>0</vsizetype>
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title" >
-       <string>Package search</string>
-      </property>
-      <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label" >
-               <property name="text" >
-                <string>Name:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit" />
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_2" >
-               <property name="text" >
-                <string>Version:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit_2" />
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_4" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>0</hsizetype>
-                 <vsizetype>5</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text" >
-                <string>Arch:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="comboBox_2" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>7</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="editable" >
-                <bool>true</bool>
-               </property>
-               <item>
-                <property name="text" >
-                 <string>All x86-32 (i486, i686, etc)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>x86-64</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>noarch</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>&lt;any></string>
-                </property>
-               </item>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <layout class="QVBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <layout class="QHBoxLayout" >
-               <property name="margin" >
-                <number>0</number>
-               </property>
-               <property name="spacing" >
-                <number>6</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_3" >
-                 <property name="sizePolicy" >
-                  <sizepolicy>
-                   <hsizetype>0</hsizetype>
-                   <vsizetype>5</vsizetype>
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text" >
-                  <string>From category:</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="comboBox" >
-                 <property name="sizePolicy" >
-                  <sizepolicy>
-                   <hsizetype>7</hsizetype>
-                   <vsizetype>0</vsizetype>
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="editable" >
-                  <bool>true</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" >
-               <property name="margin" >
-                <number>0</number>
-               </property>
-               <property name="spacing" >
-                <number>6</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_5" >
-                 <property name="text" >
-                  <string>Containing file(s):</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLineEdit" name="lineEdit_3" />
-               </item>
-              </layout>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <spacer>
-               <property name="orientation" >
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" >
-                <size>
-                 <width>141</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="pushButton" >
-               <property name="text" >
-                <string>Search</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
      <widget class="QSplitter" name="splitter_3" >
       <property name="orientation" >
        <enum>Qt::Horizontal</enum>
@@ -473,21 +220,91 @@
           </item>
          </widget>
         </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_2" />
+        </item>
+       </layout>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_2" >
+       <property name="minimumSize" >
+        <size>
+         <width>300</width>
+         <height>200</height>
+        </size>
+       </property>
+       <property name="title" >
+        <string>Packages</string>
+       </property>
+       <layout class="QVBoxLayout" >
+        <property name="margin" >
+         <number>9</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <widget class="QTableWidget" name="packageTable" >
+          <property name="baseSize" >
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="mouseTracking" >
+           <bool>true</bool>
+          </property>
+          <property name="contextMenuPolicy" >
+           <enum>Qt::CustomContextMenu</enum>
+          </property>
+          <property name="frameShape" >
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy" >
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="editTriggers" >
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="alternatingRowColors" >
+           <bool>true</bool>
+          </property>
+          <property name="selectionMode" >
+           <enum>QAbstractItemView::SingleSelection</enum>
+          </property>
+          <property name="selectionBehavior" >
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <property name="verticalScrollMode" >
+           <enum>QAbstractItemView::ScrollPerItem</enum>
+          </property>
+          <property name="horizontalScrollMode" >
+           <enum>QAbstractItemView::ScrollPerItem</enum>
+          </property>
+          <property name="gridStyle" >
+           <enum>Qt::DotLine</enum>
+          </property>
+          <property name="sortingEnabled" >
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QSplitter" name="splitter" >
        <property name="orientation" >
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QGroupBox" name="groupBox_2" >
-        <property name="minimumSize" >
-         <size>
-          <width>300</width>
-          <height>200</height>
-         </size>
+       <widget class="QGroupBox" name="groupBox_4" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>5</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
         <property name="title" >
-         <string>Packages</string>
+         <string>Package search</string>
         </property>
         <layout class="QVBoxLayout" >
          <property name="margin" >
@@ -497,47 +314,94 @@
           <number>6</number>
          </property>
          <item>
-          <widget class="QTableWidget" name="packageTable" >
-           <property name="baseSize" >
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
            </property>
-           <property name="mouseTracking" >
-            <bool>true</bool>
+           <property name="spacing" >
+            <number>6</number>
            </property>
-           <property name="contextMenuPolicy" >
-            <enum>Qt::CustomContextMenu</enum>
+           <item>
+            <widget class="QLabel" name="label" >
+             <property name="text" >
+              <string>Name:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEdit" />
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
            </property>
-           <property name="frameShape" >
-            <enum>QFrame::StyledPanel</enum>
+           <property name="spacing" >
+            <number>6</number>
            </property>
-           <property name="horizontalScrollBarPolicy" >
-            <enum>Qt::ScrollBarAlwaysOff</enum>
+           <item>
+            <widget class="QLabel" name="versionLabel" >
+             <property name="text" >
+              <string>Version:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="versionSearchEdit" />
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
            </property>
-           <property name="editTriggers" >
-            <set>QAbstractItemView::NoEditTriggers</set>
+           <property name="spacing" >
+            <number>6</number>
            </property>
-           <property name="selectionMode" >
-            <enum>QAbstractItemView::SingleSelection</enum>
+           <item>
+            <widget class="QLabel" name="fileSearchLabel" >
+             <property name="text" >
+              <string>Containing file(s):</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="fileSearchEdit" />
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
            </property>
-           <property name="selectionBehavior" >
-            <enum>QAbstractItemView::SelectRows</enum>
+           <property name="spacing" >
+            <number>6</number>
            </property>
-           <property name="verticalScrollMode" >
-            <enum>QAbstractItemView::ScrollPerItem</enum>
-           </property>
-           <property name="horizontalScrollMode" >
-            <enum>QAbstractItemView::ScrollPerItem</enum>
-           </property>
-           <property name="gridStyle" >
-            <enum>Qt::DotLine</enum>
-           </property>
-           <property name="sortingEnabled" >
-            <bool>false</bool>
-           </property>
-          </widget>
+           <item>
+            <widget class="QPushButton" name="searchButton" >
+             <property name="text" >
+              <string>Search</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" >
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
@@ -573,10 +437,16 @@
            </property>
            <widget class="QTabWidget" name="tabWidget" >
             <property name="tabPosition" >
-             <enum>QTabWidget::North</enum>
+             <enum>QTabWidget::South</enum>
+            </property>
+            <property name="tabShape" >
+             <enum>QTabWidget::Rounded</enum>
             </property>
             <property name="currentIndex" >
              <number>0</number>
+            </property>
+            <property name="usesScrollButtons" >
+             <bool>true</bool>
             </property>
             <widget class="QWidget" name="tab" >
              <attribute name="title" >

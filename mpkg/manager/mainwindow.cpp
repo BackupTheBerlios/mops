@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.13 2007/03/06 01:01:43 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.14 2007/03/06 02:27:22 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -21,6 +21,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 {
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
+	ui.versionLabel->hide();
+	ui.versionSearchEdit->hide();
+	ui.fileSearchLabel->hide();
+	ui.fileSearchEdit->hide();
+	ui.groupBox_4->hide();
 
 	dbBox = new DatabaseBox;
 	mDb = dbBox->mDb;
