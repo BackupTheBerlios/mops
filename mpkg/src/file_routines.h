@@ -1,9 +1,17 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.6 2007/03/06 01:01:43 i27249 Exp $
+* $Id: file_routines.h,v 1.7 2007/03/06 01:17:25 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
+
+#define PKGTYPE_UNKNOWN 0
+#define PKGTYPE_SLACKWARE 1
+#define PKGTYPE_MOPSLINUX 2
+#define PKGTYPE_DEBIAN 3	// For future implementation
+#define PKGTYPE_RPM 4		// For future implementation
+
+
 
 #include "local_package.h"
 #include <unistd.h>
@@ -20,12 +28,6 @@ string ReadFile(string filename, int max_count=0);
 int WriteFile(string filename, string data);
 
 // Package type definition (also defines repository type)
-#define PKGTYPE_UNKNOWN 0
-#define PKGTYPE_SLACKWARE 1
-#define PKGTYPE_MOPSLINUX 2
-#define PKGTYPE_DEBIAN 3	// For future implementation
-#define PKGTYPE_RPM 4		// For future implementation
-
 
 unsigned int CheckFileType(string fname);
 #endif

@@ -1,17 +1,18 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.25 2007/02/19 05:14:10 i27249 Exp $
+$Id: local_package.cpp,v 1.26 2007/03/06 01:17:25 i27249 Exp $
 */
 
 #include "local_package.h"
 #include "mpkg.h"
 //#include "oldstyle.h"
 
-LocalPackage::LocalPackage(string _f)
+LocalPackage::LocalPackage(string _f, unsigned int pkgType)
 {
 	debug("LocalPackage created");
 	this->filename=_f;
+	this->packageType=pkgType;
 }
 
 LocalPackage::~LocalPackage(){}

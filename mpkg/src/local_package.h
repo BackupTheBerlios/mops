@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.12 2007/03/06 01:01:43 i27249 Exp $
+$Id: local_package.h,v 1.13 2007/03/06 01:17:25 i27249 Exp $
 */
 
 
@@ -18,7 +18,7 @@ $Id: local_package.h,v 1.12 2007/03/06 01:01:43 i27249 Exp $
 class LocalPackage
 {
 	public:
-		LocalPackage(string _f);
+		LocalPackage(string _f, unsigned int pkgType=PKGTYPE_MOPSLINUX);
 		~LocalPackage();
 		PACKAGE data;
 		int injectFile(bool index=false);
@@ -37,6 +37,7 @@ class LocalPackage
 		int get_scripts();
 		int get_filelist();
 		int set_additional_data();
+		unsigned int packageType;
 		int CreateFlistNode(string fname, string tmp_xml);
 
 };

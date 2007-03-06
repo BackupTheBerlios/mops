@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.4 2007/03/06 01:01:43 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.5 2007/03/06 01:17:25 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -156,43 +156,25 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 	debug("LOCAL INSTALL ATTEMPT DETECTED");
 	
 	// If reached this point, the package isn't in the database. Trying to install from local file.
-	// Part 0. Check if file exists.
-	int pkgType = CheckFileType(fname)
-//	{
-//		printf("%s: unsupported package type\n", fname.c_str());
-//		return -1;
-//	}
-	
 	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker
 	// NOTE: ALL PACKAGE FORMATTING TOOLS ARE CALLED HERE! Add any new formats here.
-	switch(pkgType)
+	
+	int pkgType = CheckFileType(fname);
+	
+	if (pkgType == PKGTYPE_UNKNOWN)
 	{
-		case PKGTYPE_UNKNOWN:
-			printf("Package doesn't exist or unknown package type\n");
-			return -1;
-			break;
-		case PKGTYPE_SLACKWARE:
-			debug("Slackware package");
-			// TODO: implement LocalPackage for native slack packages
-			break;
-		case PKGTYPE_MOPSLINUX:
-			debug("MOPSLinux package");
-			LocalPackage lp(fname);
-			lp.injectFile(); 
+		printf("Unknown package - skipping\n");
+		return -1;
+	}
+	else
+	{
+		LocalPackage lp(fname, pkgType);
+		if (lp.injectFile()==0)
+		{	
 			lp.data.set_status(PKGSTATUS_AVAILABLE);
 			db->emerge_to_db(&lp.data);
 			DepTracker->merge(&lp.data);
-			break;
-		case PKGTYPE_DEBIAN:
-			debug("Debian package");
-			printf("debian packages is unsupported for now\n");
-			break;
-		case PKGTYPE_RPM:
-			debug("RPM package");
-			printf("RPM unsupported for now\n");
-			break;
-		default:
-			printf("Unknown package type - skipping\n");
+		}
 	}
 	return 0;	
 }

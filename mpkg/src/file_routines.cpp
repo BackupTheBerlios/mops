@@ -1,10 +1,11 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.9 2007/03/06 01:01:43 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.10 2007/03/06 01:17:24 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
 #include <assert.h>
+#include <sys/stat.h>
 
 vector<string> temp_files;
 extern int errno;
@@ -143,7 +144,7 @@ unsigned int CheckFileType(string fname)
 		// Is there a install/data.xml file?
 		string contCheck = get_tmp_file();
 		string check = "tar ztf "+fname+" install/data.xml > "+contCheck+" 2>/dev/null";
-		int tar_rat = system(check.c_str());
+		int tar_ret = system(check.c_str());
 		debug("Tar returns "+IntToStr(tar_ret));
 		if (FileNotEmpty(contCheck))
 		{
@@ -159,7 +160,7 @@ unsigned int CheckFileType(string fname)
 		debug("Debian package detected");
 		return PKGTYPE_DEBIAN;
 	}
-	if (ext = ".rpm")
+	if (ext ==".rpm")
 	{
 		debug("RPM package detected");
 		return PKGTYPE_RPM;
