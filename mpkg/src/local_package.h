@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.11 2007/02/19 05:14:10 i27249 Exp $
+$Id: local_package.h,v 1.12 2007/03/06 01:01:43 i27249 Exp $
 */
 
 
@@ -13,6 +13,8 @@ $Id: local_package.h,v 1.11 2007/02/19 05:14:10 i27249 Exp $
 #include "PackageConfig.h"
 #include "debug.h"
 #include "file_routines.h"
+
+// Package type: mpkg
 class LocalPackage
 {
 	public:

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.12 2007/02/22 14:32:24 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.13 2007/03/06 01:01:43 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -57,7 +57,7 @@ void MainWindow::showPackageInfo()
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
 	
-	ui.visualInfoTextEdit->setHtml(info.c_str());
+	ui.overviewEdit->setHtml(info.c_str());
 }
 
 void MainWindow::execMenu()

@@ -6,10 +6,8 @@
 	<database_url>sqlite://var/log/mpkg/packages.db</database_url>
 	<scripts_dir>/var/log/mpkg/scripts/</scripts_dir>
 	<repository_list>
-		<nrepository>ftp://192.168.2.27/repository/</nrepository>
-		<nrepository>ftp://192.168.2.27/repository2/</nrepository>
-		<nrepository>ftp://localhost/mpkg-current/</nrepository>
-		<repository>ftp://localhost/purge/</repository>
+		<repository type="mpkg">ftp://localhost/purge/</repository>
+		<repository type="slack">http://slackware.rol.ru/linuxpackages/Slackware-11.0/</repository>
 	</repository_list>
 </mpkgconfig>
 

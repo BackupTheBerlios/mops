@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.5 2007/01/19 14:32:42 i27249 Exp $
+* $Id: file_routines.h,v 1.6 2007/03/06 01:01:43 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -18,5 +18,14 @@ bool FileExists(string filename);
 bool FileNotEmpty(string filename);
 string ReadFile(string filename, int max_count=0);
 int WriteFile(string filename, string data);
-bool CheckFileType(string fname);
+
+// Package type definition (also defines repository type)
+#define PKGTYPE_UNKNOWN 0
+#define PKGTYPE_SLACKWARE 1
+#define PKGTYPE_MOPSLINUX 2
+#define PKGTYPE_DEBIAN 3	// For future implementation
+#define PKGTYPE_RPM 4		// For future implementation
+
+
+unsigned int CheckFileType(string fname);
 #endif

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.8 2007/02/15 08:38:45 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.9 2007/03/06 01:01:43 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -58,7 +58,7 @@ bool FileExists(string filename)
 
 bool FileNotEmpty(string filename)
 {
-	if (!ReadFile(filename, 10).empty()) return true;
+	if (!ReadFile(filename, 4).empty()) return true;
 	else return false;
 }
 		
@@ -114,14 +114,57 @@ int WriteFile(string filename, string data)
 	}
 }
 
-bool CheckFileType(string fname)
+
+
+unsigned int CheckFileType(string fname)
 {
+	// Checking file existanse
+	struct stat st;
+	if (lstat(fname.c_str(), &st) != 0) {
+		if ( errno == ENOENT ) {
+			fprintf(stderr, _("file %s not found\n"), fname.c_str());
+			return PKGTYPE_UNKNOWN;
+		}
+	}
+	
+	if ( !S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode) ) {
+		fprintf(stderr, _("Not a regular file\n"));
+		return PKGTYPE_UNKNOWN;
+	}
+
+	// Checking extensions and (partially) contents
 	string ext;
 	for (unsigned int i=fname.length()-4; i<fname.length(); i++)
 	{
 		ext+=fname[i];
 	}
-	if (ext==".tgz") return true;
-	return false;
+	if (ext==".tgz")
+	{
+		// Is there a install/data.xml file?
+		string contCheck = get_tmp_file();
+		string check = "tar ztf "+fname+" install/data.xml > "+contCheck+" 2>/dev/null";
+		int tar_rat = system(check.c_str());
+		debug("Tar returns "+IntToStr(tar_ret));
+		if (FileNotEmpty(contCheck))
+		{
+			return PKGTYPE_MOPSLINUX;
+		}
+		else
+		{
+			return PKGTYPE_SLACKWARE;
+		}
+	}
+	if (ext==".deb")
+	{
+		debug("Debian package detected");
+		return PKGTYPE_DEBIAN;
+	}
+	if (ext = ".rpm")
+	{
+		debug("RPM package detected");
+		return PKGTYPE_RPM;
+	}
+	debug("Unknown package type "+ext);
+	return PKGTYPE_UNKNOWN;
 }
 

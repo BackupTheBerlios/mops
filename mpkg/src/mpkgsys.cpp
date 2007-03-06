@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.3 2007/02/21 16:01:28 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.4 2007/03/06 01:01:43 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -109,7 +109,8 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
 	printf("install...%s\n", fname.c_str());
-
+	
+	// Step 0. Checking source
 
 	//printf(_("Querying the database, please wait...\n"));
 	// Step 1. Checking if it is just a name of a package
@@ -153,34 +154,47 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 	}
 	else printf("no candidates");
 	debug("LOCAL INSTALL ATTEMPT DETECTED");
-	// If reached this point, the package isn't in the database. Install from local file.
-	// Part 0. Check if file exists.
-	if (!CheckFileType(fname))
-	{
-		printf("%s: unsupported package type\n", fname.c_str());
-		return -1;
-	}
-	struct stat st;
-	if (lstat(fname.c_str(), &st) != 0) {
-		if ( errno == ENOENT ) {
-			fprintf(stderr, _("file %s not found\n"), fname.c_str());
-			exit(1);
-		}
-	}
 	
-	if ( !S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode) ) {
-		fprintf(stderr, _("unknown file type\n"));
-		return 1;
-	}
+	// If reached this point, the package isn't in the database. Trying to install from local file.
+	// Part 0. Check if file exists.
+	int pkgType = CheckFileType(fname)
+//	{
+//		printf("%s: unsupported package type\n", fname.c_str());
+//		return -1;
+//	}
 	
 	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker
-	LocalPackage lp(fname);
-	lp.injectFile(); 
-	lp.data.set_status(PKGSTATUS_AVAILABLE);
-	db->emerge_to_db(&lp.data);
-	DepTracker->merge(&lp.data);
-	return 0;
-	
+	// NOTE: ALL PACKAGE FORMATTING TOOLS ARE CALLED HERE! Add any new formats here.
+	switch(pkgType)
+	{
+		case PKGTYPE_UNKNOWN:
+			printf("Package doesn't exist or unknown package type\n");
+			return -1;
+			break;
+		case PKGTYPE_SLACKWARE:
+			debug("Slackware package");
+			// TODO: implement LocalPackage for native slack packages
+			break;
+		case PKGTYPE_MOPSLINUX:
+			debug("MOPSLinux package");
+			LocalPackage lp(fname);
+			lp.injectFile(); 
+			lp.data.set_status(PKGSTATUS_AVAILABLE);
+			db->emerge_to_db(&lp.data);
+			DepTracker->merge(&lp.data);
+			break;
+		case PKGTYPE_DEBIAN:
+			debug("Debian package");
+			printf("debian packages is unsupported for now\n");
+			break;
+		case PKGTYPE_RPM:
+			debug("RPM package");
+			printf("RPM unsupported for now\n");
+			break;
+		default:
+			printf("Unknown package type - skipping\n");
+	}
+	return 0;	
 }
 
 int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)

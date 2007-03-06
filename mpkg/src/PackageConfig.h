@@ -4,12 +4,12 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.6 2007/02/14 06:50:58 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.7 2007/03/06 01:01:43 i27249 Exp $
  *
  * **********************************************************/
 
 
-
+// Package type: mpkg
 
 #ifndef PACKAGECONFIG_H_
 #define PACKAGECONFIG_H_

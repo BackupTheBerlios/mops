@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.11 2007/02/22 12:51:19 adiakin Exp $
+ * $Id: repository.cpp,v 1.12 2007/03/06 01:01:43 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -140,6 +140,7 @@ int Repository::build_index(string server_url)
 	return 0;
 }
 
+// Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages)
 {
 	//PACKAGE_LIST packages;
