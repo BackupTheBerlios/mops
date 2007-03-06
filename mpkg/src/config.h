@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.13 2007/02/21 11:51:10 i27249 Exp $
+    $Id: config.h,v 1.14 2007/03/06 01:58:23 i27249 Exp $
 */
 
 
@@ -17,12 +17,11 @@ using namespace std;
 
 
 // Debug-time configuration
-extern bool DO_NOT_RUN_SCRIPTS; // Prevent executing of scripts - it may be dangerous
-//#define ENABLE_DEBUG
+extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 
 // System configuration
-extern string SYS_ROOT;// "/root/development/sys_root/"
-extern string SYS_CACHE; //"/root/development/sys_cache/"
+extern string SYS_ROOT;		// "/root/development/sys_root/"
+extern string SYS_CACHE; 	//"/root/development/sys_cache/"
 extern string SCRIPTS_DIR;
 extern unsigned int DATABASE;
 extern string DB_FILENAME;
@@ -31,7 +30,9 @@ extern vector<string> REPOSITORY_LIST;
 #include <locale.h>
 #include "xmlParser.h"
 #include "debug.h"
+#ifndef CONFIG_FILE
 #define CONFIG_FILE "/etc/mpkg.xml"
+#endif
 int loadGlobalConfig(string config_file=CONFIG_FILE);
 
 namespace mpkgconfig

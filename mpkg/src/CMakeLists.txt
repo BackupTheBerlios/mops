@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.3 2007/03/06 01:01:43 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.4 2007/03/06 01:58:23 i27249 Exp $
 #
 
 # Project name
@@ -11,7 +11,7 @@ SET(BUILD_SHARED_LIBS ON)
 
 # Compilation definitions. They are some differences betweeen Linux and MacOSX...
 IF(APPLE)
-	ADD_DEFINITIONS(-DUSE_SYSTEM_SED -DDEP_NORMALIZE)
+	ADD_DEFINITIONS(-DUSE_SYSTEM_SED -DDEP_NORMALIZE -DCONFIG_FILE='"/Users/aix/mpkg.xml"')
 ELSE(APPLE)
 	ADD_DEFINITIONS(-DUSE_INTERNAL_SED -DDEP_NORMALIZE)
 ENDIF(APPLE)
