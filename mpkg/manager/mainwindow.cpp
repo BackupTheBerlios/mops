@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.14 2007/03/06 02:27:22 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.15 2007/03/06 15:14:56 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -17,15 +17,12 @@
 #include "loading.h"
 #include "db.h"
 #include <stdio.h>
+#include "tablelabel.h"
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
-	ui.versionLabel->hide();
-	ui.versionSearchEdit->hide();
-	ui.fileSearchLabel->hide();
-	ui.fileSearchEdit->hide();
-	ui.groupBox_4->hide();
+	//ui.groupBox_4->hide();
 
 	dbBox = new DatabaseBox;
 	mDb = dbBox->mDb;
@@ -49,6 +46,28 @@ MainWindow::MainWindow(QMainWindow *parent)
 	loadData(false);
 }
 
+void MainWindow::quickPackageSearch()
+{
+	for (unsigned int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		if (packagelist.get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name().find(ui.quickPackageSearchEdit->text().toStdString())==std::string::npos)
+		{
+			ui.packageTable->setRowHidden(i, true);
+		}
+		else
+		{
+			ui.packageTable->setRowHidden(i, false);
+		}
+	}
+}
+
+void MainWindow::showAllPackages()
+{
+	for (unsigned int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		ui.packageTable->setRowHidden(i,false);
+	}
+}
 void MainWindow::resetQueue()
 {
 	mDb->clean_queue();
@@ -207,7 +226,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.statusbar->showMessage("Package added to install queue");
 					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -220,7 +239,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 					//ui.packageTable->cellWidget(x, PT_NAME)->setText(pName.c_str());
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -236,7 +255,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.statusbar->showMessage("Package added to install queue");
 					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -249,7 +268,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 					newStatus[i]=PKGSTATUS_REMOVED_AVAILABLE;
 					ui.statusbar->showMessage("Package removed from install queue");
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -265,7 +284,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.statusbar->showMessage("Package added to remove queue");
 					string pName = "<table><tbody><tr><td><img src = \"icons/purge.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -279,7 +298,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					string pName = "<table><tbody><tr><td><img src = \"icons/installed.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 
-					QLabel *_z = new QLabel;
+					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
@@ -304,7 +323,7 @@ void MainWindow::insertPackageIntoTable(unsigned int package_num)
 
 	ui.packageTable->setCellWidget(i,PT_INSTALLCHECK, stat);
 
-	QLabel *pkgName = new QLabel();
+	TableLabel *pkgName = new TableLabel(ui.packageTable);
 	pkgName->setTextFormat(Qt::RichText);
 	PACKAGE *_p = packagelist.get_package(package_num);
 	switch(_p->get_status())
@@ -332,6 +351,7 @@ void MainWindow::insertPackageIntoTable(unsigned int package_num)
 	}
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	pkgName->setText(pName.c_str());
+	pkgName->row = i;
 	ui.packageTable->setCellWidget(i, PT_NAME, pkgName);
 	stat->row = package_num;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));

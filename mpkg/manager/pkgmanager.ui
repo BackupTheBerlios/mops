@@ -229,7 +229,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_2" />
+         <widget class="QLineEdit" name="quickCategorySearchEdit" />
         </item>
        </layout>
       </widget>
@@ -267,7 +267,7 @@
            </size>
           </property>
           <property name="mouseTracking" >
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
           <property name="contextMenuPolicy" >
            <enum>Qt::CustomContextMenu</enum>
@@ -305,7 +305,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_3" />
+         <widget class="QLineEdit" name="quickPackageSearchEdit" />
         </item>
        </layout>
       </widget>
@@ -611,7 +611,7 @@
      <x>0</x>
      <y>0</y>
      <width>713</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >

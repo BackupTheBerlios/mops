@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.10 2007/02/22 12:52:44 i27249 Exp $
+ * $Id: mainwindow.h,v 1.11 2007/03/06 15:14:56 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -58,6 +58,9 @@ class MainWindow: public QMainWindow
 		void showPackageInfo();
 		void fitTable();
 		void markChanges(int x, Qt::CheckState state);
+		void quickPackageSearch();
+		void showAllPackages();
+
 		//void MainWindow::resetQueue();
 	
 	public:
