@@ -1,12 +1,18 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.4 2007/02/21 16:01:28 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.5 2007/03/07 07:02:36 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
 
 mpkg::mpkg()
 {
+#ifdef APPLE_DEFINED
+	printf("Running MacOS X, welcome!\n");
+#endif
+#ifdef LINUX_DEFINED
+	printf("Running Linux, welcome!\n");
+#endif
 	debug("creating core");
 	current_status="Loading database...";
 	loadGlobalConfig();

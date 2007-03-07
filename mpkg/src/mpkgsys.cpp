@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.5 2007/03/06 01:17:25 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.6 2007/03/07 07:02:36 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -38,7 +38,11 @@ int mpkgSys::build_package()
 	    string sysline;
 	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
 	    printf("Creating package %s\n", pkgname.c_str());
+#ifdef APPLE_DEFINED
+	    sysline = "tar czf "+pkgname+".tgz *";
+#else
 	    sysline="makepkg -l y -c n "+pkgname+".tgz";
+#endif
 	    system(sysline.c_str());
     }
     return 0;

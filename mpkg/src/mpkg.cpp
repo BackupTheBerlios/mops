@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.28 2007/02/22 12:51:19 adiakin Exp $
+ * 	$Id: mpkg.cpp,v 1.29 2007/03/07 07:02:36 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -146,7 +146,11 @@ int mpkgDatabase::commit_actions()
 	for (int i=0; i<install_list.size(); i++)
 	{
 		debug("Fetching package #"+IntToStr(i+1)+" with "+IntToStr(install_list.get_package(i)->get_locations()->size())+" locations");
-		if (fetch_package(install_list.get_package(i))!=0) return -6;
+		if (fetch_package(install_list.get_package(i))!=0)
+		{
+			printf("Fetching failed\n");
+			return -6;
+		}
 	}
 	debug("Calling INSTALL");
 	for (int i=0;i<install_list.size();i++)
@@ -281,6 +285,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 	string wget_sys;
 	std::string __file_url;
 	DownloadResults res = DOWNLOAD_ERROR;
+	bool DownloadOk = false;
 	for (int i=0; i<locationlist.size() && res != DOWNLOAD_OK; i++) // Second: looking for all other servers ordering by priority.
 	{
 		_srv_type=locationlist.get_location(i)->get_server()->get_type();
@@ -301,10 +306,12 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 					if (package->get_md5()==get_file_md5(_fname))
 					{
 						debug("md5 ok");
+						DownloadOk=true;
 						return 0; // File successfully delivered thru symlink, we can exit function now
 					}
 					else
 					{
+						printf("Package found in cache, but has wrong MD5. Re-downloading...\n");
 						debug("md5 incorrect");
 					}
 				}
@@ -373,6 +380,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 							);
 
 				if ( res == DOWNLOAD_OK ) {
+					DownloadOk=true;
 					printf(_("%s downloaded successfull\n"), __file_url.c_str());
 				} else {
 					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
@@ -386,6 +394,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				break;
 		}
 	}
+	if (!DownloadOk) return -1;
 	// If we reach this point - this means that we cannot get package. Returning error...
 	return 0;
 } // End of mpkgDatabase::fetch_package();
