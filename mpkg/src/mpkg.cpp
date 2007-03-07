@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.29 2007/03/07 07:02:36 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.30 2007/03/07 14:18:19 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -292,84 +292,37 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 		__file_url = "";
 		__file_url = locationlist.get_location(i)->get_server()->get_url() + locationlist.get_location(i)->get_path() + package->get_filename();
 		debug("requested file: " + __file_url);
+		
+		// Checking cache
+		_fname = SYS_CACHE + package->get_filename();
+		if (FileExists(_fname))
+		{
+			debug("Package file found in cache, checking md5");
+			if (package->get_md5()==get_file_md5(_fname))
+			{
+				debug("md5 ok");
+				DownloadOk = true;
+				return 0;
+			}
+			else
+			{
+				debug("md5 incorrect, re-downloading");
+			}
+		}
+		else
+		{
+			debug("File not found in cache, downloading");
+		}
+
+		// Downloading
 		switch (_srv_type)
 		{
-			case SRV_CACHE:
-				// Checking file existance
-				_fname = SYS_CACHE + locationlist.get_location(i)->get_path() + package->get_filename();
-				_ftmp=fopen(_fname.c_str(),"r");
-				if (_ftmp)
-				{
-					debug("File "+_fname+" exists , proceeding next: checking md5");
-					fclose(_ftmp);
-					// Checking md5
-					if (package->get_md5()==get_file_md5(_fname))
-					{
-						debug("md5 ok");
-						DownloadOk=true;
-						return 0; // File successfully delivered thru symlink, we can exit function now
-					}
-					else
-					{
-						printf("Package found in cache, but has wrong MD5. Re-downloading...\n");
-						debug("md5 incorrect");
-					}
-				}
-				else
-				{
-					fclose(_ftmp);
-					debug("File not found, searching next server");
-				}
-				break;
 			case SRV_CDROM:
 				// Not implemented yet.
 				debug("Fetching from CD-COM is not implemented yet");
 				break;
-			
-//			case SRV_HTTP:
-//				// Not implemented yet.
-//				// temporary tech: wget =)
-//				// TODO: usage of cache, md5 checking
-//				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
-//					  + locationlist.get_location(i)->get_server()->get_url() \
-//					  + locationlist.get_location(i)->get_path() \
-//					  + package->get_filename();
-//				printf(_("Downloading package %s..."), package->get_filename().c_str());
-//				if (system(wget_sys.c_str())==0)
-//				{
-//					printf(_("done.\n"));
-//				}
-//				else printf(_("FAILED\n"));
-//				
-//				debug("Fetching from HTTP is half-implemented yet");
-//				break;
-//			case SRV_FTP:
-//				/*// temporary tech: wget =)*/
-//				// TODO: same as all others - cache, md5...
-//				
-//				wget_sys="wget -q -O "+SYS_CACHE+package->get_filename()+" "\
-//					  + locationlist.get_location(i)->get_server()->get_url() \
-//					  + locationlist.get_location(i)->get_path() \
-//					  + package->get_filename();
-//				printf(_("Downloading package %s..."), package->get_filename().c_str());
-//				if (system(wget_sys.c_str())==0)
-//				{
-//					printf(_("done.\n"));
-//				}
-//				else printf(_("FAILED\n"));
-//	
-//				// Not implemented yet.
-//				debug("Fetching from FTP is temporary implemented yet");
-//				break;
-//			case SRV_SMB:
-//				// Not implemented yet.
-//				debug("Fetching from SMB is not implemented yet");
-//				break;
-//			case SRV_HTTPS:
-//				// Not implemented yet.
-//				debug("Fetching from HTTPS is not implemented yet");
-//				break;
-//
+			case SRV_CACHE:
+				printf("Cache server detected...");
 			case SRV_HTTP:
 			case SRV_FTP:
 			case SRV_SMB:
@@ -386,17 +339,13 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
 					break;
 				}
-
-								
-			
 			default:
 				debug ("Server type not recognized or not supported");
 				break;
 		}
 	}
 	if (!DownloadOk) return -1;
-	// If we reach this point - this means that we cannot get package. Returning error...
-	return 0;
+	else return 0;
 } // End of mpkgDatabase::fetch_package();
 
 int mpkgDatabase::install_package(PACKAGE* package)

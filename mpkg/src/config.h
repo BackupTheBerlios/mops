@@ -1,10 +1,12 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.14 2007/03/06 01:58:23 i27249 Exp $
+    $Id: config.h,v 1.15 2007/03/07 14:18:19 i27249 Exp $
 */
 
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
+
+#include "cdrom.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -20,6 +22,7 @@ using namespace std;
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 
 // System configuration
+
 extern string SYS_ROOT;		// "/root/development/sys_root/"
 extern string SYS_CACHE; 	//"/root/development/sys_cache/"
 extern string SCRIPTS_DIR;
@@ -30,10 +33,19 @@ extern vector<string> REPOSITORY_LIST;
 #include <locale.h>
 #include "xmlParser.h"
 #include "debug.h"
+
+#define MOUNTMODEL_AUTOVOLUME 0x01
+#define MOUNTMODEL_AUTOFIXED 0x02
+#define MOUNTMODEL_MANUAL 0x03
+
+extern unsigned int CDROM_MOUNTMODEL;
+extern string CDROM_VOLUMEMOUNTDIR;
+extern vector<CDROM_DEVICE> CDROMS;
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "/etc/mpkg.xml"
 #endif
 int loadGlobalConfig(string config_file=CONFIG_FILE);
+
 
 namespace mpkgconfig
 {
