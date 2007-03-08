@@ -1,12 +1,12 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.15 2007/03/07 14:18:19 i27249 Exp $
+    $Id: config.h,v 1.16 2007/03/08 04:23:30 i27249 Exp $
 */
 
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-#include "cdrom.h"
+//#include "cdrom.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -40,7 +40,7 @@ extern vector<string> REPOSITORY_LIST;
 
 extern unsigned int CDROM_MOUNTMODEL;
 extern string CDROM_VOLUMEMOUNTDIR;
-extern vector<CDROM_DEVICE> CDROMS;
+//extern vector<CDROM_DEVICE> CDROMS;
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "/etc/mpkg.xml"
 #endif

@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.6 2007/03/07 14:18:19 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.7 2007/03/08 04:23:30 i27249 Exp $
 #
 
 # Project name
@@ -33,10 +33,10 @@ ADD_LIBRARY(mpkg-http libmpkg-http HttpDownload)
 TARGET_LINK_LIBRARIES(mpkg-http dl curl)
 
 # TARGET: building core library (libmpkg.so)
-ADD_LIBRARY(mpkg DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser cdrom)
+ADD_LIBRARY(mpkg DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 
 # TARGET: building static executable (installpkg-ng-static)
-ADD_EXECUTABLE(installpkg-ng-static DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines installpkg-ng libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser cdrom)
+ADD_EXECUTABLE(installpkg-ng-static DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines installpkg-ng libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 # Linking...
 IF(APPLE)
 	TARGET_LINK_LIBRARIES(installpkg-ng-static intl mpkg sqlite3 dl)

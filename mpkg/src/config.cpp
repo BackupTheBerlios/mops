@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.6 2007/03/07 14:18:19 i27249 Exp $
+ * $Id: config.cpp,v 1.7 2007/03/08 04:23:30 i27249 Exp $
  *
  * ***************************************************/
 
@@ -14,8 +14,7 @@ string SCRIPTS_DIR;
 unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
-unsigned int CDROM_MOUNTMODEL;
-string CDROM_VOLUMEMOUNTDIR;
+//vector<CDROM_DEVICE> CDROMS;
 int loadGlobalConfig(string config_file)
 {
 	string run_scripts="yes";
@@ -24,14 +23,7 @@ int loadGlobalConfig(string config_file)
 	string db_url="sqlite://var/log/mpkg/packages.db";
 	string scripts_dir="/var/log/mpkg/scripts/";
 	string sql_type;
-	string cdrom_mountmodel="automount_volname";	// Available values:
-							//	automount_volname	Mounting using automount system (no forced mount), mountpoint is volume name
-							//	automount_fixed		Mounting using automount system in fixed location
-							//	manual			Manual mount
-
-	string cdrom_volumemountdir="/media/";
-	string cdrom_device="/dev/hda";	// CD-ROM device list
-	string cdrom_mountpoint="";			// Empty if mounting using automount_volname, otherwise a folder inside volumemountdir
+//	vector<CDROM_DEVICE> cdrom_list; // CD-ROM descriptors
 	vector<string> repository_list;
 	bool conf_init=false;
 	if (access(config_file.c_str(), R_OK)==0)
