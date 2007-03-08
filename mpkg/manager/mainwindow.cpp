@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.15 2007/03/06 15:14:56 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.16 2007/03/08 18:39:36 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -18,8 +18,19 @@
 #include "db.h"
 #include <stdio.h>
 #include "tablelabel.h"
+#include <unistd.h>
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	if (getuid()!=0)
+	{
+		QMessageBox::critical(this, tr("MOPSLinux package manager"),
+                   tr("You need to be root to run package manager"),
+                   QMessageBox::Ok,
+                   QMessageBox::Ok);
+		exit(0);
+
+	}
+
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
 	//ui.groupBox_4->hide();
@@ -153,7 +164,7 @@ void MainWindow::updateData()
 	
 void MainWindow::quitApp()
 {
-	delete mDb;
+	if (mDb!=NULL) delete mDb;
 	qApp->quit();
 
 }
