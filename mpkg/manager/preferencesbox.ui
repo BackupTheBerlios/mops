@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>373</height>
+    <width>736</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -22,7 +22,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>5</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -88,12 +88,18 @@
            <property name="text" >
             <string>Enable icons for packages</string>
            </property>
+           <property name="checked" >
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
          <item>
           <widget class="QCheckBox" name="checkBox_4" >
            <property name="text" >
             <string>Enable icons for groups</string>
+           </property>
+           <property name="checked" >
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -457,45 +463,514 @@
       <attribute name="title" >
        <string>Updates</string>
       </attribute>
-      <layout class="QGridLayout" >
+      <layout class="QHBoxLayout" >
        <property name="margin" >
         <number>9</number>
        </property>
        <property name="spacing" >
         <number>6</number>
        </property>
-       <item row="0" column="1" >
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
+       <item>
+        <widget class="QGroupBox" name="groupBox" >
+         <property name="title" >
+          <string>How should I update the system?</string>
          </property>
-         <property name="sizeHint" >
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+         <layout class="QVBoxLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="radioButton" >
+            <property name="text" >
+             <string>Fully automatically</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_2" >
+            <property name="text" >
+             <string>Just download, ask me for install</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_3" >
+            <property name="text" >
+             <string>Only notify me if updates available</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_4" >
+            <property name="text" >
+             <string>Fully manually</string>
+            </property>
+            <property name="checked" >
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
        </item>
-       <item row="1" column="0" >
-        <spacer>
-         <property name="orientation" >
-          <enum>Qt::Vertical</enum>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2" >
+         <property name="enabled" >
+          <bool>false</bool>
          </property>
-         <property name="sizeHint" >
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+         <property name="title" >
+          <string>Options</string>
          </property>
-        </spacer>
+         <layout class="QVBoxLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QHBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="checkBox_5" >
+              <property name="text" >
+               <string>Download in background when idle</string>
+              </property>
+              <property name="checked" >
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="checkBox_6" >
+              <property name="text" >
+               <string>Install in background when idle (DANGEROUS!)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_10" >
+              <property name="text" >
+               <string>Time to do updates:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTimeEdit" name="timeEdit" />
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QCheckBox" name="checkBox_7" >
+              <property name="text" >
+               <string>Download speed limit (kb/s):</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_2" >
+              <property name="enabled" >
+               <bool>false</bool>
+              </property>
+              <property name="text" >
+               <string>100</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer>
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" >
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <spacer>
+            <property name="orientation" >
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" >
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
        </item>
-       <item row="0" column="0" >
-        <widget class="QRadioButton" name="radioButton" >
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_5" >
+      <attribute name="title" >
+       <string>Source compiling</string>
+      </attribute>
+      <layout class="QVBoxLayout" >
+       <property name="margin" >
+        <number>9</number>
+       </property>
+       <property name="spacing" >
+        <number>6</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_7" >
          <property name="text" >
-          <string>Automatically from marked repositories</string>
+          <string>Generic compilation parameters
+
+Because of ability to install packages using compilation from sources, we need to get information about your hardware for proper optimization. In most cases, it is autodetected well, but you can customize this.</string>
+         </property>
+         <property name="wordWrap" >
+          <bool>true</bool>
          </property>
         </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" >
+         <property name="margin" >
+          <number>0</number>
+         </property>
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" >
+           <property name="margin" >
+            <number>0</number>
+           </property>
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <item>
+            <layout class="QGridLayout" >
+             <property name="margin" >
+              <number>0</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item row="1" column="0" >
+              <widget class="QLabel" name="label_9" >
+               <property name="toolTip" >
+                <string>Choose a balance between speed and compilation time</string>
+               </property>
+               <property name="text" >
+                <string>Optimization level:</string>
+               </property>
+              </widget>
+             </item>
+             <item rowspan="2" row="0" column="1" >
+              <layout class="QVBoxLayout" >
+               <property name="margin" >
+                <number>0</number>
+               </property>
+               <property name="spacing" >
+                <number>6</number>
+               </property>
+               <item>
+                <widget class="QComboBox" name="comboBox_2" >
+                 <property name="currentIndex" >
+                  <number>9</number>
+                 </property>
+                 <item>
+                  <property name="text" >
+                   <string>i586, Pentium</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium-MMX</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>i686, Pentium PRO</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium II</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium III</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium III Mobile</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium M (Centrino)</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium 4</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Pentium 4 M</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Prescott</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Nocona</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Conroe</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>i486</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>i386</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>K6-2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>K6-3</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Athlon, Athlon Thunderbird</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Athlon XP, Athlon MP, Athlon 4</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>K8, Athlon 64, Athlon FX, Opteron</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Winchip-C6</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Winchip-2</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>VIA C3</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>VIA C3-2</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="comboBox" >
+                 <property name="currentIndex" >
+                  <number>2</number>
+                 </property>
+                 <item>
+                  <property name="text" >
+                   <string>O0 (no optimization)</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>O1 (basic optimization)</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>O2 (optimal value)</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>O3 (maximum)</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>Os (Like O2, but with size optimizations)</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="0" column="0" >
+              <widget class="QLabel" name="label_8" >
+               <property name="text" >
+                <string>CPU class:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0" >
+              <widget class="QLabel" name="label_11" >
+               <property name="text" >
+                <string>Number of CPUs:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1" >
+              <widget class="QLineEdit" name="lineEdit_3" >
+               <property name="text" >
+                <string>2</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <spacer>
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" >
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
