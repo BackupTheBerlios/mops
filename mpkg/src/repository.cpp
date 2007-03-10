@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.12 2007/03/06 01:01:43 i27249 Exp $
+ * $Id: repository.cpp,v 1.13 2007/03/10 03:42:00 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -9,6 +9,243 @@ Repository::Repository(){}
 Repository::~Repository(){}
 
 XMLNode _root;
+
+int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
+{
+	if (packageslist.length()<20)
+	{
+		printf("Empty package list!\n");
+		return -1; // It's impossible if it has less size...
+	}
+	// Parsing slackware PACKAGES.TXT file
+	// Keywords (in [] braces to show spaces:
+	// [PACKAGE NAME:  ] 		going first or after \n\n symbols.  Until \n, contains package filename (that contains name, version, arch and build information)
+	// [PACKAGE LOCATION:  ]	location of package (from repository root). Going after \n
+	// [PACKAGE SIZE (compressed):  ]
+	// [PACKAGE SIZE (uncompressed):  ]
+	// [PACKAGE REQUIRED:  ]
+	// [PACKAGE SUGGESTS:  ]
+	// [PACKAGE DESCRIPTION:\n]	Package description (max 11 lines starting with [package_name:]) 
+	PACKAGE pkg;
+	LOCATION tmplocation;
+	DEPENDENCY tmpDep;
+	string tmpstr;
+	int tmpSize;
+	int lines = 0;
+	
+	bool endReached = false;
+
+	string slackPackageName;
+	string slackPackageLocation;
+	string slackCompressedSize;
+	string slackUncompressedSize;
+	string slackRequired;
+	string slackSuggests;
+	string slackDescription;
+	
+	string pkgNameKeyword = "PACKAGE NAME:  ";
+	string pkgLocationKeyword = "PACKAGE LOCATION:  ";
+	string pkgCompressedKeyword = "PACKAGE SIZE (compressed):  ";
+	string pkgUncompressedKeyword = "PACKAGE SIZE (uncompressed):  ";
+	string pkgRequiredKeyword = "PACKAGE REQUIRED:  ";
+	string pkgSuggestsKeyword = "PACKAGE SUGGESTS:  ";
+	string pkgDescriptionKeyword = "PACKAGE DESCRIPTION:";
+	unsigned int pos;
+	unsigned int num=0;
+	while (!endReached)
+	{
+		printf("Parsing %d package\n", num);
+		// Stage 1: retrieving dirty info
+		pos = packageslist.find(pkgNameKeyword);
+		tmpstr=packageslist.substr(pos+pkgNameKeyword.length()); // Cuts off a header and keyword
+		pos = tmpstr.find("\n"); // Searching end of line
+		slackPackageName = tmpstr.substr(0,pos); // Filling package name (in full form)
+		printf("slackPackageName = %s\n", slackPackageName.c_str());
+		
+		pos = tmpstr.find(pkgLocationKeyword);
+		tmpstr = tmpstr.substr(pkgLocationKeyword.length()+pos);
+		pos = tmpstr.find("\n");
+		slackPackageLocation = tmpstr.substr(0,pos);
+		printf("slackPackageLocation = %s\n", slackPackageLocation.c_str());
+	
+		pos = tmpstr.find(pkgCompressedKeyword);
+		tmpstr = tmpstr.substr(pos + pkgCompressedKeyword.length());
+		pos = tmpstr.find("\n");
+		slackCompressedSize = tmpstr.substr(0,pos);
+		printf("slackCompressedSize = %s\n", slackCompressedSize.c_str());
+
+		pos = tmpstr.find(pkgUncompressedKeyword);
+		tmpstr = tmpstr.substr(pos + pkgUncompressedKeyword.length());
+		pos = tmpstr.find("\n");
+		slackUncompressedSize = tmpstr.substr(0,pos);
+		printf("slackUncompressedSize = %s\n", slackUncompressedSize.c_str());
+	
+		pos = tmpstr.find(pkgRequiredKeyword);
+		if (pos < tmpstr.find(pkgNameKeyword))
+		{
+			printf("required list present!\n");
+			tmpstr = tmpstr.substr(pos + pkgRequiredKeyword.length());
+			pos = tmpstr.find("\n");
+			slackRequired = tmpstr.substr(0,pos);
+			printf("slackRequired = %s\n", slackRequired.c_str());
+		}
+		else
+		{
+			printf("no required list\n");
+			slackRequired.clear();
+		}
+
+		pos = tmpstr.find(pkgSuggestsKeyword);
+		if (pos < tmpstr.find(pkgNameKeyword))
+		{
+			printf("suggest list present!\n");
+			tmpstr = tmpstr.substr(pos + pkgSuggestsKeyword.length());
+			pos = tmpstr.find("\n");
+			slackSuggests = tmpstr.substr(0,pos);
+			printf("slackSuggests = %s\n", slackSuggests.c_str());
+		}
+		else
+		{
+			slackSuggests.clear();
+			printf("no suggest list\n");
+		}
+
+		pos = tmpstr.find(pkgDescriptionKeyword);
+		tmpstr = tmpstr.substr(pos + pkgSuggestsKeyword.length()+1); // +1 because there are newline
+		pos = tmpstr.find(pkgNameKeyword);
+		printf("searched end\n");
+		if (pos == std::string::npos)
+		{
+			printf("description end reached\n");
+			slackDescription = tmpstr;
+			
+			printf("slackDescription = %s\n", slackDescription.c_str());
+			endReached = true;
+		}
+		else
+		{
+			slackDescription = tmpstr.substr(0,pos-1);
+
+			printf("slackDescription = %s\n", slackDescription.c_str());
+		}
+		
+		// Stage 2: info cleanup
+		
+		// Name, version, arch, build
+		pos = slackDescription.find(": ");
+		pkg.set_name(slackDescription.substr(1,pos-1));
+		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+		pkg.set_version(slackPackageName.substr(0, slackPackageName.find("-")));
+		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+		pkg.set_arch(slackPackageName.substr(0, slackPackageName.find("-")));
+		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+		pkg.set_build(slackPackageName.substr(0, slackPackageName.find(".tgz")));
+		
+		printf("package name: %s\n", pkg.get_name().c_str());
+		printf("package version: %s\n", pkg.get_version().c_str());
+		printf("package arch: %s\n", pkg.get_arch().c_str());
+		printf("package build: %s\n", pkg.get_build().c_str());
+		// Location
+		tmplocation.set_path(slackPackageLocation);
+		pkg.get_locations()->add(tmplocation);
+
+		// Size
+		tmpSize = atoi(slackCompressedSize.substr(0, slackCompressedSize.length()-2).c_str());
+		pkg.set_compressed_size(IntToStr(tmpSize*1024));
+		printf("package size (compressed): %s\n", pkg.get_compressed_size().c_str());
+		tmpSize = atoi(slackUncompressedSize.substr(0, slackUncompressedSize.length()-2).c_str());
+		pkg.set_installed_size(IntToStr(tmpSize*1024));
+		printf("package size (uncompressed): %s\n", pkg.get_installed_size().c_str());
+
+		// Dependencies
+		while (slackRequired.find_first_of(",")!=std::string::npos)
+		{
+			printf("Proceeding dep\n");
+			tmpDep.clear();
+			tmpDep.set_type("DEPENDENCY");
+			pos = slackRequired.find_first_of(" =><");
+			if (pos < slackRequired.find_first_of(","))
+			{
+				tmpDep.set_package_name(slackRequired.substr(0, pos));
+				slackRequired = slackRequired.substr(pos);
+				pos = slackRequired.find_first_not_of(" =><");
+				tmpstr = slackRequired.substr(0,pos);
+				// [placeholder] Convert tmpstr from ">=" to "atleast" form
+				slackRequired = slackRequired.substr(pos);
+				pos = slackRequired.find_first_of(",");
+				tmpDep.set_package_version(slackRequired.substr(0,pos));
+			}
+			else
+			{
+				pos = slackRequired.find_first_of(",");
+				tmpDep.set_package_name(slackRequired.substr(0,pos));
+				slackRequired = slackRequired.substr(pos);
+			}
+
+			pkg.get_dependencies()->add(tmpDep);
+		}
+
+		printf("reached suggestions\n");
+		// Suggestions
+		while (slackRequired.find_first_of(",")!=std::string::npos)
+		{
+			tmpDep.clear();
+			tmpDep.set_type("SUGGEST");
+			pos = slackRequired.find_first_of(" =><");
+			if (pos < slackRequired.find_first_of(","))
+			{
+				tmpDep.set_package_name(slackRequired.substr(0, pos));
+				slackRequired = slackRequired.substr(pos);
+				pos = slackRequired.find_first_not_of(" =><");
+				tmpstr = slackRequired.substr(0,pos);
+				// [placeholder] Convert tmpstr from ">=" to "atleast" form
+				tmpDep.set_condition(hcondition2xml(tmpstr));
+				slackRequired = slackRequired.substr(pos);
+				pos = slackRequired.find_first_of(",");
+				tmpDep.set_package_version(slackRequired.substr(0,pos));
+			}
+			else
+			{
+				pos = slackRequired.find_first_of(",");
+				tmpDep.set_package_name(slackRequired.substr(0,pos));
+				tmpDep.set_condition("any");
+				slackRequired = slackRequired.substr(pos);
+			}
+
+			pkg.get_dependencies()->add(tmpDep);
+		}
+		
+		printf("reached description\n");
+		// Description
+		tmpstr.clear();
+		
+		pkg.set_short_description(slackDescription.substr(pkg.get_name().length()+2, slackDescription.find("\n")));
+		pos = slackDescription.find("\n");
+		lines = 0;
+		while (pos != std::string::npos && lines < 11)
+		{
+			lines++;
+			printf("cycle!\n");
+			pos = slackDescription.find("\n");
+			if (pos == std::string::npos)
+			{
+				printf("end?\n");
+				pos = std::string::npos;
+			}
+			tmpstr+=slackDescription.substr(pkg.get_name().length()+2, pos);
+			slackDescription = slackDescription.substr(pos);
+		}
+		pkg.set_description(tmpstr);
+
+		pkglist->add(pkg);
+		pkg.clear();
+		num++;
+		if (num == 100) return 0;
+		printf("done\n");
+	}
+
+return 0;
+}	
 
 int xml2package(XMLNode pkgnode, PACKAGE *data)
 {
@@ -141,43 +378,107 @@ int Repository::build_index(string server_url)
 }
 
 // Add other such functions for other repository types.
-int Repository::get_index(string server_url, PACKAGE_LIST *packages)
+int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
-	//PACKAGE_LIST packages;
-	PACKAGE pkg;
-	string wget_line;
-	string gzip_line;
-	string xml_name=get_tmp_file();
-	string gzxml_name=xml_name+".gz";
-	XMLNode repository_root;
-	wget_line="wget -q --output-document="+gzxml_name+" "+server_url+"packages.xml.gz";
-	gzip_line="gunzip -f "+gzxml_name;
+	// First: detecting repository type
+	// Trying to download in this order (if successful, we have detected a repository type):
+	// 1. packages.xml.gz 	(Native MOPSLinux)
+	// 2. PACKAGES.TXT	(Legacy Slackware)
+	// 3. Packages.gz	(Debian)
+	// (and something else for RPM, in future)
+	string index_filename = get_tmp_file();
 	printf("[%s]...",server_url.c_str());
-//	if (system(wget_line.c_str())==0 && system(gzip_line.c_str())==0)
-		DownloadResults result = CommonGetFile(server_url + "packages.xml.gz", gzxml_name);
-	if ( result == DOWNLOAD_OK && system(gzip_line.c_str()) == 0 )
+	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
+	if (type == TYPE_MPKG || type == TYPE_AUTO)
+	{
+
+		printf("type = %d\n", type);
+	       if (CommonGetFile(server_url + "packages.xml.gz", index_filename+".gz")==DOWNLOAD_OK)
+		{
+			printf("download ok, validating contents...\n");
+			if (system(cm.c_str())==0 && ReadFile(index_filename).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
+			{
+				printf("Native MPKG repository detected\n");
+				type = TYPE_MPKG;
+			}
+		}
+	}
+	
+	if (type == TYPE_SLACK || type == TYPE_AUTO)
 	{
 		
-		printf("done\n");
-		repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
-		int pkg_count=repository_root.nChildNode("package");
-		if (pkg_count==0)
+		printf("type = %d\n", type);
+		if (CommonGetFile(server_url + "PACKAGES.TXT", index_filename)==DOWNLOAD_OK)
 		{
-			printf(_("Repository has no packages\n"));
-			return 0;
+			printf("download ok, validating contents...\n");
+			if (ReadFile(index_filename).find("PACKAGE NAME:  ")!=std::string::npos)
+			{
+				printf("Slackware repository detected\n");
+				type = TYPE_SLACK;
+			}
 		}
-		for (int i=0; i<pkg_count; i++)
-		{
-			pkg.clear();
-			xml2package(repository_root.getChildNode("package", i), &pkg);
-			packages->add(pkg);
-		}
+	}
 
+	if (type == TYPE_DEBIAN || type == TYPE_AUTO)
+	{
+		if(CommonGetFile(server_url + "Packages.gz", index_filename+".gz")==DOWNLOAD_OK)
+		{
+			printf("Debian repository detected\n");
+			type = TYPE_DEBIAN;
+		}
+	}
+
+	if (type != TYPE_MPKG && type != TYPE_SLACK && type!=TYPE_DEBIAN)
+	{
+		printf("Error downloading package index: download error, or unsupported repository type\n");
+		return -1;
 	}
 	else
 	{
-		printf(_("FAILED\n"));
-		return -1;
+		printf("Repository type detected successfully, proceeding next...\n");
 	}
-	return 0;;
+	PACKAGE pkg;
+	string gzip_line;
+	string xml_name=index_filename;
+	string gzxml_name=xml_name+".gz";
+	XMLNode repository_root;
+	int pkg_count;
+	gzip_line="gunzip -f "+gzxml_name;
+	
+	switch(type)
+	{
+		case TYPE_MPKG:
+			if (system(gzip_line.c_str()) == 0)
+			{
+				printf("done\n");
+				repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
+				pkg_count=repository_root.nChildNode("package");
+				if (pkg_count==0)
+				{
+					printf(_("Repository has no packages\n"));
+					return 0;
+				}
+				for (int i=0; i<pkg_count; i++)
+				{
+					pkg.clear();
+					xml2package(repository_root.getChildNode("package", i), &pkg);
+					packages->add(pkg);
+				}
+
+			}
+			else
+			{
+				printf(_("FAILED\n"));
+				return -1;
+			}
+			break;
+		case TYPE_SLACK:
+			printf("Parsing slackware repository\n");
+			return slackpackages2list(ReadFile(index_filename), packages);
+
+		case TYPE_DEBIAN:
+		default:
+			break;
+	}
+	return 0;
 }

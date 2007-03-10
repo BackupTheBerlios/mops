@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.1 2007/02/09 16:12:06 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.2 2007/03/10 03:42:00 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -25,7 +25,7 @@ int list_rep(mpkg *core);
 
 void ShowBanner()
 {
-	char *version="0.1 beta 2 (shared lib)";
+	char *version="0.1 beta 3 (shared lib)";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	printf("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }

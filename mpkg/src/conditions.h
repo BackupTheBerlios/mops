@@ -1,6 +1,6 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.4 2007/02/14 14:33:58 i27249 Exp $
+    $Id: conditions.h,v 1.5 2007/03/10 03:42:00 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
@@ -27,7 +27,9 @@
 #define HCOND_EQUAL 	"=="
 #define HCOND_NOTEQUAL 	"!="
 #define HCOND_XMORE 	">="
+#define HCOND_XMORE2	"=>"
 #define HCOND_XLESS 	"<="
+#define HCOND_XLESS2	"=<"
 #define HCOND_ANY	"any"
 
 

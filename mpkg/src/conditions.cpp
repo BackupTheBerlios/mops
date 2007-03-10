@@ -1,6 +1,6 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.5 2007/02/14 14:33:58 i27249 Exp $
+    $Id: conditions.cpp,v 1.6 2007/03/10 03:42:00 i27249 Exp $
 */
 
 
@@ -27,7 +27,10 @@ string hcondition2xml(string condition)
 	if (condition==HCOND_LESS) return COND_LESS;
 	if (condition==HCOND_EQUAL) return COND_EQUAL;
 	if (condition==HCOND_NOTEQUAL) return COND_NOTEQUAL;
-	if (condition==HCOND_XMORE) return COND_XMORE;
-	if (condition==HCOND_XLESS) return COND_XLESS;
+	if (condition==HCOND_XMORE || condition == HCOND_XMORE2) return COND_XMORE;
+	if (condition==HCOND_XLESS || condition == HCOND_XLESS2) return COND_XLESS;
+
 	if (condition==HCOND_ANY) return COND_ANY;
+	printf("Unknown condition %s\n", condition.c_str());
+	return COND_ANY;
 }
