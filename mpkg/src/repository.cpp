@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.15 2007/03/11 04:28:15 i27249 Exp $
+ * $Id: repository.cpp,v 1.16 2007/03/11 07:04:13 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -140,17 +140,37 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 		// Filename
 		pkg.set_filename(slackPackageName);
 		filename = slackPackageName;
-		// Name, version, arch, build
-		pos = slackDescription.find(": ");
-		if (pos != std::string::npos)
+		/*tmp = filename.substr(0,filename.find("-"));
+		printf("tmp set: %s\n", tmp.c_str());
+		if (slackDescription.find(tmp)!=std::string::npos)
 		{
-			pkg.set_name(slackDescription.substr(1,pos-1));
-			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+
+			slackDescription = slackDescription.substr(slackDescription.find(tmp));
+			printf("slackDesc stripped from trash:\n%s\n", slackDescription.c_str());
+		}*/
+
+		// Name, version, arch, build
+		pos = slackDescription.find(":");
+		printf("pos = %d\n",pos);
+		tmp.clear();
+		//if (pos != std::string::npos)
+		if (false)
+		{
+			pkg.set_name(slackDescription.substr(0,pos));
+			printf("name set: %s\n", pkg.get_name().c_str());
+			//slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			slackPackageName = slackPackageName.substr(pkg.get_name().length()+1);
+			printf("cut before version set\n");
 			pkg.set_version(slackPackageName.substr(0, slackPackageName.find("-")));
+			printf("version finally set\n");
 			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			printf("cut before arch set\n");
 			pkg.set_arch(slackPackageName.substr(0, slackPackageName.find("-")));
+			printf("arch finally set\n");
 			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			printf("cut before build set\n");
 			pkg.set_build(slackPackageName.substr(0, slackPackageName.find(".tgz")));
+			printf("build set\n");
 		}
 		else
 		{
