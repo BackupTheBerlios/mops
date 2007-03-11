@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.17 2007/02/18 06:11:11 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.18 2007/03/11 03:22:27 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -77,6 +77,17 @@ int SQLiteDB::sqlCommit()
 	string commit = "commit transaction;";
 	return sql_exec(commit);
 }
+
+int SQLiteDB::sqlFlush()
+{
+	if (sqlCommit() == 0 && sqlBegin() == 0) return 0;
+	else
+	{
+		printf("Error flushing to DB!\n");
+		return -1;
+	}
+}
+
 int SQLiteDB::init()
 {
 	int ret;
@@ -436,6 +447,10 @@ int SQLProxy::sqlBegin()
 	return sqliteDB.sqlBegin();
 }
 
+int SQLProxy::sqlFlush()
+{
+	return sqliteDB.sqlFlush();
+}
 int SQLProxy::getLastError()
 {
 	return sqliteDB.getLastError();

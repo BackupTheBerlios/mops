@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.10 2007/02/14 06:50:58 i27249 Exp $
+	$Id: dataunits.h,v 1.11 2007/03/11 03:22:27 i27249 Exp $
 */
 
 
@@ -497,9 +497,10 @@ class PACKAGE_LIST
 	bool operator == (PACKAGE_LIST nlist);
 	int add(PACKAGE package);
 	int add_list(PACKAGE_LIST *pkgList, bool skip_identical=true);
-	void clear();
+	void clear(unsigned int new_size = 0);
 	bool IsEmpty();
 	int size();
+	void set_size(unsigned int new_size);
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();

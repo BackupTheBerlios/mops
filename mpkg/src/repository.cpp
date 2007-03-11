@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.13 2007/03/10 03:42:00 i27249 Exp $
+ * $Id: repository.cpp,v 1.14 2007/03/11 03:22:27 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -29,10 +29,14 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 	PACKAGE pkg;
 	LOCATION tmplocation;
 	DEPENDENCY tmpDep;
+	DESCRIPTION tmpDesc;
+	string tmpDescStr;
+	string tmpDepStr;
+	tmpDesc.set_language("en");
 	string tmpstr;
 	int tmpSize;
 	int lines = 0;
-	
+	int name_start = 0;
 	bool endReached = false;
 
 	string slackPackageName;
@@ -42,7 +46,8 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 	string slackRequired;
 	string slackSuggests;
 	string slackDescription;
-	
+	string filename;
+	string tmp;
 	string pkgNameKeyword = "PACKAGE NAME:  ";
 	string pkgLocationKeyword = "PACKAGE LOCATION:  ";
 	string pkgCompressedKeyword = "PACKAGE SIZE (compressed):  ";
@@ -52,12 +57,13 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 	string pkgDescriptionKeyword = "PACKAGE DESCRIPTION:";
 	unsigned int pos;
 	unsigned int num=0;
+	tmpstr = packageslist;
 	while (!endReached)
 	{
 		printf("Parsing %d package\n", num);
 		// Stage 1: retrieving dirty info
-		pos = packageslist.find(pkgNameKeyword);
-		tmpstr=packageslist.substr(pos+pkgNameKeyword.length()); // Cuts off a header and keyword
+		pos = tmpstr.find(pkgNameKeyword);
+		tmpstr=tmpstr.substr(pos+pkgNameKeyword.length()); // Cuts off a header and keyword
 		pos = tmpstr.find("\n"); // Searching end of line
 		slackPackageName = tmpstr.substr(0,pos); // Filling package name (in full form)
 		printf("slackPackageName = %s\n", slackPackageName.c_str());
@@ -131,15 +137,84 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 		
 		// Stage 2: info cleanup
 		
+		// Filename
+		pkg.set_filename(slackPackageName);
+		filename = slackPackageName;
 		// Name, version, arch, build
 		pos = slackDescription.find(": ");
-		pkg.set_name(slackDescription.substr(1,pos-1));
-		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
-		pkg.set_version(slackPackageName.substr(0, slackPackageName.find("-")));
-		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
-		pkg.set_arch(slackPackageName.substr(0, slackPackageName.find("-")));
-		slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
-		pkg.set_build(slackPackageName.substr(0, slackPackageName.find(".tgz")));
+		if (pos != std::string::npos)
+		{
+			pkg.set_name(slackDescription.substr(1,pos-1));
+			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			pkg.set_version(slackPackageName.substr(0, slackPackageName.find("-")));
+			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			pkg.set_arch(slackPackageName.substr(0, slackPackageName.find("-")));
+			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
+			pkg.set_build(slackPackageName.substr(0, slackPackageName.find(".tgz")));
+		}
+		else
+		{
+			name_start=0;
+			for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
+			{
+				name_start=i;
+			}
+			for (unsigned int i=name_start; i<filename.length()-1; i++)
+			{
+				if (filename[i]=='-')
+				{
+					if (filename[i+1]=='0' || \
+						filename[i+1] == '1' || \
+						filename[i+1] == '2' || \
+						filename[i+1] == '3' || \
+						filename[i+1] == '4' || \
+						filename[i+1] == '5' || \
+						filename[i+1] == '6' || \
+						filename[i+1] == '7' || \
+						filename[i+1] == '8' || \
+						filename[i+1] == '9')
+					{
+						pkg.set_name(tmp);
+						pos=i+2;
+						break;
+					}
+				}
+				tmp+=filename[i];
+			}
+			tmp.clear();
+			//VERSION
+			for (unsigned int i=pos-1; i< filename.length(); i++)
+			{
+				if (filename[i]=='-')
+				{
+					pkg.set_version(tmp);
+					pos=i+2;
+					break;
+				}
+				tmp+=filename[i];
+			}
+			tmp.clear();
+			//ARCH
+			for (unsigned int i=pos-1; i< filename.length(); i++)
+			{
+				if (filename[i]=='-')
+				{
+					pkg.set_arch(tmp);
+					pos=i+2;
+					break;
+				}
+				tmp+=filename[i];
+			}
+			tmp.clear();
+			//BUILD
+			for (unsigned int i=pos-1; i<filename.length()-4; i++)
+			{
+				tmp+=filename[i];
+			}
+			pkg.set_build(tmp);
+
+			tmp.clear();
+		}
 		
 		printf("package name: %s\n", pkg.get_name().c_str());
 		printf("package version: %s\n", pkg.get_version().c_str());
@@ -160,24 +235,24 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 		// Dependencies
 		while (slackRequired.find_first_of(",")!=std::string::npos)
 		{
-			printf("Proceeding dep\n");
+			printf("Proceeding dep, slackRequired = %s\n", slackRequired.c_str());
 			tmpDep.clear();
 			tmpDep.set_type("DEPENDENCY");
 			pos = slackRequired.find_first_of(" =><");
-			if (pos < slackRequired.find_first_of(","))
+			if (pos < slackRequired.find_first_of(",\n"))
 			{
 				tmpDep.set_package_name(slackRequired.substr(0, pos));
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_not_of(" =><");
-				tmpstr = slackRequired.substr(0,pos);
-				// [placeholder] Convert tmpstr from ">=" to "atleast" form
+				tmpDepStr = slackRequired.substr(0,pos);
+				tmpDep.set_condition(hcondition2xml(tmpDepStr));
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_of(",");
 				tmpDep.set_package_version(slackRequired.substr(0,pos));
 			}
 			else
 			{
-				pos = slackRequired.find_first_of(",");
+				pos = slackRequired.find_first_of(",")+1;
 				tmpDep.set_package_name(slackRequired.substr(0,pos));
 				slackRequired = slackRequired.substr(pos);
 			}
@@ -197,9 +272,8 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 				tmpDep.set_package_name(slackRequired.substr(0, pos));
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_not_of(" =><");
-				tmpstr = slackRequired.substr(0,pos);
-				// [placeholder] Convert tmpstr from ">=" to "atleast" form
-				tmpDep.set_condition(hcondition2xml(tmpstr));
+				tmpDepStr = slackRequired.substr(0,pos);
+				tmpDep.set_condition(hcondition2xml(tmpDepStr));
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_of(",");
 				tmpDep.set_package_version(slackRequired.substr(0,pos));
@@ -217,30 +291,43 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 		
 		printf("reached description\n");
 		// Description
-		tmpstr.clear();
+		tmpDescStr.clear();
 		
-		pkg.set_short_description(slackDescription.substr(pkg.get_name().length()+2, slackDescription.find("\n")));
-		pos = slackDescription.find("\n");
-		lines = 0;
-		while (pos != std::string::npos && lines < 11)
+		if (slackDescription.length()>0)
 		{
-			lines++;
-			printf("cycle!\n");
-			pos = slackDescription.find("\n");
-			if (pos == std::string::npos)
+			slackDescription = slackDescription.substr(1);
+			if (slackDescription.length()>=slackDescription.find(pkg.get_name()+": ")+pkg.get_name().length()+2)
 			{
-				printf("end?\n");
-				pos = std::string::npos;
+				slackDescription = slackDescription.substr(slackDescription.find(pkg.get_name()+": ")+pkg.get_name().length()+2);
+				tmpDesc.set_shorttext(slackDescription.substr(0, slackDescription.find_first_of("\n")));
+				pkg.set_short_description(tmpDesc.get_shorttext());
+				printf("short description: %s\n", tmpDesc.get_shorttext().c_str());
 			}
-			tmpstr+=slackDescription.substr(pkg.get_name().length()+2, pos);
-			slackDescription = slackDescription.substr(pos);
+			pos = slackDescription.find("\n");
+			lines = 0;
+			while (pos != std::string::npos && lines < 11)
+			{
+				pos = slackDescription.find(pkg.get_name()+": ");
+				if (pos == std::string::npos)
+				{
+					printf("Description end.\n");
+				}
+				else
+				{
+					slackDescription = slackDescription.substr(pos+pkg.get_name().length()+2);
+					tmpDescStr+=slackDescription.substr(0,slackDescription.find("\n"))+"\n";
+					lines++;
+				}
+			}
+			printf("Description: %s\n", tmpDescStr.c_str());
+			tmpDesc.set_text(tmpDescStr);
+			pkg.set_description(tmpDesc.get_text());
+			pkg.get_descriptions()->add(tmpDesc);
 		}
-		pkg.set_description(tmpstr);
-
 		pkglist->add(pkg);
 		pkg.clear();
 		num++;
-		if (num == 100) return 0;
+		//if (num == 1) return 0;
 		printf("done\n");
 	}
 

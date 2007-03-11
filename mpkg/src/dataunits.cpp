@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.17 2007/02/14 06:50:58 i27249 Exp $
+	$Id: dataunits.cpp,v 1.18 2007/03/11 03:22:26 i27249 Exp $
 */
 
 
@@ -1743,9 +1743,15 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 }
 
 
-void PACKAGE_LIST::clear()
+void PACKAGE_LIST::clear(unsigned int new_size)
 {
-    packages.resize(0);
+	packages.clear();
+    	packages.resize(new_size);
+}
+
+void PACKAGE_LIST::set_size(unsigned int new_size)
+{
+	packages.resize(new_size);
 }
 
 bool PACKAGE_LIST::IsEmpty()

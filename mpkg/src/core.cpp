@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.21 2007/02/14 06:50:58 i27249 Exp $
+ *	$Id: core.cpp,v 1.22 2007/03/11 03:22:26 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -559,6 +559,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 
 int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo)
 {
+	debug("get_packagelist start");
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -567,9 +568,10 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	{
 		return sql_ret;
 	}
-
+	packagelist->clear(sqlTable.getRecordCount());
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
+		debug("retrieving package "+IntToStr(i));
 		package.clear();
 		package.set_id(atoi(sqlTable.getValue(i, "package_id").c_str()));
 		package.set_name(sqlTable.getValue(i, "package_name"));
@@ -588,16 +590,26 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_filename(sqlTable.getValue(i, "package_filename"));
 		if (GetExtraInfo)
 		{
+			debug("getting filelist");
 			get_filelist(package.get_id(), package.get_files());
+			debug("syncronizing...");
 			package.sync();
+			debug("locationlist...");
 			get_locationlist(package.get_id(), package.get_locations());
+			debug("dependency list...");
 			get_dependencylist(package.get_id(), package.get_dependencies());
+			debug("taglist...");
 			get_taglist(package.get_id(), package.get_tags());
+			debug("script list...");
 			get_scripts(package.get_id(), package.get_scripts());
-			get_descriptionlist(package.get_id(), package.get_descriptions());
+			debug("description list...");
+			//get_descriptionlist(package.get_id(), package.get_descriptions());
 		}
-		packagelist->add(package);
+		debug("setting package...");
+		packagelist->set_package(i, package);
+		debug("done.");
 	}
+	debug("get_packagelist end");
 	return 0;
 
 }

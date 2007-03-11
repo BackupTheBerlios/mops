@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.14 2007/02/14 06:50:58 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.15 2007/03/11 03:22:27 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -27,6 +27,7 @@ class mpkgDatabase
 		int get_package_id(PACKAGE *package);
 		int get_status(int package_id);
 		int get_scripts(int package_id, SCRIPTS *scripts);
+		int sqlFlush();
 		
 		// Checking functions
 		int check_file_conflicts (PACKAGE *package);

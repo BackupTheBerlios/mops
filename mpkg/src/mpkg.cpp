@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.30 2007/03/07 14:18:19 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.31 2007/03/11 03:22:27 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -16,6 +16,10 @@ mpkgDatabase::mpkgDatabase()
 }
 mpkgDatabase::~mpkgDatabase(){}
 
+int mpkgDatabase::sqlFlush()
+{
+	return db.sqlFlush();
+}
 int uninstall(vector<string> pkgnames)
 {
 	// nothing to do here at this time...
@@ -724,6 +728,10 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	{
 		debug("mpkg.cpp: updateRepositoryData(): failed to get list of current packages");
 		return -1;
+	}
+	else
+	{
+		debug("get_packagelist ok");
 	}
 
 	debug("mpkg.cpp: updateRepositoryData(): Step 1. Adding new data, updating old");
