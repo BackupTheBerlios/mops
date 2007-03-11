@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.16 2007/03/11 07:04:13 i27249 Exp $
+ * $Id: repository.cpp,v 1.17 2007/03/11 07:53:54 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -10,7 +10,7 @@ Repository::~Repository(){}
 
 XMLNode _root;
 
-int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
+int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist)
 {
 	if (packageslist.length()<20)
 	{
@@ -48,6 +48,7 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 	string slackDescription;
 	string filename;
 	string tmp;
+	string md5tmp;
 	string pkgNameKeyword = "PACKAGE NAME:  ";
 	string pkgLocationKeyword = "PACKAGE LOCATION:  ";
 	string pkgCompressedKeyword = "PACKAGE SIZE (compressed):  ";
@@ -139,6 +140,23 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 		
 		// Filename
 		pkg.set_filename(slackPackageName);
+		if (md5list.find(slackPackageName) == std::string::npos)
+		{
+			printf("md5 not found\n");
+		}
+		else
+		{
+			printf("md5 found\n");
+			md5tmp = md5list.substr(0,md5list.find(slackPackageName));
+		}
+		if (md5tmp.find_last_of(" \t")==std::string::npos)
+		{
+			printf("md5 file contains incorrect data?\n");
+		}
+		md5tmp = md5tmp.substr(0, md5tmp.find_last_of(" \t"));
+		md5tmp = md5tmp.substr(md5tmp.rfind("\n")+1);
+		pkg.set_md5(md5tmp);
+		printf("MD5 = %s\n", md5tmp.c_str());
 		filename = slackPackageName;
 		/*tmp = filename.substr(0,filename.find("-"));
 		printf("tmp set: %s\n", tmp.c_str());
@@ -496,6 +514,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	// 3. Packages.gz	(Debian)
 	// (and something else for RPM, in future)
 	string index_filename = get_tmp_file();
+	string md5sums_filename = get_tmp_file();
 	printf("[%s]...",server_url.c_str());
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
@@ -523,7 +542,14 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			if (ReadFile(index_filename).find("PACKAGE NAME:  ")!=std::string::npos)
 			{
 				printf("Slackware repository detected\n");
-				type = TYPE_SLACK;
+				if (CommonGetFile(server_url + "CHECKSUMS.md5", md5sums_filename) == DOWNLOAD_OK)
+				{
+					type = TYPE_SLACK;
+				}
+				else 
+				{
+					return -1; // Download failed: no checksums or checksums download error
+				}
 			}
 		}
 	}
@@ -583,7 +609,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			break;
 		case TYPE_SLACK:
 			printf("Parsing slackware repository\n");
-			return slackpackages2list(ReadFile(index_filename), packages);
+			return slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages);
 
 		case TYPE_DEBIAN:
 		default:
