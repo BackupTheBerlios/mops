@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.14 2007/03/11 03:22:27 i27249 Exp $
+ * $Id: repository.cpp,v 1.15 2007/03/11 04:28:15 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -322,7 +322,9 @@ int slackpackages2list (string packageslist, PACKAGE_LIST *pkglist)
 			printf("Description: %s\n", tmpDescStr.c_str());
 			tmpDesc.set_text(tmpDescStr);
 			pkg.set_description(tmpDesc.get_text());
+#ifdef ENABLE_INTERNATIONAL			
 			pkg.get_descriptions()->add(tmpDesc);
+#endif
 		}
 		pkglist->add(pkg);
 		pkg.clear();

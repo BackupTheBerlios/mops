@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.22 2007/03/11 03:22:26 i27249 Exp $
+ *	$Id: core.cpp,v 1.23 2007/03/11 04:28:15 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -603,7 +603,9 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 			debug("script list...");
 			get_scripts(package.get_id(), package.get_scripts());
 			debug("description list...");
-			//get_descriptionlist(package.get_id(), package.get_descriptions());
+#ifdef ENABLE_INTERNATIONAL
+			get_descriptionlist(package.get_id(), package.get_descriptions());
+#endif
 		}
 		debug("setting package...");
 		packagelist->set_package(i, package);
