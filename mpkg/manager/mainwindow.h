@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.12 2007/03/12 14:34:07 i27249 Exp $
+ * $Id: mainwindow.h,v 1.13 2007/03/12 14:54:01 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -13,7 +13,7 @@
 #include <mpkg/libmpkg.h>
 #include "loading.h"
 #include "db.h"
-#include "checkbox.h";
+//#include "checkbox.h";
 #include <QThread>
 // TABLE INDEX
 #define PT_INSTALLCHECK 0
@@ -93,6 +93,22 @@ class MainWindow: public QMainWindow
 		void initPackageTable();
 
 };
+
+class CheckBox: public QCheckBox
+{
+	Q_OBJECT
+	public:
+		CheckBox(MainWindow *parent);
+		//CheckBox(const QString & text, QWidget *parent = 0);
+	public slots:
+		void markChanges();
+	public:
+	int row;
+	MainWindow *mw;
+	
+};
+
+
 /*
 class thLoadData: public QThread
 {

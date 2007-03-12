@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.17 2007/03/12 14:34:07 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.18 2007/03/12 14:54:01 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -72,7 +72,20 @@ void thLoadData::insertPackageIntoTable(const bool &checkState, const TableLabel
 	* EMIT pkgName *
 	//ui.packageTable->setCellWidget(i, PT_NAME, pkgName);
 	//stat->row = package_num;
-	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
+	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(mclass CheckBox: public QCheckBox
+{
+	Q_OBJECT
+	public:
+		CheckBox(MainWindow *parent);
+		//CheckBox(const QString & text, QWidget *parent = 0);
+	public slots:
+		void markChanges();
+	public:
+	int row;
+	MainWindow *mw;
+	
+};
+arkChanges()));
 	//ui.packageTable->setItem(i,PT_STATUS, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
 	//ui.packageTable->setItem(i,PT_ID, new QTableWidgetItem(IntToStr(package_num).c_str()));
 	//ui.packageTable->setRowHeight(i-1, 45);
@@ -574,3 +587,4 @@ CheckBox::CheckBox(MainWindow *parent)
 {
 	mw = parent;
 }
+

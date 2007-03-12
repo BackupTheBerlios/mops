@@ -1,10 +1,10 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.6 2007/03/12 14:34:07 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.7 2007/03/12 14:54:01 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
-#include "tablelabel.h"
+//#include "tablelabel.h"
 PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 {
 
