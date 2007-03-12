@@ -1,10 +1,10 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.7 2007/03/12 14:54:01 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.8 2007/03/12 15:02:59 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
-//#include "tablelabel.h"
+
 PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 {
 
@@ -104,4 +104,5 @@ void PreferencesBox::applyConfig()
 		rList.push_back(ui.repositoryList->item(i)->text().toStdString());
 	}
 	mDb->set_repositorylist(rList);
+	// TODO: Apply config
 }
