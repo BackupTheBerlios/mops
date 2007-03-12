@@ -24,7 +24,9 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 	curl_easy_setopt(ch, CURLOPT_URL, uri.c_str());
 
 	CURLcode res = curl_easy_perform(ch);
-	
+#ifdef DEBUG
+       	printf("Download: Curl return %d\n", res);
+#endif	
 	if ( res == CURLE_OK ) {
 		fclose(out_f);
 		return DOWNLOAD_OK;

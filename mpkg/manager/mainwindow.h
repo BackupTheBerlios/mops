@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.11 2007/03/06 15:14:56 i27249 Exp $
+ * $Id: mainwindow.h,v 1.12 2007/03/12 14:34:07 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -13,7 +13,8 @@
 #include <mpkg/libmpkg.h>
 #include "loading.h"
 #include "db.h"
-
+#include "checkbox.h";
+#include <QThread>
 // TABLE INDEX
 #define PT_INSTALLCHECK 0
 #define PT_STATUS 1
@@ -24,7 +25,6 @@
 //#define PT_MAXAVAILABLE 6
 //#define PT_INFO 7
 #define PT_ID 3
-
 
 
 
@@ -76,8 +76,8 @@ class MainWindow: public QMainWindow
 		
 		
 		//Ui::loadingBox loadBox;
-	private:
 		void loadData(bool internal=false);
+	private:
 		mpkg *mDb;
 		void initProgressBar(QProgressBar *Bar, int stepCount = 100);
 		void setBarValue(QProgressBar *Bar, int stepValue);
@@ -93,20 +93,15 @@ class MainWindow: public QMainWindow
 		void initPackageTable();
 
 };
-
-
-class CheckBox: public QCheckBox
+/*
+class thLoadData: public QThread
 {
 	Q_OBJECT
 	public:
-		CheckBox(MainWindow *parent);
-		//CheckBox(const QString & text, QWidget *parent = 0);
-	public slots:
-		void markChanges();
-	public:
-	int row;
-	MainWindow *mw;
-	
+		void run();
+	signals:
+		void packageAdded(const 
 };
+*/
 
 #endif

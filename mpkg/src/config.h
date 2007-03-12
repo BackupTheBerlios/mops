@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.16 2007/03/08 04:23:30 i27249 Exp $
+    $Id: config.h,v 1.17 2007/03/12 14:34:07 i27249 Exp $
 */
 
 
@@ -29,6 +29,7 @@ extern string SCRIPTS_DIR;
 extern unsigned int DATABASE;
 extern string DB_FILENAME;
 extern vector<string> REPOSITORY_LIST;
+extern vector<string> DISABLED_REPOSITORY_LIST;
 #include <libintl.h>
 #include <locale.h>
 #include "xmlParser.h"
@@ -54,6 +55,7 @@ namespace mpkgconfig
 	int setXMLConfig(XMLNode xmlConfig, string conf_file=CONFIG_FILE);
 
 	vector<string> get_repositorylist();
+	vector<string> get_disabled_repositorylist();
 	string get_sysroot();
 	string get_syscache();
 	string get_dburl();
@@ -61,6 +63,7 @@ namespace mpkgconfig
 	bool get_runscripts();
 
 	int set_repositorylist(vector<string> newrepositorylist);
+	int set_disabled_repositorylist(vector<string> newrepositorylist);
 	int set_sysroot(string newsysroot);
 	int set_syscache(string newsyscache);
 	int set_dburl(string newdburl);

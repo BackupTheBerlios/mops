@@ -1,14 +1,13 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.16 2007/03/08 18:39:36 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.17 2007/03/12 14:34:07 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
 #include <QtGui>
 #include "mainwindow.h"
 #include <QDir>
-//#include <mpkg/libmpkg.h>
 #include <QFileDialog>
 #include <QtXml/QXmlSimpleReader>
 #include <QtXml/QXmlInputSource>
@@ -19,6 +18,116 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
+#include <QThread>
+/*void MainWindow::thInsertPackageIntoTable(bool checkState, TableLabel *item)
+{
+
+}
+void thLoadData::insertPackageIntoTable(const bool &checkState, const TableLabel &item)
+{
+	//unsigned int i = ui.packageTable->rowCount();
+	//ui.packageTable->insertRow(i);
+	//CheckBox *stat = new CheckBox(this);
+	string package_icon;
+	
+	bool checkState=false;
+	if (packagelist.get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
+			packagelist.get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos)
+	{
+		checkState = true;
+		//stat->setCheckState(Qt::Checked);
+	}
+
+	//ui.packageTable->setCellWidget(i,PT_INSTALLCHECK, stat);
+
+	TableLabel *pkgName = new TableLabel(ui.packageTable);
+	pkgName->setTextFormat(Qt::RichText);
+	PACKAGE *_p = packagelist.get_package(package_num);
+	switch(_p->get_status())
+	{
+		case PKGSTATUS_INSTALLED:
+			package_icon = "installed.png";
+			break;
+		case PKGSTATUS_INSTALL:
+			package_icon = "install.png";
+			break;
+		case PKGSTATUS_REMOVE:
+			package_icon = "remove.png";
+			break;
+		case PKGSTATUS_PURGE:
+			package_icon = "purge.png";
+			break;
+		case PKGSTATUS_REMOVED_AVAILABLE:
+			package_icon = "removed_available.png";
+			break;
+		case PKGSTATUS_AVAILABLE:
+			package_icon = "available.png";
+			break;
+		default:
+			package_icon = "unknown.png";
+	}
+	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+	pkgName->setText(pName.c_str());
+	//pkgName->row = i;
+	* EMIT pkgName *
+	//ui.packageTable->setCellWidget(i, PT_NAME, pkgName);
+	//stat->row = package_num;
+	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
+	//ui.packageTable->setItem(i,PT_STATUS, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
+	//ui.packageTable->setItem(i,PT_ID, new QTableWidgetItem(IntToStr(package_num).c_str()));
+	//ui.packageTable->setRowHeight(i-1, 45);
+
+}
+
+void thLoadData::run()
+{
+	SQLRecord sqlSearch;
+	packagelist.clear();
+	newStatus.clear();
+	
+	*if (mDb->get_packagelist(sqlSearch, &packagelist, true)!=0)
+	{
+		QMessageBox::critical(this, tr("MOPSLinux package manager"),
+				tr("Error querying package list.\nProbably database is damaged"),
+				QMessageBox::Ok, QMessageBox::Ok);
+		return;
+	}*
+
+	//ui.packageTable->setSortingEnabled(false);
+	unsigned int count = packagelist.size();
+	//if (internal)
+	//{
+	//	initProgressBar(ui.progressBar);
+	//	ui.progressBar->show();
+	//}
+	//else {
+	//	initProgressBar(loadBox->ui.progressBar, count);
+	//	ui.progressBar->hide();
+	//	loadBox->show();
+	//}
+	//ui.packageTable->clearContents();
+	//ui.packageTable->setRowCount(0);
+	for (unsigned int i=0; i<packagelist.size(); i++)
+	{
+	//	stateChanged.push_back(false);
+		newStatus.push_back(packagelist.get_package(i)->get_status());
+	* BUILD AND EMIT TABLE ITEM *
+		//insertPackageIntoTable(i);
+	* EMIT SIGNAL BARVALUECHANGE *
+		//if (internal) setBarValue(ui.progressBar, i);
+		//else setBarValue(loadBox->ui.progressBar, i);
+	}
+	
+	* EMIT SIGNAL DONE *
+	//if (internal) ui.progressBar->hide();
+	//else loadBox->hide();
+	//this->show();
+	//fitTable();
+
+	//mw->loadData(false);
+	exec();
+}
+*/
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	if (getuid()!=0)
@@ -33,7 +142,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
-	//ui.groupBox_4->hide();
 
 	dbBox = new DatabaseBox;
 	mDb = dbBox->mDb;
@@ -396,7 +504,6 @@ void MainWindow::loadData(bool internal)
 
 	SQLRecord sqlSearch;
 	packagelist.clear();
-	//stateChanged.clear();
 	newStatus.clear();
 	
 	if (mDb->get_packagelist(sqlSearch, &packagelist, true)!=0)
@@ -434,7 +541,6 @@ void MainWindow::loadData(bool internal)
 	else loadBox->hide();
 	this->show();
 	fitTable();
-	//printf("stCh.size = %d, plist.size = %d\n", stateChanged.size(), packagelist.size());
 }
 
 void MainWindow::initProgressBar(QProgressBar *Bar, int stepCount)

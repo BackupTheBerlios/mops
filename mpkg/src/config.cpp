@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.7 2007/03/08 04:23:30 i27249 Exp $
+ * $Id: config.cpp,v 1.8 2007/03/12 14:34:07 i27249 Exp $
  *
  * ***************************************************/
 
@@ -14,6 +14,7 @@ string SCRIPTS_DIR;
 unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
+vector<string> DISABLED_REPOSITORY_LIST;
 //vector<CDROM_DEVICE> CDROMS;
 int loadGlobalConfig(string config_file)
 {
@@ -25,6 +26,7 @@ int loadGlobalConfig(string config_file)
 	string sql_type;
 //	vector<CDROM_DEVICE> cdrom_list; // CD-ROM descriptors
 	vector<string> repository_list;
+	vector<string> disabled_repository_list;
 	bool conf_init=false;
 	if (access(config_file.c_str(), R_OK)==0)
 	{
@@ -42,6 +44,10 @@ int loadGlobalConfig(string config_file)
 			for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
 			{
 				repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
+			}
+			for (int i=0; i<config.getChildNode("repository_list").nChildNode("disabled_repository"); i++)
+			{
+				disabled_repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("disabled_repository").getText());
 			}
 		}
 		if (config.nChildNode("scripts_dir")!=0)
@@ -82,6 +88,7 @@ int loadGlobalConfig(string config_file)
 		DB_FILENAME=db_url;
 	}
 	REPOSITORY_LIST=repository_list;
+	DISABLED_REPOSITORY_LIST = disabled_repository_list;
 #ifdef DEBUG
 	printf("System configuration:\n\trun_scripts: %s\n\tsys_root: %s\n\tsys_cache: %s\n\tSQL type: %s\n\tSQL filename: %s\n", \
 			run_scripts.c_str(), sys_root.c_str(), sys_cache.c_str(), sql_type.c_str(), db_url.c_str());
@@ -149,7 +156,7 @@ int mpkgconfig::initConfig()
 int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
 {
 	if (xmlConfig.writeToFile(conf_file.c_str())!=0) printf("error writing config file");
-	//loadGlobalConfig();
+	loadGlobalConfig();
 	return 0;
 }
 
@@ -166,6 +173,11 @@ string mpkgconfig::get_syscache()
 vector<string> mpkgconfig::get_repositorylist()
 {
 	return REPOSITORY_LIST;
+}
+
+vector<string> mpkgconfig::get_disabled_repositorylist()
+{
+	return DISABLED_REPOSITORY_LIST;
 }
 
 string mpkgconfig::get_dburl()
@@ -193,6 +205,20 @@ int mpkgconfig::set_repositorylist(vector<string> newrepositorylist)
 	{
 		tmp.getChildNode("repository_list").addChild("repository");
 		tmp.getChildNode("repository_list").getChildNode("repository", i).addText(newrepositorylist[i].c_str());
+	}
+	return setXMLConfig(tmp);
+}
+
+int mpkgconfig::set_disabled_repositorylist(vector <string> newrepositorylist)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("repository_list").deleteNodeContent(1);
+	tmp.addChild("repository_list");
+	for (unsigned int i=0; i<newrepositorylist.size(); i++)
+	{
+		tmp.getChildNode("repository_list").addChild("disabled_repository");
+		tmp.getChildNode("repository_list").getChildNode("disabled_repository", i).addText(newrepositorylist[i].c_str());
 	}
 	return setXMLConfig(tmp);
 }

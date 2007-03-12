@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.19 2007/03/12 01:13:39 i27249 Exp $
+ * $Id: repository.cpp,v 1.20 2007/03/12 14:34:07 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -259,8 +259,14 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		debug("package arch: "+ pkg.get_arch());
 		debug("package build: "+ pkg.get_build());
 		// Location
+		if (slackPackageLocation.find("./") == 0)
+		{
+			debug("DOTCUT:");
+			slackPackageLocation = slackPackageLocation.substr(2);
+		}
 		tmplocation.set_path(slackPackageLocation);
 		pkg.get_locations()->add(tmplocation);
+		debug("LOC_SET: "+pkg.get_locations()->get_location(0)->get_path());
 
 		// Size
 		tmpSize = atoi(slackCompressedSize.substr(0, slackCompressedSize.length()-2).c_str());

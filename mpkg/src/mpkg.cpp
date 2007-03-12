@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.32 2007/03/12 00:39:44 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.33 2007/03/12 14:34:07 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -331,6 +331,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 			case SRV_FTP:
 			case SRV_SMB:
 			case SRV_HTTPS:
+				printf("Retrieving %s\n", __file_url.c_str());
 				res = CommonGetFile(
 							__file_url, 
 							SYS_CACHE + package->get_filename()
