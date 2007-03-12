@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.18 2007/03/11 03:22:26 i27249 Exp $
+	$Id: dataunits.cpp,v 1.19 2007/03/12 00:39:44 i27249 Exp $
 */
 
 
@@ -237,6 +237,7 @@ int SERVER::set_id(int id)
 
 int SERVER::set_url(string url)
 {
+	if (url[url.length()-1]!='/') url+="/";
 	server_url=url;
 	return 0;
 }
@@ -362,6 +363,7 @@ int LOCATION::set_id(long id)
 
 int LOCATION::set_path(string path)
 {
+	if (path[path.length()-1]!='/') path+="/";
 	location_path=path;
 	return 0;
 }

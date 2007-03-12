@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.31 2007/03/11 03:22:27 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.32 2007/03/12 00:39:44 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -336,6 +336,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 							SYS_CACHE + package->get_filename()
 							);
 
+				printf("Attempted to download file %s\n", __file_url.c_str());
 				if ( res == DOWNLOAD_OK ) {
 					DownloadOk=true;
 					printf(_("%s downloaded successfull\n"), __file_url.c_str());

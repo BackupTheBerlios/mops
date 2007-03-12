@@ -1,12 +1,222 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.26 2007/03/06 01:17:25 i27249 Exp $
+$Id: local_package.cpp,v 1.27 2007/03/12 00:39:44 i27249 Exp $
 */
 
 #include "local_package.h"
 #include "mpkg.h"
 //#include "oldstyle.h"
+
+int extractFromTgz(string filename, string file_to_extract, string output)
+{
+	string cmd = "tar zxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
+	return system(cmd.c_str());
+}
+ 
+
+int slack2xml(string filename, string xml_output)
+{
+	string slackDescFile = get_tmp_file();
+	string slackRequiredFile = get_tmp_file();
+	string slackSuggestsFile = get_tmp_file();
+	extractFromTgz(filename, "install/slack-desc", slackDescFile);
+	extractFromTgz(filename, "install/slack-required", slackRequiredFile);
+	extractFromTgz(filename, "install/slack-suggest", slackSuggestsFile);
+	XMLNode _node = XMLNode::createXMLTopNode("package");
+	_node.addChild("name");
+	string pkgName;
+	_node.addChild("version");
+	_node.addChild("arch");
+	_node.addChild("build");
+	_node.addChild("short_description");
+	_node.addChild("description");
+	_node.addChild("dependencies");
+	_node.addChild("suggests");
+	_node.addChild("filename");
+	int pos;
+	int name_start=0;
+	string tmp;
+	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
+	{
+		name_start=i;
+	}
+	for (unsigned int i=name_start; i<filename.length()-1; i++)
+	{
+		if (filename[i]=='-')
+		{
+			if (filename[i+1]=='0' || \
+				filename[i+1] == '1' || \
+				filename[i+1] == '2' || \
+				filename[i+1] == '3' || \
+				filename[i+1] == '4' || \
+				filename[i+1] == '5' || \
+				filename[i+1] == '6' || \
+				filename[i+1] == '7' || \
+				filename[i+1] == '8' || \
+				filename[i+1] == '9')
+			{
+				pkgName = tmp;
+				_node.getChildNode("name").addText(tmp.c_str());
+				pos=i+2;
+				break;
+			}
+		}
+		tmp+=filename[i];
+	}
+	tmp.clear();
+	//VERSION
+	for (unsigned int i=pos-1; i< filename.length(); i++)
+	{
+		if (filename[i]=='-')
+		{
+			_node.getChildNode("version").addText(tmp.c_str());
+			pos=i+2;
+			break;
+		}
+		tmp+=filename[i];
+	}
+	tmp.clear();
+	//ARCH
+	for (unsigned int i=pos-1; i< filename.length(); i++)
+	{
+		if (filename[i]=='-')
+		{
+			_node.getChildNode("arch").addText(tmp.c_str());
+			pos=i+2;
+			break;
+		}
+		tmp+=filename[i];
+	}
+	tmp.clear();
+	//BUILD
+	for (unsigned int i=pos-1; i<filename.length()-4; i++)
+	{
+		tmp+=filename[i];
+	}
+	_node.getChildNode("build").addText(tmp.c_str());
+	tmp.clear();
+
+	// DEPENDENCIES
+	// Dependencies
+	int dep_num=0;
+	string tmpDepStr;
+	string slackRequired = ReadFile(slackRequiredFile);
+	while (slackRequired.find_first_of(",")!=std::string::npos)
+	{
+		debug("Proceeding dep, slackRequired = "+ slackRequired);
+		pos = slackRequired.find_first_of("=><");
+		if (pos < slackRequired.find_first_of(",\n"))
+		{
+			_node.getChildNode("dependencies").addChild("dep");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).addChild("name");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).getChildNode("name").addText(slackRequired.substr(0, pos).c_str());
+			slackRequired = slackRequired.substr(pos);
+			pos = slackRequired.find_first_not_of("=><");
+			tmpDepStr = slackRequired.substr(0,pos);
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).addChild("condition");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).getChildNode("condition").addText(hcondition2xml(tmpDepStr).c_str());
+			slackRequired = slackRequired.substr(pos);
+			pos = slackRequired.find_first_of(" ,");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).addChild("version");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).getChildNode("version").addText(slackRequired.substr(0,pos).c_str());
+		}
+		else
+		{
+			pos = slackRequired.find_first_of(",")+1;
+			_node.getChildNode("dependencies").addChild("dep");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).addChild("name");
+			_node.getChildNode("dependencies").getChildNode("dep",dep_num).getChildNode("name").addText(slackRequired.substr(0,pos).c_str());
+			slackRequired = slackRequired.substr(pos);
+		}
+		dep_num++;
+	}
+
+	debug("reached suggestions");
+	// Suggestions
+	dep_num = 0;
+	string slackSuggests = ReadFile(slackSuggestsFile);
+	while (slackSuggests.find_first_of(",")!=std::string::npos)
+	{
+		debug("Proceeding dep, slackSuggests = "+ slackSuggests);
+		pos = slackSuggests.find_first_of("=><");
+		if (pos < slackSuggests.find_first_of(",\n"))
+		{
+			_node.getChildNode("suggests").addChild("suggest");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).addChild("name");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).getChildNode("name").addText(slackSuggests.substr(0, pos).c_str());
+			slackSuggests = slackSuggests.substr(pos);
+			pos = slackSuggests.find_first_not_of("=><");
+			tmpDepStr = slackSuggests.substr(0,pos);
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).addChild("condition");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).getChildNode("condition").addText(hcondition2xml(tmpDepStr).c_str());
+			slackSuggests = slackSuggests.substr(pos);
+			pos = slackSuggests.find_first_of(" ,");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).addChild("version");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).getChildNode("version").addText(slackSuggests.substr(0,pos).c_str());
+		}
+		else
+		{
+			pos = slackSuggests.find_first_of(",")+1;
+			_node.getChildNode("suggests").addChild("suggest");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).addChild("name");
+			_node.getChildNode("suggests").getChildNode("suggest",dep_num).getChildNode("name").addText(slackSuggests.substr(0,pos).c_str());
+			slackSuggests = slackSuggests.substr(pos);
+		}
+		dep_num++;
+	}
+
+	debug("reached description");
+	// Description
+	string tmpDescStr;
+	string slackDescription = ReadFile(slackDescFile);
+	// Stripping trash =)
+	int cut=0;
+	for (int i=0; cut != std::string::npos; i++)
+	{
+		if (i==0) cut = slackDescription.find("#");
+		else cut = slackDescription.find("\n#");
+		if (cut!=std::string::npos)
+		{
+			slackDescription.substr(slackDescription.find_first_of("\n"));
+		}
+	}
+	cut = slackDescription.find("--|");
+	if (cut != std::string::npos) slackDescription = slackDescription.substr(cut+3);
+
+	if (slackDescription.length()>0)
+	{
+	slackDescription = slackDescription.substr(1);
+		if (slackDescription.length()>=slackDescription.find(pkgName+": ")+pkgName.length()+2)
+		{
+			slackDescription = slackDescription.substr(slackDescription.find(pkgName+": ")+pkgName.length()+2);
+			_node.getChildNode("short_description").addText(slackDescription.substr(0, slackDescription.find_first_of("\n")).c_str());
+			debug("short description: "+(string)_node.getChildNode("short_description").getText());
+		}
+		pos = slackDescription.find("\n");
+		int lines = 0;
+		while (pos != std::string::npos && lines < 11)
+		{
+			pos = slackDescription.find(pkgName+": ");
+			if (pos == std::string::npos)
+			{
+				debug("Description end");
+			}
+			else
+			{
+				slackDescription = slackDescription.substr(pos+pkgName.length()+2);
+				tmpDescStr+=slackDescription.substr(0,slackDescription.find("\n"))+"\n";
+				lines++;
+			}
+		}
+		debug("Description: "+ tmpDescStr);
+		_node.getChildNode("description").addText(tmpDescStr.c_str());
+	}
+	_node.writeToFile(xml_output.c_str());
+	return 0;
+}
+
+
 
 LocalPackage::LocalPackage(string _f, unsigned int pkgType)
 {
@@ -112,12 +322,12 @@ int LocalPackage::get_xml()
 	if (!FileNotEmpty(tmp_xml))
 	{
 		// In most cases it means that we have legacy Slackware package.
-		// TODO: work with it =)
-		printf("%s: Invalid package: no XML data. Legacy Slackware packages is not supported yet\n", filename.c_str());
-		return -1;
-//		data.set_name(filename);
-
-		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
+		// Trying to convert:
+		if (slack2xml(filename, tmp_xml) != 0)
+		{
+			fprintf(stderr, "Totally invalid package! Cannot work with it\n");
+			return -1;
+		}
 	}
 
 	PackageConfig p(tmp_xml);
@@ -443,14 +653,22 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	string tar_cmd;
 	debug("flist tmpfile: "+fname);
 	tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
-	system(tar_cmd.c_str());
+	if (system(tar_cmd.c_str())!=0)
+	{
+		fprintf(stderr, "Unable to get file list\n");
+		return -1;
+	}
 #ifdef USE_INTERNAL_SED
 	WriteFile(tmp_xml, files2xml(ReadFile(fname)));
 #endif	
 #ifdef USE_SYSTEM_SED
 	string sed_cmd;
 	sed_cmd="echo '<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>file_list_header' > "+tmp_xml+" && cat "+ fname +" | sed -e i'</file>\\n<file>'  >> "+tmp_xml+" && echo '</file></filelist></package>' >> "+tmp_xml;
-	system(sed_cmd.c_str());
+	if (system(sed_cmd.c_str())!=0)
+	{
+		fprintf(stderr,"Parsing using sed failed!\n");
+		return -1;
+	}
 #endif
 	debug("local_package.cpp: CreateFlistNode(): end");
 	return 0;
