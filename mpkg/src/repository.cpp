@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.18 2007/03/12 00:39:44 i27249 Exp $
+ * $Id: repository.cpp,v 1.19 2007/03/12 01:13:39 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -300,7 +300,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		}
 
 		debug("reached suggestions");
-		// Suggestions
+		/*// Suggestions
 		while (slackSuggests.find_first_of(",")!=std::string::npos)
 		{
 			tmpDep.clear();
@@ -327,7 +327,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 
 			pkg.get_dependencies()->add(tmpDep);
 		}
-		
+		*/
 		debug("reached description");
 		// Description
 		tmpDescStr.clear();
@@ -506,6 +506,7 @@ int Repository::build_index(string server_url)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
+	debug("get_index!");
 	// First: detecting repository type
 	// Trying to download in this order (if successful, we have detected a repository type):
 	// 1. packages.xml.gz 	(Native MOPSLinux)
@@ -519,14 +520,20 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{
 
-		debug("type = "+ IntToStr(type));
+		debug("trying MPKG, type = "+ IntToStr(type));
 	       if (CommonGetFile(server_url + "packages.xml.gz", index_filename+".gz")==DOWNLOAD_OK)
 		{
+
+			
 			debug("download ok, validating contents...");
 			if (system(cm.c_str())==0 && ReadFile(index_filename).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
 			{
 				printf("Native MPKG repository detected\n");
 				type = TYPE_MPKG;
+			}
+			else
+			{
+				printf("XML downloaded, but contents not recognized");
 			}
 		}
 	}
@@ -534,7 +541,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	if (type == TYPE_SLACK || type == TYPE_AUTO)
 	{
 		
-		debug("type = "+ IntToStr(type));
+		debug("trying SLACK, type = "+ IntToStr(type));
 		if (CommonGetFile(server_url + "PACKAGES.TXT", index_filename)==DOWNLOAD_OK)
 		{
 			debug("download ok, validating contents...");
@@ -572,18 +579,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		printf("Repository type detected successfully, proceeding next...\n");
 	}
 	PACKAGE pkg;
-	string gzip_line;
 	string xml_name=index_filename;
-	string gzxml_name=xml_name+".gz";
 	XMLNode repository_root;
 	int pkg_count;
-	gzip_line="gunzip -f "+gzxml_name;
 	
 	switch(type)
 	{
 		case TYPE_MPKG:
-			if (system(gzip_line.c_str()) == 0)
-			{
 				printf("done\n");
 				repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
 				pkg_count=repository_root.nChildNode("package");
@@ -598,13 +600,6 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					xml2package(repository_root.getChildNode("package", i), &pkg);
 					packages->add(pkg);
 				}
-
-			}
-			else
-			{
-				printf(_("FAILED\n"));
-				return -1;
-			}
 			break;
 		case TYPE_SLACK:
 			printf("Parsing slackware repository\n");
