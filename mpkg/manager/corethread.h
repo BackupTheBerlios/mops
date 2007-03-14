@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.2 2007/03/14 02:22:17 i27249 Exp $
+ * $Id: corethread.h,v 1.3 2007/03/14 09:15:11 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -11,12 +11,12 @@
  * SIGNAL/SLOT model.
  *
  * ****************************************************************************************/
-#include <QThread>
-//#include <QtGui>
-#include <mpkg/libmpkg.h>
-// ACTION DEFINERS
-#define CTH_LOAD_PACKAGE_LIST 0x01
+#ifndef CORETHREAD_H_
+#define CORETHREAD_H_
 
+#include <QThread>
+#include <mpkg/libmpkg.h>
+//#include "tablelabel.h"
 
 class coreThread: public QThread
 {
@@ -28,22 +28,37 @@ class coreThread: public QThread
 
 	public slots:
 		void tellAreYouRunning();
-		//queryPackageDatabase();
+		void loadPackageDatabase();
 	signals:
+		// Debug signals
 		void yesImRunning();
-		//loadingStarted();
-		//loadingFinished();
-		//enableProgressBar();
-		//disableProgressBar();
-		//setProgressBarValue(int);
-		//SetTableItem(int, bool, TableLabel &);
-		//setTableItemVisible(int, bool);
+		
+		// Errors and status messages
+		void errorLoadingDatabase();
+		void sqlQueryBegin();
+		void sqlQueryEnd();
+		void loadingStarted();
+		void loadingFinished();
+		
+		// Progress bar
+		void enableProgressBar();
+		void disableProgressBar();
+		void setProgressBarValue(int value);
+		
+		
+		// Table operations
+		void fitTable();
+		void clearTable();
+		void setTableSize(unsigned int size);
+		//SetTableItem(int row, bool checkState, TableLabel *cellItem);
+		void setTableItemVisible(int row, bool visible);
 		
 
 
 	private:
-		//unsigned int actionRequested;
-		//loadPackageList();
 		mpkg *database;
-		//PACKAGE_LIST *packageList;
+		PACKAGE_LIST *packageList;
+		vector<int> newStatus;
 };
+
+#endif

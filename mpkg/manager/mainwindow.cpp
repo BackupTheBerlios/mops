@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.20 2007/03/14 03:12:16 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.21 2007/03/14 09:15:11 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -451,8 +451,9 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 }
 void MainWindow::insertPackageIntoTable(unsigned int package_num)
 {
-	unsigned int i = ui.packageTable->rowCount();
-	ui.packageTable->insertRow(i);
+	unsigned int i = package_num;
+	//unsigned int i = ui.packageTable->rowCount();
+	//ui.packageTable->insertRow(i);
 	CheckBox *stat = new CheckBox(this);
 	//QIcon *icon = new QIcon ("/home/ftp/img.png");
 	string package_icon;
@@ -550,6 +551,7 @@ void MainWindow::loadData(bool internal)
 	}
 	ui.packageTable->clearContents();
 	ui.packageTable->setRowCount(0);
+	ui.packageTable->setRowCount(packagelist.size());
 	for (unsigned int i=0; i<packagelist.size(); i++)
 	{
 	//	stateChanged.push_back(false);
