@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>713</width>
-    <height>699</height>
+    <width>1096</width>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -52,6 +52,12 @@
         </property>
         <item>
          <widget class="QListWidget" name="listWidget" >
+          <property name="maximumSize" >
+           <size>
+            <width>515</width>
+            <height>16777215</height>
+           </size>
+          </property>
           <property name="iconSize" >
            <size>
             <width>32</width>
@@ -422,6 +428,19 @@
            </item>
           </layout>
          </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
        </widget>
        <widget class="QGroupBox" name="groupBox_3" >
@@ -610,8 +629,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>713</width>
-     <height>28</height>
+     <width>1096</width>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile" >

@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.8 2007/03/12 15:02:59 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.9 2007/03/14 03:12:16 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -53,11 +53,13 @@ void PreferencesBox::openAccounts()
 
 void PreferencesBox::openRepositories()
 {
+	ui.tabWidget->setCurrentIndex(3);
 	show();
 }
 
 void PreferencesBox::openInterface()
 {
+	ui.tabWidget->setCurrentIndex(0);
 	show();
 }
 
@@ -83,11 +85,13 @@ void PreferencesBox::loadData()
 
 void PreferencesBox::openCore()
 {
+	ui.tabWidget->setCurrentIndex(1);
 	show();
 }
 
 void PreferencesBox::openUpdates()
 {
+	ui.tabWidget->setCurrentIndex(4);
 	show();
 }
 

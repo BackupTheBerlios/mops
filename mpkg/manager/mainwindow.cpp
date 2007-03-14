@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.19 2007/03/14 02:22:17 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.20 2007/03/14 03:12:16 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -335,8 +335,9 @@ void MainWindow::commitChanges()
 void MainWindow::resetChanges(){}
 void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){
-
+	PreferencesBox *prefBox = new PreferencesBox(mDb);
 	thread.tellAreYouRunning();
+	prefBox->openRepositories();
 }
 void MainWindow::showCustomFilter(){}
 void MainWindow::setInstalledFilter(bool showThis){}
