@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.14 2007/03/14 02:22:17 i27249 Exp $
+ * $Id: mainwindow.h,v 1.15 2007/03/14 13:28:18 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -35,8 +35,32 @@ class MainWindow: public QMainWindow
 	public:
 		MainWindow (QMainWindow *parent = 0);
 		~MainWindow();
-		coreThread thread;
+		coreThread *thread;
+	signals:
+		void loadPackageDatabase();
 	public slots:
+		void errorLoadingDatabase();
+		void sqlQueryBegin();
+		void sqlQueryEnd();
+		void loadingStarted();
+		void loadingFinished();
+		
+		// Progress bar
+		void enableProgressBar();
+		void disableProgressBar();
+		void setProgressBarValue(unsigned int value);
+		void initProgressBar(unsigned int stepCount = 100);
+
+		
+		// Table operations
+		//void fitTable();
+		void clearTable();
+		void setTableSize(unsigned int size);
+		void setTableItem(unsigned int row, bool checkState, string cellItemText);
+		void setTableItemVisible(unsigned int row, bool visible);
+
+//
+
 		void showPreferences();
 		void showAbout();
 		void quitApp();
@@ -82,8 +106,7 @@ class MainWindow: public QMainWindow
 		void loadData(bool internal=false);
 	private:
 		mpkg *mDb;
-		void initProgressBar(QProgressBar *Bar, int stepCount = 100);
-		void setBarValue(QProgressBar *Bar, int stepValue);
+				void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST packagelist;
 		void insertPackageIntoTable(unsigned int package_num);
 		void searchPackagesByTag(QString tag);

@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.3 2007/03/14 09:15:11 i27249 Exp $
+ * $Id: corethread.h,v 1.4 2007/03/14 13:28:18 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -11,13 +11,19 @@
  * SIGNAL/SLOT model.
  *
  * ****************************************************************************************/
-#ifndef CORETHREAD_H_
-#define CORETHREAD_H_
+#ifndef CZORETHREAD_H_
+#define CZORETHREAD_H_
+
+//#include <mpkg/libmpkg.h>
+//#include <QLabel>
+//#include <QTableWidget>
+
+#include "ui_pkgmanager.h"
+//#include "tablelabel.h"
+//#include "mainwindow.h"
+#include <mpkg/libmpkg.h>
 
 #include <QThread>
-#include <mpkg/libmpkg.h>
-//#include "tablelabel.h"
-
 class coreThread: public QThread
 {
 	Q_OBJECT
@@ -29,6 +35,7 @@ class coreThread: public QThread
 	public slots:
 		void tellAreYouRunning();
 		void loadPackageDatabase();
+		void insertPackageIntoTable(unsigned int package_num);
 	signals:
 		// Debug signals
 		void yesImRunning();
@@ -41,17 +48,18 @@ class coreThread: public QThread
 		void loadingFinished();
 		
 		// Progress bar
+		void initProgressBar(unsigned int stepCount);
 		void enableProgressBar();
 		void disableProgressBar();
-		void setProgressBarValue(int value);
+		void setProgressBarValue(unsigned int value);
 		
 		
 		// Table operations
 		void fitTable();
 		void clearTable();
 		void setTableSize(unsigned int size);
-		//SetTableItem(int row, bool checkState, TableLabel *cellItem);
-		void setTableItemVisible(int row, bool visible);
+		void setTableItem(unsigned int row, bool checkState, string cellItemText);
+		void setTableItemVisible(unsigned int row, bool visible);
 		
 
 
