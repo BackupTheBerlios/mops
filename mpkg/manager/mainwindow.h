@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.15 2007/03/14 13:28:18 i27249 Exp $
+ * $Id: mainwindow.h,v 1.16 2007/03/14 13:44:29 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -38,6 +38,7 @@ class MainWindow: public QMainWindow
 		coreThread *thread;
 	signals:
 		void loadPackageDatabase();
+		void startThread();
 	public slots:
 		void errorLoadingDatabase();
 		void sqlQueryBegin();

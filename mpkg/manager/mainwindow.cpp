@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.23 2007/03/14 13:32:06 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.24 2007/03/14 13:44:28 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -133,26 +133,29 @@ MainWindow::MainWindow(QMainWindow *parent)
 	
 	this->show();
 	thread = new coreThread;
-	thread->start();
+	//thread->start();
 	
 	// Thread connections
-	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
-	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
-	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
-	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
-	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
-	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
-	QObject::connect(thread, SIGNAL(fitTable()), this, SLOT(fitTable()));
-	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()));
-	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)));
-	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)));
-	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)));
-	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
-	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
+	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int))), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(fitTable()), this, SLOT(fitTable())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable())), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int))), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string))), Qt::QueuedConnection;
+	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool))), Qt::QueuedConnection;
+	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase())), Qt::QueuedConnection;
+	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start())), Qt::QueuedConnection;
+
+	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int))), Qt::QueuedConnection;
 
 	emit loadPackageDatabase();
+	emit startThread();
 	//loadData(false);
 }
 
