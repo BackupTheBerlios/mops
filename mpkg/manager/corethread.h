@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.1 2007/03/14 01:50:24 i27249 Exp $
+ * $Id: corethread.h,v 1.2 2007/03/14 02:22:17 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -12,8 +12,11 @@
  *
  * ****************************************************************************************/
 #include <QThread>
-#include <QtGui>
+//#include <QtGui>
 #include <mpkg/libmpkg.h>
+// ACTION DEFINERS
+#define CTH_LOAD_PACKAGE_LIST 0x01
+
 
 class coreThread: public QThread
 {
@@ -24,19 +27,23 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
-		queryPackageDatabase();
+		void tellAreYouRunning();
+		//queryPackageDatabase();
 	signals:
-		loadingStarted();
-		loadingFinished();
-		enableProgressBar();
-		disableProgressBar();
-		setProgressBarValue(int);
-		SetTableItem(int, bool, TableLabel &);
-		setTableItemVisible(int, bool);
+		void yesImRunning();
+		//loadingStarted();
+		//loadingFinished();
+		//enableProgressBar();
+		//disableProgressBar();
+		//setProgressBarValue(int);
+		//SetTableItem(int, bool, TableLabel &);
+		//setTableItemVisible(int, bool);
 		
 
 
 	private:
-		mpkg *databaseLib;
-		PACKAGE_LIST *packageList;
+		//unsigned int actionRequested;
+		//loadPackageList();
+		mpkg *database;
+		//PACKAGE_LIST *packageList;
 };

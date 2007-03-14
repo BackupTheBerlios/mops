@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.18 2007/03/12 14:54:01 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.19 2007/03/14 02:22:17 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
-#include <QThread>
 /*void MainWindow::thInsertPackageIntoTable(bool checkState, TableLabel *item)
 {
 
@@ -175,7 +174,13 @@ MainWindow::MainWindow(QMainWindow *parent)
 		qApp->quit();
 	}
 	clearForm();
+	thread.start();
 	loadData(false);
+}
+
+MainWindow::~MainWindow()
+{
+	thread.exit();
 }
 
 void MainWindow::quickPackageSearch()
@@ -329,7 +334,10 @@ void MainWindow::commitChanges()
 }
 void MainWindow::resetChanges(){}
 void MainWindow::saveQueue(){}
-void MainWindow::showAddRemoveRepositories(){}
+void MainWindow::showAddRemoveRepositories(){
+
+	thread.tellAreYouRunning();
+}
 void MainWindow::showCustomFilter(){}
 void MainWindow::setInstalledFilter(bool showThis){}
 void MainWindow::setAvailableFilter(bool showThis){}
