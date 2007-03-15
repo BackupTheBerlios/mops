@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.12 2007/02/19 04:58:09 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.13 2007/03/15 10:40:43 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -108,9 +108,15 @@ void Form::loadData()
 
 void Form::saveData()
 {
+	string slack_desc;
+	string slack_required;
+	string slack_suggests;
+	string desc_chunk;
+	QString xmlDir;
 	if (xmlFilename.isEmpty())
 	{
-		xmlFilename = QFileDialog::getSaveFileName(this, "Choose where to save package index (data.xml):", ".", "Package index (data.xml)");
+		xmlDir = QFileDialog::getExistingDirectory(this, "Choose directory where to save package index files (data.xml):", "."/*, "Package index (data.xml)"*/);
+		xmlFilename = xmlDir+"/data.xml";
 	}
 	if (xmlFilename.isEmpty())
 	{
@@ -134,6 +140,23 @@ void Form::saveData()
 	node.addChild("description");
 	node.getChildNode("description",0).addAttribute("lang", "en");
 	node.getChildNode("description",0).addText(description[0].toStdString().c_str());
+	unsigned int chunkLength=0;
+	unsigned int spacePosition;
+	slack_desc = ui.NameEdit->text().toStdString() + ": " + short_description[0].toStdString() + "\n" + ui.NameEdit->text().toStdString() + ": \n";
+	for (unsigned int i=0; i<description[0].toStdString().length(); i++)
+	{
+		if (description[0].toStdString()[i]==' ') spacePosition = i;
+		if (i >=70 || i == description[0].toStdString().length()-1)
+		{
+			desc_chunk = ui.NameEdit->text().toStdString() + ": " + description[0].toStdString().substr(0, spacePosition);
+			if (i < description[0].toStdString().length()-1) i=0;
+			if (spacePosition < description[0].toStdString().length()) description[0] = description[0].toStdString().substr(spacePosition).c_str();
+			slack_desc+=desc_chunk + "\n";
+		}
+	}
+	slack_desc = slack_desc.substr(0, slack_desc.length()-1) + description[0].toStdString();
+	WriteFile(xmlDir.toStdString()+"/slack-desc", slack_desc);
+
 	node.addChild("description");
 	node.getChildNode("description",1).addAttribute("lang", "ru");
 	node.getChildNode("description",1).addText(description[1].toStdString().c_str());
@@ -157,12 +180,29 @@ void Form::saveData()
 			node.getChildNode("dependencies").addChild("dep");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("name");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("name").addText(ui.DepTableWidget->item(i,0)->text().toStdString().c_str());
+			slack_required+=ui.DepTableWidget->item(i,0)->text().toStdString();
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("condition");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("condition").addText(hcondition2xml(ui.DepTableWidget->item(i,1)->text().toStdString()).c_str());
+			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
+			{
+				if (ui.DepTableWidget->item(i,1)->text().toStdString() == "==")
+				{
+					slack_required += "=";
+				}
+				else
+				{
+					slack_required+=ui.DepTableWidget->item(i,1)->text().toStdString();
+				}
+			}
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("version");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
+			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
+			{
+				slack_required += ui.DepTableWidget->item(i,2)->text().toStdString() + "\n";
+			}
 			dcurr++;
 		}
+		if (!slack_required.empty()) WriteFile(xmlDir.toStdString()+"/slack-required", slack_required);
 		if (ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGESTION" ||
 				ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGEST")
 		{
