@@ -1,9 +1,9 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.6 2007/03/18 04:37:52 i27249 Exp $
+ * $Id: corethread.cpp,v 1.7 2007/03/18 05:09:05 i27249 Exp $
  * *************************************************************************/
-
+#define MSLEEP 5
 #include "corethread.h"
 coreThread::coreThread()
 {
@@ -50,7 +50,15 @@ void coreThread::run()
 	{
 		newStatus.push_back(packageList->get_package(i)->get_status());
 		insertPackageIntoTable(i);
-		msleep(10);
+#ifdef USLEEP
+		usleep(USLEEP);
+#endif
+#ifdef MSLEEP
+		msleep(MSLEEP);
+#endif
+#ifdef SLEEP
+		sleep(SLEEP);
+#endif
 		emit setProgressBarValue(i);
 	}
 	emit disableProgressBar();

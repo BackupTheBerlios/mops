@@ -14,7 +14,7 @@ LEX           = flex
 YACC          = yacc
 DEFINES       = -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -pipe -g -Wall -W -F/Library/Frameworks  $(DEFINES)
-CXXFLAGS      = -pipe -O2 -march=nocona -Wall -W -F/Library/Frameworks  $(DEFINES)
+CXXFLAGS      = -pipe -g -Wall -W -F/Library/Frameworks  $(DEFINES)
 LEXFLAGS      = 
 YACCFLAGS     = -d
 INCPATH       = -I/sw/include -I/usr/local/Qt4.2/mkspecs/macx-g++ -I. -I/Library/Frameworks/QtCore.framework/Versions/4/Headers -I/usr/include/QtCore -I/Library/Frameworks/QtGui.framework/Versions/4/Headers -I/usr/include/QtGui -I/usr/include -I. -I. -I.
