@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.24 2007/03/14 13:44:28 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.25 2007/03/18 03:56:46 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -128,47 +128,56 @@ MainWindow::MainWindow(QMainWindow *parent)
 	removePackageAction = tableMenu->addAction(tr("Remove"));
 	purgePackageAction = tableMenu->addAction(tr("Purge"));
 	upgradePackageAction = tableMenu->addAction(tr("Upgrade"));
+	qRegisterMetaType<string>("string");
+	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
 	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	
 	this->show();
 	thread = new coreThread;
-	//thread->start();
+	packagelist = new PACKAGE_LIST;
 	
 	// Thread connections
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int))), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(fitTable()), this, SLOT(fitTable())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable())), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int))), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string))), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool))), Qt::QueuedConnection;
-	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase())), Qt::QueuedConnection;
-	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start())), Qt::QueuedConnection;
-
+	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(fitTable()), this, SLOT(fitTable()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int))), Qt::QueuedConnection;
-
-	emit loadPackageDatabase();
+	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST)), this, SLOT(receivePackageList(PACKAGE_LIST)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData(bool)), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
 	emit startThread();
-	//loadData(false);
+	emit loadPackageDatabase();
 }
 
 MainWindow::~MainWindow()
 {
 	thread->exit();
+	delete thread;
+}
+
+void MainWindow::receivePackageList(PACKAGE_LIST pkgList)
+{
+	*packagelist=pkgList;
 }
 
 void MainWindow::quickPackageSearch()
 {
 	for (unsigned int i=0; i<ui.packageTable->rowCount(); i++)
 	{
-		if (packagelist.get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name().find(ui.quickPackageSearchEdit->text().toStdString())==std::string::npos)
+		if (packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name().find(ui.quickPackageSearchEdit->text().toStdString())==std::string::npos)
 		{
 			ui.packageTable->setRowHidden(i, true);
 		}
@@ -195,7 +204,9 @@ void MainWindow::resetQueue()
 void MainWindow::showPackageInfo()
 {
 	long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
-	PACKAGE *pkg = packagelist.get_package(id);
+	printf("ID = %d\n", id);
+	printf("List size = %d\n", thread->getPackageList()->size());
+	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
 	
@@ -265,14 +276,11 @@ void MainWindow::clearForm()
 void MainWindow::updateData()
 {
 	clearForm();
-	mDb->update_repository_data();
-	loadData(true);
+	emit updateDatabase();
 }
 	
 void MainWindow::quitApp()
 {
-	delete thread;
-	//if (mDb!=NULL) delete mDb;
 	qApp->quit();
 
 }
@@ -283,18 +291,18 @@ void MainWindow::commitChanges()
 {
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
-		if (packagelist.get_package(i)->get_status()!=newStatus[i])
+		if (packagelist->get_package(i)->get_status()!=newStatus[i])
 		{
 			switch(newStatus[i])
 			{
 				case PKGSTATUS_INSTALL:
-					install_queue.push_back(packagelist.get_package(i)->get_name());
+					install_queue.push_back(packagelist->get_package(i)->get_name());
 					break;
 				case PKGSTATUS_REMOVE:
-					remove_queue.push_back(packagelist.get_package(i)->get_name());
+					remove_queue.push_back(packagelist->get_package(i)->get_name());
 					break;
 				case PKGSTATUS_PURGE:
-					purge_queue.push_back(packagelist.get_package(i)->get_name());
+					purge_queue.push_back(packagelist->get_package(i)->get_name());
 					break;
 				default:
 					printf("Unknown status %d\n", newStatus[i]);
@@ -336,11 +344,11 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 		long i = ui.packageTable->item(x, PT_ID)->text().toLong();
 		if (i >= newStatus.size())
 		{
-			printf("i is out of range: i=%d, max = %d\n", i, packagelist.size());
+			printf("i is out of range: i=%d, max = %d\n", i, packagelist->size());
 			return;
 		}
-		PACKAGE *_p = packagelist.get_package(i);
-		switch(packagelist.get_package(i)->get_status())
+		PACKAGE *_p = packagelist->get_package(i);
+		switch(packagelist->get_package(i)->get_status())
 		{
 			case PKGSTATUS_AVAILABLE:
 				if (state == Qt::Checked)
@@ -490,11 +498,11 @@ void MainWindow::searchPackagesByTag(QString tag)
 	ui.packageTable->clearContents();
 	ui.packageTable->setRowCount(0);
 
-	for (unsigned int i=0; i<packagelist.size(); i++)
+	for (unsigned int i=0; i<packagelist->size(); i++)
 	{
-		for (unsigned int t=0; t<packagelist.get_package(i)->get_tags()->size(); t++)
+		for (unsigned int t=0; t<packagelist->get_package(i)->get_tags()->size(); t++)
 		{
-			if (packagelist.get_package(i)->get_tags()->get_tag(t)->get_name() == tag.toStdString())
+			if (packagelist->get_package(i)->get_tags()->get_tag(t)->get_name() == tag.toStdString())
 			{
 				insertPackageIntoTable(i);
 			}

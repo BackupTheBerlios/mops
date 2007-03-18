@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.16 2007/03/14 13:44:29 i27249 Exp $
+ * $Id: mainwindow.h,v 1.17 2007/03/18 03:56:46 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -39,7 +39,10 @@ class MainWindow: public QMainWindow
 	signals:
 		void loadPackageDatabase();
 		void startThread();
+		void syncData();
+		void updateDatabase();
 	public slots:
+		void receivePackageList(PACKAGE_LIST pkgList);
 		void errorLoadingDatabase();
 		void sqlQueryBegin();
 		void sqlQueryEnd();
@@ -108,7 +111,7 @@ class MainWindow: public QMainWindow
 	private:
 		mpkg *mDb;
 				void setBarValue(QProgressBar *Bar, int stepValue);
-		PACKAGE_LIST packagelist;
+		PACKAGE_LIST *packagelist;
 		void insertPackageIntoTable(unsigned int package_num);
 		void searchPackagesByTag(QString tag);
 		vector<string> install_queue;

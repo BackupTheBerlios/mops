@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.4 2007/03/14 13:28:18 i27249 Exp $
+ * $Id: corethread.h,v 1.5 2007/03/18 03:56:46 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -33,10 +33,12 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
+		void updatePackageDatabase();
 		void tellAreYouRunning();
 		void loadPackageDatabase();
 		void insertPackageIntoTable(unsigned int package_num);
 	signals:
+		void loadData();
 		// Debug signals
 		void yesImRunning();
 		
@@ -60,8 +62,12 @@ class coreThread: public QThread
 		void setTableSize(unsigned int size);
 		void setTableItem(unsigned int row, bool checkState, string cellItemText);
 		void setTableItemVisible(unsigned int row, bool visible);
-		
 
+		// Data sync
+		void sendPackageList(PACKAGE_LIST pkgList);
+		
+	public slots:
+		PACKAGE_LIST * getPackageList();
 
 	private:
 		mpkg *database;

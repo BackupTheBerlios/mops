@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.4 2007/03/14 13:28:18 i27249 Exp $
+ * $Id: corethread.cpp,v 1.5 2007/03/18 03:56:46 i27249 Exp $
  * *************************************************************************/
 
 #include "corethread.h"
@@ -108,3 +108,15 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	emit setTableItem(package_num, checked, pName);
 }
 
+PACKAGE_LIST *coreThread::getPackageList()
+{
+	emit sendPackageList(*packageList);
+}
+
+void coreThread::updatePackageDatabase()
+{
+	emit loadingStarted();
+	database->update_repository_data();
+	emit loadingFinished();
+	emit loadData();
+}
