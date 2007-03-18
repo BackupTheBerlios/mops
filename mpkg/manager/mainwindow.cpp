@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.25 2007/03/18 03:56:46 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.26 2007/03/18 04:37:52 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -120,6 +120,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.setupUi(this);
 
 	clearForm();
+	disableProgressBar();
 	//dbBox = new DatabaseBox;
 	//mDb = dbBox->mDb;
 	//loadBox = new LoadingBox;
@@ -156,10 +157,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int))), Qt::QueuedConnection;
 	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST)), this, SLOT(receivePackageList(PACKAGE_LIST)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData(bool)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
 	emit startThread();
-	emit loadPackageDatabase();
+	//emit loadPackageDatabase();
 }
 
 MainWindow::~MainWindow()
@@ -511,7 +512,7 @@ void MainWindow::searchPackagesByTag(QString tag)
 	}
 }
 
-void MainWindow::loadData(bool internal)
+void MainWindow::loadData()
 {
 	emit loadPackageDatabase();
 
