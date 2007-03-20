@@ -1,15 +1,16 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.8 2007/03/18 05:43:37 i27249 Exp $
+ * $Id: corethread.cpp,v 1.9 2007/03/20 21:05:05 i27249 Exp $
  * *************************************************************************/
-#define USLEEP 5
+#define MSLEEP 30
 #include "corethread.h"
 coreThread::coreThread()
 {
 	printf("Core thread created\n");
 	// Basic initializations here...
 	database = new mpkg;	// Database initialization
+	currentAction = CA_Idle;
 }
 
 coreThread::~coreThread()
@@ -20,21 +21,50 @@ coreThread::~coreThread()
 
 void coreThread::run()
 {
-	setPriority(QThread::LowestPriority);
-	printf("Thread started\n");
-	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
-	emit loadingStarted();
-	emit sqlQueryBegin();
-	SQLRecord sqlSearch;
-	vector<int> *tmpNewStatus;
-	
-	if (database->get_packagelist(sqlSearch, tmpPackageList, true)!=0)
+	printf("Running...\n");
+	forever 
 	{
-		emit errorLoadingDatabase();
-		emit sqlQueryEnd();
-		delete tmpPackageList;
-		return;
+		switch(currentAction)
+		{
+			case CA_LoadDatabase:
+				_loadPackageDatabase();
+				currentAction=CA_Idle;
+				break;
+
+			case CA_CommitQueue:
+				// Nothing to do for now...
+				currentAction=CA_Idle;
+				break;
+			case CA_Idle:
+				printf("sleeping...\n");
+				msleep(50);
+				break;
+			default:
+				printf("Out of loop! WARNING!!!\n");
+				msleep(10);
+		}
 	}
+				
+				
+				
+				
+				
+				
+				
+	/*			setPriority(QThread::LowestPriority);
+				PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
+				emit loadingStarted();
+				emit sqlQueryBegin();
+				SQLRecord sqlSearch;
+				vector<int> *tmpNewStatus;
+	
+				if (database->get_packagelist(sqlSearch, tmpPackageList, true)!=0)
+				{
+					emit errorLoadingDatabase();
+					emit sqlQueryEnd();
+					delete tmpPackageList;
+					currentAction = CA_None;
+				}
 	packageList = tmpPackageList;
 	emit sqlQueryEnd();
 	
@@ -64,10 +94,9 @@ void coreThread::run()
 	emit disableProgressBar();
 	emit loadingFinished();
 	emit fitTable();
-	
+	*/
 
 	// Just entering a loop to receive/emit signals...
-	exec();
 }
 
 void coreThread::tellAreYouRunning()
@@ -78,7 +107,12 @@ void coreThread::tellAreYouRunning()
 
 void coreThread::loadPackageDatabase()
 {
-/*	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
+	currentAction = CA_LoadDatabase;
+}
+
+void coreThread::_loadPackageDatabase()
+{
+	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	emit loadingStarted();
 	emit sqlQueryBegin();
 	SQLRecord sqlSearch;
@@ -106,12 +140,23 @@ void coreThread::loadPackageDatabase()
 	{
 		newStatus.push_back(packageList->get_package(i)->get_status());
 		insertPackageIntoTable(i);
+
+#ifdef USLEEP
+		usleep(USLEEP);
+#endif
+#ifdef MSLEEP
+		msleep(MSLEEP);
+#endif
+#ifdef SLEEP
+		sleep(SLEEP);
+#endif
+
+
 		emit setProgressBarValue(i);
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	emit fitTable();
-*/	
+	emit fitTable();	
 }
 
 void coreThread::insertPackageIntoTable(unsigned int package_num)

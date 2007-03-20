@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.5 2007/03/18 03:56:46 i27249 Exp $
+ * $Id: corethread.h,v 1.6 2007/03/20 21:05:06 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -24,6 +24,11 @@
 #include <mpkg/libmpkg.h>
 
 #include <QThread>
+
+#define CA_Idle 0
+#define CA_LoadDatabase 1
+#define CA_CommitQueue 2
+
 class coreThread: public QThread
 {
 	Q_OBJECT
@@ -33,10 +38,18 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
-		void updatePackageDatabase();
-		void tellAreYouRunning();
-		void loadPackageDatabase();
-		void insertPackageIntoTable(unsigned int package_num);
+		void updatePackageDatabase(); 	// Call to update repositories data
+		void loadPackageDatabase();	// Call to load data from database and display
+		void commitQueue();		// Call to commit actions (install, remove, etc)
+		void syncData();		// Call to sync data between GUI and thread (temporary solution)
+		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
+	private:
+		void _loadPackageDatabase();	// loading data from database - real implementation
+		void _updatePackageDatabase();	// updating data from repositories - real implementation
+		void insertPackageIntoTable(unsigned int package_num); // Displaying function
+		void _commitQueue();
+
+
 	signals:
 		void loadData();
 		// Debug signals
@@ -70,6 +83,7 @@ class coreThread: public QThread
 		PACKAGE_LIST * getPackageList();
 
 	private:
+		int currentAction;
 		mpkg *database;
 		PACKAGE_LIST *packageList;
 		vector<int> newStatus;

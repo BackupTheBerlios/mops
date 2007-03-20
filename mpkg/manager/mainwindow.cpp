@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.26 2007/03/18 04:37:52 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.27 2007/03/20 21:05:06 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -160,7 +160,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
 	emit startThread();
-	//emit loadPackageDatabase();
+	emit loadPackageDatabase();
 }
 
 MainWindow::~MainWindow()
