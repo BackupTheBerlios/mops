@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.10 2007/03/21 06:29:39 i27249 Exp $
+ * $Id: corethread.cpp,v 1.11 2007/03/21 14:30:10 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -16,6 +16,7 @@ coreThread::coreThread()
 
 coreThread::~coreThread()
 {
+	delete database;
 	printf("Thread destroyed correctly\n");
 	//delete database;
 }
@@ -23,6 +24,11 @@ coreThread::~coreThread()
 void coreThread::callQuit()
 {
 	currentAction = CA_Quit;
+}
+
+void coreThread::sync()
+{
+	emit sendPackageList(*packageList, newStatus);
 }
 
 void coreThread::run()
@@ -34,19 +40,28 @@ void coreThread::run()
 		{
 			case CA_LoadDatabase:
 				_loadPackageDatabase();
-				emit sendPackageList(*packageList);
-				currentAction=CA_Idle;
+				sync();
 				break;
 
 			case CA_CommitQueue:
-				// Nothing to do for now...
-				currentAction=CA_Idle;
-				emit sendPackageList(*packageList);
+				_commitQueue();
+				sync();
 				break;
+			case CA_UpdateDatabase:
+				_updatePackageDatabase();
+				sync();
+				break;
+
 			case CA_Idle:
 				msleep(50);
 				break;
 			case CA_Quit:
+				delete database;
+				printf("Called quit!\n");
+				if (database)
+				{
+					printf("Seems that database still open...\n");
+				}
 				return; // Exiting!
 			default:
 				printf("Out of loop! WARNING!!!\n");
@@ -165,12 +180,13 @@ void coreThread::_loadPackageDatabase()
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	emit fitTable();	
+	emit fitTable();
+	currentAction=CA_Idle;
 }
 
 void coreThread::insertPackageIntoTable(unsigned int package_num)
 {
-	bool checked;
+	bool checked = false;
 	string package_icon;
 	if (packageList->get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
 			packageList->get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos)
@@ -209,10 +225,10 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 
 PACKAGE_LIST *coreThread::getPackageList()
 {
-	emit sendPackageList(*packageList);
+	emit sendPackageList(*packageList, newStatus);
 }
 
-void coreThread::updatePackageDatabase()
+void coreThread::_updatePackageDatabase()
 {
 	emit loadingStarted();
 	database->update_repository_data();
@@ -220,8 +236,50 @@ void coreThread::updatePackageDatabase()
 	emit loadData();
 }
 
-void coreThread::commitQueue()
+void coreThread::updatePackageDatabase()
 {
+	currentAction = CA_UpdateDatabase;
+}
+
+void coreThread::commitQueue(vector<int> nStatus)
+{
+	newStatus = nStatus;
+	currentAction = CA_CommitQueue;
+}
+void coreThread::_commitQueue()
+{
+	vector<string> install_queue;
+	vector<string> remove_queue;
+	vector<string> purge_queue;
+	for (unsigned int i = 0; i< newStatus.size(); i++)
+	{
+		if (packageList->get_package(i)->get_status()!=newStatus[i])
+		{
+			switch(newStatus[i])
+			{
+				case PKGSTATUS_INSTALL:
+					install_queue.push_back(packageList->get_package(i)->get_name());
+					break;
+				case PKGSTATUS_REMOVE:
+					remove_queue.push_back(packageList->get_package(i)->get_name());
+					break;
+				case PKGSTATUS_PURGE:
+					purge_queue.push_back(packageList->get_package(i)->get_name());
+					break;
+				default:
+					printf("Unknown status %d\n", newStatus[i]);
+			}
+		}
+	}
+	printf("install_queue size = %d\n", install_queue.size());
+	printf("remove_queue size = %d\n", remove_queue.size());
+	database->uninstall(remove_queue);
+	database->install(install_queue);
+	database->purge(purge_queue);
+	emit setStatus("Committing changes...");
+	database->commit();
+	emit setStatus("All operations completed");
+	currentAction = CA_LoadDatabase;
 }
 
 void coreThread::syncData()

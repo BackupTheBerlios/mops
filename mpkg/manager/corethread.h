@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.7 2007/03/21 06:29:39 i27249 Exp $
+ * $Id: corethread.h,v 1.8 2007/03/21 14:30:10 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -29,13 +29,14 @@
 #define CA_LoadDatabase 1
 #define CA_CommitQueue 2
 #define CA_Quit 3
-
+#define CA_UpdateDatabase 4
 
 class coreThread: public QThread
 {
 	Q_OBJECT
 	public:
 		void run();
+		void sync();
 		coreThread();
 		~coreThread();
 
@@ -43,7 +44,7 @@ class coreThread: public QThread
 		void callQuit();
 		void updatePackageDatabase(); 	// Call to update repositories data
 		void loadPackageDatabase();	// Call to load data from database and display
-		void commitQueue();		// Call to commit actions (install, remove, etc)
+		void commitQueue(vector<int> nStatus);		// Call to commit actions (install, remove, etc)
 		void syncData();		// Call to sync data between GUI and thread (temporary solution)
 		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
 	private:
@@ -54,6 +55,7 @@ class coreThread: public QThread
 
 
 	signals:
+		void setStatus(QString msg);
 		void loadData();
 		// Debug signals
 		void yesImRunning();
@@ -80,7 +82,7 @@ class coreThread: public QThread
 		void setTableItemVisible(unsigned int row, bool visible);
 
 		// Data sync
-		void sendPackageList(PACKAGE_LIST pkgList);
+		void sendPackageList(PACKAGE_LIST pkgList, vector<int> nStatus);
 		
 	public slots:
 		PACKAGE_LIST * getPackageList();

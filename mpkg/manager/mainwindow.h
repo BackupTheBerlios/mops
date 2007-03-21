@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.20 2007/03/21 06:29:39 i27249 Exp $
+ * $Id: mainwindow.h,v 1.21 2007/03/21 14:30:10 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -42,9 +42,10 @@ class MainWindow: public QMainWindow
 		void syncData();
 		void updateDatabase();
 		void quitThread();
+		void commit(vector<int> nStatus);
 	public slots:
-		void receivePackageList(PACKAGE_LIST pkgList);
-
+		void receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus);
+		void setStatus(QString status);
 		void loadData();
 		void errorLoadingDatabase();
 		void sqlQueryBegin();

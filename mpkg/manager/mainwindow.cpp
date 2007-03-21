@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.28 2007/03/21 06:29:39 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.29 2007/03/21 14:30:10 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -78,6 +78,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 {
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
+	else stat->setCheckState(Qt::Unchecked);
 	ui.packageTable->setCellWidget(row,PT_INSTALLCHECK, stat);
 
 	TableLabel *pkgName = new TableLabel(ui.packageTable);
@@ -123,6 +124,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	upgradePackageAction = tableMenu->addAction(tr("Upgrade"));
 	qRegisterMetaType<string>("string");
 	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
+	qRegisterMetaType< vector<int> >("vector<int>");
 	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	
@@ -148,39 +150,53 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int))), Qt::QueuedConnection;
-	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST)), this, SLOT(receivePackageList(PACKAGE_LIST)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)), Qt::DirectConnection);
 	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()), Qt::QueuedConnection);
-
+	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 
+void MainWindow::setStatus(QString status)
+{
+	ui.statusbar->showMessage(status);
+}
+
+
 MainWindow::~MainWindow()
 {
 	printf("Closing threads...\n");
-	emit quitThread();
+	thread->callQuit();
+	//emit quitThread();
 	/*while (thread->isRunning())
 	{
+		thread->exit();
+		sleep(1);
+		printf("Waiting...\n");
 		// Waiting for thread to exit
 	}*/
 	printf("Thread seems to exit\n");
 	//delete thread;
 }
 
-void MainWindow::receivePackageList(PACKAGE_LIST pkgList)
+void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
 	*packagelist=pkgList;
+	newStatus = nStatus;
 	printf("Syncronized!\n");
 }
 
 void MainWindow::quickPackageSearch()
 {
+	QString tmp;
 	for (unsigned int i=0; i<ui.packageTable->rowCount(); i++)
 	{
-		if (packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name().find(ui.quickPackageSearchEdit->text().toStdString())==std::string::npos)
+		tmp = tmp.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
+		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			ui.packageTable->setRowHidden(i, true);
 		}
@@ -208,7 +224,7 @@ void MainWindow::showPackageInfo()
 {
 	long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
 	printf("ID = %d\n", id);
-	printf("List size = %d\n", thread->getPackageList()->size());
+	//printf("List size = %d\n", thread->getPackageList()->size());
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
@@ -284,6 +300,7 @@ void MainWindow::updateData()
 	
 void MainWindow::quitApp()
 {
+	thread->callQuit();
 	qApp->quit();
 
 }
@@ -292,38 +309,7 @@ void MainWindow::showCoreSettings()
 }
 void MainWindow::commitChanges()
 {
-	for (unsigned int i = 0; i< newStatus.size(); i++)
-	{
-		if (packagelist->get_package(i)->get_status()!=newStatus[i])
-		{
-			switch(newStatus[i])
-			{
-				case PKGSTATUS_INSTALL:
-					install_queue.push_back(packagelist->get_package(i)->get_name());
-					break;
-				case PKGSTATUS_REMOVE:
-					remove_queue.push_back(packagelist->get_package(i)->get_name());
-					break;
-				case PKGSTATUS_PURGE:
-					purge_queue.push_back(packagelist->get_package(i)->get_name());
-					break;
-				default:
-					printf("Unknown status %d\n", newStatus[i]);
-			}
-		}
-	}
-	printf("install_queue size = %d\n", install_queue.size());
-	printf("remove_queue size = %d\n", remove_queue.size());
-	mDb->uninstall(remove_queue);
-	mDb->install(install_queue);
-	mDb->purge(purge_queue);
-	ui.statusbar->showMessage("Committing changes...");
-	mDb->commit();
-	mDb = dbBox->recreateDb();
-	install_queue.clear();
-	remove_queue.clear();
-	loadData();
-	ui.statusbar->showMessage("All operations completed");
+	emit commit(newStatus);
 }
 void MainWindow::resetChanges(){}
 void MainWindow::saveQueue(){}
