@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.34 2007/03/21 14:29:55 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.35 2007/03/21 17:49:26 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -166,6 +166,7 @@ int mpkgDatabase::commit_actions()
 
 int mpkgDatabase::fetch_package(PACKAGE *package)
 {
+	currentStatus = "Looking for locations of package "+package->get_name()+"...";
 	printf("Fetching...\n");
 		// Смотрим все доступные locations пакета, точнее - их сервера. 
 		// Сервера подразделяются по типам на следующие группы:
@@ -305,6 +306,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 			if (package->get_md5()==get_file_md5(_fname))
 			{
 				debug("md5 ok");
+				currentStatus = "Found in cache - proceeding to install";
 				DownloadOk = true;
 				return 0;
 			}
@@ -331,6 +333,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 			case SRV_FTP:
 			case SRV_SMB:
 			case SRV_HTTPS:
+				currentStatus = "Downloading from "+__file_url+"...";
 				printf("Retrieving %s\n", __file_url.c_str());
 				res = CommonGetFile(
 							__file_url, 
@@ -341,18 +344,21 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 				if ( res == DOWNLOAD_OK ) {
 					if (package->get_md5()==get_file_md5(_fname))
 					{
+						currentStatus = "Downloaded successfully";
 						debug("md5 ok");
 						DownloadOk = true;
 						printf(_("%s downloaded successfull\n"), __file_url.c_str());
 					}
 					else
 					{
+						currentStatus = "MD5 mismatch, looking for another sources";
 						printf("md5 error\n");
 						debug("md5 incorrect, re-downloading");
 					}
 
 				}
 			       	else {
+					currentStatus = "Failed to download "+ __file_url;
 					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
 					break;
 				}
@@ -386,6 +392,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	lp.fill_configfiles(package);
 	if (check_file_conflicts(package)!=0)
 	{
+		currentStatus = "File conflict on package "+package->get_name();
 		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
 		return -5;
 	}
@@ -403,6 +410,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	// Extracting package
+	currentStatus = "Extracting package "+package->get_name();
 	debug("calling extract");
 	//lp.fill_filelist(package);
 	string sys_cache=SYS_CACHE;
@@ -449,7 +457,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
-	system(sys.c_str());
+	if (system(sys.c_str()) == 0) currentStatus = "Extraction complete. Running scripts...";
+	else {
+		currentStatus = "Failed to extract!";
+		return -10;
+	}
 	
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
@@ -462,6 +474,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	if (get_status(purge_id)==PKGSTATUS_REMOVED_AVAILABLE) set_status(purge_id, PKGSTATUS_AVAILABLE);
 	if (get_status(purge_id)==PKGSTATUS_REMOVED_UNAVAILABLE) set_status(purge_id, PKGSTATUS_UNAVAILABLE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
+	currentStatus = "Package successfully installed";
 	return 0;
 }
 

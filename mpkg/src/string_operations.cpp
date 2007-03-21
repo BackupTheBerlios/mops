@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.5 2007/03/21 14:29:55 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.6 2007/03/21 17:49:26 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -36,7 +36,7 @@ string cutSpaces(string str)
 	int start = str.find_first_not_of(" ");
 	int end = str.find_last_not_of(" ");
 	string ret =  str.substr(start, end-start+1);
-	printf("[%s] [%s]\n", str.c_str(), ret.c_str());
+//	printf("[%s] [%s]\n", str.c_str(), ret.c_str());
 	return ret;
 }
 

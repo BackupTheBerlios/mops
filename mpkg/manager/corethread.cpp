@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.12 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: corethread.cpp,v 1.13 2007/03/21 17:49:26 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -100,10 +100,6 @@ void coreThread::run()
 			case CA_Quit:
 				delete database;
 				printf("Called quit!\n");
-				if (database)
-				{
-					printf("Seems that database still open...\n");
-				}
 				return; // Exiting!
 			default:
 				printf("Out of loop! WARNING!!!\n");

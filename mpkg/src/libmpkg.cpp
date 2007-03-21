@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.9 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.10 2007/03/21 17:49:26 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -19,7 +19,7 @@ mpkg::mpkg()
 	db = new mpkgDatabase();
 	DepTracker = new DependencyTracker(db);
 	init_ok=true;
-	currentStatus = "Database loaded";
+	currentStatus = "Database loaded (mpkg constructor)";
 }
 
 mpkg::~mpkg()
@@ -57,16 +57,22 @@ int mpkg::install(vector<string> fname)
 	int ret=0;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
+		currentStatus = "Installing "+IntToStr(i)+" package ["+fname[i]+"]";
 		ret+=mpkgSys::install(fname[i], db, DepTracker);
 	}
+	currentStatus = "Installation complete";
 	return ret;
 }
 
 int mpkg::install(string fname)
 {
+	currentStatus = "Installing package "+fname;
 	vector<string> fname2;
 	fname2.push_back(fname);
-	return install(fname2);
+	int ret = install(fname2);
+	if (ret==0) currentStatus = "Installation successful";
+	else currentStatus = "Error installing package "+fname;
+	return ret;
 }
 
 // Packages removing
@@ -75,6 +81,8 @@ int mpkg::uninstall(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
+		
+		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Uninstalling package "+pkg_name[i];
 		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 0);
 	}
 	return ret;
@@ -86,6 +94,8 @@ int mpkg::purge(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
+
+		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Purging package "+pkg_name[i];
 		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 1);
 	}
 	return ret;
@@ -97,6 +107,8 @@ int mpkg::upgrade (vector<string> pkgname)
 	int ret=0;
 	for (unsigned int i = 0; i < pkgname.size(); i++)
 	{
+
+		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkgname.size()+1)+"] Upgrading package "+pkgname[i];
 		ret+=mpkgSys::upgrade(pkgname[i], db, DepTracker);
 	}
 	return ret;
@@ -109,21 +121,34 @@ int mpkg::update_repository_data()
 	if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
 	{
 	//	if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
-			return 0;
+		currentStatus = "Repository data updated";
+		return 0;
 	}
-	else return -1;
+	else 
+	{
+		currentStatus = "Repository data update failed";
+		return -1;
+	}
 }
 
 // Cache cleaning
 int mpkg::clean_cache()
 {
-	return mpkgSys::clean_cache();
+	currentStatus = "Cleaning cache...";
+	int ret = mpkgSys::clean_cache();
+	if (ret == 0) currentStatus = "Cache cleanup complete";
+	else currentStatus = "Error cleaning cache!";
+	return ret;
 }
 
 // Package list retrieving
 int mpkg::get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo)
 {
-	return db->get_packagelist(sqlSearch, packagelist, GetExtraInfo);
+	currentStatus = "Retrieving package list...";
+	int ret = db->get_packagelist(sqlSearch, packagelist, GetExtraInfo);
+	if (ret == 0) currentStatus = "Retriveal complete";
+	else currentStatus = "Failed retrieving package list!";
+	return ret;
 }
 
 // Configuration and settings: retrieving
@@ -183,9 +208,12 @@ int mpkg::set_runscripts(bool dorun)
 // Finalizing
 int mpkg::commit()
 {
+	currentStatus = "Checking dependencies...";
 	printf("committing...\n");
 	DepTracker->commitToDb();
+	currentStatus = "Committing changes...";
 	printf("commit = %d\n", db->commit_actions());
+	currentStatus = "Complete.";
 	return 0;
 }
 
