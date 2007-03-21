@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.7 2007/02/21 16:01:28 i27249 Exp $
+ * $Id: libmpkg.h,v 1.8 2007/03/21 15:30:14 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -46,7 +46,7 @@ class mpkg
 		 @@*/
 
 		// Interface transports - current status messages
-		string current_status;
+		string current_status();
 		/* Contains current status. Used to make user output more informative.
 		 * @@*/
 

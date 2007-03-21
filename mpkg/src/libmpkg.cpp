@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.8 2007/03/21 14:29:55 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.9 2007/03/21 15:30:14 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -14,11 +14,12 @@ mpkg::mpkg()
 	printf("Running Linux, welcome!\n");
 #endif
 	debug("creating core");
-	current_status="Loading database...";
+	currentStatus="Loading database...";
 	loadGlobalConfig();
 	db = new mpkgDatabase();
 	DepTracker = new DependencyTracker(db);
 	init_ok=true;
+	currentStatus = "Database loaded";
 }
 
 mpkg::~mpkg()
@@ -27,6 +28,11 @@ mpkg::~mpkg()
 	delete db;
 	printf("closing database...\n");
 	delete_tmp_files();
+}
+
+string mpkg::current_status()
+{
+	return currentStatus;
 }
 
 int mpkg::clean_queue()

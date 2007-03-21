@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.21 2007/03/21 14:29:55 i27249 Exp $
+ * $Id: repository.cpp,v 1.22 2007/03/21 15:30:14 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -518,6 +518,7 @@ int Repository::build_index(string server_url)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
+	currentStatus = "Updating data from "+ server_url+"...";
 	debug("get_index!");
 	// First: detecting repository type
 	// Trying to download in this order (if successful, we have detected a repository type):
@@ -540,6 +541,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			debug("download ok, validating contents...");
 			if (system(cm.c_str())==0 && ReadFile(index_filename).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
 			{
+				currentStatus = "Detected native MPKG repository";
 				printf("Native MPKG repository detected\n");
 				type = TYPE_MPKG;
 			}
@@ -559,6 +561,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			debug("download ok, validating contents...");
 			if (ReadFile(index_filename).find("PACKAGE NAME:  ")!=std::string::npos)
 			{
+				currentStatus = "Detected legacy Slackware repository";
 				printf("Slackware repository detected\n");
 				if (CommonGetFile(server_url + "CHECKSUMS.md5", md5sums_filename) == DOWNLOAD_OK)
 				{
@@ -583,6 +586,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 
 	if (type != TYPE_MPKG && type != TYPE_SLACK && type!=TYPE_DEBIAN)
 	{
+		currentStatus = "Error updating data from "+server_url+": download error or unsupported type";
 		printf("Error downloading package index: download error, or unsupported repository type\n");
 		return -1;
 	}
@@ -594,7 +598,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	string xml_name=index_filename;
 	XMLNode repository_root;
 	int pkg_count;
-	
+	currentStatus = "["+server_url+"] Importing data...";
 	switch(type)
 	{
 		case TYPE_MPKG:

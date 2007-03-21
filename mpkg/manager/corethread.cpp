@@ -1,10 +1,51 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.11 2007/03/21 14:30:10 i27249 Exp $
+ * $Id: corethread.cpp,v 1.12 2007/03/21 15:30:14 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
+
+statusThread::statusThread()
+{
+}
+
+void statusThread::run()
+{
+	forever 
+	{
+		switch(action)
+		{
+			case STT_Run:
+				emit setStatus((QString) currentStatus.c_str());
+				break;
+			case STT_Pause:
+				break;
+			case STT_Stop:
+				return;
+		}
+		msleep(100);
+	}
+}
+
+void statusThread::show()
+{
+	action = STT_Run;
+}
+
+void statusThread::hide()
+{
+	action = STT_Pause;
+}
+
+void statusThread::halt()
+{
+	action = STT_Stop;
+}
+
+
+
+
 coreThread::coreThread()
 {
 	printf("Core thread created\n");
@@ -53,6 +94,7 @@ void coreThread::run()
 				break;
 
 			case CA_Idle:
+				//emit setStatus(database->current_status().c_str());
 				msleep(50);
 				break;
 			case CA_Quit:
@@ -279,6 +321,8 @@ void coreThread::_commitQueue()
 	emit setStatus("Committing changes...");
 	database->commit();
 	emit setStatus("All operations completed");
+	delete database;
+	database = new mpkg;
 	currentAction = CA_LoadDatabase;
 }
 

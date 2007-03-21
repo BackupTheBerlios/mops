@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.8 2007/03/12 14:34:07 i27249 Exp $
+ * $Id: config.cpp,v 1.9 2007/03/21 15:30:14 i27249 Exp $
  *
  * ***************************************************/
 
@@ -8,6 +8,8 @@
 #include "xmlParser.h"
 
 bool DO_NOT_RUN_SCRIPTS;
+string currentStatus;
+int currentProgress;
 string SYS_ROOT;
 string SYS_CACHE;
 string SCRIPTS_DIR;
@@ -18,6 +20,7 @@ vector<string> DISABLED_REPOSITORY_LIST;
 //vector<CDROM_DEVICE> CDROMS;
 int loadGlobalConfig(string config_file)
 {
+	currentStatus = "Loading configuration...";
 	string run_scripts="yes";
 	string sys_root="/root/development/sys_root/";
 	string sys_cache="/root/development/sys_cache/";
@@ -95,6 +98,7 @@ int loadGlobalConfig(string config_file)
 #endif
 	if (conf_init) mpkgconfig::initConfig();
 
+	currentStatus = "Settings loaded";
 	return 0;
 }
 

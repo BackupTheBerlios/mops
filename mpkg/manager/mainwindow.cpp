@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.29 2007/03/21 14:30:10 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.30 2007/03/21 15:30:14 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -129,10 +129,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	
 	this->show();
+	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
 	
 	// Building thread connections
+	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()), Qt::QueuedConnection);
@@ -148,6 +150,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::QueuedConnection);
+
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int))), Qt::QueuedConnection;
 	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)), Qt::DirectConnection);
@@ -158,6 +162,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
+	emit startStatusThread();
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 

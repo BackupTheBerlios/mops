@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.17 2007/03/12 14:34:07 i27249 Exp $
+    $Id: config.h,v 1.18 2007/03/21 15:30:14 i27249 Exp $
 */
 
 
@@ -20,6 +20,9 @@ using namespace std;
 
 // Debug-time configuration
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
+
+extern string currentStatus;
+extern int currentProgress;
 
 // System configuration
 

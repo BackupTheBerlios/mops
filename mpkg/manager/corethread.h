@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.8 2007/03/21 14:30:10 i27249 Exp $
+ * $Id: corethread.h,v 1.9 2007/03/21 15:30:14 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -25,11 +25,30 @@
 
 #include <QThread>
 
+#define STT_Run 0
+#define STT_Pause 1
+#define STT_Stop 2
+
 #define CA_Idle 0
 #define CA_LoadDatabase 1
 #define CA_CommitQueue 2
 #define CA_Quit 3
 #define CA_UpdateDatabase 4
+
+class statusThread: public QThread
+{
+	Q_OBJECT
+	public:
+		void run();
+		statusThread();
+		int action;
+	public slots:
+		void show();
+		void hide();
+		void halt();
+	signals:
+		void setStatus(QString status);
+};
 
 class coreThread: public QThread
 {
