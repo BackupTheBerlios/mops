@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.20 2007/03/12 14:34:07 i27249 Exp $
+ * $Id: repository.cpp,v 1.21 2007/03/21 14:29:55 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -155,6 +155,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		}
 		md5tmp = md5tmp.substr(0, md5tmp.find_last_of(" \t"));
 		md5tmp = md5tmp.substr(md5tmp.rfind("\n")+1);
+		md5tmp = cutSpaces(md5tmp);
 		pkg.set_md5(md5tmp);
 		debug("MD5 = " + md5tmp);
 		filename = slackPackageName;
@@ -277,19 +278,22 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		debug("package size (uncompressed): "+ pkg.get_installed_size());
 
 		// Dependencies
-		while (slackRequired.find_first_of(",")!=std::string::npos)
+		/*while (slackRequired.find_first_of(",")!=std::string::npos)
 		{
 			debug("Proceeding dep, slackRequired = "+ slackRequired);
 			tmpDep.clear();
 			tmpDep.set_type("DEPENDENCY");
 			pos = slackRequired.find_first_of("=><");
+
 			if (pos < slackRequired.find_first_of(",\n"))
 			{
-				tmpDep.set_package_name(slackRequired.substr(0, pos));
+				tmpDep.set_package_name(cutSpaces(slackRequired.substr(0, pos)));
+				printf("{Dep name: %s }", tmpDep.get_package_name().c_str());
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_not_of("=><");
 				tmpDepStr = slackRequired.substr(0,pos);
-				tmpDep.set_condition(hcondition2xml(tmpDepStr));
+				tmpDep.set_condition(IntToStr(condition2int(hcondition2xml(tmpDepStr))));
+				printf("{Dep condition: %s}\n", tmpDep.get_condition().c_str());
 				slackRequired = slackRequired.substr(pos);
 				pos = slackRequired.find_first_of(" ,");
 				tmpDep.set_package_version(slackRequired.substr(0,pos));
@@ -298,13 +302,15 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			{
 				pos = slackRequired.find_first_of(",")+1;
 				tmpDep.set_package_name(slackRequired.substr(0,pos));
+				printf("{Dep name: %s }", tmpDep.get_package_name().c_str());
 				tmpDep.set_condition(COND_ANY);
+				printf("{Dep condition: %s}\n", tmpDep.get_condition().c_str());
 				slackRequired = slackRequired.substr(pos);
 			}
 
 			pkg.get_dependencies()->add(tmpDep);
 		}
-
+*/
 		debug("reached suggestions");
 		/*// Suggestions
 		while (slackSuggests.find_first_of(",")!=std::string::npos)

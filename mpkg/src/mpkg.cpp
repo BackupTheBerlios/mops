@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.33 2007/03/12 14:34:07 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.34 2007/03/21 14:29:55 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -339,9 +339,20 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 
 				printf("Attempted to download file %s\n", __file_url.c_str());
 				if ( res == DOWNLOAD_OK ) {
-					DownloadOk=true;
-					printf(_("%s downloaded successfull\n"), __file_url.c_str());
-				} else {
+					if (package->get_md5()==get_file_md5(_fname))
+					{
+						debug("md5 ok");
+						DownloadOk = true;
+						printf(_("%s downloaded successfull\n"), __file_url.c_str());
+					}
+					else
+					{
+						printf("md5 error\n");
+						debug("md5 incorrect, re-downloading");
+					}
+
+				}
+			       	else {
 					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
 					break;
 				}

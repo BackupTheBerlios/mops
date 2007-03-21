@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.11 2007/02/21 16:01:28 i27249 Exp $
+$Id: dependencies.cpp,v 1.12 2007/03/21 14:29:55 i27249 Exp $
 */
 
 
@@ -116,6 +116,7 @@ bool DependencyTracker::checkVersion(string version1, int condition, string vers
 			else return false;
 			break;
 		default:
+			printf("unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n", condition);
 			return true;
 	}
 	return true;

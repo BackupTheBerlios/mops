@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.4 2007/02/19 05:14:10 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.5 2007/03/21 14:29:55 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -28,6 +28,15 @@ char * strMerge(const char *part1, const char *part2)
 #ifdef DEBUG
 	printf("ret: [%s]\n", ret);
 #endif
+	return ret;
+}
+
+string cutSpaces(string str)
+{
+	int start = str.find_first_not_of(" ");
+	int end = str.find_last_not_of(" ");
+	string ret =  str.substr(start, end-start+1);
+	printf("[%s] [%s]\n", str.c_str(), ret.c_str());
 	return ret;
 }
 

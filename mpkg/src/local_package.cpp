@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.27 2007/03/12 00:39:44 i27249 Exp $
+$Id: local_package.cpp,v 1.28 2007/03/21 14:29:55 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -249,6 +249,7 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	debug("get_scripts start");
 	
 	string scripts_dir=SCRIPTS_DIR+"/" + package->get_filename() + "_" + package->get_md5();
+	printf("[%s]\n", package->get_md5().c_str());
 	string tmp_preinstall=scripts_dir+"/preinstall.sh";
 	string tmp_postinstall=scripts_dir+"/doinst.sh";
 	string tmp_preremove=scripts_dir+"/preremove.sh";
@@ -260,7 +261,7 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 #ifdef DEBUG
 	printf("extracting scripts for %s, filename: %s\n", package->get_name().c_str(), filename.c_str());
 #endif
-	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall+" 2>/dev/null";
+	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall; //+" 2>/dev/null";
 	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall+" 2>/dev/null";
 	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove+" 2>/dev/null";
 	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove+" 2>/dev/null";
@@ -463,6 +464,7 @@ int LocalPackage::create_md5()
 		return 1;
 	}
 	data.set_md5(md5str);
+	printf("md5 = [%s]\n", md5str.c_str());
 	_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
 	debug("create_md5 end");

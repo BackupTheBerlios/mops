@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.19 2007/03/12 00:39:44 i27249 Exp $
+	$Id: dataunits.cpp,v 1.20 2007/03/21 14:29:55 i27249 Exp $
 */
 
 
@@ -581,7 +581,8 @@ string DEPENDENCY::get_vcondition()
 	if (dependency_condition==IntToStr(VER_XMORE)) return ">=";
 	if (dependency_condition==IntToStr(VER_XLESS)) return "<=";
 	if (dependency_condition==IntToStr(VER_ANY)) return "(any)";
-	return "(unknown condition)";
+	string tmp = "(unknown condition " + dependency_condition + ")";
+	return tmp;
 }
 
 string DEPENDENCY::get_type(bool sql)
