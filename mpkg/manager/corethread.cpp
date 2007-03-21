@@ -1,13 +1,14 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.9 2007/03/20 21:05:05 i27249 Exp $
+ * $Id: corethread.cpp,v 1.10 2007/03/21 06:29:39 i27249 Exp $
  * *************************************************************************/
-#define MSLEEP 30
+#define USLEEP 15
 #include "corethread.h"
 coreThread::coreThread()
 {
 	printf("Core thread created\n");
+	//packageList = pkgList;
 	// Basic initializations here...
 	database = new mpkg;	// Database initialization
 	currentAction = CA_Idle;
@@ -19,6 +20,11 @@ coreThread::~coreThread()
 	//delete database;
 }
 
+void coreThread::callQuit()
+{
+	currentAction = CA_Quit;
+}
+
 void coreThread::run()
 {
 	printf("Running...\n");
@@ -28,17 +34,20 @@ void coreThread::run()
 		{
 			case CA_LoadDatabase:
 				_loadPackageDatabase();
+				emit sendPackageList(*packageList);
 				currentAction=CA_Idle;
 				break;
 
 			case CA_CommitQueue:
 				// Nothing to do for now...
 				currentAction=CA_Idle;
+				emit sendPackageList(*packageList);
 				break;
 			case CA_Idle:
-				printf("sleeping...\n");
 				msleep(50);
 				break;
+			case CA_Quit:
+				return; // Exiting!
 			default:
 				printf("Out of loop! WARNING!!!\n");
 				msleep(10);
@@ -209,4 +218,12 @@ void coreThread::updatePackageDatabase()
 	database->update_repository_data();
 	emit loadingFinished();
 	emit loadData();
+}
+
+void coreThread::commitQueue()
+{
+}
+
+void coreThread::syncData()
+{
 }

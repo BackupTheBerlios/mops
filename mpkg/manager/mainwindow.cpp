@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.27 2007/03/20 21:05:06 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.28 2007/03/21 06:29:39 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -39,12 +39,12 @@ void MainWindow::sqlQueryEnd()
 
 void MainWindow::loadingStarted()
 {
-	ui.statusbar->showMessage("LoadingStarted");
+	ui.statusbar->showMessage("Loading started");
 }
 
 void MainWindow::loadingFinished()
 {
-	ui.statusbar->showMessage("LoadingFinished");
+	ui.statusbar->showMessage("Loading finished");
 }
 
 void MainWindow::enableProgressBar()
@@ -99,11 +99,6 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 }
 
 
-
-
-
-
-
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	if (getuid()!=0)
@@ -121,9 +116,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	clearForm();
 	disableProgressBar();
-	//dbBox = new DatabaseBox;
-	//mDb = dbBox->mDb;
-	//loadBox = new LoadingBox;
 	tableMenu = new QMenu;
 	installPackageAction = tableMenu->addAction(tr("Install"));
 	removePackageAction = tableMenu->addAction(tr("Remove"));
@@ -135,10 +127,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	
 	this->show();
-	thread = new coreThread;
+	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
 	
-	// Thread connections
+	// Building thread connections
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()), Qt::QueuedConnection);
@@ -159,19 +151,29 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST)), this, SLOT(receivePackageList(PACKAGE_LIST)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
-	emit startThread();
-	emit loadPackageDatabase();
+	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()), Qt::QueuedConnection);
+
+	// Startup initialization
+	emit startThread(); // Starting thread (does nothing imho....)
+	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 
 MainWindow::~MainWindow()
 {
-	thread->exit();
-	delete thread;
+	printf("Closing threads...\n");
+	emit quitThread();
+	/*while (thread->isRunning())
+	{
+		// Waiting for thread to exit
+	}*/
+	printf("Thread seems to exit\n");
+	//delete thread;
 }
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList)
 {
 	*packagelist=pkgList;
+	printf("Syncronized!\n");
 }
 
 void MainWindow::quickPackageSearch()
