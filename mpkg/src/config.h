@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.19 2007/03/22 12:38:06 i27249 Exp $
+    $Id: config.h,v 1.20 2007/03/22 16:40:10 i27249 Exp $
 */
 
 
@@ -11,7 +11,9 @@
 #include <vector>
 using namespace std;
 
-
+#define CHECKFILES_PREINSTALL 1
+#define CHECKFILES_POSTINSTALL 2
+#define CHECKFILES_DISABLE 0
 
 // Database type definitions
 #define DB_SQLITE_LOCAL 0x01
@@ -20,7 +22,7 @@ using namespace std;
 
 // Debug-time configuration
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
-
+extern unsigned int fileConflictChecking;
 extern string currentStatus;
 extern int currentProgress;
 extern unsigned int progressMax;
@@ -66,6 +68,7 @@ namespace mpkgconfig
 	string get_dburl();
 	string get_scriptsdir();
 	bool get_runscripts();
+	unsigned int get_checkFiles();
 
 	int set_repositorylist(vector<string> newrepositorylist);
 	int set_disabled_repositorylist(vector<string> newrepositorylist);
@@ -74,6 +77,7 @@ namespace mpkgconfig
 	int set_dburl(string newdburl);
 	int set_scriptsdir(string newscriptsdir);
 	int set_runscripts(bool dorun);
+	int set_checkFiles(unsigned int value);
 }
 
 

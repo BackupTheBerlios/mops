@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>757</width>
-    <height>286</height>
+    <height>425</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -22,7 +22,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>3</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -141,7 +141,7 @@
         <number>6</number>
        </property>
        <item>
-        <layout class="QVBoxLayout" >
+        <layout class="QHBoxLayout" >
          <property name="margin" >
           <number>0</number>
          </property>
@@ -149,7 +149,7 @@
           <number>6</number>
          </property>
          <item>
-          <layout class="QHBoxLayout" >
+          <layout class="QVBoxLayout" >
            <property name="margin" >
             <number>0</number>
            </property>
@@ -157,129 +157,172 @@
             <number>6</number>
            </property>
            <item>
-            <widget class="QLabel" name="label" >
-             <property name="text" >
-              <string>System root:</string>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
              </property>
-            </widget>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label" >
+               <property name="text" >
+                <string>System root:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="sysrootEdit" />
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButton" >
+               <property name="text" >
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QLineEdit" name="sysrootEdit" />
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_2" >
+               <property name="text" >
+                <string>Package cache:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="syscacheEdit" />
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButton_2" >
+               <property name="text" >
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
-            <widget class="QToolButton" name="toolButton" >
-             <property name="text" >
-              <string>...</string>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
              </property>
-            </widget>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_3" >
+               <property name="text" >
+                <string>Database file:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="dbfileEdit" />
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButton_3" >
+               <property name="text" >
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_4" >
+               <property name="text" >
+                <string>Scripts folder:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="scriptsfolderEdit" />
+             </item>
+             <item>
+              <widget class="QToolButton" name="toolButton_4" >
+               <property name="text" >
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
+          <widget class="QGroupBox" name="groupBox_3" >
+           <property name="title" >
+            <string>File conflict checking:</string>
            </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_2" >
-             <property name="text" >
-              <string>Package cache:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="syscacheEdit" />
-           </item>
-           <item>
-            <widget class="QToolButton" name="toolButton_2" >
-             <property name="text" >
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_3" >
-             <property name="text" >
-              <string>Database file:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="dbfileEdit" />
-           </item>
-           <item>
-            <widget class="QToolButton" name="toolButton_3" >
-             <property name="text" >
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="label_4" >
-             <property name="text" >
-              <string>Scripts folder:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="scriptsfolderEdit" />
-           </item>
-           <item>
-            <widget class="QToolButton" name="toolButton_4" >
-             <property name="text" >
-              <string>...</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="fileConflictCheckingCheckBox" >
-           <property name="enabled" >
-            <bool>false</bool>
-           </property>
-           <property name="text" >
-            <string>Enable file conflict checking (WARNING! If tou disable this, removing broken packages may cause destruction!</string>
-           </property>
-           <property name="checked" >
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="runscriptsCheckBox" >
-           <property name="text" >
-            <string>Run scripts</string>
-           </property>
-           <property name="checked" >
-            <bool>true</bool>
-           </property>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>9</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <layout class="QVBoxLayout" >
+              <property name="margin" >
+               <number>0</number>
+              </property>
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <item>
+               <widget class="QRadioButton" name="fcheckInstallation" >
+                <property name="text" >
+                 <string>At installation (default)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="fcheckRemove" >
+                <property name="text" >
+                 <string>At remove</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QRadioButton" name="fcheckDisable" >
+                <property name="text" >
+                 <string>Disable (DANGEROUS!)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="runscriptsCheckBox" >
+         <property name="text" >
+          <string>Run scripts</string>
+         </property>
+         <property name="checked" >
+          <bool>true</bool>
+         </property>
+        </widget>
        </item>
        <item>
         <spacer>

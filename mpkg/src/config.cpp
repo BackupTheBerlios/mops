@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.10 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: config.cpp,v 1.11 2007/03/22 16:40:10 i27249 Exp $
  *
  * ***************************************************/
 
@@ -8,6 +8,7 @@
 #include "xmlParser.h"
 
 bool DO_NOT_RUN_SCRIPTS;
+unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string currentStatus;
 int currentProgress;
 unsigned int progressMax;
@@ -24,6 +25,7 @@ int loadGlobalConfig(string config_file)
 {
 	currentStatus = "Loading configuration...";
 	string run_scripts="yes";
+	string check_files = "preinstall";
 	string sys_root="/root/development/sys_root/";
 	string sys_cache="/root/development/sys_cache/";
 	string db_url="sqlite://var/log/mpkg/packages.db";
@@ -38,6 +40,8 @@ int loadGlobalConfig(string config_file)
 		XMLNode config=XMLNode::openFileHelper(config_file.c_str(), "mpkgconfig");
 		if (config.nChildNode("run_scripts")!=0)
 			run_scripts=(string) config.getChildNode("run_scripts").getText();
+		if (config.nChildNode("checkFileConflicts")!=0)
+			check_files = (string) config.getChildNode("checkFileConflicts").getText();
 		if (config.nChildNode("sys_root")!=0)
 			sys_root=(string) config.getChildNode("sys_root").getText();
 		if (config.nChildNode("sys_cache")!=0)
@@ -78,7 +82,12 @@ int loadGlobalConfig(string config_file)
 		fprintf(stderr, "Error in config file, option <run_scripts> should be \"yes\" or \"no\", without quotes\n");
 		return -1; // CONFIG ERROR in scripts
 	}
-	
+	if (check_files == "preinstall")
+		fileConflictChecking = CHECKFILES_PREINSTALL;
+	if (check_files == "postinstall")
+		fileConflictChecking = CHECKFILES_POSTINSTALL;
+	if (check_files == "disable")
+		fileConflictChecking = CHECKFILES_DISABLE;
 	// sys_root
 	SYS_ROOT=sys_root;
 	//sys_cache
@@ -119,6 +128,14 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		config.addChild("run_scripts");
 		if (get_runscripts()) config.getChildNode("run_scripts").addText("yes");
 		else config.getChildNode("run_scripts").addText("no");
+	}
+	if (config.nChildNode("checkFileConflicts")==0)
+	{
+		config.addChild("checkFileConflicts");
+		if (get_checkFiles()==CHECKFILES_PREINSTALL) config.getChildNode("checkFileConflicts").addText("preinstall");
+		if (get_checkFiles()==CHECKFILES_POSTINSTALL) config.getChildNode("checkFileConflicts").addText("postinstall");
+		if (get_checkFiles()==CHECKFILES_DISABLE) config.getChildNode("checkFileConflicts").addText("disable");
+
 	}
 
 	if (config.nChildNode("sys_root")==0)
@@ -201,6 +218,10 @@ bool mpkgconfig::get_runscripts()
 	return !DO_NOT_RUN_SCRIPTS;
 }
 
+unsigned int mpkgconfig::get_checkFiles()
+{
+	return fileConflictChecking;
+}
 int mpkgconfig::set_repositorylist(vector<string> newrepositorylist)
 {
 	XMLNode tmp;
@@ -281,6 +302,18 @@ int mpkgconfig::set_runscripts(bool dorun)
 	return setXMLConfig(tmp);
 }
 
+int mpkgconfig::set_checkFiles(unsigned int value)
+{
+	XMLNode tmp;
+	tmp=getXMLConfig();
+	tmp.getChildNode("checkFileConflicts").deleteNodeContent(1);
+	tmp.addChild("checkFileConflicts");
+	if (value == CHECKFILES_PREINSTALL) tmp.getChildNode("checkFileConflicts").addText("preinstall");
+	if (value == CHECKFILES_POSTINSTALL) tmp.getChildNode("checkFileConflicts").addText("postinstall");
+	if (value == CHECKFILES_DISABLE) tmp.getChildNode("checkFileConflicts").addText("disable");
+
+	return setXMLConfig(tmp);
+}
 
 
 

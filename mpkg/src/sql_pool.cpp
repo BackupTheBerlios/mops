@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.18 2007/03/11 03:22:27 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.19 2007/03/22 16:40:10 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -46,7 +46,11 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 #endif
 	char *errmsg=0;
 	int query_return;
-	query_return=sqlite3_get_table(db, sql_query->c_str(), table, rows, cols, &errmsg);
+	//printf("CONVERSION\n");
+	const char *qqq = sql_query->c_str();
+	//printf("CALL to GET_TABLE\n");
+	query_return=sqlite3_get_table(db, qqq,/* sql_query->c_str(),*/ table, rows, cols, &errmsg);
+	//printf("END\n");
 	
 	if (query_return!=SQLITE_OK) // Means error
 	{
@@ -157,12 +161,25 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	if (!search.empty())
 	{
 		sql_where="where ";
-		for (int i=0;i<search.size();i++)
+		if (search.getSearchMode()==SEARCH_IN)
 		{
-			if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
-			if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
+			sql_where += search.getFieldName(0) + " in (";
+			for (int i=0; i<search.size(); i++)
+			{
+				sql_where += "'"+search.getValueI(i)+"'";
+				if (i!=search.size()-1) sql_where+=", ";
+			}
+			sql_where += ")";
+		}
+		else
+		{
+			for (int i=0;i<search.size();i++)
+			{
+				if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
+				if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
+				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
+				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
+			}
 		}
 	}
 

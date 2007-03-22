@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.8 2007/02/14 06:50:58 i27249 Exp $
+ *	$Id: core.h,v 1.9 2007/03/22 16:40:10 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -16,6 +16,7 @@
 
 #define SEARCH_OR 	0x01
 #define SEARCH_AND 	0x02
+#define SEARCH_IN	0x03
 #define EQ_LIKE 0x01
 #define EQ_EQUAL 0x02
 typedef struct

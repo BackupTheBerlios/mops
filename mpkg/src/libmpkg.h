@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.9 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: libmpkg.h,v 1.10 2007/03/22 16:40:10 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -149,6 +149,7 @@ class mpkg
 		string get_dburl(); // Returns database URL
 		string get_scriptsdir(); // Returns package scripts dir path
 		bool get_runscripts(); // True if configured to run scripts, false otherwise.
+		unsigned int get_checkFiles();
 
 		// Configuration and settings: setting
 		int set_repositorylist(vector<string> newrepositorylist); // Sets new repository list to config
@@ -158,6 +159,7 @@ class mpkg
 		int set_dburl(string newdburl); // Sets new database to use
 		int set_scriptsdir(string newscriptsdir); // Sets a scripts directory
 		int set_runscripts(bool dorun); // Enables or disables a script running
+		int set_checkFiles(unsigned int value);
 
 		// Finalizing
 		int commit(); 

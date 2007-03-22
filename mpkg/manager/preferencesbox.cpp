@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.9 2007/03/14 03:12:16 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.10 2007/03/22 16:40:10 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -71,6 +71,27 @@ void PreferencesBox::loadData()
 	ui.syscacheEdit->setText(mDb->get_syscache().c_str());
 	ui.dbfileEdit->setText(mDb->get_dburl().c_str());
 	ui.runscriptsCheckBox->setChecked(mDb->get_runscripts());
+	switch(mDb->get_checkFiles())
+	{
+		case CHECKFILES_PREINSTALL:
+			ui.fcheckInstallation->setChecked(true);
+			ui.fcheckRemove->setChecked(false);
+			ui.fcheckDisable->setChecked(false);
+
+			break;
+		case CHECKFILES_POSTINSTALL:
+			ui.fcheckInstallation->setChecked(false);
+			ui.fcheckRemove->setChecked(true);
+			ui.fcheckDisable->setChecked(false);
+
+			break;
+		case CHECKFILES_DISABLE:
+			ui.fcheckDisable->setChecked(true);
+			ui.fcheckInstallation->setChecked(false);
+			ui.fcheckRemove->setChecked(false);
+
+			break;
+	}
 	ui.scriptsfolderEdit->setText(mDb->get_scriptsdir().c_str());
 	// Load accounts
 	// Load repository
@@ -102,6 +123,11 @@ void PreferencesBox::applyConfig()
 	mDb->set_dburl(ui.dbfileEdit->text().toStdString());
 	mDb->set_scriptsdir(ui.scriptsfolderEdit->text().toStdString());
 	mDb->set_runscripts(ui.runscriptsCheckBox->checkState());
+	unsigned int fcheck;
+	if (ui.fcheckInstallation->isChecked()) fcheck = CHECKFILES_PREINSTALL;
+	if (ui.fcheckRemove->isChecked()) fcheck = CHECKFILES_POSTINSTALL;
+	if (ui.fcheckDisable->isChecked()) fcheck = CHECKFILES_DISABLE;
+	mDb->set_checkFiles(fcheck);
 	vector<string>rList;
 	for (int i=0; i < ui.repositoryList->count(); i++)
 	{

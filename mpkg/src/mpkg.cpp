@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.36 2007/03/22 12:38:06 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.37 2007/03/22 16:40:10 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -378,12 +378,11 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
+	string statusHeader = "Installing package "+package->get_name()+": ";
+	currentStatus = statusHeader + "initialization";
 //#define IDEBUG
 	// First of all: EXTRACT file list and scripts!!!
 	LocalPackage lp(SYS_CACHE+package->get_filename());
-#ifdef IDEBUG
-	printf("calling fill_scripts\n");
-#endif
 	bool no_purge=true;
 	FILE_LIST old_config_files;
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
@@ -392,35 +391,38 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		no_purge=false;
 	}
-	printf("Filling scripts\n");
+	currentStatus = statusHeader + "extracting installation scripts";
 	lp.fill_scripts(package);
-	printf("Filling file lists\n");
+	currentStatus = statusHeader + "extracting file list";
 	lp.fill_filelist(package);
-	printf("Filling config files\n");
+	currentStatus = statusHeader + "detecting configuration files";
 	lp.fill_configfiles(package);
-	printf("Checking file conflicts\n");
-	if (check_file_conflicts(package)!=0)
+	currentStatus = statusHeader + "checking file conflicts";
+	
+	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
 		currentStatus = "File conflict on package "+package->get_name();
 		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
 		return -5;
 	}
-	printf("done\n");
+	
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
-
+	currentStatus = statusHeader + "installing...";
 // Filtering file list...
 	FILE_LIST package_files;
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	debug("Preparing scripts");
+	
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
+		currentStatus = statusHeader + "executing pre-install scripts";
 		string preinst="/bin/sh "+package->get_scripts()->get_preinstall();
 		system(preinst.c_str());
 	}
 
 	// Extracting package
-	currentStatus = "Extracting package "+package->get_name();
+	currentStatus = statusHeader + "extracting...";
 	debug("calling extract");
 	//lp.fill_filelist(package);
 	string sys_cache=SYS_CACHE;
@@ -467,7 +469,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
-	if (system(sys.c_str()) == 0) currentStatus = "Extraction complete. Running scripts...";
+	if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
 	else {
 		currentStatus = "Failed to extract!";
 		return -10;
@@ -484,7 +486,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	if (get_status(purge_id)==PKGSTATUS_REMOVED_AVAILABLE) set_status(purge_id, PKGSTATUS_AVAILABLE);
 	if (get_status(purge_id)==PKGSTATUS_REMOVED_UNAVAILABLE) set_status(purge_id, PKGSTATUS_UNAVAILABLE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
-	currentStatus = "Package successfully installed";
+	currentStatus = statusHeader + "successfully installed!";
 	return 0;
 }
 

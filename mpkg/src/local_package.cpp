@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.29 2007/03/22 12:38:06 i27249 Exp $
+$Id: local_package.cpp,v 1.30 2007/03/22 16:40:10 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -410,24 +410,24 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	string tmp_flist=get_tmp_file();
 	string tmp_xml_flist=get_tmp_file();
 	FILES file_tmp;
-	currentStatus = "["+package->get_name()+"] Creating flist node...";
+	//currentStatus = "["+package->get_name()+"] Creating flist node...";
 	CreateFlistNode(tmp_flist, tmp_xml_flist);
 	PackageConfig ftree(tmp_xml_flist);
-	currentStatus = "["+package->get_name()+"] Created PackageConfig object";
+	//currentStatus = "["+package->get_name()+"] Created PackageConfig object";
 	vector <string> vec_tmp_names=ftree.getFilelist();
-	currentStatus = "["+package->get_name()+"] Vector build complete";
+	//currentStatus = "["+package->get_name()+"] Vector build complete";
 	for (unsigned int i=2;i<vec_tmp_names.size();i++)
 	{
 		currentProgress = i;
 		file_tmp.set_name(vec_tmp_names[i]);
 		package->get_files()->add(file_tmp);
 	}
-	currentStatus = "["+package->get_name()+"] Adding files complete";
+	//currentStatus = "["+package->get_name()+"] Adding files complete";
 	vec_tmp_names.clear();
 	debug("fill_filelist end");
-	printf("syncronization:\n");
+	//printf("syncronization:\n");
 	package->sync();
-	printf("complete\n");
+	//printf("complete\n");
 	return 0;
 }
 

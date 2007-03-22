@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.23 2007/03/11 04:28:15 i27249 Exp $
+ *	$Id: core.cpp,v 1.24 2007/03/22 16:40:10 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -25,9 +25,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	// 
 	// Because of all this, I disabled this function now. It will be always return 0
 	// PLEASE NOTE: for now, NO CONFLICTS ARE CHECKED!
-#ifndef ENABLE_CONFLICT_CHECK
-	return 0;
-#endif
 
 //#ifdef ENABLE_CONFLICT_CHECK
 
@@ -38,10 +35,11 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
-	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.setSearchMode(SEARCH_IN);
 	int status;
 //	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
 	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
+	printf("Building request...\n");
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
@@ -66,17 +64,15 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 #endif
 		}
 	}
-//	printf("core.cpp: check_file_conflicts(): cycle end, running SQL query\n");
+	//printf("Request ready, querying SQL\n");
 	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
-//	printf("core.cpp: check_file_conflicts(): SQL end\n");
-//	printf("sqlTable size = %d\n", sqlTable.getRecordCount());
+	//printf("Query results received. Looking in...\n");
 	if (!sqlTable.empty())
 	{
 #ifdef DEBUG
 		printf("core.cpp: check_file_conflicts(): sqlTable is not empty\n");
 		printf("core.cpp: check_file_conflicts(): table record count = %d",sqlTable.getRecordCount());
 #endif
-//		printf("cycle 2 start\n");
 		for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages who are already installed
 		{
 			package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());
@@ -99,15 +95,13 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 				}
 			}
 		}
-//		printf("cycle 2 end\n");
 	}
 #ifdef DEBUG
 	else printf("core.cpp: check_file_conflicts(): sqlTable empty\n");
 #endif
-//	printf("core.cpp: check_file_conflicts(): end\n");
+	//printf("Complete looking. Seems all ok\n");
 	// If all ok - return 0;
-	return 0; // End of check_file_conflicts (DISABLED)
-//#endif
+	return 0; // End of check_file_conflicts
 }
 
 int mpkgDatabase::check_install_package (PACKAGE *package)

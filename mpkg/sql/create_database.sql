@@ -15,6 +15,7 @@ create table packages (
 	package_md5 TEXT NOT NULL,
 	package_filename NOT NULL
 );
+create index ppname on packages (package_name);
 
 create table scripts (
 	script_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -31,6 +32,7 @@ create table files (
 	file_type INTEGER NOT NULL,
 	packages_package_id INTEGER NOT NULL
 );
+create index pname on files (file_name);
 
 create table locations (
 	location_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,

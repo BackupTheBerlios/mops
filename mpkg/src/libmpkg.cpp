@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.11 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.12 2007/03/22 16:40:10 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -180,6 +180,17 @@ bool mpkg::get_runscripts()
 {
 	return mpkgconfig::get_runscripts();
 }
+
+unsigned int mpkg::get_checkFiles()
+{
+	return mpkgconfig::get_checkFiles();
+}
+
+int mpkg::set_checkFiles(unsigned int value)
+{
+	return mpkgconfig::set_checkFiles(value);
+}
+
 
 // Configuration and settings: setting
 int mpkg::set_repositorylist(vector<string> newrepositorylist)
