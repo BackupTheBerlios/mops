@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.30 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.31 2007/03/22 12:38:06 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -115,6 +115,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	ui.setupUi(this);
 
+	this->show();
 	clearForm();
 	disableProgressBar();
 	tableMenu = new QMenu;
@@ -128,7 +129,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	
-	this->show();
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
@@ -160,6 +160,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
@@ -233,7 +237,21 @@ void MainWindow::showPackageInfo()
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
-	
+
+	string extendedInfo = (string) "<html>" \
+			       + (string) "<h2>" + pkg->get_name() + (string) "</h2>" \
+			       + (string) "<br><b>Version: </b>" + pkg->get_version() \
+			       + (string) "<br><b>Arch: </b>"+pkg->get_arch() \
+			       + (string) "<br><b>Build: </b>"+pkg->get_build() \
+			       + (string) "<br><b>Package size: </b>" + pkg->get_compressed_size() \
+			       + (string) "<br><b>Installed size: </b>" + pkg->get_installed_size() \
+			       + (string) "<br><b>Filename: </b>" + pkg->get_filename() \
+			       + (string) "<br><b>MD5 sum: </b>"+pkg->get_md5() \
+			       + (string) "<br><b>Packager: </b>"+pkg->get_packager() + (string) " &lt" + pkg->get_packager_email() + (string)"&lt" \
+			       + (string) "<br><b>Status: </b>" + pkg->get_vstatus() \
+			       + (string) "</html>";
+
+	ui.detailedEdit->setHtml(extendedInfo.c_str());
 	ui.overviewEdit->setHtml(info.c_str());
 }
 
@@ -261,7 +279,7 @@ void MainWindow::initPackageTable()
     QTableWidgetItem *__colItem1 = new QTableWidgetItem();
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
-    ui.packageTable->setColumnWidth(PT_NAME, 600);
+    ui.packageTable->setColumnWidth(PT_NAME, ui.packageTable->frameSize().width()-80);
 
     QTableWidgetItem *__colItem7 = new QTableWidgetItem();
     __colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
@@ -354,6 +372,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 				}
@@ -367,6 +386,8 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
+
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 
@@ -383,9 +404,8 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
-
 				}
 				else
 				{
@@ -396,12 +416,43 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 				}
 				printf("status set\n");
 				break;
+			case PKGSTATUS_INSTALL:
+				if (state == Qt::Checked)
+				{
+					newStatus[i]=PKGSTATUS_INSTALL;
+					ui.statusbar->showMessage("Package added to install queue");
+					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
+							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+					TableLabel *_z = new TableLabel(ui.packageTable);
+					_z->setTextFormat(Qt::RichText);
+					_z->setText(pName.c_str());
+					_z->row = x;
+					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
+				}
+				else
+				{
+					newStatus[i]=PKGSTATUS_AVAILABLE;
+					ui.statusbar->showMessage("Package removed from install queue");
+					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
+							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+					//ui.packageTable->cellWidget(x, PT_NAME)->setText(pName.c_str());
+					TableLabel *_z = new TableLabel(ui.packageTable);
+					_z->setTextFormat(Qt::RichText);
+					_z->setText(pName.c_str());
+					_z->row = x;
+
+					ui.packageTable->setCellWidget(x, PT_NAME, _z);
+				}
+				break;
+
+	
 			case PKGSTATUS_INSTALLED:
 				if (state != Qt::Checked)
 				{
@@ -412,6 +463,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 
@@ -426,6 +478,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
+					_z->row = x;
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 				}

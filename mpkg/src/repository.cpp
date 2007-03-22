@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.22 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: repository.cpp,v 1.23 2007/03/22 12:38:06 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -59,8 +59,16 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 	unsigned int pos;
 	unsigned int num=0;
 	tmpstr = packageslist;
+
+	// Visualization
+	currentProgress = 0;
+	unsigned int tmp_max = tmpstr.length();
+	progressMax = tmpstr.length();
+	progressEnabled = true;
+
 	while (!endReached)
 	{
+		currentProgress = tmp_max - tmpstr.length();
 		debug("Parsing "+IntToStr(num)+" package");
 		// Stage 1: retrieving dirty info
 		pos = tmpstr.find(pkgNameKeyword);
@@ -383,6 +391,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		//if (num == 1) return 0;
 		debug("done");
 	}
+	progressEnabled = false;
 
 	return 0;
 }	
@@ -610,12 +619,18 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					printf(_("Repository has no packages\n"));
 					return 0;
 				}
+				
+				currentProgress = 0;
+				progressMax = pkg_count;
+				progressEnabled = true;
 				for (int i=0; i<pkg_count; i++)
 				{
+					currentProgress = i;
 					pkg.clear();
 					xml2package(repository_root.getChildNode("package", i), &pkg);
 					packages->add(pkg);
 				}
+				progressEnabled = false;
 			break;
 		case TYPE_SLACK:
 			printf("Parsing slackware repository\n");

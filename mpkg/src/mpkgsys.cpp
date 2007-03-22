@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.6 2007/03/07 07:02:36 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.7 2007/03/22 12:38:06 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -24,8 +24,23 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	{
 		db->set_status(toInstall.get_package(i)->get_id(), PKGSTATUS_AVAILABLE);
 	}
+	return 0;
 }
 
+int mpkgSys::unqueue(int package_id, mpkgDatabase *db)
+{
+	PACKAGE_LIST toUnqueue;
+	SQLRecord sqlSearch;
+	sqlSearch.setSearchMode(SEARCH_AND);
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
+	db->get_packagelist(sqlSearch, &toUnqueue);
+	for (int i=0; i<toUnqueue.size();i++)
+	{
+		db->set_status(toUnqueue.get_package(i)->get_id(), PKGSTATUS_AVAILABLE);
+	}
+	return 0;
+}
 
 
 int mpkgSys::build_package()

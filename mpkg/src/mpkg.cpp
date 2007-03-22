@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.35 2007/03/21 17:49:26 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.36 2007/03/22 12:38:06 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -147,8 +147,11 @@ int mpkgDatabase::commit_actions()
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
+	progressEnabled = true;
+	progressMax = install_list.size();
 	for (int i=0; i<install_list.size(); i++)
 	{
+		currentProgress = i;
 		debug("Fetching package #"+IntToStr(i+1)+" with "+IntToStr(install_list.get_package(i)->get_locations()->size())+" locations");
 		if (fetch_package(install_list.get_package(i))!=0)
 		{
@@ -159,8 +162,10 @@ int mpkgDatabase::commit_actions()
 	debug("Calling INSTALL");
 	for (int i=0;i<install_list.size();i++)
 	{
+		currentProgress = i;
 		if (install_package(install_list.get_package(i))!=0) return -7;
 	}
+	progressEnabled = false;
 	return 0;
 }
 
@@ -387,15 +392,20 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		no_purge=false;
 	}
+	printf("Filling scripts\n");
 	lp.fill_scripts(package);
+	printf("Filling file lists\n");
 	lp.fill_filelist(package);
+	printf("Filling config files\n");
 	lp.fill_configfiles(package);
+	printf("Checking file conflicts\n");
 	if (check_file_conflicts(package)!=0)
 	{
 		currentStatus = "File conflict on package "+package->get_name();
 		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
 		return -5;
 	}
+	printf("done\n");
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 
 // Filtering file list...
@@ -763,8 +773,11 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	debug("mpkg.cpp: updateRepositoryData(): Step 1. Adding new data, updating old");
 	int package_id;
 	int package_status;
+	progressMax = newPackages->size();
+	progressEnabled = true;
 	for (int i=0; i< newPackages->size(); i++)
 	{
+		currentProgress = i;
 		//printf("for (int i=0; i< newPackages->size(); i++) i=%d\n", i);
 		//printf("#");
 
@@ -790,11 +803,15 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			return -1;
 		}
 	}
+	progressEnabled = false;
 	
 	//printf("mpkg.cpp: updateRepositoryData(): Step 2. Clean up old package data (packages, that are no sources for now)\n");
 	int package_num;
+	progressMax = currentPackages.size();
+	progressEnabled = true;
 	for (int i=0; i<currentPackages.size(); i++)
 	{
+		currentProgress = i;
 		if (currentPackages.get_package(i)->get_status()==PKGSTATUS_INSTALL \
 				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_AVAILABLE \
 				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_REMOVED_AVAILABLE)
@@ -827,6 +844,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			}
 		}
 	}
+	progressEnabled = false;
 	//printf("\n");
 
 	// Step 3. Clean up servers and tags (remove unused items)

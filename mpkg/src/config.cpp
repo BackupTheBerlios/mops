@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.9 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: config.cpp,v 1.10 2007/03/22 12:38:06 i27249 Exp $
  *
  * ***************************************************/
 
@@ -10,6 +10,8 @@
 bool DO_NOT_RUN_SCRIPTS;
 string currentStatus;
 int currentProgress;
+unsigned int progressMax;
+bool progressEnabled = false;
 string SYS_ROOT;
 string SYS_CACHE;
 string SCRIPTS_DIR;

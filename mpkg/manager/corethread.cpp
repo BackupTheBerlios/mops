@@ -1,13 +1,14 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.13 2007/03/21 17:49:26 i27249 Exp $
+ * $Id: corethread.cpp,v 1.14 2007/03/22 12:38:06 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
 
 statusThread::statusThread()
 {
+	enabledBar = false;
 }
 
 void statusThread::run()
@@ -18,6 +19,30 @@ void statusThread::run()
 		{
 			case STT_Run:
 				emit setStatus((QString) currentStatus.c_str());
+				
+				if (progressEnabled)
+				{
+					if (!enabledBar)
+					{
+						emit initProgressBar(progressMax);
+						emit enableProgressBar();
+						enabledBar = true;
+					}
+					else
+					{
+						//printf("Max = %d, current progress = %d\n", progressMax, currentProgress);
+						emit setBarValue(currentProgress);
+					}
+				}
+				else
+				{
+					if (enabledBar)
+					{
+						emit disableProgressBar();
+						enabledBar = false;
+					}
+				}
+
 				break;
 			case STT_Pause:
 				break;
@@ -226,7 +251,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 {
 	bool checked = false;
 	string package_icon;
-	if (packageList->get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
+	if (packageList->get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos || \
 			packageList->get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos)
 	{
 		checked = true;
@@ -289,12 +314,16 @@ void coreThread::_commitQueue()
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
+	vector<int> reset_queue;
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
 		if (packageList->get_package(i)->get_status()!=newStatus[i])
 		{
 			switch(newStatus[i])
 			{
+				case PKGSTATUS_AVAILABLE:
+					reset_queue.push_back(packageList->get_package(i)->get_id());
+					break;
 				case PKGSTATUS_INSTALL:
 					install_queue.push_back(packageList->get_package(i)->get_name());
 					break;
@@ -314,6 +343,10 @@ void coreThread::_commitQueue()
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);
+	for (unsigned int i = 0; i<reset_queue.size(); i++)
+	{
+		database->unqueue(reset_queue[i]);
+	}
 	emit setStatus("Committing changes...");
 	database->commit();
 	emit setStatus("All operations completed");
