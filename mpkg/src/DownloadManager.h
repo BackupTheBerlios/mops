@@ -13,7 +13,7 @@ typedef IDownload* (*GetHandler)();
 //extern DownloadFactory *g_pDownloadFactory = NULL;
 
 IDownload*  InitializeDownloadObjects(DownloadFactory* factory);
-DownloadResults CommonGetFile( std::string url, std::string output); 
+DownloadResults CommonGetFile( std::string url, std::string output, void *callback = NULL); 
 
 #endif
 

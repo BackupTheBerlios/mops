@@ -46,7 +46,7 @@ InitializeDownloadObjects(DownloadFactory *factory)
 }
 
 DownloadResults
-CommonGetFile(std::string url, std::string output)
+CommonGetFile(std::string url, std::string output, void *callback)
 {
 
 	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
