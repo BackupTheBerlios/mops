@@ -14,7 +14,7 @@ public:
 	
 	virtual ~HttpDownload() {};
 	DownloadResults getFile(std::string url, std::string file);
-	DownloadResults getFile(DownloadsList list,  int *dlnow, int *dltotal);
+	DownloadResults getFile(DownloadsList list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname);
 
 private:
 	FILE* out_f;

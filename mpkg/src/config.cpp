@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.12 2007/03/23 12:11:53 i27249 Exp $
+ * $Id: config.cpp,v 1.13 2007/03/23 13:24:59 i27249 Exp $
  *
  * ***************************************************/
 
@@ -10,8 +10,12 @@
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string currentStatus;
-int currentProgress;
-int progressMax;
+string currentItem;
+double currentProgress2;
+double progressMax2;
+bool progressEnabled2 = false;
+double currentProgress;
+double progressMax;
 bool progressEnabled = false;
 string SYS_ROOT;
 string SYS_CACHE;

@@ -11,8 +11,10 @@ HttpDownload::~HttpDownload()
 }
 */
 
-	int *extDlNow;
-	int *extDlTotal;
+	double *extDlNow;
+	double *extDlTotal;
+	double *extItemTotal;
+	double *extItemNow;
 
 static int downloadCallback(void *clientp,
                        double dltotal,
@@ -20,9 +22,9 @@ static int downloadCallback(void *clientp,
                        double ultotal,
                        double ulnow)
 {
-	*extDlTotal = int(dltotal);
-	*extDlNow = int(dlnow);
-	printf("Download %d/%d\n", *extDlNow, *extDlTotal);
+	*extDlTotal = dltotal;
+	*extDlNow = dlnow;
+//	printf("Download %d/%d\n", *extDlNow, *extDlTotal);
 	return 0;
 }
 
@@ -51,24 +53,26 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 		return DOWNLOAD_ERROR;
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList list, int *dlnow, int *dltotal)
+DownloadResults HttpDownload::getFile(DownloadsList list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
 {
 	extDlNow = dlnow;
 	extDlTotal = dltotal;
 	CURLcode result;
 	DownloadItem item;
 	FILE* out;
+	*itemtotal = list.size();
 	for (int i = 0; i < list.size(); i++ ) {
 	process:
 		item = list.at(i);
-		printf("Processing %s...\n", item.file.c_str());
+		*itemname = item.name;
+	//	printf("Processing %s...\n", item.file.c_str());
 		
 		out = fopen(item.file.c_str(), "wb" );
 		if ( out == NULL) {
 			printf("Error opening target file!\n");
 			return DOWNLOAD_ERROR;
 		}
-		else printf("Target will be written to %s\n", item.file.c_str());
+		//else printf("Target will be written to %s\n", item.file.c_str());
 
 		curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
 		curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
@@ -89,6 +93,7 @@ DownloadResults HttpDownload::getFile(DownloadsList list, int *dlnow, int *dltot
 			}
 			
 		}
+		*itemnow = i;
 	
 	}
 

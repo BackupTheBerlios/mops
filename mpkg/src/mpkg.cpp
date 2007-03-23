@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.38 2007/03/23 12:11:53 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.39 2007/03/23 13:24:59 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -172,8 +172,9 @@ int mpkgDatabase::commit_actions()
 		}
 	}
 	progressEnabled = true;
-	CommonGetFileEx(downloadQueue, &currentProgress, &progressMax);
-	
+	progressEnabled2 = true;
+	CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem);
+	progressEnabled2 = false;
 	printf("Download complete\n");
 #endif
 	// Old methods

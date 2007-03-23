@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.23 2007/03/23 12:11:53 i27249 Exp $
+ * $Id: mainwindow.h,v 1.24 2007/03/23 13:24:59 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -60,6 +60,13 @@ class MainWindow: public QMainWindow
 		void disableProgressBar();
 		void setProgressBarValue(unsigned int value);
 		void initProgressBar(unsigned int stepCount = 100);
+		
+		void enableProgressBar2();
+		void disableProgressBar2();
+		void setProgressBarValue2(unsigned int value);
+		void initProgressBar2(unsigned int stepCount = 100);
+
+
 
 		
 		// Table operations

@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.21 2007/03/23 12:11:53 i27249 Exp $
+    $Id: config.h,v 1.22 2007/03/23 13:24:59 i27249 Exp $
 */
 
 
@@ -24,9 +24,13 @@ using namespace std;
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;
 extern string currentStatus;
-extern int currentProgress;
-extern int progressMax;
+extern string currentItem;
+extern double currentProgress;
+extern double progressMax;
 extern bool progressEnabled;
+extern double currentProgress2;
+extern double progressMax2;
+extern bool progressEnabled2;
 
 // System configuration
 

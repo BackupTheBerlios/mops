@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.15 2007/03/23 12:11:53 i27249 Exp $
+ * $Id: corethread.cpp,v 1.16 2007/03/23 13:24:59 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -9,10 +9,18 @@
 statusThread::statusThread()
 {
 	enabledBar = false;
+	enabledBar2 = false;
+	show();
 }
 
 void statusThread::run()
 {
+	printf("Status thread started\n");
+	setPriority(QThread::LowPriority);
+	int tmp_c, tmp_c2;
+	double dtmp, dtmp2;
+	int tmp_t, tmp_t2;
+	string dlStatus;
 	forever 
 	{
 		switch(action)
@@ -22,17 +30,18 @@ void statusThread::run()
 				
 				if (progressEnabled)
 				{
-					printf("progress bar! do you see it?\n");
+					dtmp = 100 * (currentProgress/progressMax);
+					tmp_c = (int) dtmp;
+					
 					if (!enabledBar)
 					{
-						emit initProgressBar(progressMax);
+						emit initProgressBar(100);
 						emit enableProgressBar();
 						enabledBar = true;
 					}
 					else
 					{
-						//printf("Max = %d, current progress = %d\n", progressMax, currentProgress);
-						emit setBarValue(currentProgress);
+						emit setBarValue(tmp_c);
 					}
 				}
 				else
@@ -41,6 +50,34 @@ void statusThread::run()
 					{
 						emit disableProgressBar();
 						enabledBar = false;
+					}
+				}
+				
+				if (progressEnabled2)
+				{
+					dtmp2 = 100 * (currentProgress2/progressMax2);
+					tmp_c2 = (int) dtmp2;
+					dlStatus = "Downloading "+currentItem+"...";
+					emit setStatus ((QString) dlStatus.c_str());
+					//printf("progress bar! do you see it? values are: float = %f, int = %d\n", dtmp, tmp_c);
+					if (!enabledBar2)
+					{
+						emit initProgressBar2(100);
+						emit enableProgressBar2();
+						enabledBar2 = true;
+					}
+					else
+					{
+						//printf("Max = %d, current progress = %d\n", progressMax, currentProgress);
+						emit setBarValue2(tmp_c2);
+					}
+				}
+				else
+				{
+					if (enabledBar)
+					{
+						emit disableProgressBar2();
+						enabledBar2 = false;
 					}
 				}
 
@@ -100,6 +137,7 @@ void coreThread::sync()
 
 void coreThread::run()
 {
+	setPriority(QThread::LowestPriority);
 	printf("Running...\n");
 	forever 
 	{
@@ -120,7 +158,7 @@ void coreThread::run()
 				break;
 
 			case CA_Idle:
-				//emit setStatus(database->current_status().c_str());
+				emit setStatus(database->current_status().c_str());
 				msleep(50);
 				break;
 			case CA_Quit:
@@ -244,7 +282,7 @@ void coreThread::_loadPackageDatabase()
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	emit fitTable();
+	//emit fitTable();
 	currentAction=CA_Idle;
 }
 

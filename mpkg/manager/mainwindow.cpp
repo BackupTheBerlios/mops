@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.32 2007/03/23 12:11:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.33 2007/03/23 13:24:59 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -50,17 +50,38 @@ void MainWindow::loadingFinished()
 void MainWindow::enableProgressBar()
 {
 	ui.progressBar->show();
+	ui.currentLabel->show();
 }
 
 void MainWindow::disableProgressBar()
 {
 	ui.progressBar->hide();
+	ui.currentLabel->hide();
 }
 
 void MainWindow::setProgressBarValue(unsigned int value)
 {
 	ui.progressBar->setValue(value);
 }
+
+void MainWindow::enableProgressBar2()
+{
+	ui.progressBar2->show();
+	ui.totalLabel->show();
+}
+
+void MainWindow::disableProgressBar2()
+{
+	ui.progressBar2->hide();
+	ui.totalLabel->hide();
+}
+
+void MainWindow::setProgressBarValue2(unsigned int value)
+{
+	ui.progressBar2->setValue(value);
+}
+
+
 
 
 void MainWindow::clearTable()
@@ -136,7 +157,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	this->show();
 	clearForm();
-	disableProgressBar();
+	disableProgressBar(); disableProgressBar2();
 	tableMenu = new QMenu;
 	installPackageAction = tableMenu->addAction(tr("Install"));
 	removePackageAction = tableMenu->addAction(tr("Remove"));
@@ -167,8 +188,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
 
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
@@ -182,6 +203,13 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
+
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)), Qt::QueuedConnection);
+
+
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
@@ -589,6 +617,14 @@ void MainWindow::initProgressBar(unsigned int stepCount)
 	ui.progressBar->setValue(0);
 	ui.progressBar->setMaximum(stepCount);
 }
+
+void MainWindow::initProgressBar2(unsigned int stepCount)
+{
+	ui.progressBar2->setValue(0);
+	ui.progressBar2->setMaximum(stepCount);
+}
+
+
 
 void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 {

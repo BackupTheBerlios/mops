@@ -60,7 +60,7 @@ CommonGetFile(std::string url, std::string output, void *callback)
 }	
 
 DownloadResults
-CommonGetFileEx(DownloadsList list,  int *dlnow, int *dltotal)
+CommonGetFileEx(DownloadsList list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
 {
 
 	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
@@ -68,7 +68,7 @@ CommonGetFileEx(DownloadsList list,  int *dlnow, int *dltotal)
 
 	assert( g_pCurrentMethod );
 	
-	return g_pCurrentMethod->getFile(list, dlnow, dltotal); 
+	return g_pCurrentMethod->getFile(list, dlnow, dltotal, itemnow, itemtotal, itemname); 
 }	
 
 

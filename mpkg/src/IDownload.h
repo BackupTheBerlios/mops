@@ -33,7 +33,7 @@ typedef std::vector<DownloadItem> DownloadsList;
 class IDownload {
 public:
 	virtual DownloadResults getFile(std::string url, std::string file) = 0;
-	virtual DownloadResults getFile(DownloadsList list, int *dlnow, int *dltotal) = 0;
+	virtual DownloadResults getFile(DownloadsList list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname) = 0;
 	virtual ~IDownload() {};
 };
 
