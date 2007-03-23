@@ -11,6 +11,14 @@ HttpDownload::~HttpDownload()
 }
 */
 
+int curlProgressCallback(void *clientp,
+                        double dltotal,
+                        double dlnow,
+                        double ultotal,
+                        double ulnow)
+{
+
+
 DownloadResults HttpDownload::getFile(std::string url, std::string file)
 {
 	uri = url;
@@ -21,6 +29,7 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 			return DOWNLOAD_ERROR;
 
 	curl_easy_setopt(ch, CURLOPT_WRITEDATA, out_f);
+	curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, &curlProgressCallback);
 	curl_easy_setopt(ch, CURLOPT_URL, uri.c_str());
 
 	CURLcode res = curl_easy_perform(ch);
