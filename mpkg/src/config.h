@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.20 2007/03/22 16:40:10 i27249 Exp $
+    $Id: config.h,v 1.21 2007/03/23 12:11:53 i27249 Exp $
 */
 
 
@@ -25,7 +25,7 @@ extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dang
 extern unsigned int fileConflictChecking;
 extern string currentStatus;
 extern int currentProgress;
-extern unsigned int progressMax;
+extern int progressMax;
 extern bool progressEnabled;
 
 // System configuration

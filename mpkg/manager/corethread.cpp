@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.14 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: corethread.cpp,v 1.15 2007/03/23 12:11:53 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -22,6 +22,7 @@ void statusThread::run()
 				
 				if (progressEnabled)
 				{
+					printf("progress bar! do you see it?\n");
 					if (!enabledBar)
 					{
 						emit initProgressBar(progressMax);
@@ -205,7 +206,7 @@ void coreThread::_loadPackageDatabase()
 	SQLRecord sqlSearch;
 	vector<int> *tmpNewStatus;
 	
-	if (database->get_packagelist(sqlSearch, tmpPackageList, true)!=0)
+	if (database->get_packagelist(sqlSearch, tmpPackageList, false)!=0)
 	{
 		emit errorLoadingDatabase();
 		emit sqlQueryEnd();

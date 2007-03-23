@@ -11,8 +11,10 @@
 class HttpDownload : public IDownload {
 public:
 	HttpDownload();
+	
 	virtual ~HttpDownload() {};
 	DownloadResults getFile(std::string url, std::string file);
+	DownloadResults getFile(DownloadsList list,  int *dlnow, int *dltotal);
 
 private:
 	FILE* out_f;

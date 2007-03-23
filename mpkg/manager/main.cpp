@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.12 2007/03/08 18:39:35 i27249 Exp $
+ *     $Id: main.cpp,v 1.13 2007/03/23 12:11:53 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -17,6 +17,9 @@
 
      MainWindow mw;
 
+	QObject::connect(mw.ui.selectAllButton, SIGNAL(clicked()), &mw, SLOT(selectAll()));
+
+	QObject::connect(mw.ui.deselectAllButton, SIGNAL(clicked()), &mw, SLOT(deselectAll()));
 	QObject::connect(mw.ui.actionQuit, SIGNAL(triggered()), &mw, SLOT(quitApp()));
 	//QObject::connect(&mw, SIGNAL(quit()), &mw, SLOT(quitApp()));
 	 QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &mw, SLOT(quitApp()));

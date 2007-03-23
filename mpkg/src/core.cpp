@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.24 2007/03/22 16:40:10 i27249 Exp $
+ *	$Id: core.cpp,v 1.25 2007/03/23 12:11:53 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -542,12 +542,12 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	if (GetExtraInfo)
 	{
 		get_filelist(package_id, package->get_files());
-		get_locationlist(package_id, package->get_locations());
-		get_dependencylist(package_id, package->get_dependencies());
-		get_taglist(package_id, package->get_tags());
 		get_scripts(package_id, package->get_scripts());
-		get_descriptionlist(package_id, package->get_descriptions());
 	}
+	get_locationlist(package_id, package->get_locations());
+	get_dependencylist(package_id, package->get_dependencies());
+	get_taglist(package_id, package->get_tags());
+	get_descriptionlist(package_id, package->get_descriptions());
 	return 0;
 }
 
@@ -586,21 +586,22 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		{
 			debug("getting filelist");
 			get_filelist(package.get_id(), package.get_files());
-			debug("syncronizing...");
-			package.sync();
-			debug("locationlist...");
-			get_locationlist(package.get_id(), package.get_locations());
-			debug("dependency list...");
-			get_dependencylist(package.get_id(), package.get_dependencies());
-			debug("taglist...");
-			get_taglist(package.get_id(), package.get_tags());
 			debug("script list...");
 			get_scripts(package.get_id(), package.get_scripts());
-			debug("description list...");
-#ifdef ENABLE_INTERNATIONAL
-			get_descriptionlist(package.get_id(), package.get_descriptions());
-#endif
 		}
+		debug("syncronizing...");
+		package.sync();
+		debug("locationlist...");
+		get_locationlist(package.get_id(), package.get_locations());
+		debug("dependency list...");
+		get_dependencylist(package.get_id(), package.get_dependencies());
+		debug("taglist...");
+		get_taglist(package.get_id(), package.get_tags());
+		debug("description list...");
+#ifdef ENABLE_INTERNATIONAL
+		get_descriptionlist(package.get_id(), package.get_descriptions());
+#endif
+		
 		debug("setting package...");
 		packagelist->set_package(i, package);
 		debug("done.");

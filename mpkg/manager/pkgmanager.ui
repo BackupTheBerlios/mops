@@ -238,9 +238,6 @@
            </item>
           </widget>
          </item>
-         <item>
-          <widget class="QLineEdit" name="quickCategorySearchEdit" />
-         </item>
         </layout>
        </widget>
        <widget class="QGroupBox" name="groupBox_3" >
@@ -413,7 +410,31 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="quickPackageSearchEdit" />
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>0</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="selectAllButton" >
+            <property name="text" >
+             <string>Select all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="deselectAllButton" >
+            <property name="text" >
+             <string>Deselect all</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="quickPackageSearchEdit" />
+          </item>
+         </layout>
         </item>
         <item>
          <widget class="QProgressBar" name="progressBar" >

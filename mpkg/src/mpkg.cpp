@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.37 2007/03/22 16:40:10 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.38 2007/03/23 12:11:53 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -9,6 +9,7 @@
 /** Scans database and do actions. Actually, packages will install in SYS_ROOT folder (for testing).
  * In real systems, set SYS_ROOT to "/"
  * @**/
+
 
 mpkgDatabase::mpkgDatabase()
 {
@@ -147,6 +148,36 @@ int mpkgDatabase::commit_actions()
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
+	// Building download queue
+#ifndef OLD_QUEUE
+	printf("Downloading using new queue\n");
+	currentStatus = "Downloading using new methods";
+	DownloadsList downloadQueue;
+	DownloadItem tmpDownloadItem;
+	for (int i=0; i<install_list.size(); i++)
+	{
+		for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
+		{
+			tmpDownloadItem.url = install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
+					     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
+					     + install_list.get_package(i)->get_filename();
+			
+			tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
+			tmpDownloadItem.server = install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url();
+			tmpDownloadItem.name = install_list.get_package(i)->get_name();
+			tmpDownloadItem.priority = 0;
+			tmpDownloadItem.status = 0;
+
+			downloadQueue.push_back(tmpDownloadItem);
+		}
+	}
+	progressEnabled = true;
+	CommonGetFileEx(downloadQueue, &currentProgress, &progressMax);
+	
+	printf("Download complete\n");
+#endif
+	// Old methods
+#ifdef OLD_QUEUE
 	progressEnabled = true;
 	progressMax = install_list.size();
 	for (int i=0; i<install_list.size(); i++)
@@ -159,6 +190,7 @@ int mpkgDatabase::commit_actions()
 			return -6;
 		}
 	}
+#endif
 	debug("Calling INSTALL");
 	for (int i=0;i<install_list.size();i++)
 	{
@@ -645,7 +677,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 {
 	// TODO: NEED OPTIMIZATIONS!!
 	PACKAGE old_package;
-	if (get_package(package_id, &old_package)!=0)
+	if (get_package(package_id, &old_package, false)!=0)
 	{
 		debug("mpkg.cpp: update_package_data(): get_package error: no package or error while querying database");
 		return -1;
@@ -762,7 +794,8 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	PACKAGE_LIST currentPackages;
 	SQLRecord sqlSearch;
 	PACKAGE tmpPackage;
-	if (get_packagelist(sqlSearch, &currentPackages)!=0)
+	//printf("recv pkglist\n");
+	if (get_packagelist(sqlSearch, &currentPackages, false)!=0)
 	{
 		debug("mpkg.cpp: updateRepositoryData(): failed to get list of current packages");
 		return -1;
@@ -771,12 +804,13 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	{
 		debug("get_packagelist ok");
 	}
-
+	//printf("done\n");
 	debug("mpkg.cpp: updateRepositoryData(): Step 1. Adding new data, updating old");
 	int package_id;
 	int package_status;
 	progressMax = newPackages->size();
 	progressEnabled = true;
+	//printf("cycle start\n");
 	for (int i=0; i< newPackages->size(); i++)
 	{
 		currentProgress = i;
@@ -791,8 +825,9 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			debug("mpkg.cpp: updateRepositoryData(): package status: "+IntToStr(package_status));
 			if (package_status!=PKGSTATUS_UNAVAILABLE)
 				newPackages->get_package(i)->set_status(package_status);
-			//printf("update_package_data call\n");
+	//		printf("update_package_data call\n");
 			update_package_data(package_id, newPackages->get_package(i));
+	//		printf("end\n");
 		}
 		if (package_id==0)
 		{
@@ -805,6 +840,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			return -1;
 		}
 	}
+	//printf("cycle end\n");
 	progressEnabled = false;
 	
 	//printf("mpkg.cpp: updateRepositoryData(): Step 2. Clean up old package data (packages, that are no sources for now)\n");

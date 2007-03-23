@@ -59,3 +59,16 @@ CommonGetFile(std::string url, std::string output, void *callback)
 	return g_pCurrentMethod->getFile(url, output); 
 }	
 
+DownloadResults
+CommonGetFileEx(DownloadsList list,  int *dlnow, int *dltotal)
+{
+
+	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
+	IDownload *g_pCurrentMethod = InitializeDownloadObjects(g_pDownloadFactory);
+
+	assert( g_pCurrentMethod );
+	
+	return g_pCurrentMethod->getFile(list, dlnow, dltotal); 
+}	
+
+

@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.22 2007/03/21 15:30:14 i27249 Exp $
+ * $Id: mainwindow.h,v 1.23 2007/03/23 12:11:53 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -65,6 +65,8 @@ class MainWindow: public QMainWindow
 		// Table operations
 		//void fitTable();
 		void clearTable();
+		void selectAll();
+		void deselectAll();
 		void setTableSize(unsigned int size);
 		void setTableItem(unsigned int row, bool checkState, string cellItemText);
 		void setTableItemVisible(unsigned int row, bool visible);
@@ -76,24 +78,24 @@ class MainWindow: public QMainWindow
 		void quitApp();
 		void showCoreSettings();
 		void commitChanges();
-		void resetChanges();
+		//void resetChanges();
 		void resetQueue();
-		void saveQueue();
+		//void saveQueue();
 		void showAddRemoveRepositories();
-		void showCustomFilter();
-		void setInstalledFilter(bool showThis=false);
-		void setAvailableFilter(bool showThis=false);
-		void setBrokenFilter(bool showThis=false);
-		void setUnavailableFilter(bool showThis=false);
-		void setRemovedFilter(bool showThis=false);
-		void showHelpTopics();
-		void showFaq();
+		//void showCustomFilter();
+		//void setInstalledFilter(bool showThis=false);
+		//void setAvailableFilter(bool showThis=false);
+		//void setBrokenFilter(bool showThis=false);
+		//void setUnavailableFilter(bool showThis=false);
+		//void setRemovedFilter(bool showThis=false);
+		//void showHelpTopics();
+		//void showFaq();
 		void clearForm();
 		void updateData();
 		void markToInstall();
 		void execMenu();
 		void showPackageInfo();
-		void fitTable();
+		//void fitTable();
 		void markChanges(int x, Qt::CheckState state);
 		void quickPackageSearch();
 		void showAllPackages();
@@ -117,14 +119,13 @@ class MainWindow: public QMainWindow
 		mpkg *mDb;
 				void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST *packagelist;
-		void insertPackageIntoTable(unsigned int package_num);
-		void searchPackagesByTag(QString tag);
+		//void insertPackageIntoTable(unsigned int package_num);
+		//void searchPackagesByTag(QString tag);
 		vector<string> install_queue;
 		vector<string> remove_queue;
 		vector<string> purge_queue;
 		vector<bool>stateChanged;
 		vector<int>newStatus;
-		
 		void initPackageTable();
 
 };
