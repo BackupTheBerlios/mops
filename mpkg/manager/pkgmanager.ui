@@ -70,6 +70,14 @@
            </property>
            <item>
             <property name="text" >
+             <string>Everything</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
              <string>Latest updates</string>
             </property>
             <property name="icon" >
@@ -78,39 +86,7 @@
            </item>
            <item>
             <property name="text" >
-             <string>[all]</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/penguin.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Libraries</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Archivers</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/package.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Console stuff</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>System components</string>
+             <string>Base system</string>
             </property>
             <property name="icon" >
              <iconset>icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
@@ -118,50 +94,10 @@
            </item>
            <item>
             <property name="text" >
-             <string>Drivers</string>
+             <string>Utilities</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Games</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/bluefish.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Music players</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmsound.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Video players</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/xawtv.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Graphics</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/colors.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Office</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/abiword.png</iconset>
+             <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
             </property>
            </item>
            <item>
@@ -174,6 +110,70 @@
            </item>
            <item>
             <property name="text" >
+             <string>Emacs</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/plan.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Kernel source</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>KDE</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/go.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>KDE Internationalization</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kmenu.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>KOffice</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/wp.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Libraries</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>Network</string>
+            </property>
+            <property name="icon" >
+             <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>OpenOffice</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/ooo-base.png</iconset>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
              <string>Server software</string>
             </property>
             <property name="icon" >
@@ -182,23 +182,23 @@
            </item>
            <item>
             <property name="text" >
-             <string>Utilities</string>
+             <string>TeX</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
+             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/fonts.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
-             <string>System tools</string>
+             <string>Tk/TCL</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/package_utilities.png</iconset>
+             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kcmdevices.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
-             <string>Emulators</string>
+             <string>Wine</string>
             </property>
             <property name="icon" >
              <iconset>icons/icons/default.kde/32x32/apps/wine.png</iconset>
@@ -206,34 +206,26 @@
            </item>
            <item>
             <property name="text" >
-             <string>Internet: Web browsers</string>
+             <string>X Window system</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/firefox.png</iconset>
+             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
-             <string>Internet: IM clients</string>
+             <string>X Applications</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/licq.png</iconset>
+             <iconset>../../../opt/kde/share/icons/crystalsvg/64x64/apps/style.png</iconset>
             </property>
            </item>
            <item>
             <property name="text" >
-             <string>Internet: VoIP</string>
+             <string>Miscellaneous</string>
             </property>
             <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Multimedia editors</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/designer.png</iconset>
+             <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
             </property>
            </item>
           </widget>
@@ -568,21 +560,6 @@
      <height>28</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
-     <string>File</string>
-    </property>
-    <addaction name="actionPreferences" />
-    <addaction name="actionCore_settings" />
-    <addaction name="separator" />
-    <addaction name="actionCommit_changes" />
-    <addaction name="actionReset_changes" />
-    <addaction name="actionReset_all_queue" />
-    <addaction name="separator" />
-    <addaction name="actionSave_queue" />
-    <addaction name="separator" />
-    <addaction name="actionQuit" />
-   </widget>
    <widget class="QMenu" name="menuFilters" >
     <property name="title" >
      <string>Filters</string>
@@ -607,6 +584,22 @@
     <addaction name="actionHelp_topics" />
     <addaction name="actionMini_FAQ" />
     <addaction name="actionAbout" />
+   </widget>
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
+     <string>File</string>
+    </property>
+    <addaction name="actionPreferences" />
+    <addaction name="actionCore_settings" />
+    <addaction name="separator" />
+    <addaction name="actionCommit_changes" />
+    <addaction name="actionReset_changes" />
+    <addaction name="actionReset_all_queue" />
+    <addaction name="separator" />
+    <addaction name="actionSave_queue" />
+    <addaction name="actionClean_cache" />
+    <addaction name="separator" />
+    <addaction name="actionQuit" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />
@@ -739,6 +732,11 @@
   <action name="actionQuit" >
    <property name="text" >
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionClean_cache" >
+   <property name="text" >
+    <string>Clean cache</string>
    </property>
   </action>
  </widget>

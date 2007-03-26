@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.22 2007/03/23 13:24:59 i27249 Exp $
+    $Id: config.h,v 1.23 2007/03/26 14:32:32 i27249 Exp $
 */
 
 
@@ -31,7 +31,7 @@ extern bool progressEnabled;
 extern double currentProgress2;
 extern double progressMax2;
 extern bool progressEnabled2;
-
+extern int errorCode;
 // System configuration
 
 extern string SYS_ROOT;		// "/root/development/sys_root/"

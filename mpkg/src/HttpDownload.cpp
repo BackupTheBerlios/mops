@@ -1,5 +1,10 @@
 #include "HttpDownload.h"
 
+#include <sys/ipc.h>
+#include <sys/sem.h>
+#include <sys/types.h>
+#include <stdlib.h>
+
 HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
@@ -53,49 +58,75 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 		return DOWNLOAD_ERROR;
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
+DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
 {
+
+//	key_t key;
+//	int semid;
+//	struct semun arg = {0, -1, 0};
+
+
+//	key = ftok("/etc/mpkg.xml", getpid());
+
+//	semid = semget(key, 1, 0666, | IPC_CREAT);
+
 	extDlNow = dlnow;
 	extDlTotal = dltotal;
 	CURLcode result;
-	DownloadItem item;
+	DownloadItem *item;
 	FILE* out;
 	*itemtotal = list.size();
 	for (int i = 0; i < list.size(); i++ ) {
-	process:
-		item = list.at(i);
-		*itemname = item.name;
-	//	printf("Processing %s...\n", item.file.c_str());
+		item = &(list.at(i));
+		*itemname = item->name;
+
+		if ( item->status == DL_STATUS_WAIT ) {
 		
-		out = fopen(item.file.c_str(), "wb" );
-		if ( out == NULL) {
-			printf("Error opening target file!\n");
-			return DOWNLOAD_ERROR;
-		}
-		//else printf("Target will be written to %s\n", item.file.c_str());
-
-		curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
-		curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
-		curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
-		curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
-		curl_easy_setopt(ch, CURLOPT_URL, item.url.c_str());
-
-		result = curl_easy_perform(ch);
-		fclose(out);
-		if ( result != CURLE_OK ) {
-			i++;
-			printf("Download failed\n");
-			if ( item.name == list.at(i).name ) {
-				goto process;
-			} else {
-				item.status = 2;
-				return DOWNLOAD_ERROR;
+			out = fopen (item->file.c_str(), "wb");
+			if ( out == NULL ) {
+				fprintf(stderr, "open target file failed");
+				item->status = DL_STATUS_FAILED;
 			}
+	
+			for ( unsigned int j = 0; j < item->url_list.size(); j++ ) {
+				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
+				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
+				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
+				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
 			
-		}
+				result = curl_easy_perform(ch);
+				fclose(out);
+	
+				if ( result == CURLE_OK  ) {
+					item->status = DL_STATUS_OK;
+					break;
+				} else {
+					item->status = DL_STATUS_FAILED;
+				}
+	
+			}
+
+//			if ( item->status == DL_STATUS_FAILED ) {
+				/* Oops.. */
+/*				arg.val = 1;
+				semctrl(semid, 1, SETVAL, arg);
+
+				int r = semop(semid, &arg, 1);
+				assert( r == -1 );
+				
+				r = semop(semid, &arg, 0);
+				while ( r != -1 ) {
+					sleep("100");
+					r = semop(semid, &arg, 0);
+					
+				}
+*/
+			}
+
 		*itemnow = i;
 	
-	}
+		}
 
 	return DOWNLOAD_OK;
 }

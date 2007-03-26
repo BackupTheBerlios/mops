@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.16 2007/03/23 13:24:59 i27249 Exp $
+ * $Id: corethread.cpp,v 1.17 2007/03/26 14:32:32 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -26,7 +26,7 @@ void statusThread::run()
 		switch(action)
 		{
 			case STT_Run:
-				emit setStatus((QString) currentStatus.c_str());
+				if (!progressEnabled2) emit setStatus((QString) currentStatus.c_str());
 				
 				if (progressEnabled)
 				{
@@ -57,9 +57,8 @@ void statusThread::run()
 				{
 					dtmp2 = 100 * (currentProgress2/progressMax2);
 					tmp_c2 = (int) dtmp2;
-					dlStatus = "Downloading "+currentItem+"...";
+					dlStatus = "[" + IntToStr(currentProgress2) +"/" + IntToStr(progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr(currentProgress) + "/" + IntToStr(progressMax) + ")" ;
 					emit setStatus ((QString) dlStatus.c_str());
-					//printf("progress bar! do you see it? values are: float = %f, int = %d\n", dtmp, tmp_c);
 					if (!enabledBar2)
 					{
 						emit initProgressBar2(100);
@@ -68,7 +67,6 @@ void statusThread::run()
 					}
 					else
 					{
-						//printf("Max = %d, current progress = %d\n", progressMax, currentProgress);
 						emit setBarValue2(tmp_c2);
 					}
 				}
@@ -112,9 +110,7 @@ void statusThread::halt()
 coreThread::coreThread()
 {
 	printf("Core thread created\n");
-	//packageList = pkgList;
-	// Basic initializations here...
-	database = new mpkg;	// Database initialization
+	database = new mpkg;
 	currentAction = CA_Idle;
 }
 
@@ -122,7 +118,6 @@ coreThread::~coreThread()
 {
 	delete database;
 	printf("Thread destroyed correctly\n");
-	//delete database;
 }
 
 void coreThread::callQuit()
@@ -170,59 +165,6 @@ void coreThread::run()
 				msleep(10);
 		}
 	}
-				
-				
-				
-				
-				
-				
-				
-	/*			setPriority(QThread::LowestPriority);
-				PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
-				emit loadingStarted();
-				emit sqlQueryBegin();
-				SQLRecord sqlSearch;
-				vector<int> *tmpNewStatus;
-	
-				if (database->get_packagelist(sqlSearch, tmpPackageList, true)!=0)
-				{
-					emit errorLoadingDatabase();
-					emit sqlQueryEnd();
-					delete tmpPackageList;
-					currentAction = CA_None;
-				}
-	packageList = tmpPackageList;
-	emit sqlQueryEnd();
-	
-	newStatus.clear();
-
-	unsigned int count = packageList->size();
-	emit initProgressBar(count);
-	emit enableProgressBar();
-	emit clearTable();
-	emit setTableSize(0);
-	emit setTableSize(packageList->size());
-	for (unsigned int i=0; i<packageList->size(); i++)
-	{
-		newStatus.push_back(packageList->get_package(i)->get_status());
-		insertPackageIntoTable(i);
-#ifdef USLEEP
-		usleep(USLEEP);
-#endif
-#ifdef MSLEEP
-		msleep(MSLEEP);
-#endif
-#ifdef SLEEP
-		sleep(SLEEP);
-#endif
-		emit setProgressBarValue(i);
-	}
-	emit disableProgressBar();
-	emit loadingFinished();
-	emit fitTable();
-	*/
-
-	// Just entering a loop to receive/emit signals...
 }
 
 void coreThread::tellAreYouRunning()
@@ -282,7 +224,6 @@ void coreThread::_loadPackageDatabase()
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	//emit fitTable();
 	currentAction=CA_Idle;
 }
 
@@ -396,4 +337,9 @@ void coreThread::_commitQueue()
 
 void coreThread::syncData()
 {
+}
+
+void coreThread::cleanCache()
+{
+	database->clean_cache();
 }

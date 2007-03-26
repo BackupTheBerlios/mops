@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.30 2007/03/22 16:40:10 i27249 Exp $
+$Id: local_package.cpp,v 1.31 2007/03/26 14:32:32 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -249,7 +249,7 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	debug("get_scripts start");
 	
 	string scripts_dir=SCRIPTS_DIR+"/" + package->get_filename() + "_" + package->get_md5();
-	printf("[%s]\n", package->get_md5().c_str());
+	//printf("[%s]\n", package->get_md5().c_str());
 	string tmp_preinstall=scripts_dir+"/preinstall.sh";
 	string tmp_postinstall=scripts_dir+"/doinst.sh";
 	string tmp_preremove=scripts_dir+"/preremove.sh";
@@ -261,10 +261,10 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 #ifdef DEBUG
 	printf("extracting scripts for %s, filename: %s\n", package->get_name().c_str(), filename.c_str());
 #endif
-	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall; //+" 2>/dev/null";
-	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall+" 2>/dev/null";
-	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove+" 2>/dev/null";
-	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove+" 2>/dev/null";
+	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
+	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+ tmp_postinstall + " 2>/dev/null";
+	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
+	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+ tmp_postremove + " 2>/dev/null";
 
 	system(sys_preinstall.c_str());
 	system(sys_postinstall.c_str());
@@ -313,7 +313,7 @@ int LocalPackage::get_scripts()
 
 int LocalPackage::get_xml()
 {
-	printf("get_xml\n");
+	//printf("get_xml\n");
 	debug("get_xml start");
 	string tmp_xml=get_tmp_file();
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
@@ -418,7 +418,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	//currentStatus = "["+package->get_name()+"] Vector build complete";
 	for (unsigned int i=2;i<vec_tmp_names.size();i++)
 	{
-		currentProgress = i;
+		//currentProgress = i;
 		file_tmp.set_name(vec_tmp_names[i]);
 		package->get_files()->add(file_tmp);
 	}
@@ -470,7 +470,7 @@ int LocalPackage::create_md5()
 		return 1;
 	}
 	data.set_md5(md5str);
-	printf("md5 = [%s]\n", md5str.c_str());
+	//printf("md5 = [%s]\n", md5str.c_str());
 	_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
 	debug("create_md5 end");
@@ -578,7 +578,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	{
 		// In most cases it means that we have legacy Slackware package.
 		// TODO: work with it =)
-		printf("%s: Invalid package: no XML data. Legacy Slackware packages is not supported yet\n", filename.c_str());
+		//printf("%s: Invalid package: no XML data. Legacy Slackware packages is not supported yet\n", filename.c_str());
 		return -1;
 //		data.set_name(filename);
 

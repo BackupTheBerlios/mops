@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.12 2007/03/22 16:40:10 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.13 2007/03/26 14:32:32 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -61,10 +61,10 @@ int mpkg::install(vector<string> fname)
 	int ret=0;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
-		currentStatus = "Installing "+IntToStr(i)+" package ["+fname[i]+"]";
+		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
 		ret+=mpkgSys::install(fname[i], db, DepTracker);
 	}
-	currentStatus = "Installation complete";
+	//currentStatus = "Installation complete";
 	return ret;
 }
 
@@ -85,7 +85,8 @@ int mpkg::uninstall(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
-		
+		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
+
 		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Uninstalling package "+pkg_name[i];
 		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 0);
 	}
@@ -98,6 +99,7 @@ int mpkg::purge(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
+		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 
 		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Purging package "+pkg_name[i];
 		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 1);
@@ -111,7 +113,7 @@ int mpkg::upgrade (vector<string> pkgname)
 	int ret=0;
 	for (unsigned int i = 0; i < pkgname.size(); i++)
 	{
-
+		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkgname.size()) +" ["+pkgname[i]+"]";
 		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkgname.size()+1)+"] Upgrading package "+pkgname[i];
 		ret+=mpkgSys::upgrade(pkgname[i], db, DepTracker);
 	}

@@ -1,12 +1,13 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.13 2007/03/23 13:24:59 i27249 Exp $
+ * $Id: config.cpp,v 1.14 2007/03/26 14:32:32 i27249 Exp $
  *
  * ***************************************************/
 
 #include "config.h"
 #include "xmlParser.h"
 
+int errorCode;
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string currentStatus;

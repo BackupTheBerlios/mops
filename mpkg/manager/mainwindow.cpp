@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.33 2007/03/23 13:24:59 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.34 2007/03/26 14:32:32 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -154,6 +154,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
+	initCategories();
 
 	this->show();
 	clearForm();
@@ -208,13 +209,66 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)), Qt::QueuedConnection);
-
-
+	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()), Qt::QueuedConnection);
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
+
+void MainWindow::cleanCache()
+{
+	emit callCleanCache();
+}	
+
+void MainWindow::initCategories()
+{
+	if (!FileExists("/etc/mpkg-groups.xml")) return;
+
+	printf("File exists\n");
+	_categories = XMLNode::openFileHelper("/etc/mpkg-groups.xml", "groups");
+	ui.listWidget->clear();
+	for (unsigned int i = 0; i< _categories.nChildNode("group"); i++)
+	{
+		printf("xml i = %d\n", i);
+		QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
+    		__item->setText(QApplication::translate("MainWindow", _categories.getChildNode("group",i).getAttribute("name"), 0, QApplication::UnicodeUTF8));
+    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", i).getAttribute("icon"))));
+	}
+
+	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
+}
+
+void MainWindow::filterCategory(int category_id)
+{
+	TAG_LIST tmp;
+	bool showIt = false;
+	string tagvalue = (string) _categories.getChildNode("group", category_id).getAttribute("tag");
+	printf("tagvalue = %s\n", tagvalue.c_str());
+	for (int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		if (tagvalue == "_all_") showIt = true;
+		else
+		{
+			showIt = false;
+			tmp = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
+		
+			for (int t = 0; t < tmp.size(); t++)
+			{
+				if (tmp.get_tag(t)->get_name() == tagvalue)
+				{
+					printf("all?\n");
+					showIt = true;
+					break;
+				}
+			}
+		}
+		if (!showIt) ui.packageTable->setRowHidden(i, true);
+		else ui.packageTable->setRowHidden(i, false);
+	}
+}
+
+
 
 void MainWindow::setStatus(QString status)
 {
@@ -226,23 +280,12 @@ MainWindow::~MainWindow()
 {
 	printf("Closing threads...\n");
 	thread->callQuit();
-	//emit quitThread();
-	/*while (thread->isRunning())
-	{
-		thread->exit();
-		sleep(1);
-		printf("Waiting...\n");
-		// Waiting for thread to exit
-	}*/
-	//printf("Thread seems to exit\n");
-	//delete thread;
 }
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
 	*packagelist=pkgList;
 	newStatus = nStatus;
-	//printf("Syncronized!\n");
 }
 
 void MainWindow::quickPackageSearch()
@@ -271,15 +314,12 @@ void MainWindow::showAllPackages()
 }
 void MainWindow::resetQueue()
 {
-	//mDb->clean_queue();
 	loadData();
 }
 
 void MainWindow::showPackageInfo()
 {
 	long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
-	//printf("ID = %d\n", id);
-	//printf("List size = %d\n", thread->getPackageList()->size());
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
@@ -334,10 +374,6 @@ void MainWindow::initPackageTable()
 
 }
 
-/*void MainWindow::fitTable()
-{
-
-}*/
 
 void MainWindow::showPreferences()
 {
@@ -348,7 +384,6 @@ void MainWindow::showPreferences()
 
 void MainWindow::showAbout()
 {
-	//printf("abox show!\n");
 	AboutBox *abox = new AboutBox;
 	abox->show();
 
@@ -384,7 +419,6 @@ void MainWindow::commitChanges()
 //void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){
 	PreferencesBox *prefBox = new PreferencesBox(mDb);
-	//thread.tellAreYouRunning();
 	prefBox->openRepositories();
 }
 /*void MainWindow::showCustomFilter(){}
@@ -398,7 +432,6 @@ void MainWindow::showFaq(){}
 */
 void MainWindow::markChanges(int x, Qt::CheckState state)
 {
-	//printf("markChanges! x = %d, newStatus size = %d\n", x, newStatus.size());
 		unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();
 		if (i >= newStatus.size())
 		{
@@ -428,7 +461,6 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.statusbar->showMessage("Package removed from install queue");
 					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					//ui.packageTable->cellWidget(x, PT_NAME)->setText(pName.c_str());
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
@@ -438,7 +470,6 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 
 
 				}
-				//printf("status set\n");
 				break;
 			case PKGSTATUS_REMOVED_AVAILABLE:
 				if (state == Qt::Checked)
@@ -466,7 +497,6 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 				}
-				//printf("status set\n");
 				break;
 			case PKGSTATUS_INSTALL:
 				if (state == Qt::Checked)
@@ -488,7 +518,6 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.statusbar->showMessage("Package removed from install queue");
 					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
 							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					//ui.packageTable->cellWidget(x, PT_NAME)->setText(pName.c_str());
 					TableLabel *_z = new TableLabel(ui.packageTable);
 					_z->setTextFormat(Qt::RichText);
 					_z->setText(pName.c_str());
@@ -528,84 +557,9 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					ui.packageTable->setCellWidget(x, PT_NAME, _z);
 
 				}
-				//printf("ins set\n");
 				break;
 		}
 }
-/*
-void MainWindow::insertPackageIntoTable(unsigned int package_num)
-{
-	unsigned int i = package_num;
-	//unsigned int i = ui.packageTable->rowCount();
-	//ui.packageTable->insertRow(i);
-	CheckBox *stat = new CheckBox(this);
-	//QIcon *icon = new QIcon ("/home/ftp/img.png");
-	string package_icon;
-	if (packagelist.get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos && \
-			packagelist.get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos)
-	{
-		stat->setCheckState(Qt::Checked);
-	}
-
-	ui.packageTable->setCellWidget(i,PT_INSTALLCHECK, stat);
-
-	TableLabel *pkgName = new TableLabel(ui.packageTable);
-	pkgName->setTextFormat(Qt::RichText);
-	PACKAGE *_p = packagelist.get_package(package_num);
-	switch(_p->get_status())
-	{
-		case PKGSTATUS_INSTALLED:
-			package_icon = "installed.png";
-			break;
-		case PKGSTATUS_INSTALL:
-			package_icon = "install.png";
-			break;
-		case PKGSTATUS_REMOVE:
-			package_icon = "remove.png";
-			break;
-		case PKGSTATUS_PURGE:
-			package_icon = "purge.png";
-			break;
-		case PKGSTATUS_REMOVED_AVAILABLE:
-			package_icon = "removed_available.png";
-			break;
-		case PKGSTATUS_AVAILABLE:
-			package_icon = "available.png";
-			break;
-		default:
-			package_icon = "unknown.png";
-	}
-	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-	pkgName->setText(pName.c_str());
-	pkgName->row = i;
-	ui.packageTable->setCellWidget(i, PT_NAME, pkgName);
-	stat->row = package_num;
-	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
-	//ui.packageTable->setItem(i,PT_STATUS, new QTableWidgetItem(packagelist.get_package(package_num)->get_vstatus().c_str()));
-	ui.packageTable->setItem(i,PT_ID, new QTableWidgetItem(IntToStr(package_num).c_str()));
-	ui.packageTable->setRowHeight(i-1, 45);
-
-}
-*/
-/*void MainWindow::searchPackagesByTag(QString tag)
-{
-	
-	ui.packageTable->clearContents();
-	ui.packageTable->setRowCount(0);
-
-	for (int i=0; i<packagelist->size(); i++)
-	{
-		for (int t=0; t<packagelist->get_package(i)->get_tags()->size(); t++)
-		{
-			if (packagelist->get_package(i)->get_tags()->get_tag(t)->get_name() == tag.toStdString())
-			{
-				insertPackageIntoTable(i);
-			}
-		}
-		setBarValue(ui.progressBar, i);
-	}
-}
-*/
 void MainWindow::loadData()
 {
 	emit loadPackageDatabase();
@@ -633,17 +587,11 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 
 void MainWindow::markToInstall()
 {
-	//int i = ui.packageTable->currentRow();
-	//ui.packageTable->item(i,0)->setCheckState(Qt::Checked);
-/*	if (ui.packageTable->item(i,0)->text() == "AVAILABLE" || ui.packageTable->item(i,0)->text()=="REMOVED_AVAILABLE")
-	{
-i		ui.packageTable->item(ui.packageTable->currentRow(),0)->setText("INSTALL");
-	}*/
+
 }
 
 void CheckBox::markChanges()
 {
-	//printf("row = %d\n",row);
 	mw->markChanges(row, checkState());
 }
 

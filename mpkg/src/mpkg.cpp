@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.39 2007/03/23 13:24:59 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.40 2007/03/26 14:32:32 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -112,34 +112,59 @@ string mpkgDatabase::get_file_md5(string filename)
 	return md5str;
 }
 
+bool mpkgDatabase::check_cache(PACKAGE *package)
+{
+	if (FileExists(SYS_CACHE + "/" + package->get_filename()) && package->get_md5() == get_file_md5(SYS_CACHE + "/" + package->get_filename()))
+		return true;
+	else return false;
+}
+
+
 int mpkgDatabase::commit_actions()
 {
 	// Zero: purging required packages
 	// First: removing required packages
+	currentStatus = "Looking for remove queue";
 	PACKAGE_LIST remove_list;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
 	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
 	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
+	currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
+	progressEnabled = true;
+	progressMax = remove_list.size();
+	currentProgress = 0;
 	for (int i=0;i<remove_list.size();i++)
 	{
+		currentStatus = "Removing package " + remove_list.get_package(i)->get_name();
 		if (remove_package(remove_list.get_package(i))!=0) return -2;
+		currentProgress = i;
 	}
+	progressEnabled = false;
 	sqlSearch.clear();
 
+	currentStatus = "Looking for purge queue";
 	PACKAGE_LIST purge_list;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
 	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
 	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
 	//printf("purge list size = %d\n", purge_list.size());
+	currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
+	currentProgress = 0;
+	progressEnabled = true;
+	progressMax = purge_list.size();
 	for (int i=0; i<purge_list.size(); i++)
 	{
+		currentStatus = "Purging package " + purge_list.get_package(i)->get_name();
 		if (purge_package(purge_list.get_package(i))!=0) return -4;
+		currentProgress = i;
 	}
+	progressEnabled = false;
 	sqlSearch.clear();
 
+	currentStatus = "Looking for install queue";
 	// Second: installing required packages
 	PACKAGE_LIST install_list;
 	sqlSearch.setSearchMode(SEARCH_OR);
@@ -151,25 +176,40 @@ int mpkgDatabase::commit_actions()
 	// Building download queue
 #ifndef OLD_QUEUE
 	printf("Downloading using new queue\n");
-	currentStatus = "Downloading using new methods";
+	currentStatus = "Looking for package locations...";
 	DownloadsList downloadQueue;
 	DownloadItem tmpDownloadItem;
+	vector<string> itemLocations;
+	progressEnabled = true;
+	progressMax = install_list.size();
+	currentProgress = 0;
 	for (int i=0; i<install_list.size(); i++)
 	{
-		for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
+		currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
+
+
+		if (!check_cache(install_list.get_package(i)))
 		{
-			tmpDownloadItem.url = install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
-					     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
-					     + install_list.get_package(i)->get_filename();
-			
+			itemLocations.clear();
+						
 			tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
-			tmpDownloadItem.server = install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url();
+			//tmpDownloadItem.server = install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url();
 			tmpDownloadItem.name = install_list.get_package(i)->get_name();
 			tmpDownloadItem.priority = 0;
-			tmpDownloadItem.status = 0;
+			tmpDownloadItem.status = DL_STATUS_WAIT;
 
+
+			for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
+			{
+			itemLocations.push_back(install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
+					     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
+					     + install_list.get_package(i)->get_filename());
+
+			}
+			tmpDownloadItem.url_list = itemLocations;
 			downloadQueue.push_back(tmpDownloadItem);
 		}
+		currentProgress = i;
 	}
 	progressEnabled = true;
 	progressEnabled2 = true;
@@ -193,12 +233,15 @@ int mpkgDatabase::commit_actions()
 	}
 #endif
 	debug("Calling INSTALL");
+
 	for (int i=0;i<install_list.size();i++)
 	{
+		currentStatus = "Installing package " + install_list.get_package(i)->get_name();
 		currentProgress = i;
 		if (install_package(install_list.get_package(i))!=0) return -7;
 	}
 	progressEnabled = false;
+	currentStatus = "Installation complete.";
 	return 0;
 }
 
@@ -411,7 +454,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
-	string statusHeader = "Installing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 //#define IDEBUG
 	// First of all: EXTRACT file list and scripts!!!
@@ -525,11 +568,15 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::purge_package(PACKAGE* package)
 {
+	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Purging package "+package->get_name()+": ";
+	currentStatus = statusHeader + "initialization";
+
 	// purging package config files.
 	printf("calling purge\n");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	string fname;
+	currentStatus = statusHeader + "building list of configuration files";
 	printf("Removing configuration files of package %s...\n", package->get_name().c_str());
 	debug("Package has "+IntToStr(package->get_config_files()->size())+" config files");
 #ifdef PURGE_METHOD_1
@@ -542,6 +589,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 
 	printf("remove_files size = %d\n", remove_files.size());
 
+	currentStatus = statusHeader + "removing configuration files...";
 	for (int i=0; i<remove_files.size(); i++)
 	{
 		fname=sys_root + remove_files.get_file(i)->get_name(false);
@@ -555,6 +603,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 		}
 	}
 
+	currentStatus = statusHeader + "removing empty directories";
 	// Run 2: clearing empty directories
 	vector<string>empty_dirs;
 	string edir;
@@ -579,6 +628,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 		empty_dirs.clear();
 	}
 
+	currentStatus = statusHeader + "purge complete";
 	printf("done\n");
 	//set_purge(package->get_id());
 	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_UNAVAILABLE);
@@ -593,12 +643,16 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Removing package "+package->get_name()+": ";
+	currentStatus = statusHeader + "initialization";
+
 	if (package->get_status()==PKGSTATUS_REMOVE || package->get_status()==PKGSTATUS_REMOVE_PURGE)
 	{
 		// Running pre-remove scripts
 		debug("REMOVE PACKAGE::Preparing scripts");
 		if(!DO_NOT_RUN_SCRIPTS)
 		{
+			currentStatus = statusHeader + "executing pre-remove scripts";
 			string prerem="/bin/sh "+package->get_scripts()->get_preremove();
 			system(prerem.c_str());
 		}
@@ -611,7 +665,9 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		debug("Package has "+IntToStr(package->get_files()->size())+" files");
 
 		// purge will be implemented in mpkgDatabase::purge_package(PACKAGE *package); so we skip config files here
+		currentStatus = statusHeader + "building file list";
 		FILE_LIST remove_files=*package->get_files();
+		currentStatus = statusHeader + "removing files...";
 		for (int i=0; i<remove_files.size(); i++)
 		{
 			fname=sys_root + remove_files.get_file(i)->get_name(false);
@@ -624,6 +680,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				}
 			}
 		}
+		currentStatus = statusHeader + "removing empty directories...";
 	
 		// Run 2: clearing empty directories
 		vector<string>empty_dirs;
@@ -649,6 +706,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			empty_dirs.clear();
 		}
 	
+		currentStatus = statusHeader + "executing post-removal scripts";
 		// Creating and running POST-INSTALL script
 		if (!DO_NOT_RUN_SCRIPTS)
 		{
@@ -658,7 +716,9 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	}
 	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_REMOVED_UNAVAILABLE);
 	else set_status(package->get_id(), PKGSTATUS_REMOVED_AVAILABLE);
+	currentStatus = statusHeader + "cleaning file list";
 	cleanFileList(package->get_id());
+	currentStatus = statusHeader + "remove complete";
 	printf("done\n");
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
@@ -676,7 +736,6 @@ int mpkgDatabase::cleanFileList(int package_id)
 
 int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 {
-	// TODO: NEED OPTIMIZATIONS!!
 	PACKAGE old_package;
 	if (get_package(package_id, &old_package, false)!=0)
 	{
@@ -789,13 +848,10 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 
 int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 {
-	//printf("mpkg.cpp: updateRepositoryData(): begin\n");
-	//printf(_("Got data about %d new packages, importing\n"), newPackages->size());
 	debug("mpkg.cpp: updateRepositoryData(): requesting current packages");
 	PACKAGE_LIST currentPackages;
 	SQLRecord sqlSearch;
 	PACKAGE tmpPackage;
-	//printf("recv pkglist\n");
 	if (get_packagelist(sqlSearch, &currentPackages, false)!=0)
 	{
 		debug("mpkg.cpp: updateRepositoryData(): failed to get list of current packages");
@@ -805,18 +861,14 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	{
 		debug("get_packagelist ok");
 	}
-	//printf("done\n");
 	debug("mpkg.cpp: updateRepositoryData(): Step 1. Adding new data, updating old");
 	int package_id;
 	int package_status;
 	progressMax = newPackages->size();
 	progressEnabled = true;
-	//printf("cycle start\n");
 	for (int i=0; i< newPackages->size(); i++)
 	{
 		currentProgress = i;
-		//printf("for (int i=0; i< newPackages->size(); i++) i=%d\n", i);
-		//printf("#");
 
 		package_id=get_package_id(newPackages->get_package(i));
 		if (package_id>0)
@@ -826,9 +878,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			debug("mpkg.cpp: updateRepositoryData(): package status: "+IntToStr(package_status));
 			if (package_status!=PKGSTATUS_UNAVAILABLE)
 				newPackages->get_package(i)->set_status(package_status);
-	//		printf("update_package_data call\n");
 			update_package_data(package_id, newPackages->get_package(i));
-	//		printf("end\n");
 		}
 		if (package_id==0)
 		{
@@ -841,10 +891,8 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			return -1;
 		}
 	}
-	//printf("cycle end\n");
 	progressEnabled = false;
 	
-	//printf("mpkg.cpp: updateRepositoryData(): Step 2. Clean up old package data (packages, that are no sources for now)\n");
 	int package_num;
 	progressMax = currentPackages.size();
 	progressEnabled = true;
@@ -884,11 +932,6 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		}
 	}
 	progressEnabled = false;
-	//printf("\n");
-
-	// Step 3. Clean up servers and tags (remove unused items)
-	// TODO
-	//printf("mpkg.cpp: updateRepositoryData(): successful end\n");
 	return 0;
 }
 

@@ -4,11 +4,11 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.2 2007/03/10 03:42:00 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.3 2007/03/26 14:32:32 i27249 Exp $
  */
 
 #include "libmpkg.h"
-
+#include "converter.h"
 
 const char* program_name;
 extern char* optarg;
@@ -188,6 +188,17 @@ int main (int argc, char **argv)
 		}
 		return 0;
 	
+	}
+
+	if ( action == ACT_TAG )
+	{
+		printf("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
+		if (argc == 4)
+		{
+			printf("tagging...\n");
+			tag_package(argv[3], argv[2]);
+		}
+		return 0;
 	}
 
 	if ( action == ACT_CONVERT_DIR ) {
@@ -374,6 +385,7 @@ int check_action(char* act)
 		&& _act != "convert"
 		&& _act != "convert_dir"
 		&& _act != "list_rep"
+		&& _act != "tag"
 	  	&& _act != "clean" ) {
 		res = -1;
 	}
@@ -422,6 +434,8 @@ int setup_action(char* act)
 
 	if (_act == "convert")
 		return ACT_CONVERT;
+	if (_act == "tag")
+		return ACT_TAG;
 
 	if (_act == "convert_dir")
 		return ACT_CONVERT_DIR;

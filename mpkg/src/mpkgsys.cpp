@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.7 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.8 2007/03/26 14:32:32 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -127,7 +127,6 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 
 int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
-	printf("install...%s\n", fname.c_str());
 	
 	// Step 0. Checking source
 
@@ -167,7 +166,6 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 			printf("already installed\n");
 			return 0;
 		}
-		printf("running deptracker\n");
 		DepTracker->merge(&tmp_pkg);
 		return 0;
 	}

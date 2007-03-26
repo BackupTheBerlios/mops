@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.11 2007/03/23 13:24:59 i27249 Exp $
+ * $Id: corethread.h,v 1.12 2007/03/26 14:32:32 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -34,6 +34,9 @@
 #define CA_CommitQueue 2
 #define CA_Quit 3
 #define CA_UpdateDatabase 4
+
+// Default group definitions
+
 
 class statusThread: public QThread
 {
@@ -72,6 +75,7 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
+		void cleanCache();
 		void callQuit();
 		void updatePackageDatabase(); 	// Call to update repositories data
 		void loadPackageDatabase();	// Call to load data from database and display

@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.4 2007/02/19 05:14:10 i27249 Exp $
+ * $Id: converter.cpp,v 1.5 2007/03/26 14:32:32 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -254,4 +254,39 @@ int convert_package(string filename, string output_dir)
 }
 
 
+int tag_package(string filename, string tag)
+{
+	string run = "mkdir -p "+filename.substr(0,filename.length()-4)+" && tar zxf " + filename + " -C " + filename.substr(0,filename.length()-4);
+	if (system(run.c_str())!=0) return -1; // Extracting
+	printf("extracting complete\n");
+	
+	string xml_path = filename.substr(0,filename.length()-4) + "/install/data.xml";
+	if (!FileExists(xml_path)) return -2;
+	XMLNode _node = XMLNode::openFileHelper(xml_path.c_str(), "package");
+	printf("File opened\n");
+	if (_node.nChildNode("tags")==0)
+	{
+		_node.addChild("tags");
+	}
+	unsigned int tag_id = _node.getChildNode("tags").nChildNode("tag");
+	_node.getChildNode("tags").addChild("tag");
+	_node.getChildNode("tags").getChildNode("tag",tag_id).addText(tag.c_str());
+	_node.writeToFile(xml_path.c_str());
+
+	run = "cd "+filename.substr(0,filename.length()-4) + \
+	      " && makepkg -l y -c n " \
+	      + _node.getChildNode("name").getText() + "-"\
+	      + _node.getChildNode("version").getText() + "-"\
+	      + _node.getChildNode("arch").getText() + "-"\
+	      + _node.getChildNode("build").getText() + ".tgz"\
+	      + " && mv "\
+	      + _node.getChildNode("name").getText() + "-"\
+	      + _node.getChildNode("version").getText() + "-"\
+	      + _node.getChildNode("arch").getText() + "-"\
+	      + _node.getChildNode("build").getText() + ".tgz .. && cd ..";
+	if (system(run.c_str())!=0) return -3; // Packing back;
+	run = "rm -rf " + filename.substr(0,filename.length()-4);
+	system(run.c_str());
+	return 0;
+}
 

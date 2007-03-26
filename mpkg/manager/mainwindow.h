@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.24 2007/03/23 13:24:59 i27249 Exp $
+ * $Id: mainwindow.h,v 1.25 2007/03/26 14:32:32 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -44,8 +44,11 @@ class MainWindow: public QMainWindow
 		void syncData();
 		void updateDatabase();
 		void quitThread();
+		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void initCategories();
+		void filterCategory(int category_id);
 		void receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus);
 		void setStatus(QString status);
 		void loadData();
@@ -87,6 +90,7 @@ class MainWindow: public QMainWindow
 		void commitChanges();
 		//void resetChanges();
 		void resetQueue();
+		void cleanCache();
 		//void saveQueue();
 		void showAddRemoveRepositories();
 		//void showCustomFilter();
@@ -119,7 +123,7 @@ class MainWindow: public QMainWindow
 		QAction *removePackageAction;
 		QAction *purgePackageAction;
 		QAction *upgradePackageAction;
-		
+		XMLNode _categories;
 		
 		//Ui::loadingBox loadBox;
 	private:

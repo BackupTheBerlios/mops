@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+#define DL_STATUS_OK      1
+#define DL_STATUS_WAIT   -1
+#define DL_STATUS_FAILED -2
+
+
 typedef enum {
 	DOWNLOAD_OK = 1,
 	DOWNLOAD_ERROR,
@@ -20,20 +25,22 @@ typedef enum {
 class DownloadItem {
 public:
 	std::string file;
-	std::string url;
-	std::string server;
+	std::vector<std::string> url_list;
 	std::string name;
 	unsigned int priority;
-	unsigned int status;
+	int status;
 };
 
 typedef std::vector<DownloadItem> DownloadsList;
 
 
+
+
+
 class IDownload {
 public:
 	virtual DownloadResults getFile(std::string url, std::string file) = 0;
-	virtual DownloadResults getFile(DownloadsList list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname) = 0;
+	virtual DownloadResults getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname) = 0;
 	virtual ~IDownload() {};
 };
 
