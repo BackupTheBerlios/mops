@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.25 2007/03/23 12:11:53 i27249 Exp $
+ *	$Id: core.cpp,v 1.26 2007/03/26 21:34:39 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -417,7 +417,7 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 	for (int i=0; i<taglist->size();i++)
 	{
 		sqlSearch.clear();
-		sqlSearch.addField("tags_name", taglist->get_tag(i)->get_name());
+		sqlSearch.addField("tags_name", taglist->get_tag(i)->get_name()); 
 		if (db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch)!=0)
 			return -1;
 
@@ -431,8 +431,9 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 				return -2;
 			if (db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch)!=0)
 				return -3;
-			tag_id=atoi(sqlTable.getValue(0, "tags_id").c_str());
 		}
+		tag_id=atoi(sqlTable.getValue(0, "tags_id").c_str());
+		printf("tag_id = %d\n", tag_id);
 		if (add_tag_link(package_id, tag_id)!=0)
 			return -4;
 	}
@@ -442,10 +443,16 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 // Creates a link between package_id and tag_id
 int mpkgDatabase::add_tag_link(int package_id, int tag_id)
 {
+	printf("recv package_id = %d, tag_id = %d\n", package_id, tag_id);
 	SQLRecord sqlInsert;
 	sqlInsert.addField("packages_package_id", IntToStr(package_id));
 	sqlInsert.addField("tags_tag_id", IntToStr(tag_id));
-	return db.sql_insert("tags_links", sqlInsert);
+	int ret = db.sql_insert("tags_links", sqlInsert);
+	if (ret != 0)
+	{
+		printf("LINK ERROR!\n");
+	}
+	return ret;
 }
 
 
@@ -595,7 +602,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		get_locationlist(package.get_id(), package.get_locations());
 		debug("dependency list...");
 		get_dependencylist(package.get_id(), package.get_dependencies());
-		debug("taglist...");
+		printf("taglist...\n");
 		get_taglist(package.get_id(), package.get_tags());
 		debug("description list...");
 #ifdef ENABLE_INTERNATIONAL
@@ -727,27 +734,30 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	sqlFields.addField("tags_name");
 	SQLRecord sqlSearch;
 
+	printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
 	if (!id_sqlTable.empty())
 	{
 		sqlSearch.setSearchMode(SEARCH_OR);
 		for (int i=0; i<id_sqlTable.getRecordCount(); i++)
 		{
-			sqlSearch.addField("tags_id", sqlTable.getValue(i, "tags_tag_id"));
+			sqlSearch.addField("tags_id", id_sqlTable.getValue(i, "tags_tag_id"));
 		}
 	}
 	
 	// Step 2. Read the tags with readed ids
-	
+	printf("step 2\n");
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
 	if (sql_ret!=0)
 	{
 		return 2;
 	}
-
+	printf("table = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
+		printf("tag count = %d\n", sqlTable.getRecordCount());
 		for (int i=0; i<sqlTable.getRecordCount(); i++)
 		{
+			printf("adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
 			tag.set_name(sqlTable.getValue(i, "tags_name"));
 			taglist->add(tag);
 		}

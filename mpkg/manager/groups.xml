@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <groups>
-	<group tag="%any%" name = "All packages" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png"/>
-	<group tag="%latestupdates%" name = "Latest updates" icon = "icons/icons/default.kde/32x32/apps/superkaramba.png"/>
+	<group tag="_any_" name = "All packages" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png"/>
+	<group tag="_latestupdates_" name = "Latest updates" icon = "icons/icons/default.kde/32x32/apps/superkaramba.png"/>
 	<group tag="base" name = "Base system" icon = "icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
 	<group tag="utilities" name = "Utilities" icon = "icons/icons/default.kde/32x32/apps/xconsole.png"/>
 	<group tag="development" name="Development" icon="icons/icons/default.kde/32x32/apps/alevt.png"/>
@@ -19,6 +19,6 @@
 	<group tag="wine" name="WINE" icon="icons/icons/default.kde/32x32/apps/wine.png"/>
 	<group tag="x11" name="X Window system" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png"/>
 	<group tag="xapps" name="X11 applications" icon="/opt/kde/share/icons/crystalsvg/64x64/apps/style.png"/>
-	<group tag="%misc%" name="Miscellaneous" icon="icons/icons/default.kde/32x32/apps/fifteenpieces.png"/>
+	<group tag="_misc_" name="Miscellaneous" icon="icons/icons/default.kde/32x32/apps/fifteenpieces.png"/>
 </groups>
 

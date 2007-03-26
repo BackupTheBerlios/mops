@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.34 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.35 2007/03/26 21:34:39 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -253,8 +253,10 @@ void MainWindow::filterCategory(int category_id)
 			showIt = false;
 			tmp = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
 		
+			printf("tag size = %d\n", packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags()->size());
 			for (int t = 0; t < tmp.size(); t++)
 			{
+				printf("scan tag %d %s\n",t,tmp.get_tag(t)->get_name().c_str());
 				if (tmp.get_tag(t)->get_name() == tagvalue)
 				{
 					printf("all?\n");
