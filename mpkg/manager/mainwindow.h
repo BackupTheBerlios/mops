@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.25 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: mainwindow.h,v 1.26 2007/03/26 22:25:15 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -94,7 +94,7 @@ class MainWindow: public QMainWindow
 		//void saveQueue();
 		void showAddRemoveRepositories();
 		//void showCustomFilter();
-		//void setInstalledFilter(bool showThis=false);
+		void setInstalledFilter();
 		//void setAvailableFilter(bool showThis=false);
 		//void setBrokenFilter(bool showThis=false);
 		//void setUnavailableFilter(bool showThis=false);

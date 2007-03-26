@@ -1,7 +1,11 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.35 2007/03/26 21:34:39 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.36 2007/03/26 22:25:15 i27249 Exp $
+ *
+ * TODO:
+ * applyPackageFilter function: combine all filters (tag, status, name)
+ *
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -268,9 +272,9 @@ void MainWindow::filterCategory(int category_id)
 		if (!showIt) ui.packageTable->setRowHidden(i, true);
 		else ui.packageTable->setRowHidden(i, false);
 	}
+	// Apply filters
+	//setInstalledFilter();
 }
-
-
 
 void MainWindow::setStatus(QString status)
 {
@@ -423,15 +427,54 @@ void MainWindow::showAddRemoveRepositories(){
 	PreferencesBox *prefBox = new PreferencesBox(mDb);
 	prefBox->openRepositories();
 }
-/*void MainWindow::showCustomFilter(){}
-void MainWindow::setInstalledFilter(bool showThis){}
-void MainWindow::setAvailableFilter(bool showThis){}
-void MainWindow::setBrokenFilter(bool showThis){}
-void MainWindow::setUnavailableFilter(bool showThis){}
-void MainWindow::setRemovedFilter(bool showThis){}
-void MainWindow::showHelpTopics(){}
-void MainWindow::showFaq(){}
-*/
+//void MainWindow::showCustomFilter(){}
+void MainWindow::setInstalledFilter()
+{
+	int tmp;
+	bool showIt;
+	for (int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		showIt = false;
+		tmp = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status();
+		if (ui.actionShow_installed->isChecked() && tmp == PKGSTATUS_INSTALLED)
+		{
+			ui.packageTable->setRowHidden(i, false);
+			showIt = true;
+		}
+		if (ui.actionShow_available->isChecked() && tmp == PKGSTATUS_AVAILABLE)
+		{
+			ui.packageTable->setRowHidden(i, false);
+			showIt = true;
+		}
+		if (ui.actionShow_available->isChecked() && ui.actionShow_removed->isChecked() && tmp == PKGSTATUS_REMOVED_AVAILABLE)
+		{
+			ui.packageTable->setRowHidden(i, false);
+			showIt = true;
+		}
+		if (ui.actionShow_removed->isChecked() && tmp == PKGSTATUS_REMOVED_UNAVAILABLE)
+		{
+			ui.packageTable->setRowHidden(i, false);
+			showIt = true;
+		}
+		if (ui.actionShow_unavailable->isChecked() && tmp == PKGSTATUS_UNAVAILABLE)
+		{
+			ui.packageTable->setRowHidden(i, false);
+			showIt = true;
+		}
+
+		if (!showIt)
+		{
+			ui.packageTable->setRowHidden(i, true);
+		}
+	}
+}
+//void MainWindow::setAvailableFilter(bool showThis){}
+//void MainWindow::setBrokenFilter(bool showThis){}
+//void MainWindow::setUnavailableFilter(bool showThis){}
+//void MainWindow::setRemovedFilter(bool showThis){}
+//void MainWindow::showHelpTopics(){}
+//void MainWindow::showFaq(){}
+
 void MainWindow::markChanges(int x, Qt::CheckState state)
 {
 		unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();

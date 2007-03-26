@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.14 2007/03/26 14:32:32 i27249 Exp $
+ *     $Id: main.cpp,v 1.15 2007/03/26 22:25:15 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -25,6 +25,11 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.actionPreferences, SIGNAL(triggered()), &mw, SLOT(showPreferences()));
 	QObject::connect(mw.ui.actionAdd_remove_repositories, SIGNAL(triggered()), &mw, SLOT(showAddRemoveRepositories()));
 	QObject::connect(mw.ui.actionClean_cache, SIGNAL(triggered()), &mw, SLOT(cleanCache()));
+	QObject::connect(mw.ui.actionShow_installed, SIGNAL(triggered()), &mw, SLOT(setInstalledFilter()));
+	QObject::connect(mw.ui.actionShow_available, SIGNAL(triggered()), &mw, SLOT(setInstalledFilter()));
+	QObject::connect(mw.ui.actionShow_removed, SIGNAL(triggered()), &mw, SLOT(setInstalledFilter()));
+	QObject::connect(mw.ui.actionShow_unavailable, SIGNAL(triggered()), &mw, SLOT(setInstalledFilter()));
+	QObject::connect(mw.ui.actionShow_broken, SIGNAL(triggered()), &mw, SLOT(setInstalledFilter()));
 
 	QObject::connect(mw.ui.actionCore_settings, SIGNAL(triggered()), &mw, SLOT(showCoreSettings()));
 	QObject::connect(mw.ui.actionCustom_filter, SIGNAL(triggered()), &mw, SLOT(showCustomFilter()));
