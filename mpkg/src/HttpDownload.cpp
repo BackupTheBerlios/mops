@@ -60,23 +60,15 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
 {
-
-//	key_t key;
-//	int semid;
-//	struct semun arg = {0, -1, 0};
-
-
-//	key = ftok("/etc/mpkg.xml", getpid());
-
-//	semid = semget(key, 1, 0666, | IPC_CREAT);
-
 	extDlNow = dlnow;
 	extDlTotal = dltotal;
 	CURLcode result;
 	DownloadItem *item;
 	FILE* out;
+	bool is_have_error = false;
 	*itemtotal = list.size();
 	for (int i = 0; i < list.size(); i++ ) {
+process:
 		item = &(list.at(i));
 		*itemname = item->name;
 
@@ -85,48 +77,59 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 			out = fopen (item->file.c_str(), "wb");
 			if ( out == NULL ) {
 				fprintf(stderr, "open target file failed");
-				item->status = DL_STATUS_FAILED;
-			}
-	
-			for ( unsigned int j = 0; j < item->url_list.size(); j++ ) {
-				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
-				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
-				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
-				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
-				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
-			
-				result = curl_easy_perform(ch);
-				fclose(out);
-	
-				if ( result == CURLE_OK  ) {
-					item->status = DL_STATUS_OK;
-					break;
-				} else {
-					item->status = DL_STATUS_FAILED;
-				}
-	
-			}
+				setErrorCode (MPKG_DOWNLOAD_ERROR);
+				item->status = DL_STATUS_FILE_ERROR;
+				is_have_error = true;
+			} else {
+		        	
+    			for ( unsigned int j = 0; j < item->url_list.size(); j++ ) {
+    				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+    				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
+    				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
+    				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
+    				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
+    			
+    				result = curl_easy_perform(ch);
+    				fclose(out);
+    	
+    				if ( result == CURLE_OK  ) {
+    					item->status = DL_STATUS_OK;
+    					break;
+    				} else {
+    				    is_have_error = true;
+    					item->status = DL_STATUS_FAILED;
+    				}
+    	
+    			}
+    			
+                if ( item->status == DL_STATUS_FAILED ) {
+    				setErrorCode(MPKG_DOWNLOAD_ERROR);
+    				for (;;) {
+    					if ( getErrorReturn() == MPKG_RETURN_RETRY ) {
+    						printf("resolved\n");
+    						goto process;
+    					}
+    					
+    					if ( getErrorReturn() == MPKG_RETURN_IGNORE ) {
+    					    printf ("resolved\n");
+    					    break;
+    					} 
 
-//			if ( item->status == DL_STATUS_FAILED ) {
-				/* Oops.. */
-/*				arg.val = 1;
-				semctrl(semid, 1, SETVAL, arg);
+    					if ( getErrorReturn() == MPKG_RETURN_ABORT ) {
+    						printf("abort\n");
+    						return DOWNLOAD_ERROR;
+    					}
+    					sleep (1);
+    				}
+    			} else {
+    				setErrorCode(MPKG_DOWNLOAD_OK);
+    			}
+    		}
+        }
 
-				int r = semop(semid, &arg, 1);
-				assert( r == -1 );
-				
-				r = semop(semid, &arg, 0);
-				while ( r != -1 ) {
-					sleep("100");
-					r = semop(semid, &arg, 0);
-					
-				}
-*/
-			}
-
-		*itemnow = i;
+	*itemnow = i;
 	
-		}
+    }
 
-	return DOWNLOAD_OK;
+	return is_have_error ? DOWNLOAD_OK : DOWNLOAD_ERROR; 
 }

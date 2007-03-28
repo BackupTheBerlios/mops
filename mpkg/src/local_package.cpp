@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.31 2007/03/26 14:32:32 i27249 Exp $
+$Id: local_package.cpp,v 1.32 2007/03/28 14:39:58 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -332,6 +332,10 @@ int LocalPackage::get_xml()
 	}
 
 	PackageConfig p(tmp_xml);
+	if (!p.parseOk)
+	{
+		return -100;
+	}
 	_packageXMLNode = p.getXMLNode(); // To be indexing work
 
 	data.set_name(p.getName());
@@ -413,6 +417,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	//currentStatus = "["+package->get_name()+"] Creating flist node...";
 	CreateFlistNode(tmp_flist, tmp_xml_flist);
 	PackageConfig ftree(tmp_xml_flist);
+	if (!ftree.parseOk) return -100;
 	//currentStatus = "["+package->get_name()+"] Created PackageConfig object";
 	vector <string> vec_tmp_names=ftree.getFilelist();
 	//currentStatus = "["+package->get_name()+"] Vector build complete";
@@ -440,6 +445,7 @@ int LocalPackage::get_filelist()
 	FILES file_tmp;
 	CreateFlistNode(tmp_flist, tmp_xml_flist);
 	PackageConfig ftree(tmp_xml_flist);
+	if (!ftree.parseOk) return -100;
 	vector <string> vec_tmp_names=ftree.getFilelist();
 	_packageXMLNode.addChild("filelist");
 	for (unsigned int i=2;i<vec_tmp_names.size();i++)
@@ -586,6 +592,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	}
 
 	PackageConfig p(tmp_xml);
+	if (!p.parseOk) return -100;
 //	_packageXMLNode = p.getXMLNode(); // To be indexing work
 
 	vector<string> vec_tmp_names=p.getConfigFilelist();

@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.10 2007/03/22 16:40:10 i27249 Exp $
+ * $Id: libmpkg.h,v 1.11 2007/03/28 14:39:58 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -160,6 +160,9 @@ class mpkg
 		int set_scriptsdir(string newscriptsdir); // Sets a scripts directory
 		int set_runscripts(bool dorun); // Enables or disables a script running
 		int set_checkFiles(unsigned int value);
+		
+		// Error bus
+
 
 		// Finalizing
 		int commit(); 
@@ -172,6 +175,8 @@ class mpkg
 		DependencyTracker *DepTracker;
 
 };
+
+
 
 #endif //LIBMPKG_H_
 

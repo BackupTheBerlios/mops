@@ -1,10 +1,14 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.7 2007/03/06 01:17:25 i27249 Exp $
+* $Id: file_routines.h,v 1.8 2007/03/28 14:39:58 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
-
+#include <string>
+#include <vector>
+#include "config.h"
+#include "dataunits.h"
+using namespace std;
 #define PKGTYPE_UNKNOWN 0
 #define PKGTYPE_SLACKWARE 1
 #define PKGTYPE_MOPSLINUX 2
@@ -13,7 +17,7 @@
 
 
 
-#include "local_package.h"
+//#include "local_package.h"
 #include <unistd.h>
 #include <errno.h>
 //#include <libtar.h>
@@ -24,7 +28,7 @@ string get_tmp_file();
 void delete_tmp_files();
 bool FileExists(string filename);
 bool FileNotEmpty(string filename);
-string ReadFile(string filename, int max_count=0);
+string ReadFile(string filename, int max_count=0, bool ignore_failure = true);
 int WriteFile(string filename, string data);
 
 // Package type definition (also defines repository type)

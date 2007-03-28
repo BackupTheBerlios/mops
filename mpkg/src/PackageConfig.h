@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.7 2007/03/06 01:01:43 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.8 2007/03/28 14:39:58 i27249 Exp $
  *
  * **********************************************************/
 
@@ -76,6 +76,8 @@ public:
 	string getInstalledSize(void);
 	string getFilename(void);
 	string getLocation(void);
+
+	bool parseOk;
 
 private:
 	string fileName;

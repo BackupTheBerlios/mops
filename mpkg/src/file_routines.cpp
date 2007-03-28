@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.10 2007/03/06 01:17:24 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.11 2007/03/28 14:39:58 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -17,17 +17,20 @@ string get_tmp_file()
 	//char *t=tmpnam(NULL);
 	char t[]="/tmp/mpkg-XXXXXX";
 	int fd;
+	mpkgErrorReturn errRet;
+create_tmp:
 	fd=mkstemp(t);
-
-#ifdef DEBUG
-	printf("file_routines.cpp: Temp filename: %s, return value = %i\n", t, fd);
-#endif
 	if ( t == NULL  )
-		return NULL;
+	{
+		errRet = waitResponce(MPKG_SUBSYS_TMPFILE_CREATE_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+			goto create_tmp;
+		if (errRet == MPKG_RETURN_ABORT)
+			return NULL;
+	}
 
 	tmp_fname=t;
 	debug("get_tmp_file end");
-	//free(t);
 	temp_files.resize(temp_files.size()+1);
 	temp_files[temp_files.size()-1]=tmp_fname;
 	close(fd);
@@ -40,7 +43,7 @@ void delete_tmp_files()
 
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
 		if ( unlink( temp_files[i].c_str() ) != 0 ) {
-			debug("cannot delete temp file ");
+			printf("cannot delete temp file %s\n", temp_files[i].c_str());
 			debug( temp_files[i] );
 			debug("\n");
 			perror( strerror( errno ) );
@@ -49,6 +52,7 @@ void delete_tmp_files()
 	}
 
 	temp_files.clear(); // Clean-up list - for future use
+	printf("temp directory cleaned up\n");
 }
 
 bool FileExists(string filename)
@@ -64,12 +68,17 @@ bool FileNotEmpty(string filename)
 }
 		
 
-string ReadFile(string filename, int max_count)
+string ReadFile(string filename, int max_count, bool ignore_failure)
 {
 	//printf("ReadFILE: %s\n", filename.c_str());
-	FILE *src=fopen(filename.c_str(),"r");
+	FILE *src;
 	string ret;
-	char buf='a';
+	char buf;
+	mpkgErrorReturn errRet;
+read_file:
+
+	src=fopen(filename.c_str(),"r");
+	buf='a';
 	ret.clear();
 	if (src)
 	{
@@ -88,12 +97,23 @@ string ReadFile(string filename, int max_count)
 	{
 		perror("file_routines.cpp: ReadFile()");
 		printf("Cannot open file %s\n", filename.c_str());
+		if (!ignore_failure)
+		{
+			errRet = waitResponce ( MPKG_SUBSYS_FILE_READ_ERROR);
+			if (errRet == MPKG_RETURN_RETRY)
+			{
+				goto read_file;
+			}
+		}
+
 		return "";
 	}
 }
 
 int WriteFile(string filename, string data)
 {
+	mpkgErrorReturn errRet;
+write_file:
 	FILE* output=fopen(filename.c_str(),"w");
 	if (output)
 	{
@@ -106,10 +126,11 @@ int WriteFile(string filename, string data)
 	}
 	else
 	{
-		//assert(src != NULL);
-		
-		//fclose(output);
 		printf("Unable to write file %s\n", filename.c_str());
+		errRet = waitResponce(MPKG_SUBSYS_FILE_WRITE_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+			goto write_file;
+
 		abort();
 		return 1;
 	}

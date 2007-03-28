@@ -3,11 +3,12 @@
 
 #include <string>
 #include <vector>
+#include "config.h"
 
 #define DL_STATUS_OK      1
 #define DL_STATUS_WAIT   -1
 #define DL_STATUS_FAILED -2
-
+#define DL_STATUS_FILE_ERROR -3
 
 typedef enum {
 	DOWNLOAD_OK = 1,

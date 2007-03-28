@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.12 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: corethread.h,v 1.13 2007/03/28 14:39:58 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -19,11 +19,16 @@
 //#include <QTableWidget>
 
 #include "ui_pkgmanager.h"
+#include <QMessageBox>
 //#include "tablelabel.h"
 //#include "mainwindow.h"
 #include <mpkg/libmpkg.h>
 
 #include <QThread>
+
+#define eBUS_Run 0
+#define eBUS_Pause 1
+#define eBUS_Stop 2
 
 #define STT_Run 0
 #define STT_Pause 1
@@ -37,6 +42,29 @@
 
 // Default group definitions
 
+
+
+class errorBus: public QThread
+{
+	Q_OBJECT
+	public:
+		errorBus();
+		int action;
+		void run();
+
+	public slots:
+		void Start();
+		void Pause();
+		void Stop();
+		void receiveUserReply(QMessageBox::StandardButton reply);
+
+	signals:
+		void sendErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
+
+	private:
+		QMessageBox::StandardButton userReply;
+
+};
 
 class statusThread: public QThread
 {

@@ -1,13 +1,14 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.14 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: config.cpp,v 1.15 2007/03/28 14:39:58 i27249 Exp $
  *
  * ***************************************************/
 
 #include "config.h"
 #include "xmlParser.h"
 
-int errorCode;
+mpkgErrorCode errorCode;
+mpkgErrorReturn errorReturn;
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string currentStatus;
@@ -40,33 +41,53 @@ int loadGlobalConfig(string config_file)
 	vector<string> repository_list;
 	vector<string> disabled_repository_list;
 	bool conf_init=false;
+	XMLResults xmlErrCode;
 	if (access(config_file.c_str(), R_OK)==0)
 	{
-		XMLNode config=XMLNode::openFileHelper(config_file.c_str(), "mpkgconfig");
-		if (config.nChildNode("run_scripts")!=0)
-			run_scripts=(string) config.getChildNode("run_scripts").getText();
-		if (config.nChildNode("checkFileConflicts")!=0)
-			check_files = (string) config.getChildNode("checkFileConflicts").getText();
-		if (config.nChildNode("sys_root")!=0)
-			sys_root=(string) config.getChildNode("sys_root").getText();
-		if (config.nChildNode("sys_cache")!=0)
-			sys_cache=(string) config.getChildNode("sys_cache").getText();
-		if (config.nChildNode("database_url")!=0)
-			db_url=(string) config.getChildNode("database_url").getText();
-		if (config.nChildNode("repository_list")!=0)
+		XMLNode config=XMLNode::parseFile(config_file.c_str(), "mpkgconfig", &xmlErrCode);
+		
+		if (xmlErrCode.error != eXMLErrorNone)
 		{
-			for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
+			printf("config parse error!\n");
+			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			while(getErrorReturn() == MPKG_RETURN_WAIT)
 			{
-				repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
-			}
-			for (int i=0; i<config.getChildNode("repository_list").nChildNode("disabled_repository"); i++)
-			{
-				disabled_repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("disabled_repository").getText());
+				printf("waiting responce...\n");
+				sleep(1);
+				if (getErrorReturn() == MPKG_RETURN_REINIT)
+				{
+					conf_init = true;
+					break;
+				}
 			}
 		}
-		if (config.nChildNode("scripts_dir")!=0)
+		if (!conf_init)
 		{
-			scripts_dir = (string) config.getChildNode("scripts_dir").getText();
+			if (config.nChildNode("run_scripts")!=0)
+				run_scripts=(string) config.getChildNode("run_scripts").getText();
+			if (config.nChildNode("checkFileConflicts")!=0)
+				check_files = (string) config.getChildNode("checkFileConflicts").getText();
+			if (config.nChildNode("sys_root")!=0)
+				sys_root=(string) config.getChildNode("sys_root").getText();
+			if (config.nChildNode("sys_cache")!=0)
+				sys_cache=(string) config.getChildNode("sys_cache").getText();
+			if (config.nChildNode("database_url")!=0)
+				db_url=(string) config.getChildNode("database_url").getText();
+			if (config.nChildNode("repository_list")!=0)
+			{
+				for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
+				{
+					repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
+				}
+				for (int i=0; i<config.getChildNode("repository_list").nChildNode("disabled_repository"); i++)
+				{
+					disabled_repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("disabled_repository").getText());
+				}
+			}
+			if (config.nChildNode("scripts_dir")!=0)
+			{
+				scripts_dir = (string) config.getChildNode("scripts_dir").getText();
+			}
 		}
 
 	}
@@ -120,13 +141,33 @@ int loadGlobalConfig(string config_file)
 
 XMLNode mpkgconfig::getXMLConfig(string conf_file)
 {
+	printf("getXMLConfig\n");
 	debug("getXMLConfig");
 	XMLNode config;
+	XMLResults xmlErrCode;
+	bool conf_init = false;
 	if (access(conf_file.c_str(), R_OK)==0)
 	{
-		config=XMLNode::openFileHelper(conf_file.c_str(), "mpkgconfig");
+		config=XMLNode::parseFile(conf_file.c_str(), "mpkgconfig", &xmlErrCode);
+		if (xmlErrCode.error != eXMLErrorNone)
+		{
+			printf("config parse error!\n");
+			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			while(getErrorReturn() == MPKG_RETURN_WAIT)
+			{
+				printf("waiting responce...\n");
+				sleep(1);
+				if (getErrorReturn() == MPKG_RETURN_REINIT)
+				{
+					conf_init = true;
+					break;
+				}
+			}
+		}
+
 	}
-	else config=XMLNode::createXMLTopNode("mpkgconfig");
+	else conf_init = true;
+	if (conf_init) config=XMLNode::createXMLTopNode("mpkgconfig");
 
 	if (config.nChildNode("run_scripts")==0)
 	{
@@ -183,7 +224,18 @@ int mpkgconfig::initConfig()
 
 int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
 {
-	if (xmlConfig.writeToFile(conf_file.c_str())!=0) printf("error writing config file");
+	mpkgErrorReturn errRet;
+
+write_config:
+	if (xmlConfig.writeToFile(conf_file.c_str())!=eXMLErrorNone) 
+	{
+		printf("error writing config file");
+		errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+		{
+			goto write_config;
+		}
+	}
 	loadGlobalConfig();
 	return 0;
 }
@@ -322,4 +374,34 @@ int mpkgconfig::set_checkFiles(unsigned int value)
 
 
 
+void setErrorCode(mpkgErrorCode value)
+{
+	if (value != MPKG_OK) setErrorReturn(MPKG_RETURN_WAIT);
+	errorCode = value;
+}
+void setErrorReturn(mpkgErrorReturn value)
+{
+	setErrorCode(MPKG_OK);
+	errorReturn = value;
+}
+
+mpkgErrorCode getErrorCode()
+{
+	return errorCode;
+}
+mpkgErrorReturn getErrorReturn()
+{
+	return errorReturn;
+}
+
+
+mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
+{
+	setErrorCode(errCode);
+	while ( getErrorReturn() == MPKG_RETURN_WAIT)
+	{
+		sleep(1);
+	}
+	return getErrorReturn();
+}
 

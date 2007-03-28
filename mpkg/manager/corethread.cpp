@@ -1,10 +1,86 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.17 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: corethread.cpp,v 1.18 2007/03/28 14:39:58 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
+
+
+errorBus::errorBus()
+{
+	action = eBUS_Pause;
+}
+
+void errorBus::run()
+{
+	forever
+	{
+		if (action == eBUS_Run)
+		{
+			if (getErrorCode()!=MPKG_OK)
+			{
+				switch(getErrorCode())
+				{
+					case MPKG_DOWNLOAD_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Download error","Some files failed to download. What to do?",
+								QMessageBox::Retry | QMessageBox::Abort | QMessageBox::Ignore, QMessageBox::Retry);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Retry:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							case QMessageBox::Ignore:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+				}
+			}
+		}
+		
+		if (action == eBUS_Stop)
+		{
+			return;
+		}
+		msleep(100);
+	}
+}
+void errorBus::receiveUserReply(QMessageBox::StandardButton reply)
+{
+	userReply = reply;
+}
+
+void errorBus::Start()
+{
+	action = eBUS_Run;
+	start();
+}
+
+void errorBus::Pause()
+{
+	action = eBUS_Pause;
+}
+
+void errorBus::Stop()
+{
+	action = eBUS_Stop;
+}
+
+
+
+
+
+
+
 
 statusThread::statusThread()
 {

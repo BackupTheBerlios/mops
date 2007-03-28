@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.23 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: repository.cpp,v 1.24 2007/03/28 14:39:58 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -399,6 +399,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 int xml2package(XMLNode pkgnode, PACKAGE *data)
 {
 	PackageConfig p(pkgnode);
+	if (!p.parseOk) return -100;
 	
 	data->set_name(p.getName());
 	data->set_version(p.getVersion());

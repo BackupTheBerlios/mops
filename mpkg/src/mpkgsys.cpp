@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.8 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.9 2007/03/28 14:39:58 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -49,6 +49,7 @@ int mpkgSys::build_package()
     if (FileNotEmpty("install/data.xml"))
     {
 	    PackageConfig p("install/data.xml");
+	    if (!p.parseOk) return -100;
 	    string pkgname;
 	    string sysline;
 	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();

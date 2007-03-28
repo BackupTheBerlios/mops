@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.19 2007/03/22 16:40:10 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.20 2007/03/28 14:39:58 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -13,19 +13,19 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 {
 	// TODO: check if all required field exists.
 	if (\
-			sql_exec("select * from dependencies;")!=0 || \
-			sql_exec("select * from files;")!=0 || \
-			sql_exec("select * from locations;")!=0 || \
-			sql_exec("select * from packages;")!=0 || \
-			sql_exec("select * from server_tags;")!=0 || \
-			sql_exec("select * from server_tags_links;")!=0 || \
-			sql_exec("select * from servers;")!=0 || \
-			sql_exec("select * from tags;")!=0 || \
-			sql_exec("select * from scripts;")!=0 || \
-			sql_exec("select * from tags_links;")!=0 || \
-			sql_exec("select * from descriptions;")!=0 || \
-			sql_exec("select * from changelogs;")!=0 || \
-			sql_exec("select * from ratings;")!=0 \
+			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies;")!=0 || \
+			sql_exec("select file_id, file_name, file_type, packages_package_id from files;")!=0 || \
+			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations;")!=0 || \
+			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_status, package_md5, package_filename from packages;")!=0 || \
+			sql_exec("select server_tag_id, server_tag_name from server_tags;")!=0 || \
+			sql_exec("select server_tags_link_id, servers_server_id, server_tags_server_tag_id from server_tags_links;")!=0 || \
+			sql_exec("select server_id, server_url, server_priority from servers;")!=0 || \
+			sql_exec("select tags_id, tags_name from tags;")!=0 || \
+			sql_exec("select script_id, packages_package_id, preinstall, postinstall, preremove, postremove from scripts;")!=0 || \
+			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links;")!=0 || \
+			sql_exec("select description_id, packages_package_id, description_language, description_text, short_description_text from descriptions;")!=0 || \
+			sql_exec("select changelog_id, packages_package_id, changelog_language, changelog_text from changelogs;")!=0 || \
+			sql_exec("select rating_id, rating_value, packages_package_name from ratings;")!=0 \
 			)
 	{
 		return false;
@@ -45,13 +45,13 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 	printf("%s\n", sql_query->c_str());
 #endif
 	char *errmsg=0;
+	mpkgErrorReturn errRet;
 	int query_return;
 	//printf("CONVERSION\n");
 	const char *qqq = sql_query->c_str();
 	//printf("CALL to GET_TABLE\n");
-	query_return=sqlite3_get_table(db, qqq,/* sql_query->c_str(),*/ table, rows, cols, &errmsg);
+	query_return=sqlite3_get_table(db, qqq, table, rows, cols, &errmsg);
 	//printf("END\n");
-	
 	if (query_return!=SQLITE_OK) // Means error
 	{
 		perror("SQLite INTERNAL ERROR");
@@ -60,6 +60,7 @@ RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int
 		sqlError=query_return;
 		sqlErrMsg=errmsg;
 		free(errmsg);
+		errRet = waitResponce(MPKG_SUBSYS_SQLQUERY_ERROR);
 		return query_return;
 	}
 	
@@ -114,14 +115,19 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 	int query_return;
 	
 	query_return=sqlite3_exec(db,sql_query.c_str(),NULL, NULL, &sql_errmsg);
-	
+	mpkgErrorReturn errRet;
 	if (query_return!=SQLITE_OK) // Means error
 	{
-		printf("sql_pool.cpp: sql_exec(): SQL error while querying database: %s\n", sql_errmsg);
-		printf("The query was: %s\n", sql_query.c_str());
-		sqlError=query_return;
-		sqlErrMsg=sql_errmsg;
-		free(sql_errmsg);
+		if (initOk)
+		{
+			printf("sql_pool.cpp: sql_exec(): SQL error while querying database: %s\n", sql_errmsg);
+			printf("The query was: %s\n", sql_query.c_str());
+			sqlError=query_return;
+			sqlErrMsg=sql_errmsg;
+			free(sql_errmsg);
+
+			errRet = waitResponce(MPKG_SUBSYS_SQLQUERY_ERROR);
+		}
 		return query_return;
 	}
 
@@ -424,12 +430,16 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 
 SQLiteDB::SQLiteDB(string filename)
 {
+	initOk = false;
 #ifdef DEBUG
 	printf("Database filename: %s\n", filename.c_str());
 #endif
 	db_filename=filename;
 	sqlError=0;
 	int sql_return;
+	mpkgErrorReturn errRet;
+
+opendb:
 	sql_return=init();
 	
 	if (sql_return==1) // Means error
@@ -438,15 +448,47 @@ SQLiteDB::SQLiteDB(string filename)
 		sqlErrMsg="Error opening database file "+db_filename+", aborting.";
 		printf("%s\n", sqlErrMsg.c_str());
 	       	sqlite3_close(db);
-	       	abort();
+	       	errRet = waitResponce(MPKG_SUBSYS_SQLDB_OPEN_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+		{
+			goto opendb;
+		}
+		abort();
        	}
+
+check_integrity:
 	if (!CheckDatabaseIntegrity())
 	{
+		errRet = waitResponce(MPKG_SUBSYS_SQLDB_INCORRECT);
+		if (errRet == MPKG_RETURN_REINIT)
+		{
+			sqlite3_close(db);
+			initDatabaseStructure();
+			goto check_integrity;
+		}
+
 		printf("Integrity check failed, aborting\n");
 		sqlite3_close(db);
 		abort();
 	}
+	initOk = true;
 }
+
+int SQLiteDB::initDatabaseStructure()
+{
+	unlink(db_filename.c_str());
+	int ret;
+	ret = sqlite3_open(db_filename.c_str(), &db);
+	if (ret!=SQLITE_OK)
+	{
+		printf("Error opening database, cannot continue\n");
+		return 1;
+	}
+	sql_exec(ReadFile("/root/mpkg/sql/create_database.sql").c_str());
+	sqlBegin();
+	return ret;
+}
+
 
 SQLiteDB::~SQLiteDB(){
 	printf("closing database and committing\n");

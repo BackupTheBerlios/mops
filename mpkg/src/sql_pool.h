@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.9 2007/03/11 03:22:27 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.10 2007/03/28 14:39:58 i27249 Exp $
  ************************************************************************************/
 
 
@@ -13,15 +13,18 @@
 #include "core.h"
 #include "config.h"
 #include "string_operations.h"
+#include "file_routines.h"
 //#include "mpkg.h"
 class SQLiteDB
 {
 	private:
 		string db_filename;
 		int sqlError;
+		bool initOk;
 		string sqlErrMsg;
 		string lastSQLQuery;
 		RESULT sql_exec (string sql_query);
+		int initDatabaseStructure();
 		bool CheckDatabaseIntegrity(); // Checks database integrity
 		RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table
 		sqlite3 *db; //Database is open all the time during work (added: aix27249, for optimization reasons)

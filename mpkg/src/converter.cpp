@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.5 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: converter.cpp,v 1.6 2007/03/28 14:39:58 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -262,7 +262,13 @@ int tag_package(string filename, string tag)
 	
 	string xml_path = filename.substr(0,filename.length()-4) + "/install/data.xml";
 	if (!FileExists(xml_path)) return -2;
-	XMLNode _node = XMLNode::openFileHelper(xml_path.c_str(), "package");
+	XMLResults xmlErrCode;
+	XMLNode _node = XMLNode::parseFile(xml_path.c_str(), "package", &xmlErrCode);
+	if (xmlErrCode.error != eXMLErrorNone)
+	{
+		printf("parse error\n");
+		return -1;
+	}
 	printf("File opened\n");
 	if (_node.nChildNode("tags")==0)
 	{

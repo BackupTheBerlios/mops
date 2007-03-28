@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.40 2007/03/26 14:32:32 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.41 2007/03/28 14:39:58 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -211,9 +211,21 @@ int mpkgDatabase::commit_actions()
 		}
 		currentProgress = i;
 	}
+	mpkgErrorReturn errRet;
+download_queue_exec:
 	progressEnabled = true;
 	progressEnabled2 = true;
-	CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem);
+	if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem) == DOWNLOAD_ERROR)
+	{
+		errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
+		if (errRet == MPKG_RETURN_IGNORE)
+			printf("Download errors ignored, continue installing\n");
+		if (errRet == MPKG_RETURN_RETRY)
+			goto download_queue_exec;
+		if (errRet == MPKG_RETURN_ABORT)
+			return -100;
+	}
+
 	progressEnabled2 = false;
 	printf("Download complete\n");
 #endif

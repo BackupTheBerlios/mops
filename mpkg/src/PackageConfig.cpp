@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.9 2007/02/15 21:55:40 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.10 2007/03/28 14:39:58 i27249 Exp $
 */
 
 #include "PackageConfig.h"
@@ -10,13 +10,35 @@ using namespace std;
 //TODO: Add check for text!!!!!!!!!
 PackageConfig::PackageConfig(string _f)
 {
+retry:
+	parseOk = true;
+	XMLResults xmlErrCode;
 	this->fileName = _f;
-	_node = XMLNode::openFileHelper(fileName.c_str(), "PACKAGE");
-	debug("XML file opened");
+	_node = XMLNode::parseFile(fileName.c_str(), "PACKAGE", &xmlErrCode);
+	if (xmlErrCode.error != eXMLErrorNone)
+	{
+		printf("XML parse error! Awaiting instructions\n");
+		parseOk = false;
+		setErrorCode(MPKG_INSTALL_META_ERROR);
+		while (getErrorReturn() == MPKG_RETURN_WAIT)
+		{
+			sleep(1);
+			if (getErrorReturn() == MPKG_RETURN_RETRY)
+				goto retry;
+			if (getErrorReturn() == MPKG_RETURN_ABORT)
+			{
+				parseOk = false;
+				break;
+			}
+		}
+	}
+	if (parseOk) debug("XML file opened");
+	if (parseOk) debug("XML file parse error");
 }
 
 PackageConfig::PackageConfig(XMLNode rootnode)
 {
+	parseOk = true;
 	_node = rootnode;
 }
 

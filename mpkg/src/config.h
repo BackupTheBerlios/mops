@@ -1,12 +1,11 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.23 2007/03/26 14:32:32 i27249 Exp $
+    $Id: config.h,v 1.24 2007/03/28 14:39:58 i27249 Exp $
 */
 
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-//#include "cdrom.h"
 #include <string>
 #include <vector>
 using namespace std;
@@ -19,8 +18,64 @@ using namespace std;
 #define DB_SQLITE_LOCAL 0x01
 #define DB_REMOTE 0x02
 
+// Global error code definition
 
-// Debug-time configuration
+typedef enum {
+    MPKG_OK = 0,
+	MPKG_DOWNLOAD_OK,
+	MPKG_DOWNLOAD_TIMEOUT,
+	MPKG_DOWNLOAD_MD5,
+	MPKG_DOWNLOAD_HOST_NOT_FOUND,
+	MPKG_DOWNLOAD_FILE_NOT_FOUND,
+	MPKG_DOWNLOAD_LOGIN_INCORRECT,
+	MPKG_DOWNLOAD_FORBIDDEN,
+	MPKG_DOWNLOAD_OUT_OF_SPACE,
+	MPKG_DOWNLOAD_WRITE_ERROR,
+	MPKG_DOWNLOAD_ERROR,
+	
+	MPKG_INDEX_OK,
+	MPKG_INDEX_DOWNLOAD_TIMEOUT,
+	MPKG_INDEX_PARSE_ERROR,
+	MPKG_INDEX_HOST_NOT_FOUND,
+	MPKG_INDEX_NOT_RECOGNIZED,
+	MPKG_INDEX_LOGIN_INCORRECT,
+	MPKG_INDEX_FORBIDDEN,
+	MPKG_INDEX_ERROR,
+	
+	MPKG_INSTALL_OK,
+	MPKG_INSTALL_OUT_OF_SPACE,
+	MPKG_INSTALL_SCRIPT_ERROR,
+	MPKG_INSTALL_EXTRACT_ERROR,
+	MPKG_INSTALL_META_ERROR,
+	MPKG_INSTALL_FILE_CONFLICT,
+	
+	MPKG_SUBSYS_SQLDB_INCORRECT,
+	MPKG_SUBSYS_SQLDB_OPEN_ERROR,
+	MPKG_SUBSYS_XMLCONFIG_READ_ERROR,
+	MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR,
+	MPKG_SUBSYS_SQLQUERY_ERROR,
+	MPKG_SUBSYS_TMPFILE_CREATE_ERROR,
+	MPKG_SUBSYS_FILE_WRITE_ERROR,
+	MPKG_SUBSYS_FILE_READ_ERROR,
+	
+	MPKG_STARTUP_COMPONENT_NOT_FOUND,
+	MPKG_STARTUP_NOT_ROOT
+} mpkgErrorCode;
+
+typedef enum {
+	MPKG_RETURN_WAIT = 0,
+	MPKG_RETURN_ABORT,
+	MPKG_RETURN_SKIP,
+	MPKG_RETURN_IGNORE,
+	MPKG_RETURN_CONTINUE,
+	MPKG_RETURN_ACCEPT,
+	MPKG_RETURN_DECLINE,
+	MPKG_RETURN_RETRY,
+	MPKG_RETURN_REINIT,
+} mpkgErrorReturn;
+
+
+// Global configuration and message bus
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;
 extern string currentStatus;
@@ -31,7 +86,16 @@ extern bool progressEnabled;
 extern double currentProgress2;
 extern double progressMax2;
 extern bool progressEnabled2;
-extern int errorCode;
+extern mpkgErrorCode errorCode;
+extern mpkgErrorReturn errorReturn;
+
+void setErrorCode(mpkgErrorCode value);
+void setErrorReturn(mpkgErrorReturn value);
+
+mpkgErrorCode getErrorCode();
+mpkgErrorReturn getErrorReturn();
+
+mpkgErrorReturn waitResponce(mpkgErrorCode);
 // System configuration
 
 extern string SYS_ROOT;		// "/root/development/sys_root/"

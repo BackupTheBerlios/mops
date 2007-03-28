@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.36 2007/03/26 22:25:15 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.37 2007/03/28 14:39:58 i27249 Exp $
  *
  * TODO:
  * applyPackageFilter function: combine all filters (tag, status, name)
@@ -31,6 +31,10 @@ void MainWindow::errorLoadingDatabase()
 
 }
 
+void MainWindow::showErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton)
+{
+	emit sendUserReply(QMessageBox::warning(this, headerText, bodyText, buttons, defaultButton));
+}
 void MainWindow::sqlQueryBegin()
 {
 	ui.statusbar->showMessage("Loading database...");
@@ -145,6 +149,14 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	ErrorBus = new errorBus;
+	QObject::connect(this, SIGNAL(startErrorBus()), ErrorBus, SLOT(Start()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)), Qt::QueuedConnection);
+	QObject::connect(ErrorBus, SIGNAL(sendErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), \
+				this, SLOT(showErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), Qt::QueuedConnection);
+
+
+	emit startErrorBus();
 	if (getuid()!=0)
 	{
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -230,11 +242,17 @@ void MainWindow::initCategories()
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 
 	printf("File exists\n");
-	_categories = XMLNode::openFileHelper("/etc/mpkg-groups.xml", "groups");
+	XMLResults xmlErrCode;
+	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
+	if (xmlErrCode.error != eXMLErrorNone)
+	{
+		// Init defaults here...
+		printf("Should initialize defaults for groups, doing nothing for now\n");
+		return;
+	}
 	ui.listWidget->clear();
 	for (unsigned int i = 0; i< _categories.nChildNode("group"); i++)
 	{
-		printf("xml i = %d\n", i);
 		QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
     		__item->setText(QApplication::translate("MainWindow", _categories.getChildNode("group",i).getAttribute("name"), 0, QApplication::UnicodeUTF8));
     		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", i).getAttribute("icon"))));
