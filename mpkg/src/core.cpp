@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.26 2007/03/26 21:34:39 i27249 Exp $
+ *	$Id: core.cpp,v 1.27 2007/03/28 16:19:38 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -602,7 +602,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		get_locationlist(package.get_id(), package.get_locations());
 		debug("dependency list...");
 		get_dependencylist(package.get_id(), package.get_dependencies());
-		printf("taglist...\n");
+		//printf("taglist...\n");
 		get_taglist(package.get_id(), package.get_tags());
 		debug("description list...");
 #ifdef ENABLE_INTERNATIONAL
@@ -734,7 +734,7 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	sqlFields.addField("tags_name");
 	SQLRecord sqlSearch;
 
-	printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
+	//printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
 	if (!id_sqlTable.empty())
 	{
 		sqlSearch.setSearchMode(SEARCH_OR);
@@ -745,19 +745,19 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	}
 	
 	// Step 2. Read the tags with readed ids
-	printf("step 2\n");
+	//printf("step 2\n");
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
 	if (sql_ret!=0)
 	{
 		return 2;
 	}
-	printf("table = %d\n", sqlTable.getRecordCount());
+	//printf("table = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
-		printf("tag count = %d\n", sqlTable.getRecordCount());
+	//	printf("tag count = %d\n", sqlTable.getRecordCount());
 		for (int i=0; i<sqlTable.getRecordCount(); i++)
 		{
-			printf("adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
+	//		printf("adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
 			tag.set_name(sqlTable.getValue(i, "tags_name"));
 			taglist->add(tag);
 		}

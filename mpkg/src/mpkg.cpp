@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.41 2007/03/28 14:39:58 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.42 2007/03/28 16:19:38 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -212,22 +212,44 @@ int mpkgDatabase::commit_actions()
 		currentProgress = i;
 	}
 	mpkgErrorReturn errRet;
-download_queue_exec:
-	progressEnabled = true;
-	progressEnabled2 = true;
-	if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem) == DOWNLOAD_ERROR)
+	bool do_download = true;
+	while(do_download)
 	{
-		errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
-		if (errRet == MPKG_RETURN_IGNORE)
-			printf("Download errors ignored, continue installing\n");
-		if (errRet == MPKG_RETURN_RETRY)
-			goto download_queue_exec;
-		if (errRet == MPKG_RETURN_ABORT)
-			return -100;
+		do_download = false;
+		progressEnabled = true;
+		progressEnabled2 = true;
+		printf("Download trying...\n");
+		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem) == DOWNLOAD_ERROR)
+		{
+			printf("Download failed, waiting responce\n");
+			errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
+			switch(errRet)
+			{
+				case MPKG_RETURN_IGNORE:
+					printf("Download errors ignored, continue installing\n");
+					break;
+			
+				case MPKG_RETURN_RETRY:
+					printf("retrying...\n");
+					do_download = true;
+					break;
+				case MPKG_RETURN_ABORT:
+					printf("aborting...\n");
+					return -100;
+					break;
+				default:
+					printf("Unknown value, don't know what to do\n");
+			}
+				
+		}
+		else
+		{
+			printf("Download successful\n");
+		}
+	
+		progressEnabled2 = false;
+		printf("Download complete\n");
 	}
-
-	progressEnabled2 = false;
-	printf("Download complete\n");
 #endif
 	// Old methods
 #ifdef OLD_QUEUE

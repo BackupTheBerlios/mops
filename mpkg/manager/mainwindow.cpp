@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.37 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.38 2007/03/28 16:19:38 i27249 Exp $
  *
  * TODO:
  * applyPackageFilter function: combine all filters (tag, status, name)
@@ -149,6 +149,9 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
+	qRegisterMetaType<QMessageBox::StandardButtons>("QMessageBox::StandardButtons");
+
 	ErrorBus = new errorBus;
 	QObject::connect(this, SIGNAL(startErrorBus()), ErrorBus, SLOT(Start()), Qt::DirectConnection);
 	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)), Qt::QueuedConnection);

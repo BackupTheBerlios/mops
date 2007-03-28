@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.18 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: corethread.cpp,v 1.19 2007/03/28 16:19:38 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -40,6 +40,9 @@ void errorBus::run()
 								break;
 							case QMessageBox::Ignore:
 								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							default:
+								printf("Unknown reply\n");
 						}
 						userReply = QMessageBox::NoButton;
 						break;

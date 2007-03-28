@@ -60,6 +60,11 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
 {
+	// reset status for retry
+	for (int i = 0; i<list.size(); i++)
+	{
+		if (list[i].status != DL_STATUS_OK) list[i].status = DL_STATUS_WAIT;
+	}
 	extDlNow = dlnow;
 	extDlTotal = dltotal;
 	CURLcode result;
@@ -77,7 +82,7 @@ process:
 			out = fopen (item->file.c_str(), "wb");
 			if ( out == NULL ) {
 				fprintf(stderr, "open target file failed");
-				setErrorCode (MPKG_DOWNLOAD_ERROR);
+				//setErrorCode (MPKG_DOWNLOAD_ERROR);
 				item->status = DL_STATUS_FILE_ERROR;
 				is_have_error = true;
 			} else {
@@ -93,17 +98,19 @@ process:
     				fclose(out);
     	
     				if ( result == CURLE_OK  ) {
-    					item->status = DL_STATUS_OK;
+    					printf("Download seems to be OK\n");
+					item->status = DL_STATUS_OK;
     					break;
     				} else {
-    				    is_have_error = true;
+					printf("Perhaps the download fails.........\n");
+    				    	is_have_error = true;
     					item->status = DL_STATUS_FAILED;
     				}
     	
     			}
     			
-                if ( item->status == DL_STATUS_FAILED ) {
-    				setErrorCode(MPKG_DOWNLOAD_ERROR);
+                /*if ( item->status == DL_STATUS_FAILED ) {
+    				//setErrorCode(MPKG_DOWNLOAD_ERROR);
     				for (;;) {
     					if ( getErrorReturn() == MPKG_RETURN_RETRY ) {
     						printf("resolved\n");
@@ -122,8 +129,9 @@ process:
     					sleep (1);
     				}
     			} else {
-    				setErrorCode(MPKG_DOWNLOAD_OK);
+    				//setErrorCode(MPKG_DOWNLOAD_OK);
     			}
+			*/
     		}
         }
 
@@ -131,5 +139,7 @@ process:
 	
     }
 
-	return is_have_error ? DOWNLOAD_OK : DOWNLOAD_ERROR; 
+	if (!is_have_error) return DOWNLOAD_OK;
+	else return DOWNLOAD_ERROR;
+	//return is_have_error ? DOWNLOAD_OK : DOWNLOAD_ERROR; 
 }
