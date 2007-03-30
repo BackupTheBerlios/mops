@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.20 2007/03/29 19:49:59 i27249 Exp $
+ * $Id: corethread.cpp,v 1.21 2007/03/30 11:09:02 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -35,7 +35,6 @@ void errorBus::run()
 					case MPKG_DOWNLOAD_FORBIDDEN:
 					case MPKG_DOWNLOAD_OUT_OF_SPACE:
 					case MPKG_DOWNLOAD_WRITE_ERROR:
-
 
 					case MPKG_DOWNLOAD_ERROR:
 						userReply = QMessageBox::NoButton;
@@ -92,24 +91,168 @@ void errorBus::run()
 						break;
 
 					case MPKG_INDEX_PARSE_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Parse error","Error parsing repository index!",
+								QMessageBox::Ok, 
+								QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Ok:
+								setErrorReturn(MPKG_RETURN_SKIP);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							case QMessageBox::Ignore:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
 					case MPKG_INDEX_HOST_NOT_FOUND:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
 					case MPKG_INDEX_NOT_RECOGNIZED:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
 					case MPKG_INDEX_LOGIN_INCORRECT:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
 					case MPKG_INDEX_FORBIDDEN:
+						setErrorReturn(MPKG_RETURN_SKIP);
 					case MPKG_INDEX_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Repository index error","Error retrieving repository index!",
+								QMessageBox::Ok, 
+								QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Ok:
+								setErrorReturn(MPKG_RETURN_SKIP);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
 
 
 					//---------- INSTALLATION ERRORS --------------//
 					case MPKG_INSTALL_OUT_OF_SPACE:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Out of space!", "Error installing packages - out of space.\nFree some disk space and try again", QMessageBox::Retry | QMessageBox::Abort, QMessageBox::Retry);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Retry:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
 					case MPKG_INSTALL_SCRIPT_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Script error", "Error executing script", QMessageBox::Ok, QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
 					case MPKG_INSTALL_EXTRACT_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Package extraction error", "Error extracting package.", QMessageBox::Ok, QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+
 					case MPKG_INSTALL_META_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", QMessageBox::Ok, QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+
 					case MPKG_INSTALL_FILE_CONFLICT:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("File conflict detected", "File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Ignore:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
 
 
 					//---------STARTUP ERRORS---------------//
 					case MPKG_STARTUP_COMPONENT_NOT_FOUND:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Some components not found!", "Some components were not found, the program can fail during runtime. Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_CONTINUE);
+								break;
+							case QMessageBox::No:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+						}
+						userReply = QMessageBox::NoButton;
+						break;
 					case MPKG_STARTUP_NOT_ROOT:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("UID != 0", "You should run this program as root!", QMessageBox::Abort, QMessageBox::Abort);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_ABORT);
+						break;
 
 					
 					//---------- SUBSYSTEM ERRORS ---------------------//
@@ -284,6 +427,15 @@ void errorBus::run()
 						}
 						userReply = QMessageBox::NoButton;
 						break;
+					default:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Unknown error!!!", "Unknown error occured!!", QMessageBox::Ignore, QMessageBox::Ignore);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_IGNORE);
+						break;
 				}
 			}
 		}
@@ -336,7 +488,7 @@ void statusThread::run()
 	setPriority(QThread::LowPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
-	int tmp_t, tmp_t2;
+	//int tmp_t, tmp_t2;
 	string dlStatus;
 	forever 
 	{
@@ -501,7 +653,7 @@ void coreThread::_loadPackageDatabase()
 	emit loadingStarted();
 	emit sqlQueryBegin();
 	SQLRecord sqlSearch;
-	vector<int> *tmpNewStatus;
+	//vector<int> *tmpNewStatus;
 	
 	if (database->get_packagelist(sqlSearch, tmpPackageList, false)!=0)
 	{
@@ -521,7 +673,7 @@ void coreThread::_loadPackageDatabase()
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
-	for (unsigned int i=0; i<packageList->size(); i++)
+	for (int i=0; i<packageList->size(); i++)
 	{
 		newStatus.push_back(packageList->get_package(i)->get_status());
 		insertPackageIntoTable(i);
@@ -586,6 +738,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 PACKAGE_LIST *coreThread::getPackageList()
 {
 	emit sendPackageList(*packageList, newStatus);
+	return packageList;
 }
 
 void coreThread::_updatePackageDatabase()
