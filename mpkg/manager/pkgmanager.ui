@@ -557,33 +557,14 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>28</height>
+     <height>31</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFilters" >
-    <property name="title" >
-     <string>Filters</string>
-    </property>
-    <addaction name="actionShow_installed" />
-    <addaction name="actionShow_available" />
-    <addaction name="actionShow_broken" />
-    <addaction name="actionShow_removed" />
-    <addaction name="actionShow_unavailable" />
-    <addaction name="actionCustom_filter" />
-   </widget>
    <widget class="QMenu" name="menuRepositories" >
     <property name="title" >
      <string>Repositories</string>
     </property>
     <addaction name="actionAdd_remove_repositories" />
-   </widget>
-   <widget class="QMenu" name="menuHelp" >
-    <property name="title" >
-     <string>Help</string>
-    </property>
-    <addaction name="actionHelp_topics" />
-    <addaction name="actionMini_FAQ" />
-    <addaction name="actionAbout" />
    </widget>
    <widget class="QMenu" name="menuFile" >
     <property name="title" >
@@ -600,6 +581,27 @@
     <addaction name="actionClean_cache" />
     <addaction name="separator" />
     <addaction name="actionQuit" />
+   </widget>
+   <widget class="QMenu" name="menuHelp" >
+    <property name="title" >
+     <string>Help</string>
+    </property>
+    <addaction name="actionHelp_topics" />
+    <addaction name="actionMini_FAQ" />
+    <addaction name="actionAbout" />
+   </widget>
+   <widget class="QMenu" name="menuFilters" >
+    <property name="title" >
+     <string>Filters</string>
+    </property>
+    <addaction name="actionShow_installed" />
+    <addaction name="actionShow_available" />
+    <addaction name="actionShow_broken" />
+    <addaction name="actionShow_removed" />
+    <addaction name="actionShow_unavailable" />
+    <addaction name="actionCustom_filter" />
+    <addaction name="actionShow_install" />
+    <addaction name="actionShow_purge" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />
@@ -737,6 +739,28 @@
   <action name="actionClean_cache" >
    <property name="text" >
     <string>Clean cache</string>
+   </property>
+  </action>
+  <action name="actionShow_install" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="text" >
+    <string>Show install</string>
+   </property>
+  </action>
+  <action name="actionShow_purge" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="text" >
+    <string>Show purge</string>
    </property>
   </action>
  </widget>

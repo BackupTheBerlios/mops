@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.27 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: mainwindow.h,v 1.28 2007/04/04 11:21:29 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -53,6 +53,8 @@ class MainWindow: public QMainWindow
 		void showErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
 		void initCategories();
 		void filterCategory(int category_id);
+		void applyPackageFilter();
+
 		void receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus);
 		void setStatus(QString status);
 		void loadData();

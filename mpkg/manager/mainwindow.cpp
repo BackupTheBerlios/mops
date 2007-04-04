@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.38 2007/03/28 16:19:38 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.39 2007/04/04 11:21:29 i27249 Exp $
  *
  * TODO:
  * applyPackageFilter function: combine all filters (tag, status, name)
@@ -89,7 +89,61 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 	ui.progressBar2->setValue(value);
 }
 
+void MainWindow::applyPackageFilter ()
+{
+	QString nameMask;
+	bool nameOk = false;
+	bool statusOk = true;
+	for (int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
+		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
+		{
+			nameOk = true;
+			switch(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status())
+			{
+				case PKGSTATUS_INSTALLED:
+					if (statusOk && ui.actionShow_installed->isChecked()) statusOk = true;
+					else statusOk = false;
+					break;
+				case PKGSTATUS_INSTALL:
+					if (statusOk && ui.actionShow_install->isChecked()) statusOk = true;
+					else statusOk = false;
+					break;
+				case PKGSTATUS_AVAILABLE:
+					if (statusOk && ui.actionShow_available->isChecked()) statusOk = true;
+					else statusOk = false;
 
+					break;
+				case PKGSTATUS_PURGE:
+					if (statusOk && ui.actionShow_purge->isChecked()) statusOk = true;
+					else statusOk = false;
+
+					break;
+
+				case PKGSTATUS_UNAVAILABLE:
+					if (statusOk && ui.actionShow_unavailable->isChecked()) statusOk = true;
+					else statusOk = false;
+
+					break;
+				case PKGSTATUS_REMOVED_AVAILABLE:
+					if (statusOk && ui.actionShow_available->isChecked()) statusOk = true;
+					else statusOk = false;
+
+					
+					break;
+				case PKGSTATUS_REMOVED_UNAVAILABLE:
+					if (statusOk && ui.actionShow_unavailable->isChecked()) statusOk = true;
+					else statusOk = false;	
+					break;
+			}
+		}
+		else
+		{
+			ui.packageTable->setRowHidden(i, true);
+		}
+	}	
+}
 
 
 void MainWindow::clearTable()
