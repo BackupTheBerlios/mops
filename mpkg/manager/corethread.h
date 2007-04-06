@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.13 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: corethread.h,v 1.14 2007/04/06 09:53:44 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -118,6 +118,7 @@ class coreThread: public QThread
 
 
 	signals:
+		void applyFilters();
 		void setStatus(QString msg);
 		void loadData();
 		// Debug signals

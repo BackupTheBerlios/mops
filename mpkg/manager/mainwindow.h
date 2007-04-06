@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.28 2007/04/04 11:21:29 i27249 Exp $
+ * $Id: mainwindow.h,v 1.29 2007/04/06 09:53:44 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -50,6 +50,7 @@ class MainWindow: public QMainWindow
 		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void hideEntireTable();
 		void showErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
 		void initCategories();
 		void filterCategory(int category_id);
@@ -134,7 +135,7 @@ class MainWindow: public QMainWindow
 		//Ui::loadingBox loadBox;
 	private:
 		mpkg *mDb;
-				void setBarValue(QProgressBar *Bar, int stepValue);
+		void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST *packagelist;
 		//void insertPackageIntoTable(unsigned int package_num);
 		//void searchPackagesByTag(QString tag);
@@ -144,6 +145,7 @@ class MainWindow: public QMainWindow
 		vector<bool>stateChanged;
 		vector<int>newStatus;
 		void initPackageTable();
+		int currentCategoryID;
 
 };
 

@@ -1,10 +1,10 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.39 2007/04/04 11:21:29 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.40 2007/04/06 09:53:44 i27249 Exp $
  *
- * TODO:
- * applyPackageFilter function: combine all filters (tag, status, name)
+ * TODO: Interface improvements
+ * 
  *
  * ***************************************************************/
 
@@ -93,56 +93,116 @@ void MainWindow::applyPackageFilter ()
 {
 	QString nameMask;
 	bool nameOk = false;
-	bool statusOk = true;
+	bool statusOk = false;
+	bool categoryOk = false;
+	TAG_LIST tmpTagList;
+	string tagvalue;
+	int packageStatus;
+
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
+		nameOk = false;
+		statusOk = false;
+		categoryOk = false;
 		nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			nameOk = true;
-			switch(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status())
+		}
+		else
+		{
+			nameOk = false;
+		}
+
+		if (nameOk)
+		{
+			switch(newStatus[i])
+			//packageStatus = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status();
 			{
 				case PKGSTATUS_INSTALLED:
-					if (statusOk && ui.actionShow_installed->isChecked()) statusOk = true;
+					printf("INSTALLED STATUS\n");
+					if (ui.actionShow_installed->isChecked())
+					{
+						statusOk = true;
+						printf("Stat OK\n");
+					}
 					else statusOk = false;
 					break;
 				case PKGSTATUS_INSTALL:
-					if (statusOk && ui.actionShow_install->isChecked()) statusOk = true;
+					if (ui.actionShow_install->isChecked()) statusOk = true;
 					else statusOk = false;
 					break;
 				case PKGSTATUS_AVAILABLE:
-					if (statusOk && ui.actionShow_available->isChecked()) statusOk = true;
+					if (ui.actionShow_available->isChecked()) statusOk = true;
 					else statusOk = false;
 
 					break;
 				case PKGSTATUS_PURGE:
-					if (statusOk && ui.actionShow_purge->isChecked()) statusOk = true;
+					if (ui.actionShow_purge->isChecked()) statusOk = true;
 					else statusOk = false;
 
 					break;
 
 				case PKGSTATUS_UNAVAILABLE:
-					if (statusOk && ui.actionShow_unavailable->isChecked()) statusOk = true;
+					if (ui.actionShow_unavailable->isChecked()) statusOk = true;
 					else statusOk = false;
 
 					break;
 				case PKGSTATUS_REMOVED_AVAILABLE:
-					if (statusOk && ui.actionShow_available->isChecked()) statusOk = true;
+					if (ui.actionShow_available->isChecked()) statusOk = true;
 					else statusOk = false;
-
-					
 					break;
 				case PKGSTATUS_REMOVED_UNAVAILABLE:
-					if (statusOk && ui.actionShow_unavailable->isChecked()) statusOk = true;
+					if (ui.actionShow_unavailable->isChecked()) statusOk = true;
 					else statusOk = false;	
 					break;
-			}
-		}
-		else
+				default:
+					statusOk = false;
+					printf("Unknown package status, don't know what to do...\n");
+			} // switch(status)
+
+		} // if(nameOk)
+		if (statusOk)
 		{
-			ui.packageTable->setRowHidden(i, true);
+			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
+			if (tagvalue == "_all_")
+			{
+				categoryOk = true;
+			}
+			else
+			{
+				categoryOk = false;
+				tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
+				for (int t = 0; t < tmpTagList.size(); t++)
+				{
+					if (tmpTagList.get_tag(t)->get_name() == tagvalue)
+					{
+						printf("Cat ok, tag = [%s]\n", tmpTagList.get_tag(t)->get_name().c_str());
+						categoryOk = true;
+					}
+				} // for (... tmpTagList ...)
+				if (tmpTagList.size() == 0)
+				{
+					printf("Empty tags, untagged!\n");
+					categoryOk = false;
+				}
+				else printf("Taglist size = %d\n", tmpTagList.size());
+				if (tmpTagList.size()==15)
+				{
+					for (int wtf=0; wtf<tmpTagList.size(); wtf++)
+					{
+						printf("TDEBUG tag[%d]=[%s]\n", wtf, tmpTagList.get_tag(wtf)->get_name());
+					}
+				}
+			} // else (tagvalue)
+		} // if (statusOk)
+
+		if (nameOk && statusOk && categoryOk)
+		{
+			ui.packageTable->setRowHidden(i, false);
 		}
-	}	
+		else ui.packageTable->setRowHidden(i, true);
+	} // for (...)	
 }
 
 
@@ -247,6 +307,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	packagelist = new PACKAGE_LIST;
 	
 	// Building thread connections
+	QObject::connect(thread, SIGNAL(applyFilters), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
@@ -318,9 +379,19 @@ void MainWindow::initCategories()
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 }
 
+void MainWindow::hideEntireTable()
+{
+	for (int i=0; i<ui.packageTable->rowCount(); i++)
+	{
+		ui.packageTable->setRowHidden(i, true);
+	}
+}
+
 void MainWindow::filterCategory(int category_id)
 {
-	TAG_LIST tmp;
+	currentCategoryID = category_id;
+	applyPackageFilter();
+	/*TAG_LIST tmp;
 	bool showIt = false;
 	string tagvalue = (string) _categories.getChildNode("group", category_id).getAttribute("tag");
 	printf("tagvalue = %s\n", tagvalue.c_str());
@@ -349,6 +420,7 @@ void MainWindow::filterCategory(int category_id)
 	}
 	// Apply filters
 	//setInstalledFilter();
+	*/
 }
 
 void MainWindow::setStatus(QString status)

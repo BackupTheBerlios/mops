@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.27 2007/03/28 16:19:38 i27249 Exp $
+ *	$Id: core.cpp,v 1.28 2007/04/06 09:53:44 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -737,13 +737,19 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	//printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
 	if (!id_sqlTable.empty())
 	{
+		printf("CORE_LINK: count = %d\n", id_sqlTable.getRecordCount());
 		sqlSearch.setSearchMode(SEARCH_OR);
 		for (int i=0; i<id_sqlTable.getRecordCount(); i++)
 		{
 			sqlSearch.addField("tags_id", id_sqlTable.getValue(i, "tags_tag_id"));
 		}
 	}
-	
+	else
+	{
+		//printf("CORE_LINK_EMPTY: count = %d\n", id_sqlTable.getRecordCount());
+		return 0;
+	}
+
 	// Step 2. Read the tags with readed ids
 	//printf("step 2\n");
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
@@ -754,13 +760,16 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	//printf("table = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
+		//printf("CORE_TAGLIST: tag count = %d\n", sqlTable.getRecordCount());
 	//	printf("tag count = %d\n", sqlTable.getRecordCount());
 		for (int i=0; i<sqlTable.getRecordCount(); i++)
 		{
-	//		printf("adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
+		//	printf("CORE_CONTENT: adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
 			tag.set_name(sqlTable.getValue(i, "tags_name"));
 			taglist->add(tag);
 		}
+		//printf("CORE_CONTENT:EOF\n");
+		//if (sqlTable.getRecordCount()==15) sleep(100);
 	}
 	return 0;
 }

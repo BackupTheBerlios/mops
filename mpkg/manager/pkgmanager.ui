@@ -677,6 +677,9 @@
    <property name="checkable" >
     <bool>true</bool>
    </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
    <property name="text" >
     <string>Show unavailable</string>
    </property>
@@ -684,6 +687,9 @@
   <action name="actionCustom_filter" >
    <property name="text" >
     <string>Custom filter...</string>
+   </property>
+   <property name="visible" >
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionHelp_topics" >
