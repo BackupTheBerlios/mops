@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.29 2007/04/07 11:15:21 i27249 Exp $
+ *	$Id: core.cpp,v 1.30 2007/04/07 18:07:58 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -805,7 +805,7 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	//printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
 	if (!id_sqlTable.empty())
 	{
-		printf("CORE_LINK: count = %d\n", id_sqlTable.getRecordCount());
+		//printf("CORE_LINK: count = %d\n", id_sqlTable.getRecordCount());
 		sqlSearch.setSearchMode(SEARCH_OR);
 		for (int i=0; i<id_sqlTable.getRecordCount(); i++)
 		{

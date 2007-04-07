@@ -33,12 +33,20 @@ static int downloadCallback(void *clientp,
 	return 0;
 }
 
+int fileLinker(std::string source, std::string output)
+{
+	std::string execLine = "ln -sf "+source+" "+output;
+	return system(execLine.c_str());
+}
 
 DownloadResults HttpDownload::getFile(std::string url, std::string file)
 {
 	uri = url;
 	out = file;
-
+	if (url.find("file://")==0)
+	{
+		if (fileLinker(url.substr(strlen("file://")), file) == 0) return DOWNLOAD_OK;
+	}
 	out_f = fopen( out.c_str(), "wb" );
 	if ( out_f == NULL )
 			return DOWNLOAD_ERROR;
@@ -88,7 +96,15 @@ process:
 			} else {
 		        	
     			for ( unsigned int j = 0; j < item->url_list.size(); j++ ) {
-    				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+    				if (item->url_list.at(j).find("file://")==0)
+				{
+					fclose(out);
+					if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
+					else out = fopen (item->file.c_str(), "wb");
+				}
+
+				
+				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
     				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
     				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
