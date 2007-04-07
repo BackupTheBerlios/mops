@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.12 2007/03/21 14:29:55 i27249 Exp $
+$Id: dependencies.cpp,v 1.13 2007/04/07 11:15:21 i27249 Exp $
 */
 
 
@@ -431,3 +431,20 @@ DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
 	db=mpkgDB;
 }
 DependencyTracker::~DependencyTracker(){}
+
+depTreeItem::depTreeItem(PACKAGE packageItem)
+{
+	thisItem = packageItem;
+	//item = db.get_other_versions(packageItem->get_name());
+	for (int i=0; i<thisItem.get_dependencies()->size(); i++)
+	{
+		 
+		deps.push_back(*new depTreeItem(get_max_version(get_other_versions(thisItem.get_dependencies()->get_dependency(i)->get_package_name()), thisItem.get_dependencies()->get_dependency(i))));
+	}	
+
+}
+depTreeItem::~depTreeItem(){}
+
+
+	
+

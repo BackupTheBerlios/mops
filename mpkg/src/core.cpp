@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.28 2007/04/06 09:53:44 i27249 Exp $
+ *	$Id: core.cpp,v 1.29 2007/04/07 11:15:21 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -14,6 +14,74 @@
 
 //------------------Library front-end--------------------------------
 #define ENABLE_CONFLICT_CHECK
+bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
+{
+	printf("checkVersion");
+
+	debug("checkVersion "+version1 + " vs " + version2);
+	switch (condition)
+	{
+		case VER_MORE:
+			if (version1>version2) return true;
+			else return false;
+			break;
+		case VER_LESS:
+			if (version1<version2) return true;
+			else return false;
+			break;
+		case VER_EQUAL:
+			if (version1==version2) return true;
+			else return false;
+			break;
+		case VER_NOTEQUAL:
+			if (version1!=version2) return true;
+			else return false;
+			break;
+		case VER_XMORE:
+			if (version1>=version2) return true;
+			else return false;
+			break;
+		case VER_XLESS:
+			if (version1<=version2) return true;
+			else return false;
+			break;
+		default:
+			printf("unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n", condition);
+			return true;
+	}
+	return true;
+}
+
+PACKAGE_LIST mpkgDatabase::get_other_versions(string package_name)
+{
+	PACKAGE_LIST pkgList;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", package_name);
+	get_packagelist(sqlSearch, &pkgList, true);
+	return pkgList;
+}
+
+PACKAGE mpkgDatabase::get_max_version(PACKAGE_LIST pkgList, DEPENDENCY *dep)
+{
+	PACKAGE candidate;
+	string ver;
+	for (int i=0; i<pkgList.size(); i++)
+	{
+		if (pkgList.get_package(i)->get_status()!=PKGSTATUS_UNAVAILABLE \
+				&& pkgList.get_package(i)->get_status()!=PKGSTATUS_REMOVED_UNAVAILABLE \
+				&& pkgList.get_package(i)->get_version()>ver \
+				&& mpkgDatabase::checkVersion(pkgList.get_package(i)->get_version(), \
+					atoi(dep->get_condition().c_str()), \
+					dep->get_package_version())
+				)
+		{
+			candidate = *pkgList.get_package(i);
+			ver = pkgList.get_package(i)->get_version();
+		}
+	}
+	return candidate;
+}
+
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {

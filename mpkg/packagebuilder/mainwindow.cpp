@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.13 2007/03/15 10:40:43 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.14 2007/04/07 11:15:21 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -118,6 +118,12 @@ void Form::saveData()
 		xmlDir = QFileDialog::getExistingDirectory(this, "Choose directory where to save package index files (data.xml):", "."/*, "Package index (data.xml)"*/);
 		xmlFilename = xmlDir+"/data.xml";
 	}
+	else
+	{
+		string namepart = xmlFilename.toStdString().substr(0,xmlFilename.length()-strlen("data.xml"));
+		xmlDir = xmlDir.fromStdString(namepart);
+	}
+
 	if (xmlFilename.isEmpty())
 	{
 		return;

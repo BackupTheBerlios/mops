@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.40 2007/04/06 09:53:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.41 2007/04/07 11:15:21 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
-
+#include "packageitem.h"
 void MainWindow::errorLoadingDatabase()
 {
 	QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -237,6 +237,9 @@ void MainWindow::deselectAll()
 
 void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
 {
+//	packageItemWidget *p_item = new packageItemWidget(); //(ui.packageTable->cellWidget(row, PT_NAME));
+//	ui.packageTable->setCellWidget(row, PT_NAME, p_item);
+	
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
 	else stat->setCheckState(Qt::Unchecked);

@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.6 2007/01/31 15:47:33 i27249 Exp $
+$Id: dependencies.h,v 1.7 2007/04/07 11:15:21 i27249 Exp $
 */
 
 
@@ -43,4 +43,13 @@ class DependencyTracker
 		~DependencyTracker();
 };
 
+class depTreeItem: private mpkgDatabase
+{
+	public:
+		PACKAGE thisItem;
+		PACKAGE_LIST item;
+		vector<depTreeItem> deps;
+		depTreeItem(PACKAGE packageItem);
+		~depTreeItem();
+};
 #endif //DEPENDENCIES_H_

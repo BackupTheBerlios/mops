@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.16 2007/03/26 14:32:32 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.17 2007/04/07 11:15:21 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -27,6 +27,9 @@ class mpkgDatabase
 		int get_package_id(PACKAGE *package);
 		int get_status(int package_id);
 		int get_scripts(int package_id, SCRIPTS *scripts);
+		PACKAGE_LIST get_other_versions(string package_name);
+		PACKAGE get_max_version(PACKAGE_LIST pkgList, DEPENDENCY *dep);
+		bool checkVersion(string version1, int condition, string version2);
 		int sqlFlush();
 		
 		// Checking functions
@@ -55,6 +58,7 @@ class mpkgDatabase
 		// Cleanup functions
 		int cleanFileList(int package_id);
 		int clean_package_filelist (PACKAGE *package);
+
 	private:
 		SQLProxy db;
 	public:
