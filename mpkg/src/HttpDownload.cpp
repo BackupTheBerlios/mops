@@ -5,6 +5,13 @@
 #include <sys/types.h>
 #include <stdlib.h>
 
+// CD-ROM support
+#include <sys/mount.h>
+#include <mntent.h>
+
+string CDROM_DEVICE = "/dev/hda";
+string CDROM_MOUNTPOINT = "/mnt/cdrom";
+
 HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
@@ -39,6 +46,101 @@ int fileLinker(std::string source, std::string output)
 	return system(execLine.c_str());
 }
 
+
+
+int cdromFetch(std::string source, std::string output) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
+{
+	// input format:
+	// source:
+	// 	CDROM_VOLNAME/dir/fname.tgz
+	//
+	// Scheme:
+	// 1. Check if device mounted. If not, mount it.
+	// 2. Check media UUID. If ok, process to caching
+	// 2a. If UUID is wrong, eject and request valid media
+	// 3. Copy requested packages from CD-ROM media to cache.
+	// 4. If required next media, eject current and require next disk, next go to 1
+	// 5. If all required media is processed, eject the last and return.
+	int mount_ret;
+	int umount_ret;
+	// First, check if device mounted in proper directory. 
+	struct mntent *mountList;
+	FILE *mtab = fopen("/etc/mtab", "r");
+	bool mounted = false;
+	char volname[2000];
+	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
+	string sourceFileName = CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
+	mpkgErrorReturn errRet;
+	if (mtab)
+	{
+		mountList = getmntent(mtab);
+		while ( !mounted && mountList != NULL )
+		{
+			if (strcmp(mountList->mnt_fsname, CDROM_DEVICE.c_str())==0)
+			{
+				if (strcmp(mountList->mnt_dir, CDROM_MOUNTPOINT.c_str())!=0)
+				{
+					umount(mountList->mnt_dir);
+				}
+				else mounted = true;
+			}
+			mountList = getmntent(mtab);
+		}
+		fclose(mtab);
+	}
+	if (!mounted)
+	{
+try_mount:
+		if (mount(CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL)!=0)
+		{
+			errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+			if (errRet == MPKG_RETURN_RETRY)
+			{
+				goto try_mount;
+			}
+			if (errRet == MPKG_RETURN_ABORT)
+			{
+				return -1;
+			}
+		}
+	}
+
+check_volname:
+	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
+	system(vol_cmd.c_str());
+	FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
+	if (volnameFile)
+	{
+		fscanf(volnameFile, "%s", &volname);
+		fclose(volnameFile);
+	}
+	if (strcmp(volname, cdromVolName.c_str())!=0)
+	{
+		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
+		if (errRet == MPKG_RETURN_RETRY)
+		{
+			umount(CDROM_MOUNTPOINT.c_str());
+			goto try_mount;
+		}
+		if (errRet == MPKG_RETURN_ABORT)
+		{
+			return -1;
+		}
+	}
+
+copy_file:
+	string cp_cmd = "cp "+sourceFileName + " " + output;
+	if (system(cp_cmd.c_str())!=0)
+	{
+		errRet = waitResponce(MPKG_SUBSYS_FILE_READ_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+			goto copy_file;
+		else return -1;
+	}
+	return 0;
+}
+
+
 DownloadResults HttpDownload::getFile(std::string url, std::string file)
 {
 	uri = url;
@@ -46,6 +148,12 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 	if (url.find("file://")==0)
 	{
 		if (fileLinker(url.substr(strlen("file://")), file) == 0) return DOWNLOAD_OK;
+		else return DOWNLOAD_ERROR;
+	}
+	if (url.find("cdrom://")==0)
+	{
+		if (cdromFetch(url.substr(strlen("cdrom://")), file) == 0) return DOWNLOAD_OK;
+		else return DOWNLOAD_ERROR;
 	}
 	out_f = fopen( out.c_str(), "wb" );
 	if ( out_f == NULL )
@@ -102,7 +210,12 @@ process:
 					if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
 					else out = fopen (item->file.c_str(), "wb");
 				}
-
+				if (item->url_list.at(j).find("cdrom://")==0)
+				{
+					fclose(out);
+					if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
+					else out = fopen (item->file.c_str(), "wb");
+				}
 				
 				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);

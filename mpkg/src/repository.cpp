@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.24 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: repository.cpp,v 1.25 2007/04/08 19:42:31 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -498,7 +498,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		LocalPackage lp(_package);
 		lp.injectFile(true);
 		_root.addChild(lp.getPackageXMLNode());
-		printf("done\n");
+		//printf("done\n");
 	}
 	return 0;
 }
@@ -557,7 +557,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			}
 			else
 			{
-				printf("XML downloaded, but contents not recognized");
+				printf("XML downloaded, but contents not recognized\n");
 			}
 		}
 	}

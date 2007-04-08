@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.24 2007/03/28 14:39:58 i27249 Exp $
+    $Id: config.h,v 1.25 2007/04/08 19:42:31 i27249 Exp $
 */
 
 
@@ -48,6 +48,9 @@ typedef enum {
 	MPKG_INSTALL_EXTRACT_ERROR,
 	MPKG_INSTALL_META_ERROR,
 	MPKG_INSTALL_FILE_CONFLICT,
+
+	MPKG_CDROM_MOUNT_ERROR,
+	MPKG_CDROM_WRONG_VOLNAME,
 	
 	MPKG_SUBSYS_SQLDB_INCORRECT,
 	MPKG_SUBSYS_SQLDB_OPEN_ERROR,
@@ -115,7 +118,8 @@ extern vector<string> DISABLED_REPOSITORY_LIST;
 #define MOUNTMODEL_MANUAL 0x03
 
 extern unsigned int CDROM_MOUNTMODEL;
-extern string CDROM_VOLUMEMOUNTDIR;
+extern string CDROM_VOLUMELABEL;
+extern string CDROM_DEVICENAME;
 //extern vector<CDROM_DEVICE> CDROMS;
 #ifndef CONFIG_FILE
 #define CONFIG_FILE "/etc/mpkg.xml"

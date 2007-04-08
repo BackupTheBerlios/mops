@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.22 2007/04/06 09:53:44 i27249 Exp $
+ * $Id: corethread.cpp,v 1.23 2007/04/08 19:42:31 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -61,6 +61,28 @@ void errorBus::run()
 						}
 						userReply = QMessageBox::NoButton;
 						break;
+
+					//---------------CD-ROM ERRORS/EVENTS---------------------//
+					case MPKG_CDROM_WRONG_VOLNAME:
+					case MPKG_CDROM_MOUNT_ERROR:
+						userReply = QMessageBox::NoButton;
+						txt = "Please insert disk with label "+CDROM_VOLUMELABEL+" into "+CDROM_DEVICENAME;
+						emit sendErrorMessage("Please insert disk", \
+								txt.c_str(), QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Ok:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							default:
+								setErrorReturn(MPKG_RETURN_ABORT);
+						}
+						break;
+
 
 					//-------- INDEX ERRORS ---------------------------//
 					

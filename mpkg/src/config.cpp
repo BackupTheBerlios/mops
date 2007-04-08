@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.15 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: config.cpp,v 1.16 2007/04/08 19:42:31 i27249 Exp $
  *
  * ***************************************************/
 
@@ -26,6 +26,8 @@ unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
 vector<string> DISABLED_REPOSITORY_LIST;
+string CDROM_VOLUMELABEL;
+string CDROM_DEVICENAME;
 //vector<CDROM_DEVICE> CDROMS;
 int loadGlobalConfig(string config_file)
 {

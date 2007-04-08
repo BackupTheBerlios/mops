@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.14 2007/04/06 09:53:44 i27249 Exp $
+ * $Id: corethread.h,v 1.15 2007/04/08 19:42:31 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -63,6 +63,7 @@ class errorBus: public QThread
 
 	private:
 		QMessageBox::StandardButton userReply;
+		string txt;
 
 };
 

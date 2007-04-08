@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.11 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.12 2007/04/08 19:42:31 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -52,7 +52,7 @@ void delete_tmp_files()
 	}
 
 	temp_files.clear(); // Clean-up list - for future use
-	printf("temp directory cleaned up\n");
+	//printf("temp directory cleaned up\n");
 }
 
 bool FileExists(string filename)
