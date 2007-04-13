@@ -22,7 +22,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -149,120 +149,100 @@
           <number>6</number>
          </property>
          <item>
-          <layout class="QVBoxLayout" >
+          <layout class="QGridLayout" >
            <property name="margin" >
             <number>0</number>
            </property>
            <property name="spacing" >
             <number>6</number>
            </property>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label" >
-               <property name="text" >
-                <string>System root:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="sysrootEdit" />
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolButton" >
-               <property name="text" >
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+           <item row="2" column="1" colspan="4" >
+            <widget class="QLineEdit" name="dbfileEdit" />
            </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
+           <item row="2" column="0" >
+            <widget class="QLabel" name="label_3" >
+             <property name="text" >
+              <string>Database file:</string>
              </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_2" >
-               <property name="text" >
-                <string>Package cache:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="syscacheEdit" />
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolButton_2" >
-               <property name="text" >
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            </widget>
            </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_3" >
-               <property name="text" >
-                <string>Database file:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="dbfileEdit" />
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolButton_3" >
-               <property name="text" >
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+           <item row="4" column="2" >
+            <widget class="QLineEdit" name="cdromDeviceEdit" />
            </item>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
+           <item row="0" column="0" >
+            <widget class="QLabel" name="label" >
+             <property name="text" >
+              <string>System root:</string>
              </property>
-             <property name="spacing" >
-              <number>6</number>
+            </widget>
+           </item>
+           <item row="3" column="1" colspan="4" >
+            <widget class="QLineEdit" name="scriptsfolderEdit" />
+           </item>
+           <item row="1" column="2" colspan="3" >
+            <widget class="QLineEdit" name="syscacheEdit" />
+           </item>
+           <item row="2" column="5" >
+            <widget class="QToolButton" name="toolButton_3" >
+             <property name="text" >
+              <string>...</string>
              </property>
-             <item>
-              <widget class="QLabel" name="label_4" >
-               <property name="text" >
-                <string>Scripts folder:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="scriptsfolderEdit" />
-             </item>
-             <item>
-              <widget class="QToolButton" name="toolButton_4" >
-               <property name="text" >
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="2" >
+            <widget class="QLabel" name="label_12" >
+             <property name="text" >
+              <string>CD/DVD device: </string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="5" >
+            <widget class="QToolButton" name="toolButton_2" >
+             <property name="text" >
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3" >
+            <widget class="QLabel" name="label_13" >
+             <property name="text" >
+              <string>Mount point:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1" colspan="4" >
+            <widget class="QLineEdit" name="sysrootEdit" />
+           </item>
+           <item row="3" column="5" >
+            <widget class="QToolButton" name="toolButton_4" >
+             <property name="text" >
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="5" >
+            <widget class="QToolButton" name="toolButton" >
+             <property name="text" >
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" >
+            <widget class="QLabel" name="label_4" >
+             <property name="text" >
+              <string>Scripts folder:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2" >
+            <widget class="QLabel" name="label_2" >
+             <property name="text" >
+              <string>Package cache:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="4" >
+            <widget class="QLineEdit" name="mountPointEdit" />
            </item>
           </layout>
          </item>
@@ -336,141 +316,6 @@
           </size>
          </property>
         </spacer>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_6" >
-      <attribute name="title" >
-       <string>CD/DVD devices</string>
-      </attribute>
-      <layout class="QVBoxLayout" >
-       <property name="margin" >
-        <number>9</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
-        <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_6" >
-               <property name="enabled" >
-                <bool>false</bool>
-               </property>
-               <property name="text" >
-                <string>Add new:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="lineEdit" >
-               <property name="enabled" >
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QTableWidget" name="tableWidget" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-             <column>
-              <property name="text" >
-               <string>Device</string>
-              </property>
-             </column>
-             <column>
-              <property name="text" >
-               <string>State</string>
-              </property>
-             </column>
-             <column>
-              <property name="text" >
-               <string>(Volname)</string>
-              </property>
-             </column>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="pushButton" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-             <property name="text" >
-              <string>Add</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_2" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-             <property name="text" >
-              <string>Remove</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButton_3" >
-             <property name="enabled" >
-              <bool>false</bool>
-             </property>
-             <property name="text" >
-              <string>Modify</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer>
-             <property name="orientation" >
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" >
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>

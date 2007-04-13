@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.11 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: libmpkg.h,v 1.12 2007/04/13 13:52:27 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -145,6 +145,8 @@ class mpkg
 		//SERVER_LIST get_fullrepositorylist();
 		string get_sysroot(); // Returns system root path (in normal sys, should be '/')
 
+		string get_cdromdevice();
+		string get_cdrommountpoint();
 		string get_syscache(); // Returns package cache path
 		string get_dburl(); // Returns database URL
 		string get_scriptsdir(); // Returns package scripts dir path
@@ -159,6 +161,8 @@ class mpkg
 		int set_dburl(string newdburl); // Sets new database to use
 		int set_scriptsdir(string newscriptsdir); // Sets a scripts directory
 		int set_runscripts(bool dorun); // Enables or disables a script running
+		int set_cdromdevice(string cdromDevice);
+		int set_cdrommountpoint(string cdromMountPoint);
 		int set_checkFiles(unsigned int value);
 		
 		// Error bus

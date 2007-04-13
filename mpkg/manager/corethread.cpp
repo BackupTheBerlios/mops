@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.23 2007/04/08 19:42:31 i27249 Exp $
+ * $Id: corethread.cpp,v 1.24 2007/04/13 13:52:27 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -600,7 +600,7 @@ void statusThread::halt()
 
 coreThread::coreThread()
 {
-	printf("Core thread created\n");
+	//printf("Core thread created\n");
 	database = new mpkg;
 	currentAction = CA_Idle;
 }
@@ -608,7 +608,7 @@ coreThread::coreThread()
 coreThread::~coreThread()
 {
 	delete database;
-	printf("Thread destroyed correctly\n");
+	//printf("Thread destroyed correctly\n");
 }
 
 void coreThread::callQuit()
@@ -624,7 +624,7 @@ void coreThread::sync()
 void coreThread::run()
 {
 	setPriority(QThread::LowestPriority);
-	printf("Running...\n");
+	//printf("Running...\n");
 	forever 
 	{
 		switch(currentAction)
@@ -649,11 +649,11 @@ void coreThread::run()
 				break;
 			case CA_Quit:
 				delete database;
-				printf("Called quit!\n");
+				//printf("Called quit!\n");
 				return; // Exiting!
 			default:
-				printf("Out of loop! WARNING!!!\n");
-				msleep(10);
+				//printf("Out of loop! WARNING!!!\n");
+				msleep(1);
 		}
 	}
 }
@@ -753,6 +753,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 		default:
 			package_icon = "unknown.png";
 	}
+	//string pName;
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	
 	emit setTableItem(package_num, checked, pName);
@@ -811,8 +812,8 @@ void coreThread::_commitQueue()
 			}
 		}
 	}
-	printf("install_queue size = %d\n", install_queue.size());
-	printf("remove_queue size = %d\n", remove_queue.size());
+	//printf("install_queue size = %d\n", install_queue.size());
+	//printf("remove_queue size = %d\n", remove_queue.size());
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);

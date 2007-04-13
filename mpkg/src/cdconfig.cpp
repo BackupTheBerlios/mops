@@ -1,50 +1,45 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.17 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: cdconfig.cpp,v 1.1 2007/04/13 13:52:27 i27249 Exp $
  *
  * ***************************************************/
 
-#include "config.h"
+#include "cdconfig.h"
 #include "xmlParser.h"
+#define HTTP_LIB;
+//mpkgErrorCode errorCode;
+//mpkgErrorReturn errorReturn;
+//bool DO_NOT_RUN_SCRIPTS;
+//unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
+//string currentStatus;
+//string currentItem;
+//double currentProgress2;
+//double progressMax2;
+//bool progressEnabled2 = false;
+//double currentProgress;
+//double progressMax;
+//bool progressEnabled = false;
+//string SYS_ROOT;
+//string SYS_CACHE;
+//string SCRIPTS_DIR;
+//unsigned int DATABASE;
+//string DB_FILENAME;
+//vector<string> REPOSITORY_LIST;
+//vector<string> DISABLED_REPOSITORY_LIST;
 
-mpkgErrorCode errorCode;
-mpkgErrorReturn errorReturn;
-bool DO_NOT_RUN_SCRIPTS;
-unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
-string currentStatus;
-string currentItem;
-double currentProgress2;
-double progressMax2;
-bool progressEnabled2 = false;
-double currentProgress;
-double progressMax;
-bool progressEnabled = false;
-string SYS_ROOT;
-string SYS_CACHE;
-string SCRIPTS_DIR;
-unsigned int DATABASE;
-string DB_FILENAME;
-vector<string> REPOSITORY_LIST;
-vector<string> DISABLED_REPOSITORY_LIST;
+//#ifndef HTTP_LIB
+//string CDROM_DEVICE;// = "/dev/hda";
+//string CDROM_MOUNTPOINT;// = "/mnt/cdrom";
+//#endif
 
-#ifndef HTTP_LIB
-string CDROM_DEVICE;// = "/dev/hda";
-string CDROM_MOUNTPOINT;// = "/mnt/cdrom";
-#endif
-string CDROM_VOLUMELABEL;
-string CDROM_DEVICENAME;
-
-#ifdef HTTP_LIB
+//#ifdef HTTP_LIB
 string DL_CDROM_DEVICE;
 string DL_CDROM_MOUNTPOINT;
-#endif
-int loadGlobalConfig(string config_file)
+//#endif
+int loadGlobalCdConfig(string config_file)
 {
-#ifdef HTTP_LIB
-	printf("error: core running non-core code\n");
-#endif
-	currentStatus = "Loading configuration...";
-	string run_scripts="yes";
+//	currentStatus = "Loading CD-ROM configuration...";
+/*	string run_scripts="yes";
 	string cdrom_device="/dev/cdrom";
 	string cdrom_mountpoint="/mnt/cdrom";
 	string check_files = "preinstall";
@@ -54,7 +49,7 @@ int loadGlobalConfig(string config_file)
 	string scripts_dir="/var/log/mpkg/scripts/";
 	string sql_type;
 	vector<string> repository_list;
-	vector<string> disabled_repository_list;
+	vector<string> disabled_repository_list;*/
 	bool conf_init=false;
 	XMLResults xmlErrCode;
 	if (access(config_file.c_str(), R_OK)==0)
@@ -64,7 +59,7 @@ int loadGlobalConfig(string config_file)
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
 			printf("config parse error!\n");
-			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			/*setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
 			while(getErrorReturn() == MPKG_RETURN_WAIT)
 			{
 				printf("waiting responce...\n");
@@ -74,10 +69,12 @@ int loadGlobalConfig(string config_file)
 					conf_init = true;
 					break;
 				}
-			}
+			}*/
+			conf_init=true;
 		}
 		if (!conf_init)
 		{
+			/*
 			if (config.nChildNode("run_scripts")!=0)
 				run_scripts=(string) config.getChildNode("run_scripts").getText();
 			if (config.nChildNode("checkFileConflicts")!=0)
@@ -85,12 +82,12 @@ int loadGlobalConfig(string config_file)
 			if (config.nChildNode("sys_root")!=0)
 				sys_root=(string) config.getChildNode("sys_root").getText();
 			if (config.nChildNode("sys_cache")!=0)
-				sys_cache=(string) config.getChildNode("sys_cache").getText();
+				sys_cache=(string) config.getChildNode("sys_cache").getText();*/
 			if (config.nChildNode("cdrom_device")!=0)
 				cdrom_device=(string) config.getChildNode("cdrom_device").getText();
 			if (config.nChildNode("cdrom_mountpoint")!=0)
 				cdrom_mountpoint = (string) config.getChildNode("cdrom_mountpoint").getText();
-			if (config.nChildNode("database_url")!=0)
+/*			if (config.nChildNode("database_url")!=0)
 				db_url=(string) config.getChildNode("database_url").getText();
 			if (config.nChildNode("repository_list")!=0)
 			{
@@ -106,7 +103,7 @@ int loadGlobalConfig(string config_file)
 			if (config.nChildNode("scripts_dir")!=0)
 			{
 				scripts_dir = (string) config.getChildNode("scripts_dir").getText();
-			}
+			}*/
 		}
 
 	}
@@ -118,7 +115,7 @@ int loadGlobalConfig(string config_file)
 	// parsing results
 	
 	// run_scripts
-	if (run_scripts=="yes")
+	/*if (run_scripts=="yes")
 		DO_NOT_RUN_SCRIPTS=false;
 	if (run_scripts=="no")
 		DO_NOT_RUN_SCRIPTS=true;
@@ -134,47 +131,33 @@ int loadGlobalConfig(string config_file)
 	if (check_files == "disable")
 		fileConflictChecking = CHECKFILES_DISABLE;
 	// sys_root
+	*/
 	if (cdrom_device.empty())
 	{
 		printf("empty cd-rom, using default\n");
-#ifndef HTTP_LIB
-		CDROM_DEVICE="/dev/cdrom";
-#else
 		DL_CDROM_DEVICE="/dev/cdrom";
-#endif
 	}
 	else
 	{
 		printf("using cd-rom drive %s\n", cdrom_device.c_str());
-#ifndef HTTP_LIB
-		CDROM_DEVICE=cdrom_device;
-#else
 		DL_CDROM_DEVICE=cdrom_device;
-#endif
 	}
 
 	if (cdrom_mountpoint.empty())
 	{
-#ifndef HTTP_LIB
-		CDROM_MOUNTPOINT="/mnt/cdrom";
-#else
 		DL_CDROM_MOUNTPOINT="/mnt/cdrom";
-#endif
 	}
 
 	else
 	{
-#ifndef HTTP_LIB
-		CDROM_MOUNTPOINT=cdrom_mountpoint;
-#else
 		DL_CDROM_MOUNTPOINT=cdrom_mountpoint;
-#endif
 	}
 
-	SYS_ROOT=sys_root;
-	//sys_cache
-	SYS_CACHE=sys_cache;
-	SCRIPTS_DIR=scripts_dir;	
+	//SYS_ROOT=sys_root;
+	////sys_cache
+	//SYS_CACHE=sys_cache;
+	//SCRIPTS_DIR=scripts_dir;	
+	/*
 	if (db_url.find("sqlite://")!=std::string::npos)
 	{
 		sql_type="sqlite://";
@@ -190,8 +173,8 @@ int loadGlobalConfig(string config_file)
 			run_scripts.c_str(), sys_root.c_str(), sys_cache.c_str(), sql_type.c_str(), db_url.c_str());
 #endif
 	if (conf_init) mpkgconfig::initConfig();
-
-	currentStatus = "Settings loaded";
+*/
+	//currentStatus = "Settings loaded";
 	return 0;
 }
 
@@ -208,7 +191,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
 			printf("config parse error!\n");
-			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			/*setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
 			while(getErrorReturn() == MPKG_RETURN_WAIT)
 			{
 				printf("waiting responce...\n");
@@ -218,13 +201,14 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 					conf_init = true;
 					break;
 				}
-			}
+			}*/
+			conf_init=true;
 		}
 
 	}
 	else conf_init = true;
 	if (conf_init) config=XMLNode::createXMLTopNode("mpkgconfig");
-
+	/*
 	if (config.nChildNode("run_scripts")==0)
 	{
 		config.addChild("run_scripts");
@@ -262,7 +246,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 	{
 		config.addChild("repository_list");
 	}
-
+*/
 	if (config.nChildNode("cdrom_device")==0)
 	{
 		config.addChild("cdrom_device");
@@ -275,13 +259,13 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		config.addChild("cdrom_mountpoint");
 		config.getChildNode("cdrom_mountpoint").addText(get_cdrommountpoint().c_str());
 	}
-
+/*
 	if (config.nChildNode("scripts_dir")==0)
 	{
 		config.addChild("scripts_dir");
 		config.getChildNode("scripts_dir").addText(get_scriptsdir().c_str());
 	}
-	debug("getXMLConfig end");
+	debug("getXMLConfig end");*/
 	return config;
 }
 
@@ -293,7 +277,7 @@ int mpkgconfig::initConfig()
 
 int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
 {
-	mpkgErrorReturn errRet;
+//	mpkgErrorReturn errRet;
 
 write_config:
 	if (xmlConfig.writeToFile(conf_file.c_str())!=eXMLErrorNone) 
@@ -302,13 +286,14 @@ write_config:
 		errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
-			goto write_config;
+			abort();
+			//goto write_config;
 		}
 	}
-	loadGlobalConfig();
+	loadGlobalCdConfig();
 	return 0;
 }
-
+/*
 string mpkgconfig::get_sysroot()
 {
 	return SYS_ROOT;
@@ -343,7 +328,7 @@ bool mpkgconfig::get_runscripts()
 {
 	return !DO_NOT_RUN_SCRIPTS;
 }
-
+*/
 string mpkgconfig::get_cdromdevice()
 {
 #ifndef HTTP_LIB
@@ -361,7 +346,7 @@ string mpkgconfig::get_cdrommountpoint()
 	return DL_CDROM_MOUNTPOINT;
 #endif
 }
-
+/*
 unsigned int mpkgconfig::get_checkFiles()
 {
 	return fileConflictChecking;
@@ -434,7 +419,7 @@ int mpkgconfig::set_scriptsdir(string newscriptsdir)
 	tmp.getChildNode("scripts_dir").addText(newscriptsdir.c_str());
 	return setXMLConfig(tmp);
 }
-
+*/
 int mpkgconfig::set_cdromdevice(string cdromDevice)
 {
 	XMLNode tmp;
@@ -454,7 +439,7 @@ int mpkgconfig::set_cdrommountpoint(string cdromMountPoint)
 	tmp.getChildNode("cdrom_mountpoint").addText(cdromMountPoint.c_str());
 }
 
-
+/*
 int mpkgconfig::set_runscripts(bool dorun)
 {
 	XMLNode tmp;
@@ -511,4 +496,4 @@ mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 	}
 	return getErrorReturn();
 }
-
+*/

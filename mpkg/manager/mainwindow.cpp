@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.41 2007/04/07 11:15:21 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.42 2007/04/13 13:52:27 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
-#include "packageitem.h"
+//#include "packageitem.h"
 void MainWindow::errorLoadingDatabase()
 {
 	QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -120,11 +120,11 @@ void MainWindow::applyPackageFilter ()
 			//packageStatus = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status();
 			{
 				case PKGSTATUS_INSTALLED:
-					printf("INSTALLED STATUS\n");
+				//	printf("INSTALLED STATUS\n");
 					if (ui.actionShow_installed->isChecked())
 					{
 						statusOk = true;
-						printf("Stat OK\n");
+				//		printf("Stat OK\n");
 					}
 					else statusOk = false;
 					break;
@@ -158,7 +158,7 @@ void MainWindow::applyPackageFilter ()
 					break;
 				default:
 					statusOk = false;
-					printf("Unknown package status, don't know what to do...\n");
+				//	printf("Unknown package status, don't know what to do...\n");
 			} // switch(status)
 
 		} // if(nameOk)
@@ -177,21 +177,21 @@ void MainWindow::applyPackageFilter ()
 				{
 					if (tmpTagList.get_tag(t)->get_name() == tagvalue)
 					{
-						printf("Cat ok, tag = [%s]\n", tmpTagList.get_tag(t)->get_name().c_str());
+						//printf("Cat ok, tag = [%s]\n", tmpTagList.get_tag(t)->get_name().c_str());
 						categoryOk = true;
 					}
 				} // for (... tmpTagList ...)
 				if (tmpTagList.size() == 0)
 				{
-					printf("Empty tags, untagged!\n");
+					//printf("Empty tags, untagged!\n");
 					categoryOk = false;
 				}
-				else printf("Taglist size = %d\n", tmpTagList.size());
+				//else printf("Taglist size = %d\n", tmpTagList.size());
 				if (tmpTagList.size()==15)
 				{
 					for (int wtf=0; wtf<tmpTagList.size(); wtf++)
 					{
-						printf("TDEBUG tag[%d]=[%s]\n", wtf, tmpTagList.get_tag(wtf)->get_name());
+				//		printf("TDEBUG tag[%d]=[%s]\n", wtf, tmpTagList.get_tag(wtf)->get_name().c_str());
 					}
 				}
 			} // else (tagvalue)
@@ -245,11 +245,11 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	else stat->setCheckState(Qt::Unchecked);
 	ui.packageTable->setCellWidget(row,PT_INSTALLCHECK, stat);
 
-	TableLabel *pkgName = new TableLabel(ui.packageTable);
-	pkgName->setTextFormat(Qt::RichText);
-	pkgName->setText(cellItemText.c_str());
-	pkgName->row = row;
-	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
+	//TableLabel *pkgName = new TableLabel(ui.packageTable);
+	//pkgName->setTextFormat(Qt::RichText);
+	//pkgName->setText(cellItemText.c_str());
+	//pkgName->row = row;
+	//ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
@@ -362,13 +362,13 @@ void MainWindow::initCategories()
 {
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 
-	printf("File exists\n");
+	//printf("File exists\n");
 	XMLResults xmlErrCode;
 	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
 		// Init defaults here...
-		printf("Should initialize defaults for groups, doing nothing for now\n");
+	//	printf("Should initialize defaults for groups, doing nothing for now\n");
 		return;
 	}
 	ui.listWidget->clear();
@@ -434,7 +434,7 @@ void MainWindow::setStatus(QString status)
 
 MainWindow::~MainWindow()
 {
-	printf("Closing threads...\n");
+	//printf("Closing threads...\n");
 	thread->callQuit();
 }
 

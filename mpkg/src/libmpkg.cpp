@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.13 2007/03/26 14:32:32 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.14 2007/04/13 13:52:27 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -174,6 +174,17 @@ string mpkg::get_dburl()
 {
 	return mpkgconfig::get_dburl();
 }
+
+string mpkg::get_cdromdevice()
+{
+	return mpkgconfig::get_cdromdevice();
+}
+
+string mpkg::get_cdrommountpoint()
+{
+	return mpkgconfig::get_cdrommountpoint();
+}
+
 string mpkg::get_scriptsdir()
 {
 	return mpkgconfig::get_scriptsdir();
@@ -212,6 +223,17 @@ int mpkg::set_dburl(string newdburl)
 {
 	return mpkgconfig::set_dburl(newdburl);
 }
+
+int mpkg::set_cdromdevice(string cdromDevice)
+{
+	return mpkgconfig::set_cdromdevice(cdromDevice);
+}
+
+int mpkg::set_cdrommountpoint(string cdromMountPoint)
+{
+	return mpkgconfig::set_cdrommountpoint(cdromMountPoint);
+}
+
 
 int mpkg::set_scriptsdir(string newscriptsdir)
 {

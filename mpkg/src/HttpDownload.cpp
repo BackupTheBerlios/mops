@@ -8,9 +8,11 @@
 // CD-ROM support
 #include <sys/mount.h>
 #include <mntent.h>
+//#include "cdconfig.h"
+//#include "xmlParser.h"
 
-string CDROM_DEVICE = "/dev/hda";
-string CDROM_MOUNTPOINT = "/mnt/cdrom";
+string DL_CDROM_DEVICE="/dev/cdrom";
+string DL_CDROM_MOUNTPOINT="/mnt/cdrom";
 
 HttpDownload::HttpDownload()
 {
@@ -50,6 +52,7 @@ int fileLinker(std::string source, std::string output)
 
 int cdromFetch(std::string source, std::string output) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
+	printf("fetching from CDROM %s\n", DL_CDROM_DEVICE.c_str());
 	// input format:
 	// source:
 	// 	CDROM_VOLNAME/dir/fname.tgz
@@ -69,16 +72,16 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 	bool mounted = false;
 	char volname[2000];
 	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
-	string sourceFileName = CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
+	string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
 	mpkgErrorReturn errRet;
 	if (mtab)
 	{
 		mountList = getmntent(mtab);
 		while ( !mounted && mountList != NULL )
 		{
-			if (strcmp(mountList->mnt_fsname, CDROM_DEVICE.c_str())==0)
+			if (strcmp(mountList->mnt_fsname, DL_CDROM_DEVICE.c_str())==0)
 			{
-				if (strcmp(mountList->mnt_dir, CDROM_MOUNTPOINT.c_str())!=0)
+				if (strcmp(mountList->mnt_dir, DL_CDROM_MOUNTPOINT.c_str())!=0)
 				{
 					umount(mountList->mnt_dir);
 				}
@@ -91,7 +94,7 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 	if (!mounted)
 	{
 try_mount:
-		if (mount(CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL)!=0)
+		if (mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL)!=0)
 		{
 			errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
 			if (errRet == MPKG_RETURN_RETRY)
@@ -106,7 +109,7 @@ try_mount:
 	}
 
 check_volname:
-	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
+	string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
 	system(vol_cmd.c_str());
 	FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
 	if (volnameFile)
@@ -119,7 +122,7 @@ check_volname:
 		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
-			umount(CDROM_MOUNTPOINT.c_str());
+			umount(DL_CDROM_MOUNTPOINT.c_str());
 			goto try_mount;
 		}
 		if (errRet == MPKG_RETURN_ABORT)
@@ -141,8 +144,11 @@ copy_file:
 }
 
 
-DownloadResults HttpDownload::getFile(std::string url, std::string file)
+DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
+	DL_CDROM_DEVICE = cdromDevice;
+	DL_CDROM_MOUNTPOINT = cdromMountPoint;
+
 	uri = url;
 	out = file;
 	if (url.find("file://")==0)
@@ -174,8 +180,10 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file)
 		return DOWNLOAD_ERROR;
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
+DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint)
 {
+	DL_CDROM_DEVICE = cdromDevice;
+	DL_CDROM_MOUNTPOINT = cdromMountPoint;
 	// reset status for retry
 	for (int i = 0; i<list.size(); i++)
 	{

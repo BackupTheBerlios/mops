@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.10 2007/03/22 16:40:10 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.11 2007/04/13 13:52:27 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -71,6 +71,8 @@ void PreferencesBox::loadData()
 	ui.syscacheEdit->setText(mDb->get_syscache().c_str());
 	ui.dbfileEdit->setText(mDb->get_dburl().c_str());
 	ui.runscriptsCheckBox->setChecked(mDb->get_runscripts());
+	ui.cdromDeviceEdit->setText(mDb->get_cdromdevice().c_str());
+	ui.mountPointEdit->setText(mDb->get_cdrommountpoint().c_str());
 	switch(mDb->get_checkFiles())
 	{
 		case CHECKFILES_PREINSTALL:
@@ -123,6 +125,8 @@ void PreferencesBox::applyConfig()
 	mDb->set_dburl(ui.dbfileEdit->text().toStdString());
 	mDb->set_scriptsdir(ui.scriptsfolderEdit->text().toStdString());
 	mDb->set_runscripts(ui.runscriptsCheckBox->checkState());
+	mDb->set_cdromdevice(ui.cdromDeviceEdit->text().toStdString());
+	mDb->set_cdrommountpoint(ui.mountPointEdit->text().toStdString());
 	unsigned int fcheck;
 	if (ui.fcheckInstallation->isChecked()) fcheck = CHECKFILES_PREINSTALL;
 	if (ui.fcheckRemove->isChecked()) fcheck = CHECKFILES_POSTINSTALL;
