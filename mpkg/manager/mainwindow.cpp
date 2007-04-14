@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.42 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.43 2007/04/14 07:55:38 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -237,19 +237,17 @@ void MainWindow::deselectAll()
 
 void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
 {
-//	packageItemWidget *p_item = new packageItemWidget(); //(ui.packageTable->cellWidget(row, PT_NAME));
-//	ui.packageTable->setCellWidget(row, PT_NAME, p_item);
 	
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
 	else stat->setCheckState(Qt::Unchecked);
 	ui.packageTable->setCellWidget(row,PT_INSTALLCHECK, stat);
 
-	//TableLabel *pkgName = new TableLabel(ui.packageTable);
-	//pkgName->setTextFormat(Qt::RichText);
-	//pkgName->setText(cellItemText.c_str());
-	//pkgName->row = row;
-	//ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
+	TableLabel *pkgName = new TableLabel(ui.packageTable);
+	pkgName->setTextFormat(Qt::RichText);
+	pkgName->setText(cellItemText.c_str());
+	pkgName->row = row;
+	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
