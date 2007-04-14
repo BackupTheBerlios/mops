@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.29 2007/04/06 09:53:44 i27249 Exp $
+ * $Id: mainwindow.h,v 1.30 2007/04/14 19:15:08 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -26,7 +26,6 @@
 //#define PT_MAXAVAILABLE 6
 //#define PT_INFO 7
 #define PT_ID 3
-
 
 
 class MainWindow: public QMainWindow

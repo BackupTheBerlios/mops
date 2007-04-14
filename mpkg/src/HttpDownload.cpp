@@ -44,6 +44,8 @@ static int downloadCallback(void *clientp,
 
 int fileLinker(std::string source, std::string output)
 {
+	if(access(source.c_str(), R_OK)!=0) return -1;
+	
 	std::string execLine = "ln -sf "+source+" "+output;
 	return system(execLine.c_str());
 }

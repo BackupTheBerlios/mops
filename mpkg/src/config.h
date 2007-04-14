@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.26 2007/04/13 13:52:27 i27249 Exp $
+    $Id: config.h,v 1.27 2007/04/14 19:15:08 i27249 Exp $
 */
 
 
@@ -101,7 +101,7 @@ mpkgErrorReturn getErrorReturn();
 
 mpkgErrorReturn waitResponce(mpkgErrorCode);
 // System configuration
-
+extern bool consoleMode;
 extern string SYS_ROOT;		// "/root/development/sys_root/"
 extern string SYS_CACHE; 	//"/root/development/sys_cache/"
 extern string SCRIPTS_DIR;
@@ -114,7 +114,6 @@ extern vector<string> DISABLED_REPOSITORY_LIST;
 #include "xmlParser.h"
 #include "debug.h"
 #endif //HTTP_LIB
-
 #ifdef HTTP_LIB
 extern string DL_CDROM_DEVICE;
 extern string DL_CDROM_MOUNTPOINT;
@@ -124,7 +123,7 @@ extern string DL_CDROM_MOUNTPOINT;
 #define CONFIG_FILE "/etc/mpkg.xml"
 #endif
 int loadGlobalConfig(string config_file=CONFIG_FILE);
-
+void consoleEventResolver();
 
 namespace mpkgconfig
 {

@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.17 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: config.cpp,v 1.18 2007/04/14 19:15:08 i27249 Exp $
  *
  * ***************************************************/
 
@@ -9,6 +9,7 @@
 
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
+bool consoleMode=true;
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string currentStatus;
@@ -505,10 +506,442 @@ mpkgErrorReturn getErrorReturn()
 mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 {
 	setErrorCode(errCode);
-	while ( getErrorReturn() == MPKG_RETURN_WAIT)
+	if (consoleMode)
 	{
-		sleep(1);
+		consoleEventResolver();
+	}
+	else
+	{
+		while ( getErrorReturn() == MPKG_RETURN_WAIT)
+		{
+			sleep(1);
+		}
 	}
 	return getErrorReturn();
 }
 
+int consoleSendErrorMessage(string header, string text, string actionList, string defaultAction)
+{
+	printf("[%s]\n%s\n",header.c_str(), text.c_str());	
+	printf("Action:\n");
+	vector<string> actList;
+	while(actionList.find_first_of(" ")!=string::npos)
+	{
+		actList.push_back(actionList.substr(0,actionList.find_first_of(" ")));
+		actionList=actionList.substr(actionList.find_first_of(" ")+1);
+	}
+	for (unsigned int i=0; i<actList.size(); i++)
+	{
+		printf("[%d] %s\n", i+1, actList[i].c_str());
+	}
+	char ret[200];
+	
+       	scanf("%s", &ret);
+	string t=ret;
+	int ret_num = atoi(t.c_str());
+	printf("return value = [%s] [%d]\n", t.c_str(), ret_num);
+	return ret_num;
+}
+
+void consoleEventResolver()
+{
+	int userReply;
+	switch(getErrorCode())
+	{
+		//-------- PACKAGE DOWNLOAD ERRORS ---------//
+		case MPKG_DOWNLOAD_OK:
+			setErrorReturn(MPKG_RETURN_CONTINUE);
+			break;
+		case MPKG_DOWNLOAD_TIMEOUT:
+		case MPKG_DOWNLOAD_MD5:
+		case MPKG_DOWNLOAD_HOST_NOT_FOUND:
+		case MPKG_DOWNLOAD_FILE_NOT_FOUND:
+		case MPKG_DOWNLOAD_LOGIN_INCORRECT:
+		case MPKG_DOWNLOAD_FORBIDDEN:
+		case MPKG_DOWNLOAD_OUT_OF_SPACE:
+		case MPKG_DOWNLOAD_WRITE_ERROR:
+
+		case MPKG_DOWNLOAD_ERROR:
+			userReply=consoleSendErrorMessage("Download error","Some files failed to download. What to do?",
+								"Retry Abort Ignore", 
+								"Retry");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case 2:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							case 3:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						break;
+						// BREAKAGE DUE TO DEBUG
+	
+
+
+					//---------------CD-ROM ERRORS/EVENTS---------------------//
+					case MPKG_CDROM_WRONG_VOLNAME:
+					case MPKG_CDROM_MOUNT_ERROR:
+						//txt = "Please insert disk with label "+CDROM_VOLUMELABEL+" into "+CDROM_DEVICENAME;
+						userReply = consoleSendErrorMessage("Please insert disk", \
+								"Please insert disk with label "+CDROM_VOLUMELABEL+" into "+CDROM_DEVICENAME, "Ok Abort", "Ok");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							default:
+								setErrorReturn(MPKG_RETURN_ABORT);
+						}
+						break;
+
+
+					//-------- INDEX ERRORS ---------------------------//
+					
+					case MPKG_INDEX_DOWNLOAD_TIMEOUT:
+						userReply =consoleSendErrorMessage("Download error",\
+								"Unable to download repository index", \
+								"Retry Abort Ignore", \
+								"Retry");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case 2:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							case 3:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						break;
+
+					case MPKG_INDEX_PARSE_ERROR:
+						userReply = consoleSendErrorMessage("Parse error","Error parsing repository index!",
+								"Skip", 
+								"Skip");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_SKIP);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						break;
+
+					case MPKG_INDEX_HOST_NOT_FOUND:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+					case MPKG_INDEX_NOT_RECOGNIZED:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+					case MPKG_INDEX_LOGIN_INCORRECT:
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+					case MPKG_INDEX_FORBIDDEN:
+						setErrorReturn(MPKG_RETURN_SKIP);
+					case MPKG_INDEX_ERROR:
+						userReply = consoleSendErrorMessage("Repository index error",\
+								"Error retrieving repository index!","Ok","Ok");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_SKIP);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						break;
+
+
+
+					//---------- INSTALLATION ERRORS --------------//
+					case MPKG_INSTALL_OUT_OF_SPACE:
+						userReply=consoleSendErrorMessage("Out of space!",
+								"Error installing packages - out of space.\nFree some disk space and try again", \
+								"Retry Abort", "Retry");
+						switch(userReply)
+						{
+							case 1:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case 2:
+								setErrorReturn(MPKG_RETURN_ABORT);
+							default:
+								printf("Unknown reply\n");
+						}
+						break;
+
+					case MPKG_INSTALL_SCRIPT_ERROR:
+						userReply = consoleSendErrorMessage("Script error", "Error executing script",\
+							       	"Ok", "Ok");
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+					case MPKG_INSTALL_EXTRACT_ERROR:
+						userReply=consoleSendErrorMessage("Package extraction error",\
+							       	"Error extracting package.",\
+							       "Ok", "Ok");
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+	}
+}
+/* NEXT - TODO (convert to console methods)
+					case MPKG_INSTALL_META_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", QMessageBox::Ok, QMessageBox::Ok);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_SKIP);
+						break;
+
+					case MPKG_INSTALL_FILE_CONFLICT:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("File conflict detected", "File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Ignore:
+								setErrorReturn(MPKG_RETURN_IGNORE);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+
+
+					//---------STARTUP ERRORS---------------//
+					case MPKG_STARTUP_COMPONENT_NOT_FOUND:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Some components not found!", "Some components were not found, the program can fail during runtime. Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_CONTINUE);
+								break;
+							case QMessageBox::No:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+					case MPKG_STARTUP_NOT_ROOT:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("UID != 0", "You should run this program as root!", QMessageBox::Abort, QMessageBox::Abort);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_ABORT);
+						break;
+
+					
+					//---------- SUBSYSTEM ERRORS ---------------------//
+					case MPKG_SUBSYS_SQLDB_INCORRECT:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("SQL database error","Incorrect database structure. Reinitialize?",
+								QMessageBox::Yes | QMessageBox::No, 
+								QMessageBox::No);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_REINIT);
+								break;
+							case QMessageBox::No:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+					case MPKG_SUBSYS_SQLDB_OPEN_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("SQL database error","Unable to open database. This is critical, cannot continue",
+								QMessageBox::Ok,
+								QMessageBox::Ok);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_ABORT);
+						break;
+
+					case MPKG_SUBSYS_XMLCONFIG_READ_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error in configuration files",
+							       	"Error in configuration files. Try to recreate? WARNING: all your settings will be lost!|",
+								QMessageBox::Yes | QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_REINIT);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+					case MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error writing configuration files",
+							       	"Error writing configuration files. Retry?",
+								QMessageBox::Yes | QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+					case MPKG_SUBSYS_SQLQUERY_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Internal error",
+							       	"SQL query error detected. This is critical internal error, we exit now.",
+								QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+					case MPKG_SUBSYS_TMPFILE_CREATE_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error creating temp file",
+							       	"Error while creating a temp file. In most cases this mean that no free file descriptors available. This is critical, cannot continue",
+								QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+					case MPKG_SUBSYS_FILE_WRITE_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error writing file",
+							       	"File write error! Check for free space. Retry?",
+								QMessageBox::Yes | QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+
+					case MPKG_SUBSYS_FILE_READ_ERROR:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Error reading file",
+							       	"File read error! Retry?",
+								QMessageBox::Yes | QMessageBox::Abort, 
+								QMessageBox::Abort);
+						while (userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						switch(userReply)
+						{
+							case QMessageBox::Yes:
+								setErrorReturn(MPKG_RETURN_RETRY);
+								break;
+							case QMessageBox::Abort:
+								setErrorReturn(MPKG_RETURN_ABORT);
+								break;
+							default:
+								printf("Unknown reply\n");
+						}
+						userReply = QMessageBox::NoButton;
+						break;
+					default:
+						userReply = QMessageBox::NoButton;
+						emit sendErrorMessage("Unknown error!!!", "Unknown error occured!!", QMessageBox::Ignore, QMessageBox::Ignore);
+						while(userReply == QMessageBox::NoButton)
+						{
+							msleep(100);
+						}
+						setErrorReturn(MPKG_RETURN_IGNORE);
+						break;
+				}
+			}
+*/
