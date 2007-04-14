@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.6 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: converter.cpp,v 1.7 2007/04/14 15:53:52 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -12,6 +12,13 @@ int slack_convert(string filename, string xml_output)
 	package.set_filename(filename);
 	// Resolving name, version, arch and build
 	string tmp;
+	string tmp_xml = get_tmp_file();
+	extractFromTgz(filename, "install/data.xml", tmp_xml);
+	if (FileNotEmpty(tmp_xml))
+	{
+		WriteFile(xml_output, ReadFile(tmp_xml));
+		return 0;
+	}
 	int pos=0;
 	// NAME
 	int name_start=0;
@@ -218,9 +225,9 @@ int slack_convert(string filename, string xml_output)
 	pkg.getChildNode("maintainer").addChild("email");
 	pkg.getChildNode("maintainer").getChildNode("email").addText("i27249@gmail.com");
 	//printf("output written to %s\n", xml_output.c_str());
-	printf(".");
+	//printf(".");
 	pkg.writeToFile(xml_output.c_str());
-	printf(".");
+	//printf(".");
 	return 0;
 }
 

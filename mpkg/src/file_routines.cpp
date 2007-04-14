@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.12 2007/04/08 19:42:31 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.13 2007/04/14 15:53:52 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -108,6 +108,11 @@ read_file:
 
 		return "";
 	}
+}
+int extractFromTgz(string filename, string file_to_extract, string output)
+{
+	string cmd = "tar zxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
+	return system(cmd.c_str());
 }
 
 int WriteFile(string filename, string data)

@@ -1,18 +1,13 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.32 2007/03/28 14:39:58 i27249 Exp $
+$Id: local_package.cpp,v 1.33 2007/04/14 15:53:52 i27249 Exp $
 */
 
 #include "local_package.h"
 #include "mpkg.h"
 //#include "oldstyle.h"
 
-int extractFromTgz(string filename, string file_to_extract, string output)
-{
-	string cmd = "tar zxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
-	return system(cmd.c_str());
-}
  
 
 int slack2xml(string filename, string xml_output)
