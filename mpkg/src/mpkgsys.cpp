@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.9 2007/03/28 14:39:58 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.10 2007/04/15 23:42:27 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -84,7 +84,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);
 		if (i+1==REPOSITORY_LIST.size() && !tmpPackages.IsEmpty())
 		{
-			printf("Download completed. Processing data, please wait...\n");
+			//printf("Download completed. Processing data, please wait...\n");
 		}
 		if (tmpPackages.IsEmpty())
 		{
@@ -120,9 +120,9 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	printf("installpkg-ng.cpp: (update_repository_data): Sending %d packages to db->updateRepositoryData()\n", availablePackages.size());
 #endif
 	// Go merging to DB
-	printf(_("Importing new data...\n"));
+	//printf(_("Importing new data...\n"));
 	int ret=db->updateRepositoryData(&availablePackages);
-	printf("Import complete.\n");
+	printf("Update complete.\n");
 	return ret;
 }
 

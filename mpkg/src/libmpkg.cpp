@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.14 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.15 2007/04/15 23:42:27 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -8,10 +8,10 @@
 mpkg::mpkg()
 {
 #ifdef APPLE_DEFINED
-	printf("Running MacOS X, welcome!\n");
+	//printf("Running MacOS X, welcome!\n");
 #endif
 #ifdef LINUX_DEFINED
-	printf("Running Linux, welcome!\n");
+	//printf("Running Linux, welcome!\n");
 #endif
 	debug("creating core");
 	currentStatus="Loading database...";
@@ -26,7 +26,7 @@ mpkg::~mpkg()
 {
 	delete DepTracker;
 	delete db;
-	printf("closing database...\n");
+	//printf("closing database...\n");
 	delete_tmp_files();
 }
 
@@ -58,6 +58,7 @@ int mpkg::convert_directory(string output_dir)
 // Packages installation
 int mpkg::install(vector<string> fname)
 {
+	//printf("function install\n");
 	int ret=0;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
@@ -248,10 +249,12 @@ int mpkg::set_runscripts(bool dorun)
 int mpkg::commit()
 {
 	currentStatus = "Checking dependencies...";
-	printf("committing...\n");
+	//printf("committing...\n");
+	
 	DepTracker->commitToDb();
 	currentStatus = "Committing changes...";
-	printf("commit = %d\n", db->commit_actions());
+	db->commit_actions();
+
 	currentStatus = "Complete.";
 	return 0;
 }

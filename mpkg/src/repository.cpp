@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.25 2007/04/08 19:42:31 i27249 Exp $
+ * $Id: repository.cpp,v 1.26 2007/04/15 23:42:27 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -14,7 +14,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 {
 	if (packageslist.length()<20)
 	{
-		printf("Empty package list!\n");
+		//printf("Empty package list!\n");
 		return -1; // It's impossible if it has less size...
 	}
 	// Parsing slackware PACKAGES.TXT file
@@ -150,17 +150,17 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		pkg.set_filename(slackPackageName);
 		if (md5list.find(slackPackageName) == std::string::npos)
 		{
-			printf("md5 not found for package %s\n", slackPackageName.c_str());
+			printf("MD5 checksum not found for package %s, it will prevent from installing this\n", slackPackageName.c_str());
 		}
 		else
 		{
 			debug("md5 found");
 			md5tmp = md5list.substr(0,md5list.find(slackPackageName));
 		}
-		if (md5tmp.find_last_of(" \t")==std::string::npos)
-		{
-			printf("md5 file contains incorrect data?\n");
-		}
+		//if (md5tmp.find_last_of(" \t")==std::string::npos)
+		//{
+			//printf("md5 file contains incorrect data?\n");
+		//}
 		md5tmp = md5tmp.substr(0, md5tmp.find_last_of(" \t"));
 		md5tmp = md5tmp.substr(md5tmp.rfind("\n")+1);
 		md5tmp = cutSpaces(md5tmp);
@@ -184,20 +184,20 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		if (false) // Name resolution based on description DISABLED!
 		{
 			pkg.set_name(slackDescription.substr(0,pos));
-			printf("name set: %s\n", pkg.get_name().c_str());
+			//printf("name set: %s\n", pkg.get_name().c_str());
 			//slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
 			slackPackageName = slackPackageName.substr(pkg.get_name().length()+1);
-			printf("cut before version set\n");
+			//printf("cut before version set\n");
 			pkg.set_version(slackPackageName.substr(0, slackPackageName.find("-")));
-			printf("version finally set\n");
+			//printf("version finally set\n");
 			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
-			printf("cut before arch set\n");
+			//printf("cut before arch set\n");
 			pkg.set_arch(slackPackageName.substr(0, slackPackageName.find("-")));
-			printf("arch finally set\n");
+			//printf("arch finally set\n");
 			slackPackageName = slackPackageName.substr(slackPackageName.find("-")+1);
-			printf("cut before build set\n");
+			//printf("cut before build set\n");
 			pkg.set_build(slackPackageName.substr(0, slackPackageName.find(".tgz")));
-			printf("build set\n");
+			//printf("build set\n");
 		}
 		else
 		{
@@ -538,7 +538,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	// (and something else for RPM, in future)
 	string index_filename = get_tmp_file();
 	string md5sums_filename = get_tmp_file();
-	printf("[%s]...",server_url.c_str());
+	printf("Retrieving index from %s ...\n",server_url.c_str());
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{
@@ -552,12 +552,12 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			if (system(cm.c_str())==0 && ReadFile(index_filename).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
 			{
 				currentStatus = "Detected native MPKG repository";
-				printf("Native MPKG repository detected\n");
+				//printf("Native MPKG repository detected\n");
 				type = TYPE_MPKG;
 			}
 			else
 			{
-				printf("XML downloaded, but contents not recognized\n");
+				//printf("XML downloaded, but contents not recognized\n");
 			}
 		}
 	}
@@ -572,7 +572,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			if (ReadFile(index_filename).find("PACKAGE NAME:  ")!=std::string::npos)
 			{
 				currentStatus = "Detected legacy Slackware repository";
-				printf("Slackware repository detected\n");
+				//printf("Slackware repository detected\n");
 				if (CommonGetFile(server_url + "CHECKSUMS.md5", md5sums_filename) == DOWNLOAD_OK)
 				{
 					type = TYPE_SLACK;
@@ -589,7 +589,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	{
 		if(CommonGetFile(server_url + "Packages.gz", index_filename+".gz")==DOWNLOAD_OK)
 		{
-			printf("Debian repository detected\n");
+			//printf("Debian repository detected\n");
 			type = TYPE_DEBIAN;
 		}
 	}
@@ -602,7 +602,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	}
 	else
 	{
-		printf("Repository type detected successfully, proceeding next...\n");
+		//printf("Repository type detected successfully, proceeding next...\n");
 	}
 	PACKAGE pkg;
 	string xml_name=index_filename;
@@ -612,7 +612,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	switch(type)
 	{
 		case TYPE_MPKG:
-				printf("done\n");
+				//printf("done\n");
 				repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
 				pkg_count=repository_root.nChildNode("package");
 				if (pkg_count==0)
@@ -634,7 +634,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				progressEnabled = false;
 			break;
 		case TYPE_SLACK:
-			printf("Parsing slackware repository\n");
+			//printf("Parsing slackware repository\n");
 			return slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages);
 
 		case TYPE_DEBIAN:

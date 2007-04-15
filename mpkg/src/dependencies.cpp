@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.13 2007/04/07 11:15:21 i27249 Exp $
+$Id: dependencies.cpp,v 1.14 2007/04/15 23:42:27 i27249 Exp $
 */
 
 
@@ -86,33 +86,33 @@ bool DependencyTracker::commitToDb()
 
 bool DependencyTracker::checkVersion(string version1, int condition, string version2)
 {
-	printf("checkVersion");
+	//printf("Comparing %s with %s\n", version1.c_str(), version2.c_str());
 
 	debug("checkVersion "+version1 + " vs " + version2);
 	switch (condition)
 	{
 		case VER_MORE:
-			if (version1>version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())>0)  return true;
 			else return false;
 			break;
 		case VER_LESS:
-			if (version1<version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())<0) return true;
 			else return false;
 			break;
 		case VER_EQUAL:
-			if (version1==version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())==0) return true;
 			else return false;
 			break;
 		case VER_NOTEQUAL:
-			if (version1!=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())!=0) return true;
 			else return false;
 			break;
 		case VER_XMORE:
-			if (version1>=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())>=0) return true;
 			else return false;
 			break;
 		case VER_XLESS:
-			if (version1<=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())<=0) return true;
 			else return false;
 			break;
 		default:
@@ -223,6 +223,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 		}
 		if (i>=package->get_dependencies()->size()) break;
 		debug("searching complaining packages...");
+		sqlSearch.clear();
 		sqlSearch.addField("package_name",  package->get_dependencies()->get_dependency(i)->get_package_name());
 		db->get_packagelist(sqlSearch, &package_list); 
 		

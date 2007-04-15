@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.42 2007/03/28 16:19:38 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.43 2007/04/15 23:42:27 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -175,7 +175,7 @@ int mpkgDatabase::commit_actions()
 
 	// Building download queue
 #ifndef OLD_QUEUE
-	printf("Downloading using new queue\n");
+	//printf("Downloading using new queue\n");
 	currentStatus = "Looking for package locations...";
 	DownloadsList downloadQueue;
 	DownloadItem tmpDownloadItem;
@@ -218,7 +218,7 @@ int mpkgDatabase::commit_actions()
 		do_download = false;
 		progressEnabled = true;
 		progressEnabled2 = true;
-		printf("Download trying...\n");
+	//	printf("Download trying...\n");
 		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem) == DOWNLOAD_ERROR)
 		{
 			printf("Download failed, waiting responce\n");
@@ -488,7 +488,7 @@ int mpkgDatabase::fetch_package(PACKAGE *package)
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
-	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Installing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 //#define IDEBUG
 	// First of all: EXTRACT file list and scripts!!!
@@ -602,7 +602,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::purge_package(PACKAGE* package)
 {
-	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Purging package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Purging package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 
 	// purging package config files.
@@ -677,7 +677,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
-	string statusHeader = "["+IntToStr(currentProgress)+"/"+IntToStr(progressMax)+"] "+"Removing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Removing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 
 	if (package->get_status()==PKGSTATUS_REMOVE || package->get_status()==PKGSTATUS_REMOVE_PURGE)

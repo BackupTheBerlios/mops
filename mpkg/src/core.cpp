@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.31 2007/04/15 21:44:21 i27249 Exp $
+ *	$Id: core.cpp,v 1.32 2007/04/15 23:42:27 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -22,27 +22,27 @@ bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
 	switch (condition)
 	{
 		case VER_MORE:
-			if (version1>version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())>0) return true;
 			else return false;
 			break;
 		case VER_LESS:
-			if (version1<version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())<0) return true;
 			else return false;
 			break;
 		case VER_EQUAL:
-			if (version1==version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())==0) return true;
 			else return false;
 			break;
 		case VER_NOTEQUAL:
-			if (version1!=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())!=0) return true;
 			else return false;
 			break;
 		case VER_XMORE:
-			if (version1>=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())>=0) return true;
 			else return false;
 			break;
 		case VER_XLESS:
-			if (version1<=version2) return true;
+			if (strverscmp(version1.c_str(),version2.c_str())<=0) return true;
 			else return false;
 			break;
 		default:
@@ -501,7 +501,7 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 				return -3;
 		}
 		tag_id=atoi(sqlTable.getValue(0, "tags_id").c_str());
-		printf("tag_id = %d\n", tag_id);
+		//printf("tag_id = %d\n", tag_id);
 		if (add_tag_link(package_id, tag_id)!=0)
 			return -4;
 	}

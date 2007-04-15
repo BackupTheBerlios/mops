@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.3 2007/03/26 14:32:32 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.4 2007/04/15 23:42:27 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -25,9 +25,9 @@ int list_rep(mpkg *core);
 
 void ShowBanner()
 {
-	char *version="0.1 beta 3 (shared lib)";
+	char *version="0.1 beta N (debug state)";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
-	printf("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
+	//printf("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
 
 int main (int argc, char **argv)
@@ -138,14 +138,14 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALL)
 	{
-		printf("install\n");
+		//printf("install\n");
 		for (int i = optind; i < argc; i++)
 		{
 			fname.push_back((string) argv[i]);
 		}
-		printf("fname size = %d\n", fname.size());
+		//printf("fname size = %d\n", fname.size());
 		core.install(fname);
-		printf("core committing\n");
+		//printf("core committing\n");
 		core.commit();
 		return 0;
 	}
@@ -351,11 +351,41 @@ int list(mpkg *core, vector<string> search)
 		printf(_("Package database empty\n"));
 		return 0;
 	}
+char *CL_WHITE=	"\033[22;39m";
+char *CL_RED =		"\033[22;31m";
+char *CL_GREEN =	"\033[22;32m";
+char *CL_YELLOW =	"\033[22;33m";
+char *CL_BLUE =	"\033[22;34m";
 
 	for (int i=0; i<pkglist.size(); i++)
 	{
-		printf("[%s]\t%s-%s-%s-%s\t(%s)\n", \
-				pkglist.get_package(i)->get_vstatus().c_str(), \
+//#define CL_YELLOW "\033[22;35m"
+//#define CL_YELLOW "\033[22;36m"
+//#define CL_YELLOW "\033[22;37m"
+//#define CL_YELLOW "\033[22;38m"
+//#define CL_YELLOW "\033[22;40m"
+//#define CL_YELLOW "\033[22;41m"
+
+		switch(pkglist.get_package(i)->get_status())
+		{
+			case PKGSTATUS_INSTALL:
+				printf("[%s%s%s]\t", CL_YELLOW, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
+				break;
+			case PKGSTATUS_INSTALLED:
+				printf("[%s%s%s]\t", CL_GREEN, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
+				break;
+			case PKGSTATUS_AVAILABLE:
+				printf("[%s%s%s]\t", CL_BLUE, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
+				break;
+			case PKGSTATUS_UNAVAILABLE:
+				printf("[%s%s%s]\t", CL_RED, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
+				break;
+			default:
+				printf("[%s%s%s]\t", CL_WHITE, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
+				break;
+
+		}
+		printf("%s-%s-%s-%s\t(%s)\n", \
 				pkglist.get_package(i)->get_name().c_str(), \
 				pkglist.get_package(i)->get_version().c_str(), \
 				pkglist.get_package(i)->get_arch().c_str(), \

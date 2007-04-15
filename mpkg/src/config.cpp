@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.19 2007/04/15 12:39:35 i27249 Exp $
+ * $Id: config.cpp,v 1.20 2007/04/15 23:42:27 i27249 Exp $
  *
  * ***************************************************/
 
@@ -146,7 +146,7 @@ int loadGlobalConfig(string config_file)
 	}
 	else
 	{
-		printf("using cd-rom drive %s\n", cdrom_device.c_str());
+		//printf("using cd-rom drive %s\n", cdrom_device.c_str());
 #ifndef HTTP_LIB
 		CDROM_DEVICE=cdrom_device;
 #else
