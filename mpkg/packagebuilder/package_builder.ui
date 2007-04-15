@@ -39,7 +39,7 @@
         <widget class="QLabel" name="label" >
          <property name="font" >
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>9</pointsize>
           </font>
          </property>
          <property name="text" >
@@ -64,7 +64,7 @@
         <widget class="QLabel" name="label_2" >
          <property name="font" >
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>9</pointsize>
           </font>
          </property>
          <property name="text" >
@@ -87,7 +87,7 @@
           <widget class="QLabel" name="label_3" >
            <property name="font" >
             <font>
-             <pointsize>10</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="text" >
@@ -99,12 +99,17 @@
           <widget class="QComboBox" name="ArchComboBox" >
            <property name="font" >
             <font>
-             <pointsize>10</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <item>
             <property name="text" >
              <string>i486</string>
+            </property>
+           </item>
+           <item>
+            <property name="text" >
+             <string>i586</string>
             </property>
            </item>
            <item>
@@ -138,7 +143,7 @@
           <widget class="QLabel" name="label_4" >
            <property name="font" >
             <font>
-             <pointsize>10</pointsize>
+             <pointsize>9</pointsize>
             </font>
            </property>
            <property name="text" >
@@ -165,7 +170,7 @@
         <widget class="QLabel" name="label_5" >
          <property name="font" >
           <font>
-           <pointsize>10</pointsize>
+           <pointsize>9</pointsize>
           </font>
          </property>
          <property name="text" >
@@ -206,7 +211,7 @@
             <widget class="QLabel" name="label_8" >
              <property name="font" >
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
               </font>
              </property>
              <property name="text" >
@@ -226,8 +231,11 @@
               <widget class="QComboBox" name="DescriptionLanguageComboBox" >
                <property name="font" >
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                 </font>
+               </property>
+               <property name="currentIndex" >
+                <number>1</number>
                </property>
                <item>
                 <property name="text" >
@@ -245,7 +253,7 @@
               <widget class="QLabel" name="label_6" >
                <property name="font" >
                 <font>
-                 <pointsize>10</pointsize>
+                 <pointsize>9</pointsize>
                 </font>
                </property>
                <property name="text" >
@@ -295,7 +303,9 @@
             <widget class="QLabel" name="label_7" >
              <property name="font" >
               <font>
-               <pointsize>10</pointsize>
+               <pointsize>9</pointsize>
+               <weight>50</weight>
+               <bold>false</bold>
               </font>
              </property>
              <property name="text" >
@@ -346,7 +356,7 @@
        <widget class="QLineEdit" name="MaintainerNameEdit" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>
@@ -355,7 +365,7 @@
        <widget class="QLineEdit" name="MaintainerMailEdit" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>
@@ -364,7 +374,7 @@
        <widget class="QLabel" name="label_11" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <property name="text" >
@@ -376,7 +386,7 @@
        <widget class="QLabel" name="label_10" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <property name="text" >
@@ -431,7 +441,7 @@
         </property>
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <property name="alternatingRowColors" >
@@ -475,7 +485,7 @@
        <widget class="QListWidget" name="TagListWidget" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>
@@ -490,7 +500,7 @@
         </property>
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <item>
@@ -529,7 +539,7 @@
        <widget class="QLineEdit" name="DepVersionEdit" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>
@@ -538,7 +548,7 @@
        <widget class="QLineEdit" name="TagEdit" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>
@@ -547,7 +557,7 @@
        <widget class="QComboBox" name="DepSuggestComboBox" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <item>
@@ -566,7 +576,7 @@
        <widget class="QLabel" name="label_9" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
         <property name="text" >
@@ -578,7 +588,7 @@
        <widget class="QLineEdit" name="DepNameEdit" >
         <property name="font" >
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>9</pointsize>
          </font>
         </property>
        </widget>

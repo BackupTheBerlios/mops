@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.14 2007/04/07 11:15:21 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.15 2007/04/15 12:53:24 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -48,7 +48,7 @@ void Form::loadData()
 		
 		for (int i=0; i<pkg.get_descriptions()->size(); i++)
 		{
-			printf("id=%d, lang = %s\n",i,pkg.get_descriptions()->get_description(i)->get_language().c_str());
+			//printf("id=%d, lang = %s\n",i,pkg.get_descriptions()->get_description(i)->get_language().c_str());
 			if (pkg.get_descriptions()->get_description(i)->get_language()=="en")
 			{
 				short_description[0]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
@@ -64,20 +64,20 @@ void Form::loadData()
 		{
 			ui.ShortDescriptionEdit->setText(short_description[1]);
 			ui.DescriptionEdit->setText(description[1]);
-			printf("ru default\n");
+			//printf("ru default\n");
 		}
 		else if (!short_description[0].isEmpty() || !description[0].isEmpty())
 		{
 			ui.DescriptionLanguageComboBox->setCurrentIndex(0);
 			ui.ShortDescriptionEdit->setText(short_description[1]);
 			ui.DescriptionEdit->setText(description[1]);
-			printf("en default\n");
+			//printf("en default\n");
 			
 		}
 		else
 		{
 			ui.DescriptionEdit->setText(pkg.get_description().c_str());
-			printf("no default\n");
+			//printf("no default\n");
 		}
 
 		ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
@@ -285,7 +285,7 @@ void Form::deleteDependency()
 }
 void Form::changeHeader()
 {
-	printf("headerChange\n");
+	//printf("headerChange\n");
 	modified=true;
 
 	QString FLabel="MOPSLinux package builder";
@@ -307,7 +307,7 @@ void Form::changeHeader()
 
 void Form::changeHeader(const QString & text)
 {
-	printf("headerChange\n");
+	//printf("headerChange\n");
 	modified=true;
 	QString FLabel="MOPSLinux package builder";
 
@@ -350,7 +350,7 @@ void Form::swapLanguage()
 
 void Form::storeCurrentDescription()
 {
-	printf("stored\n");
+	//printf("stored\n");
 	int i;
 	if (ui.DescriptionLanguageComboBox->currentText()=="ru")
 	{
@@ -371,14 +371,14 @@ void Form::quitApp()
 	int ret;
 	if (modified)
 	{
-		printf("modified\n");
+		//printf("modified\n");
 		ret = QMessageBox::warning(this, tr("MOPSLinux package builder"),
                    tr("The document has been modified.\n"
                       "Do you want to save your changes?"),
                    QMessageBox::Save | QMessageBox::Discard
                    | QMessageBox::Cancel,
                    QMessageBox::Save);
-		printf("ret = %d\n", ret);
+		//printf("ret = %d\n", ret);
 		switch(ret)
 		{
 			case QMessageBox::Save: saveData();
