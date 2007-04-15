@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.30 2007/04/07 18:07:58 i27249 Exp $
+ *	$Id: core.cpp,v 1.31 2007/04/15 21:44:21 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -16,7 +16,7 @@
 #define ENABLE_CONFLICT_CHECK
 bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
 {
-	printf("checkVersion");
+	//printf("checkVersion");
 
 	debug("checkVersion "+version1 + " vs " + version2);
 	switch (condition)
@@ -107,7 +107,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	int status;
 //	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
 	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
-	printf("Building request...\n");
+	//printf("Building request...\n");
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
@@ -511,7 +511,7 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 // Creates a link between package_id and tag_id
 int mpkgDatabase::add_tag_link(int package_id, int tag_id)
 {
-	printf("recv package_id = %d, tag_id = %d\n", package_id, tag_id);
+	//printf("recv package_id = %d, tag_id = %d\n", package_id, tag_id);
 	SQLRecord sqlInsert;
 	sqlInsert.addField("packages_package_id", IntToStr(package_id));
 	sqlInsert.addField("tags_tag_id", IntToStr(tag_id));

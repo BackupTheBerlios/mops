@@ -1,0 +1,3 @@
+#!/bin/sh
+cmake .. && make -j2 && strip *.so && strip installpkg-ng && cp *.so /usr/local/lib/ && cp ../*.h /usr/local/include/mpkg/ && cp installpkg-ng /usr/local/bin/mpkg
+
