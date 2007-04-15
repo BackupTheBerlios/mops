@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.18 2007/04/14 19:15:08 i27249 Exp $
+ * $Id: config.cpp,v 1.19 2007/04/15 12:39:35 i27249 Exp $
  *
  * ***************************************************/
 
@@ -692,256 +692,186 @@ void consoleEventResolver()
 							       "Ok", "Ok");
 						setErrorReturn(MPKG_RETURN_SKIP);
 						break;
-	}
-}
-/* NEXT - TODO (convert to console methods)
+	
+
+// NEXT - TODO (convert to console methods)
 					case MPKG_INSTALL_META_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", QMessageBox::Ok, QMessageBox::Ok);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply = consoleSendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", "Ok", "Ok");
 						setErrorReturn(MPKG_RETURN_SKIP);
 						break;
 
 					case MPKG_INSTALL_FILE_CONFLICT:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("File conflict detected", "File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply = consoleSendErrorMessage("File conflict detected",\
+							       	"File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", "Ignore Abort", "Ignore");
 						switch(userReply)
 						{
-							case QMessageBox::Ignore:
+							case 1:
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
-							case QMessageBox::Abort:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
-
 
 
 					//---------STARTUP ERRORS---------------//
 					case MPKG_STARTUP_COMPONENT_NOT_FOUND:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Some components not found!", "Some components were not found, the program can fail during runtime. Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply =consoleSendErrorMessage("Some components not found!",\
+							       "Some components were not found, the program can fail during runtime. Continue?", "Yes No", "No");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_CONTINUE);
 								break;
-							case QMessageBox::No:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 					case MPKG_STARTUP_NOT_ROOT:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("UID != 0", "You should run this program as root!", QMessageBox::Abort, QMessageBox::Abort);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply =consoleSendErrorMessage("UID != 0", \
+								"You should run this program as root!",\
+							       	"Abort", "Abort");
+
 						setErrorReturn(MPKG_RETURN_ABORT);
 						break;
 
 					
 					//---------- SUBSYSTEM ERRORS ---------------------//
 					case MPKG_SUBSYS_SQLDB_INCORRECT:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("SQL database error","Incorrect database structure. Reinitialize?",
-								QMessageBox::Yes | QMessageBox::No, 
-								QMessageBox::No);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply = consoleSendErrorMessage("SQL database error",\
+								"Incorrect database structure. Reinitialize?",
+								"Yes No","No");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_REINIT);
 								break;
-							case QMessageBox::No:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 
 					case MPKG_SUBSYS_SQLDB_OPEN_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("SQL database error","Unable to open database. This is critical, cannot continue",
-								QMessageBox::Ok,
-								QMessageBox::Ok);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply = consoleSendErrorMessage("SQL database error",\
+								"Unable to open database. This is critical, cannot continue",
+								"Ok",
+								"Ok");
 						setErrorReturn(MPKG_RETURN_ABORT);
 						break;
 
 					case MPKG_SUBSYS_XMLCONFIG_READ_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error in configuration files",
+						userReply = consoleSendErrorMessage("Error in configuration files",
 							       	"Error in configuration files. Try to recreate? WARNING: all your settings will be lost!|",
-								QMessageBox::Yes | QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Yes Abort", 
+								"Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_REINIT);
 								break;
-							case QMessageBox::Abort:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 					case MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error writing configuration files",
+						userReply = consoleSendErrorMessage("Error writing configuration files",
 							       	"Error writing configuration files. Retry?",
-								QMessageBox::Yes | QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Retry Abort", 
+								"Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_RETRY);
 								break;
-							case QMessageBox::Abort:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 
 					case MPKG_SUBSYS_SQLQUERY_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Internal error",
+						userReply = consoleSendErrorMessage("Internal error",
 							       	"SQL query error detected. This is critical internal error, we exit now.",
-								QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Abort", "Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Abort:
+							case 1:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 
 					case MPKG_SUBSYS_TMPFILE_CREATE_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error creating temp file",
+						userReply = consoleSendErrorMessage("Error creating temp file",
 							       	"Error while creating a temp file. In most cases this mean that no free file descriptors available. This is critical, cannot continue",
-								QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Abort", 
+								"Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Abort:
+							case 1:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 
 					case MPKG_SUBSYS_FILE_WRITE_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error writing file",
+						userReply =consoleSendErrorMessage("Error writing file",
 							       	"File write error! Check for free space. Retry?",
-								QMessageBox::Yes | QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Yes Abort", 
+								"Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_RETRY);
 								break;
-							case QMessageBox::Abort:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 
 					case MPKG_SUBSYS_FILE_READ_ERROR:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error reading file",
+						userReply =consoleSendErrorMessage("Error reading file",
 							       	"File read error! Retry?",
-								QMessageBox::Yes | QMessageBox::Abort, 
-								QMessageBox::Abort);
-						while (userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+								"Yes Abort", 
+								"Abort");
 						switch(userReply)
 						{
-							case QMessageBox::Yes:
+							case 1:
 								setErrorReturn(MPKG_RETURN_RETRY);
 								break;
-							case QMessageBox::Abort:
+							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
 								printf("Unknown reply\n");
 						}
-						userReply = QMessageBox::NoButton;
 						break;
 					default:
-						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Unknown error!!!", "Unknown error occured!!", QMessageBox::Ignore, QMessageBox::Ignore);
-						while(userReply == QMessageBox::NoButton)
-						{
-							msleep(100);
-						}
+						userReply = consoleSendErrorMessage("Unknown error!!!", "Unknown error occured!!",\
+							       	"Ignore", "Ignore");
 						setErrorReturn(MPKG_RETURN_IGNORE);
 						break;
 				}
 			}
-*/
