@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.45 2007/04/14 19:15:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.46 2007/04/15 13:00:55 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -465,7 +465,12 @@ void MainWindow::showPackageInfo()
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
-
+	mstring taglist;
+	for (int i=0; i< pkg->get_tags()->size(); i++)
+	{
+		taglist+="<br>";
+		taglist+=pkg->get_tags()->get_tag(i)->get_name();
+	}
 	string extendedInfo = (string) "<html>" \
 			       + (string) "<h2>" + pkg->get_name() + (string) "</h2>" \
 			       + (string) "<br><b>Version: </b>" + pkg->get_version() \
@@ -475,8 +480,11 @@ void MainWindow::showPackageInfo()
 			       + (string) "<br><b>Installed size: </b>" + pkg->get_installed_size() \
 			       + (string) "<br><b>Filename: </b>" + pkg->get_filename() \
 			       + (string) "<br><b>MD5 sum: </b>"+pkg->get_md5() \
-			       + (string) "<br><b>Packager: </b>"+pkg->get_packager() + (string) " &lt" + pkg->get_packager_email() + (string)"&lt" \
+			       + (string) "<br><b>Maintainer: </b>"+pkg->get_packager() \
+			       + (string) " (" + pkg->get_packager_email() + (string)")" \
 			       + (string) "<br><b>Status: </b>" + pkg->get_vstatus() \
+			       + (string) "<br><br><b>Tags: </b> " \
+			       + taglist.s_str() \
 			       + (string) "</html>";
 
 	ui.detailedEdit->setHtml(extendedInfo.c_str());
