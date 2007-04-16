@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.13 2007/04/14 15:53:52 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.14 2007/04/16 21:23:48 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -193,5 +193,27 @@ unsigned int CheckFileType(string fname)
 	}
 	debug("Unknown package type "+ext);
 	return PKGTYPE_UNKNOWN;
+}
+string getCdromVolname()
+{
+	mpkgErrorReturn errRet;
+check_volname:
+	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
+	system(vol_cmd.c_str());
+	string volname=ReadFile("/tmp/mpkg_volname");
+	
+	if (volname.empty())
+	{
+		errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
+		{
+			goto check_volname;
+		}
+		if (errRet == MPKG_RETURN_ABORT)
+		{
+			return "";
+		}
+	}
+	return volname;
 }
 

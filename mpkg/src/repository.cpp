@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.26 2007/04/15 23:42:27 i27249 Exp $
+ * $Id: repository.cpp,v 1.27 2007/04/16 21:23:48 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -643,3 +643,5 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	}
 	return 0;
 }
+
+

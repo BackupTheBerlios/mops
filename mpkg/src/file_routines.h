@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.9 2007/04/14 15:53:52 i27249 Exp $
+* $Id: file_routines.h,v 1.10 2007/04/16 21:23:48 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -31,7 +31,7 @@ bool FileNotEmpty(string filename);
 string ReadFile(string filename, int max_count=0, bool ignore_failure = true);
 int WriteFile(string filename, string data);
 int extractFromTgz(string filename, string file_to_extract, string output);
-
+string getCdromVolname();
 // Package type definition (also defines repository type)
 
 unsigned int CheckFileType(string fname);
