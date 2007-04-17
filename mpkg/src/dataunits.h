@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.11 2007/03/11 03:22:27 i27249 Exp $
+	$Id: dataunits.h,v 1.12 2007/04/17 14:35:19 i27249 Exp $
 */
 
 
@@ -404,7 +404,11 @@ class PACKAGE
 	string package_changelog;
 	string package_packager;
 	string package_packager_email;
-	int package_status;
+	bool package_available;
+	bool package_installed;
+	bool package_configexist;
+	int package_action;
+	
 	string package_md5;
 	string package_filename;
 	int package_err_type;
@@ -421,7 +425,11 @@ class PACKAGE
 	string get_changelog(bool sql=true);
 	string get_packager(bool sql=true);
 	string get_packager_email(bool sql=true);
-	int get_status();
+	bool available();
+	bool installed();
+	bool configexist();
+	int action();
+	bool reachable();	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
 	string get_vstatus();
 	string get_md5(bool sql=true);
 	string get_filename(bool sql=true);
@@ -439,7 +447,10 @@ class PACKAGE
 	int set_changelog(string changelog);
 	int set_packager(string packager);
 	int set_packager_email(string packager_email);
-	int set_status(int status);
+	void set_available(bool flag = true);
+	void set_installed(bool flag = true);
+	void set_configexist(bool flag = true);
+	void set_action(int new_action);
 	int set_md5(string md5);
 	int set_filename(string filename);
 	int set_err_type(int err);
@@ -510,6 +521,6 @@ class PACKAGE_LIST
 
 typedef int RESULT;
 string IntToStr(int num);
-
+string IntToStr(bool value);
 #endif //DATAUNITS_H_
 

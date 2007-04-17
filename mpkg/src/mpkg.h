@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.17 2007/04/07 11:15:21 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.18 2007/04/17 14:35:19 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -25,7 +25,11 @@ class mpkgDatabase
 		int get_locationlist(int package_id, LOCATION_LIST *location_list);
 		int get_last_id(string table_name, string id_field="");
 		int get_package_id(PACKAGE *package);
-		int get_status(int package_id);
+		int get_installed(int package_id);
+		int get_available(int package_id);
+		int get_action(int package_id);
+		int get_configexist(int package_id);
+
 		int get_scripts(int package_id, SCRIPTS *scripts);
 		PACKAGE_LIST get_other_versions(string package_name);
 		PACKAGE get_max_version(PACKAGE_LIST pkgList, DEPENDENCY *dep);
@@ -64,9 +68,12 @@ class mpkgDatabase
 	public:
 		bool check_cache(PACKAGE *package);
 		int commit_actions(); // Commits ALL actions planned in database
-		int set_status(int package_id, int status);
+		int set_available(int package_id, int status);
+		int set_action(int package_id, int status);
+		int set_configexist(int package_id, int status);
+		int set_installed(int package_id, int status);
+
 		int emerge_to_db(PACKAGE *package);	// Adds new package to database, filtering data
-		int fetch_package(PACKAGE *package); // Downloads package to local cache, returns 0 if ok, 1 if failed. Also, checks if package is already downloaded.
 		int install_package(PACKAGE *package); // PHYSICALLY install package (extract, execute scripts)
 		int remove_package(PACKAGE *package); // PHYSICALLY remove package (delete files, execute remove scripts)
 		int purge_package(PACKAGE *package); // removes config files

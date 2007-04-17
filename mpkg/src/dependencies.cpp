@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.14 2007/04/15 23:42:27 i27249 Exp $
+$Id: dependencies.cpp,v 1.15 2007/04/17 14:35:19 i27249 Exp $
 */
 
 
@@ -23,19 +23,6 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 
 void DependencyTracker::PrintFailure(PACKAGE* package)
 {
-/*	string dep_type;
-	for (int i=0; i<package->get_dependencies()->size();i++)
-	{
-		dep_type=package->get_dependencies()->get_dependency(i)->get_type();
-		printf("[%s]: %s %s %s %s, result: %s\n", \
-				package->get_name().c_str(), \
-				dep_type.c_str(), \
-				package->get_dependencies()->get_dependency(i)->get_package_name().c_str(), \
-				package->get_dependencies()->get_dependency(i)->get_vcondition().c_str(), \
-				package->get_dependencies()->get_dependency(i)->get_package_version().c_str(), \
-				package->get_dependencies()->get_dependency(i)->get_vbroken().c_str());
-	}
-	*/
 	switch (package->get_err_type())
 	{
 		case DEP_OK: printf("OK\n");
@@ -136,55 +123,37 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 	//		if file conflict - return DEP_FILECONFLICT;
 	//Step 2. Check dependencies and build a list
 	debug("DependencyTracker::merge");
-	RESULT status=0;
-	status=db->check_install_package(package); // Checking status of package - is it principially possible to be installed?
+	//RESULT status=0;
+	//status=db->check_install_package(package); // Checking status of package - is it principially possible to be installed?
+	
 	debug("Checking status of package...");
+	printf("Package ID = %d\n", package->get_id());
 	if (!do_normalize)
 	{
-		if (status==CHKINSTALL_INSTALLED || status==CHKINSTALL_INSTALL) // If package is already installed or already marked for install - it is already good :-)
+		if (package->installed() || package->action()==ST_INSTALL) // If package is already installed or already marked for install - it is already good :-)
 		{
 			printf("Package %s is already installed or marked for install\n", package->get_name().c_str());
 			return DEP_OK;
 		}
 	}
-	if (status==CHKINSTALL_REMOVE_PURGE || status==CHKINSTALL_REMOVE) // Package is installed, but someone wants to remove it - but changes his desigion - ok ;-)
+
+	if (package->installed())
 	{
-		debug("Package is installed, but marked to remove - adding to install-list, там разберутся.");
-		package->set_status(PKGSTATUS_INSTALLED);
-		package->set_id(db->get_package_id(package));
-		install_list.add(*package); // next procedure resolves that package is already in the system and just changes the status (who run after merge)
+		if (package->action()!=ST_NONE)
+		{
+			//package->set_id(db->get_package_id(package));
+			install_list.add(*package);
+		}
 		return DEP_OK;
 	}
-	if (status==CHKINSTALL_UNAVAILABLE) // Failure - package unavailable
+
+	if (!package->reachable())
 	{
-		debug("Package is unavailable");
-		package->set_id(db->get_package_id(package));
 		package->set_err_type(DEP_UNAVAILABLE);
 		failure_list.add(*package);
 		return DEP_UNAVAILABLE;
 	}
-	if (status==CHKINSTALL_FILECONFLICT) // Failure - file conflict
-	{
-		debug("File conflict detected");
-		package->set_id(db->get_package_id(package));
-		package->set_err_type(DEP_FILECONFLICT);
-		failure_list.add(*package);
-		return DEP_FILECONFLICT;
-	}
-	if (status==CHKINSTALL_DBERROR)	// Database error...
-	{
-		debug ("Database error detected, maybe multiple package records?");
-		package->set_err_type(DEP_DBERROR);
-		failure_list.add(*package);
-		return DEP_DBERROR;
-	}
-	if (status==CHKINSTALL_NOTFOUND) // No such package... WTF? :-)
-	{
-		debug("Package not found! WTF? Error adding to DB?....");
-		package->set_err_type(DEP_NOTFOUND);
-		failure_list.add(*package);
-		return DEP_NOTFOUND;
-	}
+
 	for (int t=0;t<install_list.size();t++)
 	{
 		// Skip package if it is already in install list. TODO: check version
@@ -192,6 +161,8 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 			return DEP_OK;
 	}
 
+
+	// OLDSTYLE SCAN HALTED HERE - TODO TODO TODO!!!!
 	debug("Status check passed. Continue with dependencies");
 	package->set_status(PKGSTATUS_INSTALL);
 	// In all other cases - continue with full procedure

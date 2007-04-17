@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.43 2007/04/15 23:42:27 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.44 2007/04/17 14:35:19 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -32,7 +32,7 @@ PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
 	PACKAGE_LIST packagelist;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", pkg_name);
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALLED));
+	sqlSearch.addField("package_installed", IntToStr(ST_INSTALLED));
 
 	get_packagelist(sqlSearch, &packagelist);
 	// We do NOT allow multiple packages with same name to be installed, so, we simply get first package of list.
@@ -128,7 +128,7 @@ int mpkgDatabase::commit_actions()
 	PACKAGE_LIST remove_list;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
+	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
 	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
 	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
@@ -147,10 +147,8 @@ int mpkgDatabase::commit_actions()
 	currentStatus = "Looking for purge queue";
 	PACKAGE_LIST purge_list;
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
+	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
 	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
-	//printf("purge list size = %d\n", purge_list.size());
 	currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
 	currentProgress = 0;
 	progressEnabled = true;
@@ -168,14 +166,12 @@ int mpkgDatabase::commit_actions()
 	// Second: installing required packages
 	PACKAGE_LIST install_list;
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
+	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
 	if (get_packagelist(sqlSearch, &install_list)!=0) return -5;
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
 	// Building download queue
-#ifndef OLD_QUEUE
-	//printf("Downloading using new queue\n");
 	currentStatus = "Looking for package locations...";
 	DownloadsList downloadQueue;
 	DownloadItem tmpDownloadItem;
@@ -250,22 +246,6 @@ int mpkgDatabase::commit_actions()
 		progressEnabled2 = false;
 		printf("Download complete\n");
 	}
-#endif
-	// Old methods
-#ifdef OLD_QUEUE
-	progressEnabled = true;
-	progressMax = install_list.size();
-	for (int i=0; i<install_list.size(); i++)
-	{
-		currentProgress = i;
-		debug("Fetching package #"+IntToStr(i+1)+" with "+IntToStr(install_list.get_package(i)->get_locations()->size())+" locations");
-		if (fetch_package(install_list.get_package(i))!=0)
-		{
-			printf("Fetching failed\n");
-			return -6;
-		}
-	}
-#endif
 	debug("Calling INSTALL");
 
 	for (int i=0;i<install_list.size();i++)
@@ -279,212 +259,6 @@ int mpkgDatabase::commit_actions()
 	return 0;
 }
 
-int mpkgDatabase::fetch_package(PACKAGE *package)
-{
-	currentStatus = "Looking for locations of package "+package->get_name()+"...";
-	printf("Fetching...\n");
-		// Смотрим все доступные locations пакета, точнее - их сервера. 
-		// Сервера подразделяются по типам на следующие группы:
-		// cache - это локальный кеш пакетов. URL: cache://
-		// file - по сути - псевдосервер, его наличие означает что пакет ставят напрямую с локального носителя. URL: file://
-		// network - сетевой репозиторий. URL: http://, ftp://, rsync://, smb://, nfs://, https://, ftps://, и другие (какие реализуем). Пока только первые 2.
-		// cdrom - по сути локальный репозиторий, но имеющий свою специфику. Вид URL: cdrom://cdrom_id/
-		//
-		// Тип сервера определяется по его URL методом SERVER::get_type().
-		// 
-		// Если тип сервера file, то сначала проверяется существование файла, после создается symlink из кеша на файл. Если файла нету - ищем дальше.
-		// Если тип сервера cache, то достаточно просто проверить наличие файла в указанном месте и его md5. Если файла нет - ищем дальше.
-		// 
-		// Если тип сервера network - то мы запускаем выкачивание файла. Если файл скачался - проверяем его md5. Если файл не скачался или сумма не совпадает
-		// то пробуем следующий сервер до тех пор пока файл не окажется в кеше. Кеш по умолчанию - SYS_CACHE.
-		//
-		// Если тип сервера cdrom - то мы сначала требуем вставить нужный диск в нужное устройство, монтируем его, и дальше как будто это file:
-		// проверяем существование, создаем симлинк.
-		//
-		// Приоритет серверов определяется методом SERVER::get_priority(). Высший приоритет ВСЕГДА имеют сервера file. Умолчальная расстановка такова:
-		// 1. cache (приоритеты от 3000 до 3999)
-		// 2. cdrom (приоритеты от 2000 до 2999)
-		// 3. network (приоритеты от 1 до 1999)
-		// Сервер, имеющий приоритет 0, считается отключенным и никогда не принимает участие в выборке.
-		//
-		// TODO: многопотоковая загрузка с равноприоритетных серверов.
-
-	// Step 1. Checking for local copy of file (filesystem or cache)
-	debug("INIT/Fetching...");
-	LOCATION_LIST locationlist; 	// Sorted location list
-	LOCATION location;
-	int min_priority=0; int min_priority_id=0; int prev_min=0;
-	min_priority=0;
-	prev_min=-1;
-	int server_priority=0;
-
-	int _srv_type;
-	string _fname;
-	string _sys;
-	FILE *_ftmp;
-	debug("Package has "+IntToStr(package->get_locations()->size())+" locations");
-	debug("Sorting...");
-
-
-	locationlist=*package->get_locations();
-	/*
-#ifdef DEBUG
-	for (int i=0; i<package->get_locations()->size(); i++)
-	{
-			debug(package->get_locations()->get_location(i)->get_server()->get_url());
-	}
-#endif
-
-	for (int x=0; x<package->get_locations()->size();x++)
-	{
-		for (int i=0; i<package->get_locations()->size(); i++)
-		{
-			server_priority=atoi(package->get_locations()->get_location(i)->get_server()->get_priority().c_str());
-			if ((i==0 || server_priority<min_priority) && server_priority>prev_min)
-			{
-				min_priority=server_priority;
-				min_priority_id=i;
-			}
-		}
-		for (int i=0; i<package->get_locations()->size(); i++)
-		{
-			if (i==min_priority_id)
-			{
-					debug("adding "+package->get_locations()->get_location(i)->get_server()->get_url());
-					locationlist.add(*package->get_locations()->get_location(i));
-			}
-		}
-		prev_min=min_priority;
-	}
-	debug("Sorted. We have got "+IntToStr(locationlist.size())+" locations sorted.");
-
-#ifdef DEBUG
-	for (int i=0; i<locationlist.size();i++)
-	{
-		debug("Priority: "+locationlist.get_location(i)->get_server()->get_priority());
-	}
-#endif
-*/
-	for (int i=0; i<locationlist.size(); i++) // First, searching local file servers.
-	{
-		debug("Searching file sources");
-		if (locationlist.get_location(i)->get_server()->get_type()==SRV_FILE)
-		{
-			debug("TYPE=SRV_FILE, checking file existance");
-			// Checking file existance
-			string _fname;
-			string _sys;
-			_fname=locationlist.get_location(i)->get_path()+package->get_filename();
-			debug("_fname="+_fname);
-			_ftmp=fopen(_fname.c_str(),"r");
-			if (_ftmp)
-			{
-				debug("File "+_fname+" exists , proceeding next: checking md5");
-				fclose(_ftmp);
-				// Checking md5
-				if (package->get_md5()==get_file_md5(_fname))
-				{
-					debug("md5 ok");
-					_sys="ln -fs "+_fname+" "+SYS_CACHE;
-					debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>!!!!!!!!!!>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Creating symlink: "+_sys);
-					system(_sys.c_str());
-					return 0; // File successfully delivered thru symlink, we can exit function now
-				}
-				else
-				{
-					printf("md5 incorrect\n");
-				}
-			}
-			else
-			{
-				debug("File not found, searching next server");
-			}
-		}
-	} // End of searching local file servers
-
-	string wget_sys;
-	std::string __file_url;
-	DownloadResults res = DOWNLOAD_ERROR;
-	bool DownloadOk = false;
-	for (int i=0; i<locationlist.size() && res != DOWNLOAD_OK; i++) // Second: looking for all other servers ordering by priority.
-	{
-		_srv_type=locationlist.get_location(i)->get_server()->get_type();
-		__file_url = "";
-		__file_url = locationlist.get_location(i)->get_server()->get_url() + locationlist.get_location(i)->get_path() + package->get_filename();
-		debug("requested file: " + __file_url);
-		
-		// Checking cache
-		_fname = SYS_CACHE + package->get_filename();
-		if (FileExists(_fname))
-		{
-			debug("Package file found in cache, checking md5");
-			if (package->get_md5()==get_file_md5(_fname))
-			{
-				debug("md5 ok");
-				currentStatus = "Found in cache - proceeding to install";
-				DownloadOk = true;
-				return 0;
-			}
-			else
-			{
-				debug("md5 incorrect, re-downloading");
-			}
-		}
-		else
-		{
-			debug("File not found in cache, downloading");
-		}
-
-		// Downloading
-		switch (_srv_type)
-		{
-			case SRV_CDROM:
-				// Not implemented yet.
-				debug("Fetching from CD-COM is not implemented yet");
-				break;
-			case SRV_CACHE:
-				printf("Cache server detected...");
-			case SRV_HTTP:
-			case SRV_FTP:
-			case SRV_SMB:
-			case SRV_HTTPS:
-				currentStatus = "Downloading from "+__file_url+"...";
-				printf("Retrieving %s\n", __file_url.c_str());
-				res = CommonGetFile(
-							__file_url, 
-							SYS_CACHE + package->get_filename()
-							);
-
-				printf("Attempted to download file %s\n", __file_url.c_str());
-				if ( res == DOWNLOAD_OK ) {
-					if (package->get_md5()==get_file_md5(_fname))
-					{
-						currentStatus = "Downloaded successfully";
-						debug("md5 ok");
-						DownloadOk = true;
-						printf(_("%s downloaded successfull\n"), __file_url.c_str());
-					}
-					else
-					{
-						currentStatus = "MD5 mismatch, looking for another sources";
-						printf("md5 error\n");
-						debug("md5 incorrect, re-downloading");
-					}
-
-				}
-			       	else {
-					currentStatus = "Failed to download "+ __file_url;
-					fprintf(stderr, _("download %s failed\n"), __file_url.c_str());
-					break;
-				}
-			default:
-				debug ("Server type not recognized or not supported");
-				break;
-		}
-	}
-	if (!DownloadOk) return -1;
-	else return 0;
-} // End of mpkgDatabase::fetch_package();
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
@@ -592,13 +366,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		system(postinst.c_str());
 	}
 
-	set_status(package->get_id(), PKGSTATUS_INSTALLED);
-	if (get_status(purge_id)==PKGSTATUS_REMOVED_AVAILABLE) set_status(purge_id, PKGSTATUS_AVAILABLE);
-	if (get_status(purge_id)==PKGSTATUS_REMOVED_UNAVAILABLE) set_status(purge_id, PKGSTATUS_UNAVAILABLE);
+	set_installed(package->get_id(), ST_INSTALLED);
+	set_configexist(package->get_id(), ST_CONFIGEXIST);
+	set_action(package->get_id(), ST_NONE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	currentStatus = statusHeader + "successfully installed!";
 	return 0;
-}
+}	//End of install_package
 
 int mpkgDatabase::purge_package(PACKAGE* package)
 {
@@ -664,9 +438,9 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 
 	currentStatus = statusHeader + "purge complete";
 	printf("done\n");
-	//set_purge(package->get_id());
-	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_UNAVAILABLE);
-	else set_status(package->get_id(), PKGSTATUS_AVAILABLE);
+	set_installed(package->get_id(), ST_NOTINSTALLED);
+	set_configexist(package->get_id(), ST_CONFIGNOTEXIST);
+	set_action(package->get_id(), ST_NONE);
 	cleanFileList(package->get_id());
 
 	debug("*********************************************\n*        Package purged sussessfully     *\n*********************************************");
@@ -680,7 +454,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Removing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 
-	if (package->get_status()==PKGSTATUS_REMOVE || package->get_status()==PKGSTATUS_REMOVE_PURGE)
+	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
 		// Running pre-remove scripts
 		debug("REMOVE PACKAGE::Preparing scripts");
@@ -748,23 +522,22 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			system(postrem.c_str());
 		}
 	}
-	if (package->get_locations()->IsEmpty()) set_status(package->get_id(), PKGSTATUS_REMOVED_UNAVAILABLE);
-	else set_status(package->get_id(), PKGSTATUS_REMOVED_AVAILABLE);
+	set_installed(package->get_id(), ST_NOTINSTALLED);
+	set_action(package->get_id(), ST_NONE);
 	currentStatus = statusHeader + "cleaning file list";
 	cleanFileList(package->get_id());
 	currentStatus = statusHeader + "remove complete";
 	printf("done\n");
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
-}
+}	// End of remove_package
 
 int mpkgDatabase::cleanFileList(int package_id)
 {
 	printf("Cleaning up...\n");
-	int status=get_status(package_id);
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
-	if (status==PKGSTATUS_REMOVED_AVAILABLE || status==PKGSTATUS_REMOVED_UNAVAILABLE) sqlSearch.addField("file_type", IntToStr(FTYPE_PLAIN));
+	if (get_configexist(package_id)) sqlSearch.addField("file_type", IntToStr(FTYPE_PLAIN));
 	return db.sql_delete("files", sqlSearch);
 }
 
@@ -803,12 +576,12 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 		sqlUpdate.addField("package_filename", package->get_filename());
 	}
 
-	// 3. Updating status
-	if (package->get_status()!=old_package.get_status())
+	// 3. Updating status. Seems that somewhere here is an error causing double scan is required
+	/*if (package->available()!=old_package.available())
 	{
-		debug("mpkg.cpp: update_package_data(): status mismatch, updating");
-		sqlUpdate.addField("package_status", IntToStr(package->get_status()));
-	}
+		sqlUpdate.addField("package_available", IntToStr(package->available()));
+	}*/
+
 
 	// 4. Updating locations
 	
@@ -837,9 +610,9 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 			debug("mpkg.cpp: update_package_data(): unable to add new locations: error in add_locationlist_record()");
 			return -3;
 		}
-		if (old_package.get_status()!=PKGSTATUS_INSTALLED && package->get_locations()->IsEmpty())
+		if (package->get_locations()->IsEmpty())
 		{
-			set_status(old_package.get_id(), PKGSTATUS_UNAVAILABLE);
+			sqlUpdate.addField("package_available", IntToStr(ST_NOTAVAILABLE));
 		}
 	}
 
@@ -888,16 +661,10 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	PACKAGE tmpPackage;
 	if (get_packagelist(sqlSearch, &currentPackages, false)!=0)
 	{
-		debug("mpkg.cpp: updateRepositoryData(): failed to get list of current packages");
 		return -1;
-	}
-	else
-	{
-		debug("get_packagelist ok");
 	}
 	debug("mpkg.cpp: updateRepositoryData(): Step 1. Adding new data, updating old");
 	int package_id;
-	int package_status;
 	progressMax = newPackages->size();
 	progressEnabled = true;
 	for (int i=0; i< newPackages->size(); i++)
@@ -907,21 +674,14 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		package_id=get_package_id(newPackages->get_package(i));
 		if (package_id>0)
 		{
-			debug("mpkg.cpp: updateRepositoryData(): Such package found, updating data if needed");
-			package_status=get_status(package_id);
-			debug("mpkg.cpp: updateRepositoryData(): package status: "+IntToStr(package_status));
-			if (package_status!=PKGSTATUS_UNAVAILABLE)
-				newPackages->get_package(i)->set_status(package_status);
 			update_package_data(package_id, newPackages->get_package(i));
 		}
 		if (package_id==0)
 		{
-			debug("mpkg.cpp: updateRepositoryData(): new package, calling add_package_record()"); 
 			add_package_record(newPackages->get_package(i));
 		}
 		if (package_id<0)
 		{
-			debug("mpkg.cpp: updateRepositoryData(): query error");
 			return -1;
 		}
 	}
@@ -933,9 +693,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	for (int i=0; i<currentPackages.size(); i++)
 	{
 		currentProgress = i;
-		if (currentPackages.get_package(i)->get_status()==PKGSTATUS_INSTALL \
-				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_AVAILABLE \
-				|| currentPackages.get_package(i)->get_status()==PKGSTATUS_REMOVED_AVAILABLE)
+		if (currentPackages.get_package(i)->available())
 		{
 			package_num=0;
 			for (int s=0; s<newPackages->size(); s++)
@@ -955,12 +713,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 				debug("mpkg.cpp: updateRepositoryData(): package_num=0, clearing package with id "+\
 						IntToStr(currentPackages.get_package(i)->get_id()));
 				currentPackages.get_package(i)->get_locations()->clear();
-				
-				if (currentPackages.get_package(i)->get_status()==PKGSTATUS_REMOVED_AVAILABLE)
-					currentPackages.get_package(i)->set_status(PKGSTATUS_REMOVED_UNAVAILABLE);
-				else
-					currentPackages.get_package(i)->set_status(PKGSTATUS_UNAVAILABLE);
-
+				currentPackages.get_package(i)->set_available(ST_NOTAVAILABLE);
 				update_package_data(currentPackages.get_package(i)->get_id(), currentPackages.get_package(i));
 			}
 		}

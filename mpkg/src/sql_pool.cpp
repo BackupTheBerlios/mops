@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.21 2007/04/15 23:42:27 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.22 2007/04/17 14:35:19 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -11,12 +11,11 @@
 
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
-	// TODO: check if all required field exists.
 	if (\
 			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies;")!=0 || \
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files;")!=0 || \
 			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations;")!=0 || \
-			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_status, package_md5, package_filename from packages;")!=0 || \
+			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_available, package_installed, package_configexist, package_action, package_md5, package_filename from packages;")!=0 || \
 			sql_exec("select server_tag_id, server_tag_name from server_tags;")!=0 || \
 			sql_exec("select server_tags_link_id, servers_server_id, server_tags_server_tag_id from server_tags_links;")!=0 || \
 			sql_exec("select server_id, server_url, server_priority from servers;")!=0 || \
@@ -245,7 +244,10 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("package_changelog");// TEXT NULL,
 		fieldNames.push_back("package_packager");// TEXT NULL,
 		fieldNames.push_back("package_packager_email");// TEXT NULL,
-		fieldNames.push_back("package_status");// INTEGER NOT NULL DEFAULT '0',
+		fieldNames.push_back("package_available");// INTEGER NOT NULL,
+		fieldNames.push_back("package_installed");// INTEGER NOT NULL,
+		fieldNames.push_back("package_configexist");// INTEGER NOT NULL,
+		fieldNames.push_back("package_action");// INTEGER NOT NULL,
 		fieldNames.push_back("package_md5");// TEXT NOT NULL,
 		fieldNames.push_back("package_filename");// NOT NULL
 	}

@@ -11,7 +11,10 @@ create table packages (
 	package_changelog TEXT NULL,
 	package_packager TEXT NULL,
 	package_packager_email TEXT NULL,
-	package_status INTEGER NOT NULL DEFAULT '0',
+	package_available INTEGER NOT NULL,
+	package_installed INTEGER NOT NULL,
+	package_configexist INTEGER NOT NULL,
+	package_action INTEGER NOT NULL,
 	package_md5 TEXT NOT NULL,
 	package_filename NOT NULL
 );

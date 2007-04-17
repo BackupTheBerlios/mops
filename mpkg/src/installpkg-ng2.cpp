@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.4 2007/04/15 23:42:27 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.5 2007/04/17 14:35:19 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -351,40 +351,9 @@ int list(mpkg *core, vector<string> search)
 		printf(_("Package database empty\n"));
 		return 0;
 	}
-char *CL_WHITE=	"\033[22;39m";
-char *CL_RED =		"\033[22;31m";
-char *CL_GREEN =	"\033[22;32m";
-char *CL_YELLOW =	"\033[22;33m";
-char *CL_BLUE =	"\033[22;34m";
-
 	for (int i=0; i<pkglist.size(); i++)
 	{
-//#define CL_YELLOW "\033[22;35m"
-//#define CL_YELLOW "\033[22;36m"
-//#define CL_YELLOW "\033[22;37m"
-//#define CL_YELLOW "\033[22;38m"
-//#define CL_YELLOW "\033[22;40m"
-//#define CL_YELLOW "\033[22;41m"
-
-		switch(pkglist.get_package(i)->get_status())
-		{
-			case PKGSTATUS_INSTALL:
-				printf("[%s%s%s]\t", CL_YELLOW, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
-				break;
-			case PKGSTATUS_INSTALLED:
-				printf("[%s%s%s]\t", CL_GREEN, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
-				break;
-			case PKGSTATUS_AVAILABLE:
-				printf("[%s%s%s]\t", CL_BLUE, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
-				break;
-			case PKGSTATUS_UNAVAILABLE:
-				printf("[%s%s%s]\t", CL_RED, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
-				break;
-			default:
-				printf("[%s%s%s]\t", CL_WHITE, pkglist.get_package(i)->get_vstatus().c_str(), CL_WHITE);
-				break;
-
-		}
+		printf("[ %s ]\t", pkglist.get_package(i)->get_vstatus().c_str());
 		printf("%s-%s-%s-%s\t(%s)\n", \
 				pkglist.get_package(i)->get_name().c_str(), \
 				pkglist.get_package(i)->get_version().c_str(), \

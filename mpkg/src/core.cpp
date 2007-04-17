@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.32 2007/04/15 23:42:27 i27249 Exp $
+ *	$Id: core.cpp,v 1.33 2007/04/17 14:35:19 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -16,8 +16,6 @@
 #define ENABLE_CONFLICT_CHECK
 bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
 {
-	//printf("checkVersion");
-
 	debug("checkVersion "+version1 + " vs " + version2);
 	switch (condition)
 	{
@@ -67,13 +65,12 @@ PACKAGE mpkgDatabase::get_max_version(PACKAGE_LIST pkgList, DEPENDENCY *dep)
 	string ver;
 	for (int i=0; i<pkgList.size(); i++)
 	{
-		if (pkgList.get_package(i)->get_status()!=PKGSTATUS_UNAVAILABLE \
-				&& pkgList.get_package(i)->get_status()!=PKGSTATUS_REMOVED_UNAVAILABLE \
-				&& pkgList.get_package(i)->get_version()>ver \
+		if (pkgList.get_package(i)->reachable() \
+				&& strverscmp(pkgList.get_package(i)->get_version().c_str(), ver.c_str())>0 \
 				&& mpkgDatabase::checkVersion(pkgList.get_package(i)->get_version(), \
 					atoi(dep->get_condition().c_str()), \
 					dep->get_package_version())
-				)
+		   )
 		{
 			candidate = *pkgList.get_package(i);
 			ver = pkgList.get_package(i)->get_version();
@@ -85,18 +82,6 @@ PACKAGE mpkgDatabase::get_max_version(PACKAGE_LIST pkgList, DEPENDENCY *dep)
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
-	// WARNING WARNING WARNING!
-	//
-	// This function needs COMPLETE redesign, due to monsterous memory and CPU consumption
-	// For just 10 middle-size packages, it eats more than 1Gb of RAM and takes lot of time
-	// to proceed (if even not killed due to running out of memory).
-	// 
-	// Because of all this, I disabled this function now. It will be always return 0
-	// PLEASE NOTE: for now, NO CONFLICTS ARE CHECKED!
-
-//#ifdef ENABLE_CONFLICT_CHECK
-
-//	printf("core.cpp: check_file_conflicts(): package->get_id()=%d\n", package->get_id());
 	int package_id;
 	int prev_package_id=package->get_id();
 	string fname;
@@ -104,16 +89,10 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_IN);
-	int status;
-//	printf("core.cpp: check_file_conflicts(): beginning cycle\n");
 	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
-	//printf("Building request...\n");
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
-#ifdef DEBUG
-		printf("[%d] request for file %s", i, package->get_files()->get_file(i)->get_name().c_str());
-#endif
 		sqlFields.addField("packages_package_id");
 		sqlFields.addField("file_name");
 		fname=package->get_files()->get_file(i)->get_name();
@@ -121,177 +100,31 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		{
 
 			sqlSearch.addField("file_name", package->get_files()->get_file(i)->get_name());
-#ifdef DEBUG
-			printf("done\n");
-#endif
 		}
 		else
 		{
-#ifdef DEBUG
-			printf("failed\n");
-#endif
+
 		}
 	}
-	//printf("Request ready, querying SQL\n");
 	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
-	//printf("Query results received. Looking in...\n");
 	if (!sqlTable.empty())
 	{
-#ifdef DEBUG
-		printf("core.cpp: check_file_conflicts(): sqlTable is not empty\n");
-		printf("core.cpp: check_file_conflicts(): table record count = %d",sqlTable.getRecordCount());
-#endif
 		for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages who are already installed
 		{
 			package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());
-#ifdef DEBUG
-			printf("checking file %s\n", sqlTable.getValue(k, "file_name").c_str());
-#endif
+
 			if (package_id!=prev_package_id)
 			{
-				status=get_status(package_id);
-#ifdef DEBUG
-				printf("core.cpp: check_file_conflicts(): package_id=%d, status=%d, file: %s\n", \
-						package_id, status, sqlTable.getValue(k, "file_name").c_str());
-#endif
-				if (status==PKGSTATUS_INSTALLED || status==PKGSTATUS_INSTALL)
+
+				if (get_installed(package_id) || get_planned_action(package_id)==ST_INSTALL)
 				{
 					printf("File %s conflicts with package ID %d\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
-
-					debug("File conflict found, aborting...");
 					return package_id;
 				}
 			}
 		}
 	}
-#ifdef DEBUG
-	else printf("core.cpp: check_file_conflicts(): sqlTable empty\n");
-#endif
-	//printf("Complete looking. Seems all ok\n");
-	// If all ok - return 0;
 	return 0; // End of check_file_conflicts
-}
-
-int mpkgDatabase::check_install_package (PACKAGE *package)
-{
-	debug("check_install_package start");
-	//Searching in DB
-	int package_id;
-	package_id=get_package_id(package);
-	debug("package id = "+IntToStr(package_id));
-	if (package_id<0)
-	{
-		printf("Cannot install package: database error\n");
-		return CHKINSTALL_DBERROR;
-	}
-	if (package_id==0)
-	{
-		// New methods! Adding to database as available from given location!
-		add_package_record(package);
-		return check_install_package(package); // Generally, we can simply return AVAILABLE, but we will re-check (file conflicts, etc)...
-	}
-	else
-	{
-		int package_status;
-		package_status=get_status(package_id);
-		debug("got status " + IntToStr(package_status));
-		if (package_status==PKGSTATUS_INSTALL)
-		{
-			return CHKINSTALL_INSTALL;
-		}
-		if (package_status==PKGSTATUS_INSTALLED)
-		{
-			return CHKINSTALL_INSTALLED;
-		}
-		if (package_status==PKGSTATUS_REMOVE)
-		{
-			return CHKINSTALL_REMOVE;
-		}
-		if (package_status==PKGSTATUS_AVAILABLE || package_status == PKGSTATUS_REMOVED_AVAILABLE)
-		{
-			// Very important procedure - if an earlier/newer version of package is installed? (!!!NOT WORKING!!!)
-			string other_ver_id;
-			//int other_ver_status;
-			PACKAGE_LIST others;
-			SQLRecord sqlSearch;
-			sqlSearch.addField("package_name", package->get_name());
-			sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALLED)); //TODO: add other installed flags
-			get_packagelist(sqlSearch, &others);
-			if (!others.IsEmpty())
-			{
-				debug(IntToStr(others.size())+" OTHER installed VERSIONS FOUND");
-				return CHKINSTALL_AVAILABLE;
-			}	
-			/*if (check_file_conflicts(package)==0) */return CHKINSTALL_AVAILABLE;
-			//else return CHKINSTALL_FILECONFLICT;
-		}
-		if (package_status==PKGSTATUS_UNAVAILABLE || package_status == PKGSTATUS_REMOVED_UNAVAILABLE)
-		{
-			if (!package->get_locations()->IsEmpty() && package->get_locations()->get_location(0)->get_local()) return CHKINSTALL_AVAILABLE; // Local install - we can install!
-			return CHKINSTALL_UNAVAILABLE;
-		}
-		if (package_status==PKGSTATUS_REMOVE_PURGE)
-		{
-			set_status(package_id, PKGSTATUS_INSTALLED);
-			return CHKINSTALL_REMOVE_PURGE;
-		}
-		if (package_status==PKGSTATUS_PURGE)
-		{
-			return CHKINSTALL_PURGE;
-		}
-		// If nothing detected - so, status is NULL - it cannot be...
-		debug("Check_install_package: no status detected - ERROR!!!!!!!!!");
-		return -1;
-	}
-}
-
-string mpkgDatabase::_install_package (PACKAGE *package)
-{
-	//Searching in DB
-	int package_id=get_package_id(package);
-	if (package_id<0)
-	{
-		printf("Cannot install package: database error\n");
-		return "ERROR";
-	}
-	if (package_id==0)
-	{
-		package->set_status(PKGSTATUS_INSTALL);
-		return IntToStr(add_package_record(package));
-	}
-	else
-	{
-		int package_status=get_status(package_id);
-		if (package_status==PKGSTATUS_INSTALL)
-		{
-			printf ("Already marked for install\n");
-			return "ALREADY_MARKED";
-		}
-		if (package_status==PKGSTATUS_INSTALLED)
-		{
-			printf("Package is already installed\n");
-			return "ALREADY_INSTALLED";
-		}
-		if (package_status==PKGSTATUS_REMOVE)
-		{
-			printf("Package is already installed and marked to remove\n");
-			return "MARKED_TO_REMOVE";
-		}
-		
-		//Check file conflicts
-		//if (check_file_conflicts(package)==0)
-		//{
-			set_status(package_id, PKGSTATUS_INSTALL);
-		//}
-		//else return "FILE_CONFLICT";
-		return IntToStr(package_id);
-	}
-}
-
-int mpkgDatabase::_remove_package (PACKAGE *package)
-{
-	set_status(package->get_id(), PKGSTATUS_REMOVE);
-	return 0;
 }
 
 int mpkgDatabase::clean_package_filelist (PACKAGE *package)
@@ -501,7 +334,6 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 				return -3;
 		}
 		tag_id=atoi(sqlTable.getValue(0, "tags_id").c_str());
-		//printf("tag_id = %d\n", tag_id);
 		if (add_tag_link(package_id, tag_id)!=0)
 			return -4;
 	}
@@ -511,7 +343,6 @@ int mpkgDatabase::add_taglist_record (int package_id, TAG_LIST *taglist)
 // Creates a link between package_id and tag_id
 int mpkgDatabase::add_tag_link(int package_id, int tag_id)
 {
-	//printf("recv package_id = %d, tag_id = %d\n", package_id, tag_id);
 	SQLRecord sqlInsert;
 	sqlInsert.addField("packages_package_id", IntToStr(package_id));
 	sqlInsert.addField("tags_tag_id", IntToStr(tag_id));
@@ -528,11 +359,8 @@ int mpkgDatabase::add_tag_link(int package_id, int tag_id)
 // Adds package - full structure (including files, locations, deps, and tags), returning package_id
 int mpkgDatabase::add_package_record (PACKAGE *package)
 {
-	int pkg_status;
-	pkg_status=package->get_status();
 	// INSERT INTO PACKAGES
 	SQLRecord sqlInsert;
-	//db.sqlBegin();
 	
 	sqlInsert.addField("package_name", package->get_name());
 	sqlInsert.addField("package_version", package->get_version());
@@ -545,7 +373,11 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	sqlInsert.addField("package_changelog", package->get_changelog());
 	sqlInsert.addField("package_packager", package->get_packager());
 	sqlInsert.addField("package_packager_email", package->get_packager_email());
-	sqlInsert.addField("package_status", IntToStr(package->get_status()));
+	sqlInsert.addField("package_available", IntToStr(package->available()));
+	sqlInsert.addField("package_installed", IntToStr(package->installed()));
+	sqlInsert.addField("package_configexist", IntToStr(package->configexist()));
+	sqlInsert.addField("package_action", IntToStr(package->action()));
+
 	sqlInsert.addField("package_md5", package->get_md5());
 	sqlInsert.addField("package_filename", package->get_filename());
 
@@ -582,7 +414,6 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 
 int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInfo)
 {
-	//printf("Request to get package with ID=%d\n", package_id);
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
@@ -611,7 +442,10 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	package->set_changelog(sqlTable.getValue(0,"package_changelog"));
 	package->set_packager(sqlTable.getValue(0,"package_packager"));
 	package->set_packager_email(sqlTable.getValue(0,"package_packager_email"));
-	package->set_status(atoi(sqlTable.getValue(0,"package_status").c_str()));
+	package->set_available(atoi(sqlTable.getValue(0,"package_available").c_str()));
+	package->set_installed(atoi(sqlTable.getValue(0,"package_installed").c_str()));
+	package->set_configexist(atoi(sqlTable.getValue(0,"package_configexist").c_str()));
+	package->set_action(atoi(sqlTable.getValue(0,"package_action").c_str()));
 	package->set_md5(sqlTable.getValue(0,"package_md5"));
 	package->set_filename(sqlTable.getValue(0,"package_filename"));
 	if (GetExtraInfo)
@@ -654,7 +488,12 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_changelog(sqlTable.getValue(i, "package_changelog"));
 		package.set_packager(sqlTable.getValue(i, "package_packager"));
 		package.set_packager_email(sqlTable.getValue(i, "package_packager_email"));
-		package.set_status(atoi(sqlTable.getValue(i, "package_status").c_str()));
+		
+		package->set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
+		package->set_installed(atoi(sqlTable.getValue(i,"package_installed").c_str()));
+		package->set_configexist(atoi(sqlTable.getValue(i,"package_configexist").c_str()));
+		package->set_action(atoi(sqlTable.getValue(i,"package_action").c_str()));
+
 		package.set_md5(sqlTable.getValue(i, "package_md5"));
 		package.set_filename(sqlTable.getValue(i, "package_filename"));
 		if (GetExtraInfo)
@@ -664,16 +503,13 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 			debug("script list...");
 			get_scripts(package.get_id(), package.get_scripts());
 		}
-		debug("syncronizing...");
 		package.sync();
-		debug("locationlist...");
 		get_locationlist(package.get_id(), package.get_locations());
-		debug("dependency list...");
 		get_dependencylist(package.get_id(), package.get_dependencies());
-		//printf("taglist...\n");
 		get_taglist(package.get_id(), package.get_tags());
-		debug("description list...");
 #ifdef ENABLE_INTERNATIONAL
+		
+		debug("description list...");
 		get_descriptionlist(package.get_id(), package.get_descriptions());
 #endif
 		
@@ -802,10 +638,8 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	sqlFields.addField("tags_name");
 	SQLRecord sqlSearch;
 
-	//printf("id_sqlTable size = %d\n", id_sqlTable.getRecordCount());
 	if (!id_sqlTable.empty())
 	{
-		//printf("CORE_LINK: count = %d\n", id_sqlTable.getRecordCount());
 		sqlSearch.setSearchMode(SEARCH_OR);
 		for (int i=0; i<id_sqlTable.getRecordCount(); i++)
 		{
@@ -814,30 +648,22 @@ int mpkgDatabase::get_taglist(int package_id, TAG_LIST *taglist)
 	}
 	else
 	{
-		//printf("CORE_LINK_EMPTY: count = %d\n", id_sqlTable.getRecordCount());
 		return 0;
 	}
 
 	// Step 2. Read the tags with readed ids
-	//printf("step 2\n");
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
 	if (sql_ret!=0)
 	{
 		return 2;
 	}
-	//printf("table = %d\n", sqlTable.getRecordCount());
 	if (!sqlTable.empty())
 	{
-		//printf("CORE_TAGLIST: tag count = %d\n", sqlTable.getRecordCount());
-	//	printf("tag count = %d\n", sqlTable.getRecordCount());
 		for (int i=0; i<sqlTable.getRecordCount(); i++)
 		{
-		//	printf("CORE_CONTENT: adding tag %s\n", sqlTable.getValue(i, "tags_name").c_str());
 			tag.set_name(sqlTable.getValue(i, "tags_name"));
 			taglist->add(tag);
 		}
-		//printf("CORE_CONTENT:EOF\n");
-		//if (sqlTable.getRecordCount()==15) sleep(100);
 	}
 	return 0;
 }
@@ -948,7 +774,6 @@ int mpkgDatabase::get_locationlist(int package_id, LOCATION_LIST *location_list)
 		location.set_path(sqlTable.getValue(i, "location_path"));
 		location_list->add(location);
 	}
-	//printf("Ended getting locations, got %d locations\n", location_list->size());
 	return 0;
 }
 
@@ -967,7 +792,6 @@ int mpkgDatabase::get_last_id(string table_name, string field)
 
 	if(!sqlTable.empty())
 	{
-		//printf("get_last_id: %s\n", sqlTable.getValue(sqlTable.getRecordCount()-1, field).c_str());
 		return atoi(sqlTable.getValue(sqlTable.getRecordCount()-1, field).c_str());
 	}
 	else
@@ -976,28 +800,6 @@ int mpkgDatabase::get_last_id(string table_name, string field)
 	}
 }
 
-/*int mpkgDatabase::get_id(string table_name, string id_field, string search_field, string search_value, vector<string> *id_array)
-{
-	SQLTable sqlTable;
-	SQLRecord sqlFields;
-	SQLRecord sqlSearch;
-	string sql_query="select "+id_field+" from "+table_name+" where "+search_field+"='"+search_value+"';";
-	get_sql_table(&sql_query, &table, &rows, &cols);
-	if (rows==0) 
-	{
-		sqlite3_free_table(table);
-		return "0";
-	}
-	if (rows>1)
-	{
-		array=&table; // if multiple id found... 
-	}
-	col=&rows;
-	string id=table[rows]; // It always returns the last found ID
-	sqlite3_free_table(table);
-	return id;
-}
-*/
 
 int mpkgDatabase::get_package_id(PACKAGE *package)
 {
@@ -1034,22 +836,45 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 }
 
 
-int mpkgDatabase::set_status(int package_id, int status)
+int mpkgDatabase::set_available(int package_id, int status)
 {
-	//printf("setting status %d\n", status);
        	SQLRecord sqlUpdate;
-	sqlUpdate.addField("package_status", IntToStr(status));
+	sqlUpdate.addField("package_available", IntToStr(status));
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	return db.sql_update("packages", sqlUpdate, sqlSearch);
+}
+int mpkgDatabase::set_installed(int package_id, int status)
+{
+       	SQLRecord sqlUpdate;
+	sqlUpdate.addField("package_installed", IntToStr(status));
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	return db.sql_update("packages", sqlUpdate, sqlSearch);
+}
+int mpkgDatabase::set_configexist(int package_id, int status)
+{
+       	SQLRecord sqlUpdate;
+	sqlUpdate.addField("package_configexist", IntToStr(status));
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	return db.sql_update("packages", sqlUpdate, sqlSearch);
+}
+int mpkgDatabase::set_action(int package_id, int status)
+{
+       	SQLRecord sqlUpdate;
+	sqlUpdate.addField("package_action", IntToStr(status));
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", IntToStr(package_id));
 	return db.sql_update("packages", sqlUpdate, sqlSearch);
 }
 
 
-int mpkgDatabase::get_status(int package_id)
+int mpkgDatabase::get_installed(int package_id)
 {
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
-	sqlFields.addField("package_status");
+	sqlFields.addField("package_installed");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", IntToStr(package_id));
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
@@ -1064,7 +889,88 @@ int mpkgDatabase::get_status(int package_id)
 	}
 	if (sqlTable.getRecordCount()==1)
 	{
-		return atoi(sqlTable.getValue(0, "package_status").c_str());
+		return atoi(sqlTable.getValue(0, "package_installed").c_str());
+	}
+	if (sqlTable.getRecordCount()>1)
+		return -3;
+	
+	return -100;
+}
+
+int mpkgDatabase::get_action(int package_id)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("package_action");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
+	if (sql_ret!=0)
+	{
+		return -2;
+	}
+
+	if (sqlTable.empty())
+	{
+		return -1;
+	}
+	if (sqlTable.getRecordCount()==1)
+	{
+		return atoi(sqlTable.getValue(0, "package_installed").c_str());
+	}
+	if (sqlTable.getRecordCount()>1)
+		return -3;
+	
+	return -100;
+}
+
+int mpkgDatabase::get_configexist(int package_id)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("package_configexist");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
+	if (sql_ret!=0)
+	{
+		return -2;
+	}
+
+	if (sqlTable.empty())
+	{
+		return -1;
+	}
+	if (sqlTable.getRecordCount()==1)
+	{
+		return atoi(sqlTable.getValue(0, "package_configexist").c_str());
+	}
+	if (sqlTable.getRecordCount()>1)
+		return -3;
+	
+	return -100;
+}
+
+int mpkgDatabase::get_available(int package_id)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlFields;
+	sqlFields.addField("package_available");
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id", IntToStr(package_id));
+	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
+	if (sql_ret!=0)
+	{
+		return -2;
+	}
+
+	if (sqlTable.empty())
+	{
+		return -1;
+	}
+	if (sqlTable.getRecordCount()==1)
+	{
+		return atoi(sqlTable.getValue(0, "package_available").c_str());
 	}
 	if (sqlTable.getRecordCount()>1)
 		return -3;
@@ -1131,7 +1037,9 @@ int mpkgDatabase::get_purge(string package_name)
 	SQLTable sqlTableFiles;
 	SQLRecord sqlFields;
 	sqlFields.addField("package_id");
-	sqlFields.addField("package_status");
+	sqlFields.addField("package_configexist");
+	sqlFields.addField("package_installed");
+	sqlFields.addField("package_action");
 	if (db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch)!=0)
 	{
 		return -1;
@@ -1145,14 +1053,13 @@ int mpkgDatabase::get_purge(string package_name)
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
 		debug("searching..."); // HERE IS AN ERROR: IF IT WAS SAME PACKAGE, THEN AT THIS MOMENT, PACKAGE HAS ALREADY STATUS "INSTALL". NEED FIX
-		if (sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_REMOVED_AVAILABLE) || \
-				sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_REMOVED_UNAVAILABLE))
+		if (sqlTable.getValue(i, "package_configexist")==IntToStr(ST_CONFIGEXIST))
 		{
 			id=atoi(sqlTable.getValue(i, "package_id").c_str());
 			debug("id set to "+IntToStr(id));
 			break;
 		}
-		if (sqlTable.getValue(i, "package_status")==IntToStr(PKGSTATUS_INSTALL))
+		/*if (sqlTable.getValue(i, "package_action")==IntToStr(ST_INSTALL))	//TEMP DISABLE - I don't remember why this code needed.
 		{
 			sqlSearch.clear();
 			sqlFields.clear();
@@ -1166,151 +1073,9 @@ int mpkgDatabase::get_purge(string package_name)
 				break;
 			}
 		}
-		else debug("Status "+ sqlTable.getValue(i, "package_status")+"not conforming..");
 	}
-/*#ifdef EXTRA_CHECK
-	for (int i=1; i<sqlTable.getRecordCount(); i++)
-	{
-		if (id!=atoi(sqlTable.getValue(i, "packages_package_id").c_str()) && atoi(sqlTable.getValue(i, "packages_package_id").c_str())!=0)
-		{
-			printf("get_purge(): error in database, multiple ID at same time\n");
-			return -2; // Multiple package versions not purged at same time - error!
-		}
-	}
-#endif*/
 	return id;
 }
-/*
-FILE_LIST mpkgDatabase::get_config_files(int package_id) // Needs remastering
-{
-	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_id", IntToStr(package_id));
-	SQLRecord sqlFields;
-	sqlFields.addField("configfile_name");
-	SQLTable sqlTable;
-	FILE_LIST ret;
-	FILES file_tmp;
-	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
-	{
-		debug("get_config_files(): SQL Error");
-		return ret;
-	}
-	for (int i=0; i<sqlTable.getRecordCount(); i++)
-	{
-		file_tmp.set_name(sqlTable.getValue(i, "configfile_name"));
-		ret.add(file_tmp);
-		//file_tmp.clear();
-	}
-	return ret;
-}
-
-int mpkgDatabase::get_configs(int package_id, FILE_LIST *conf_files) // Needs remastering too
-{
-	SQLTable sqlTable;
-	SQLRecord sqlFields;
-	sqlFields.addField("configfiles_configfile_id");
-	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_id", IntToStr(package_id));
-	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles_links", sqlSearch)!=0)
-		return -1;
-	if (!sqlTable.empty())
-	{
-		sqlFields.clear();
-		sqlSearch.clear();
-		sqlFields.addField("configfile_name");
-		sqlSearch.setSearchMode(SEARCH_OR);
-		for (int i=0; i<sqlTable.getRecordCount(); i++)
-		{
-			sqlSearch.addField("configfile_id", sqlTable.getValue(i, "configfiles_configfile_id"));
-		}
-		sqlTable.clear();
-		if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
-			return -1;
-		FILES conf_tmp;
-		for (int i=0; i<sqlTable.getRecordCount(); i++)
-		{
-			conf_tmp.set_name(sqlTable.getValue(i, "configfile_name"));
-			conf_files->add(conf_tmp);
-		}
-	}
-	return 0;
-}
-
-
-int mpkgDatabase::set_purge(int package_id)
-{
-	SQLRecord sqlUpdate;
-	sqlUpdate.addField("packages_package_id", "0");
-	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_id", IntToStr(package_id));
-	return db.sql_update("configfiles", sqlUpdate, sqlSearch); 
-}
-
-int mpkgDatabase::add_configfiles_record(FILE_LIST *conffiles, string package_name, int package_id)
-{
-	// Check for duplicates
-	SQLTable sqlTable;
-	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_name", package_name);
-	SQLRecord sqlFields;
-	sqlFields.addField("configfile_name");
-	if (db.get_sql_vtable(&sqlTable, sqlFields, "configfiles", sqlSearch)!=0)
-	{
-		return -1;
-	}
-
-	// Preparing add structure
-	SQLTable sqlInsert;
-	SQLRecord sqlTmpInsert;
-
-	for (int i=0; i<conffiles->size(); i++)
-	{
-		for (int k=0; k<=sqlTable.getRecordCount(); k++)
-		{
-			if (k==sqlTable.getRecordCount())
-			{
-				sqlTmpInsert.addField("configfile_name", conffiles->get_file(i)->get_name());
-				sqlTmpInsert.addField("packages_package_name", package_name);
-				sqlTmpInsert.addField("packages_package_id", IntToStr(package_id));
-				sqlInsert.addRecord(sqlTmpInsert);
-				sqlTmpInsert.clear();
-				break;
-			}
-			if (conffiles->get_file(i)->get_name()==sqlTable.getValue(k, "configfile_name")) break;
-		}
-	}
-	if (!sqlInsert.empty()) db.sql_insert("configfiles", sqlInsert);
-	
-	// Creating links
-	SQLRecord sqlLink;
-	SQLTable sqlConfigLinks;
-
-	SQLTable sqlIdTable;
-	SQLRecord sqlIdSearch;
-	SQLRecord sqlIdFields;
-	sqlIdFields.addField("configfile_id");
-	int conf_id;
-
-	for (int i=0; i<conffiles->size(); i++)
-	{
-		sqlIdSearch.addField("configfile_name", conffiles->get_file(i)->get_name());
-		if (db.get_sql_vtable(&sqlIdTable, sqlIdFields, "configfiles", sqlIdSearch)!=0) return -2;
-		if (sqlIdTable.empty()) return -3;
-		conf_id=atoi(sqlIdTable.getValue(0, "configfile_id").c_str());
-		add_config_link(package_id, conf_id);
-	}
-	return 0;
-}
-
-int mpkgDatabase::add_config_link(int package_id, int conf_id)
-{
-	SQLRecord sqlInsert;
-	sqlInsert.addField("packages_package_id", IntToStr(package_id));
-	sqlInsert.addField("configfiles_configfile_id", IntToStr(conf_id));
-	return db.sql_insert("configfiles_links", sqlInsert);
-}
-*/
-
 //--------------------------------------SQL PART----------------------------------------
 SQLProxy* mpkgDatabase::getSqlDb()
 {

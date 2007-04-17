@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.11 2007/04/17 11:30:25 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.12 2007/04/17 14:35:19 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -18,27 +18,21 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 {
 	PACKAGE_LIST toInstall;
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
+	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
+	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
 	db->get_packagelist(sqlSearch, &toInstall);
 	for (int i=0; i<toInstall.size();i++)
 	{
-		db->set_status(toInstall.get_package(i)->get_id(), PKGSTATUS_AVAILABLE);
+		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);
 	}
 	return 0;
 }
 
 int mpkgSys::unqueue(int package_id, mpkgDatabase *db)
 {
-	PACKAGE_LIST toUnqueue;
-	SQLRecord sqlSearch;
-	sqlSearch.setSearchMode(SEARCH_AND);
-	sqlSearch.addField("package_id", IntToStr(package_id));
-	sqlSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
-	db->get_packagelist(sqlSearch, &toUnqueue);
-	for (int i=0; i<toUnqueue.size();i++)
-	{
-		db->set_status(toUnqueue.get_package(i)->get_id(), PKGSTATUS_AVAILABLE);
-	}
+	db->set_action(package_id, ST_NONE);
 	return 0;
 }
 
@@ -85,7 +79,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 		{
 			for (int s=0; s<tmpPackages.size(); s++)
 			{
-				tmpPackages.get_package(s)->set_status(PKGSTATUS_AVAILABLE);
+				tmpPackages.get_package(s)->set_available();
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_url(REPOSITORY_LIST[i]);
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_priority(IntToStr(i+1));
 			}
@@ -117,13 +111,13 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 		{
 			debug("Candidate #"+IntToStr(i)+": "+candidates.get_package(i)->get_name()+" with ID "+IntToStr(candidates.get_package(i)->get_id())+" and status "+ \
 					candidates.get_package(i)->get_vstatus());
-			if (!do_upgrade && candidates.get_package(i)->get_status()==PKGSTATUS_INSTALLED)
+			if (!do_upgrade && candidates.get_package(i)->installed())
 			{
 				alreadyInstalled=true;
 				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_version().c_str());
 				break;
 			}
-			if (candidates.get_package(i)->get_status() == PKGSTATUS_AVAILABLE || candidates.get_package(i)->get_status() == PKGSTATUS_REMOVED_AVAILABLE)
+			if (candidates.get_package(i)->available())
 			{
 				debug("Status passed to installation");
 				if (tmp_pkg.IsEmpty() || tmp_pkg.get_version()<candidates.get_package(i)->get_version())
@@ -142,7 +136,9 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 		return 0;
 	}
 	else printf("no candidates");
-	debug("LOCAL INSTALL ATTEMPT DETECTED");
+	return -1;
+	/*	// Local installation disabled, because it need to do complete re-design... Have to think about..
+	printf("LOCAL INSTALL ATTEMPT DETECTED\n");
 	
 	// If reached this point, the package isn't in the database. Trying to install from local file.
 	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker
@@ -160,12 +156,12 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 		LocalPackage lp(fname, pkgType);
 		if (lp.injectFile()==0)
 		{	
-			lp.data.set_status(PKGSTATUS_AVAILABLE);
+			lp.data.set_available();
 			db->emerge_to_db(&lp.data);
 			DepTracker->merge(&lp.data);
 		}
 	}
-	return 0;	
+	return 0;	*/
 }
 
 int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
@@ -192,7 +188,7 @@ int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *Dep
 			return id;
 		}
 		printf("setting status to purge for ID %d\n", id);
-		db->set_status(id, PKGSTATUS_PURGE);
+		db->set_action(id, ST_PURGE);
 		return 0;
 	}
 	DepTracker->unmerge(&package, do_purge, do_upgrade);

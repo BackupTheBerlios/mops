@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.20 2007/03/21 14:29:55 i27249 Exp $
+	$Id: dataunits.cpp,v 1.21 2007/04/17 14:35:19 i27249 Exp $
 */
 
 
@@ -1139,7 +1139,10 @@ bool PACKAGE::operator != (PACKAGE npkg)
 	if (package_changelog!=npkg.get_changelog(false)) return true;
 	if (package_packager!=npkg.get_packager(false)) return true;
 	if (package_packager_email!=npkg.get_packager_email(false)) return true;
-	if (package_status!=npkg.get_status()) return true;
+	if (package_available!=npkg.available()) return true;
+	if (package_installed!=npkg.installed()) return true;
+	if (package_configexist!=npkg.configexist()) return true;
+	if (package_action!=npkg.action()) return true;
 	if (package_md5!=npkg.get_md5(false)) return true;
 	if (package_filename!=npkg.get_filename(false)) return true;
 	if (package_dependencies!=*npkg.get_dependencies()) return true;
@@ -1164,7 +1167,11 @@ bool PACKAGE::operator == (PACKAGE npkg)
 	if (package_changelog!=npkg.get_changelog(false)) return false;
 	if (package_packager!=npkg.get_packager(false)) return false;
 	if (package_packager_email!=npkg.get_packager_email(false)) return false;
-	if (package_status!=npkg.get_status()) return false;
+	if (package_available!=npkg.available()) return false;
+	if (package_installed!=npkg.installed()) return false;
+	if (package_configexist!=npkg.configexist()) return false;
+	if (package_action!=npkg.action()) return false;
+
 	if (package_md5!=npkg.get_md5(false)) return false;
 	if (package_filename!=npkg.get_filename(false)) return false;
 	if (package_dependencies!=*npkg.get_dependencies()) return false;
@@ -1190,7 +1197,10 @@ void PACKAGE::clear()
 	package_changelog.clear();
 	package_packager.clear();
 	package_packager_email.clear();
-	package_status=0;
+	package_available=0;
+	package_installed=0;
+	package_configexist=0;
+	package_action=0;
 	package_md5.clear();
 	package_filename.clear();
 	package_files.clear();
@@ -1306,25 +1316,65 @@ string PACKAGE::get_packager_email(bool sql)
 	return package_packager_email;
 }
 
-int PACKAGE::get_status()
+bool PACKAGE::available()
 {
-	return package_status;
+	return package_available;
+}
+bool PACKAGE::reachable()
+{
+	if (package_available || package_installed) return true;
+}
+bool PACKAGE::installed()
+{
+	return package_installed;
 }
 
-string PACKAGE::get_vstatus()
+bool PACKAGE::configexist()
 {
-	if (package_status==PKGSTATUS_PURGE) return "PURGE";
-	if (package_status==PKGSTATUS_REMOVE_PURGE) return "REMOVE_PURGE";
-	if (package_status==PKGSTATUS_INSTALLED) return "INSTALLED";
-	if (package_status==PKGSTATUS_REMOVE) return "REMOVE";
-	if (package_status==PKGSTATUS_UPDATE) return "UPDATE";
-	if (package_status==PKGSTATUS_INSTALL) return "INSTALL";
-	if (package_status==PKGSTATUS_UNAVAILABLE) return "UNAVAILABLE";
-	if (package_status==PKGSTATUS_AVAILABLE) return "AVAILABLE";
-	if (package_status==PKGSTATUS_UNKNOWN) return "UNKNOWN";
-	if (package_status==PKGSTATUS_REMOVED_AVAILABLE) return "PKGSTATUS_REMOVED_AVAILABLE";
-	if (package_status==PKGSTATUS_REMOVED_UNAVAILABLE) return "PKGSTATUS_REMOVED_UNAVAILABLE";
-	return "Unknown status";
+	return package_configexist;
+}
+
+int PACKAGE::action()
+{
+	return package_action;
+}
+string PACKAGE::get_vstatus(bool color)
+{
+	char *CL_WHITE=	"\033[22;39m";
+	char *CL_RED =	"\033[22;31m";
+	char *CL_GREEN ="\033[22;32m";
+	char *CL_YELLOW ="\033[22;33m";
+	char *CL_BLUE =	"\033[22;34m";
+
+	string stat;
+	if (available()) stat +="[A] ";
+	else stat+="[_] ";
+
+	if (installed()) stat += "[I] ";
+	else {
+		stat += "[_] ";
+		if (configexist()) stat += "[C] ";
+		else stat+="[_] ";
+	}
+	switch(action())
+	{
+		case ST_INSTALL:
+			stat+="[i]";
+			break;
+		case ST_REMOVE:
+			stat+="[r]";
+			break;
+		case ST_PURGE:
+			stat+="[p]";
+			break;
+		case ST_NONE:
+			stat+="[_]";
+			break;
+		default:
+			stat+="[?]";
+			break;
+	}
+	return stat;
 }
 
 
@@ -1423,11 +1473,25 @@ int PACKAGE::set_packager_email(string packager_email)
 	return 0;
 }
 
-int PACKAGE::set_status(int status)
+
+void PACKAGE::set_available(bool flag)
 {
-	debug("setting status "+IntToStr(status)+" to package "+package_name);
-	package_status=status;
-	return 0;
+	package_available = flag;
+}
+
+void PACKAGE::set_installed(bool flag)
+{
+	package_installed = flag;
+}
+
+void PACKAGE::set_configexist(bool flag)
+{
+	package_configexist = flag;
+}
+
+void PACKAGE::set_action(int new_action)
+{
+	package_action = new_action;
 }
 
 int PACKAGE::set_md5(string md5)
@@ -1558,7 +1622,11 @@ bool PACKAGE::IsEmpty()
 PACKAGE::PACKAGE()
 {
 	package_id=0;
-	package_status=0;
+	package_available=0;
+	package_installed=0;
+	package_configexist=0;
+	package_action=0;
+
 	package_err_type=DEP_OK;
 }
 PACKAGE::~PACKAGE()
@@ -1571,20 +1639,39 @@ void PACKAGE::destroy()
 // Helpful function ))
 string IntToStr(int num)
 {
-  char *s=(char *)malloc(2000);
-  string ss;
-  if (s)
-  {
-	  sprintf(s,"%d",num);
-	  ss=s;
-	  free(s);
-  }
-  else 
-  {
-	  printf("Error: malloc() failed!!!\n");
-	  abort();
-  }
-  return ss;
+  	char *s = (char *) malloc(2000);
+  	string ss;
+  	if (s)
+  	{
+		sprintf(s,"%d",num);
+	  	ss=s;
+	  	free(s);
+  	}
+  	else 
+  	{
+		printf("Error: malloc() failed!!!\n");
+	  	abort();
+  	}
+  	return ss;
+}
+string IntToStr(bool value)
+{
+	int num;
+	if (value) num=1; else num=0;	
+  	char *s = (char *) malloc(2000);
+  	string ss;
+  	if (s)
+  	{
+		sprintf(s,"%d",num);
+	  	ss=s;
+	  	free(s);
+  	}
+  	else 
+  	{
+	  	printf("Error: malloc() failed!!!\n");
+	  	abort();
+  	}
+  	return ss;
 }
 
 

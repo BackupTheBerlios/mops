@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.27 2007/04/14 19:15:08 i27249 Exp $
+    $Id: config.h,v 1.28 2007/04/17 14:35:19 i27249 Exp $
 */
 
 
@@ -46,6 +46,7 @@ typedef enum {
 	MPKG_INSTALL_EXTRACT_ERROR,
 	MPKG_INSTALL_META_ERROR,
 	MPKG_INSTALL_FILE_CONFLICT,
+	MPKG_INSTALL_NOT_IN_DB,
 
 	MPKG_CDROM_MOUNT_ERROR,
 	MPKG_CDROM_WRONG_VOLNAME,
