@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.10 2007/04/15 23:42:27 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.11 2007/04/17 11:30:25 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -79,48 +79,19 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
-		//printf("cycle i=%d\n", i);
 		tmpPackages.clear();
 		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);
-		if (i+1==REPOSITORY_LIST.size() && !tmpPackages.IsEmpty())
+		if (!tmpPackages.IsEmpty())
 		{
-			//printf("Download completed. Processing data, please wait...\n");
-		}
-		if (tmpPackages.IsEmpty())
-		{
-			//printf("No packages found at %s: repository error, or connection error\n", REPOSITORY_LIST[i].c_str());
-			//break;
-		}
-		else
-		{
-			//printf(_("Repository has %d packages, infiltrating...\n"), tmpPackages.size());
 			for (int s=0; s<tmpPackages.size(); s++)
 			{
 				tmpPackages.get_package(s)->set_status(PKGSTATUS_AVAILABLE);
-				debug("installpkg-ng.cpp: update_repository_data(): set status to PKGSTATUS_AVAILABLE ("+\
-						IntToStr(tmpPackages.get_package(s)->get_status())+")");
-
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_url(REPOSITORY_LIST[i]);
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_priority(IntToStr(i+1));
-
-
-				debug("installpkg-ng.cpp: update_repository_data(): set server url to "+\
-						tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->get_url());
-
 			}
 			availablePackages.add_list(&tmpPackages);
 		}
 	}
-
-#ifdef DEBUG
-	for (int i=0; i<availablePackages.size(); i++)
-	{
-		printf("installpkg-ng.cpp (update_repository_data): package %d has %d locations\n", i, availablePackages.get_package(i)->get_locations()->size());
-	}
-	printf("installpkg-ng.cpp: (update_repository_data): Sending %d packages to db->updateRepositoryData()\n", availablePackages.size());
-#endif
-	// Go merging to DB
-	//printf(_("Importing new data...\n"));
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Update complete.\n");
 	return ret;
