@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.15 2007/04/15 23:42:27 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.16 2007/04/18 15:45:26 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -124,10 +124,10 @@ int mpkg::upgrade (vector<string> pkgname)
 // Repository data updating
 int mpkg::update_repository_data()
 {
-	// FIXME: running twice due to unresolved bug in updating mechanism.
-	if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
+	// FIXME: running twice due to unresolved (and mysterious) bug in updating mechanism. WORKAROUND...
+	if (mpkgSys::update_repository_data(db, DepTracker) == 0/* && db->sqlFlush() == 0*/)
 	{
-	//	if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
+		if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
 		currentStatus = "Repository data updated";
 		return 0;
 	}

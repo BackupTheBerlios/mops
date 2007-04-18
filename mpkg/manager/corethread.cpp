@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.25 2007/04/14 15:53:52 i27249 Exp $
+ * $Id: corethread.cpp,v 1.26 2007/04/18 15:45:26 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -697,7 +697,7 @@ void coreThread::_loadPackageDatabase()
 	emit setTableSize(packageList->size());
 	for (int i=0; i<packageList->size(); i++)
 	{
-		newStatus.push_back(packageList->get_package(i)->get_status());
+		newStatus.push_back(packageList->get_package(i)->action());
 		insertPackageIntoTable(i);
 
 #ifdef USLEEP
@@ -723,36 +723,37 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 {
 	bool checked = false;
 	string package_icon;
-	if (packageList->get_package(package_num)->get_vstatus().find("INSTALLED") != std::string::npos || \
-			packageList->get_package(package_num)->get_vstatus().find("INSTALL") != std::string::npos)
+	if (packageList->get_package(package_num)->action()==ST_INSTALL || \
+			packageList->get_package(package_num)->installed())
 	{
 		checked = true;
 	}
 
 	PACKAGE *_p = packageList->get_package(package_num);
-	switch(_p->get_status())
+	switch (_p->action())
 	{
-		case PKGSTATUS_INSTALLED:
-			package_icon = "installed.png";
+		case ST_NONE:
+			if (_p->installed()) package_icon = "installed.png";
+			else
+			{
+				if (_p->available()){
+				       package_icon="available.png";
+				       if (_p->configexist()) package_icon="removed_available.png";
+				}
+				else package_icon="unknown.png";
+			}
 			break;
-		case PKGSTATUS_INSTALL:
-			package_icon = "install.png";
+		case ST_INSTALL:
+			package_icon="install.png";
 			break;
-		case PKGSTATUS_REMOVE:
-			package_icon = "remove.png";
+		case ST_REMOVE:
+			package_icon="remove.png";
 			break;
-		case PKGSTATUS_PURGE:
-			package_icon = "purge.png";
+		case ST_PURGE:
+			package_icon="purge.png";
 			break;
-		case PKGSTATUS_REMOVED_AVAILABLE:
-			package_icon = "removed_available.png";
-			break;
-		case PKGSTATUS_AVAILABLE:
-			package_icon = "available.png";
-			break;
-		default:
-			package_icon = "unknown.png";
 	}
+	
 	//string pName;
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	
@@ -791,24 +792,24 @@ void coreThread::_commitQueue()
 	vector<int> reset_queue;
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
-		if (packageList->get_package(i)->get_status()!=newStatus[i])
+		if (packageList->get_package(i)->action()!=newStatus[i])
 		{
 			switch(newStatus[i])
 			{
-				case PKGSTATUS_AVAILABLE:
+				case ST_NONE:
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
-				case PKGSTATUS_INSTALL:
+				case ST_INSTALL:
 					install_queue.push_back(packageList->get_package(i)->get_name());
 					break;
-				case PKGSTATUS_REMOVE:
+				case ST_REMOVE:
 					remove_queue.push_back(packageList->get_package(i)->get_name());
 					break;
-				case PKGSTATUS_PURGE:
+				case ST_PURGE:
 					purge_queue.push_back(packageList->get_package(i)->get_name());
 					break;
 				default:
-					printf("Unknown status %d\n", newStatus[i]);
+					printf("Unknown action %d\n", newStatus[i]);
 			}
 		}
 	}

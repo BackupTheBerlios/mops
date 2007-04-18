@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.46 2007/04/15 13:00:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.47 2007/04/18 15:45:26 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -97,7 +97,10 @@ void MainWindow::applyPackageFilter ()
 	bool categoryOk = false;
 	TAG_LIST tmpTagList;
 	string tagvalue;
-	int packageStatus;
+	int action;
+	bool available;
+	bool installed;
+	bool configexist;
 
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
@@ -116,9 +119,42 @@ void MainWindow::applyPackageFilter ()
 
 		if (nameOk)
 		{
+			//------------
+			action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
+			available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
+			installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
+			configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+			statusOk=false;
+
+			if (ui.actionShow_installed->isChecked() && installed)
+			{
+				ui.packageTable->setRowHidden(i, false);
+				statusOk = true;
+			}
+			if (ui.actionShow_available->isChecked() && available)
+			{
+				ui.packageTable->setRowHidden(i, false);
+				statusOk = true;
+			}
+			if (ui.actionShow_configexist->isChecked() && !installed && configexist)
+			{
+				ui.packageTable->setRowHidden(i, false);
+				statusOk = true;
+			}
+			if (ui.actionShow_queue->isChecked() && action!=ST_NONE)
+			{
+				ui.packageTable->setRowHidden(i, false);
+				statusOk = true;
+			}
+
+
+
+
+/*
+			//----------
 			switch(newStatus[i])
 			{
-				case PKGSTATUS_INSTALLED:
+				case ST_INSTALL:
 					if (ui.actionShow_installed->isChecked())
 					{
 						statusOk = true;
@@ -156,7 +192,7 @@ void MainWindow::applyPackageFilter ()
 				default:
 					statusOk = false;
 			} // switch(status)
-
+*/
 		} // if(nameOk)
 		if (statusOk)
 		{
@@ -575,33 +611,35 @@ void MainWindow::showAddRemoveRepositories(){
 //void MainWindow::showCustomFilter(){}
 void MainWindow::setInstalledFilter()
 {
-	int tmp;
+	int action=0;
+	bool available=0;
+	bool installed=0;
+	bool configexist=0;
 	bool showIt;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		showIt = false;
-		tmp = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_status();
-		if (ui.actionShow_installed->isChecked() && tmp == PKGSTATUS_INSTALLED)
+		action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
+		available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
+		installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
+		configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+
+		if (ui.actionShow_installed->isChecked() && installed)
 		{
 			ui.packageTable->setRowHidden(i, false);
 			showIt = true;
 		}
-		if (ui.actionShow_available->isChecked() && tmp == PKGSTATUS_AVAILABLE)
+		if (ui.actionShow_available->isChecked() && available)
 		{
 			ui.packageTable->setRowHidden(i, false);
 			showIt = true;
 		}
-		if (ui.actionShow_available->isChecked() && ui.actionShow_removed->isChecked() && tmp == PKGSTATUS_REMOVED_AVAILABLE)
+		if (ui.actionShow_configexist->isChecked() && !installed && configexist)
 		{
 			ui.packageTable->setRowHidden(i, false);
 			showIt = true;
 		}
-		if (ui.actionShow_removed->isChecked() && tmp == PKGSTATUS_REMOVED_UNAVAILABLE)
-		{
-			ui.packageTable->setRowHidden(i, false);
-			showIt = true;
-		}
-		if (ui.actionShow_unavailable->isChecked() && tmp == PKGSTATUS_UNAVAILABLE)
+		if (ui.actionShow_queue->isChecked() && action!=ST_NONE)
 		{
 			ui.packageTable->setRowHidden(i, false);
 			showIt = true;
@@ -613,12 +651,6 @@ void MainWindow::setInstalledFilter()
 		}
 	}
 }
-//void MainWindow::setAvailableFilter(bool showThis){}
-//void MainWindow::setBrokenFilter(bool showThis){}
-//void MainWindow::setUnavailableFilter(bool showThis){}
-//void MainWindow::setRemovedFilter(bool showThis){}
-//void MainWindow::showHelpTopics(){}
-//void MainWindow::showFaq(){}
 
 void MainWindow::markChanges(int x, Qt::CheckState state)
 {
@@ -629,127 +661,118 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			return;
 		}
 		PACKAGE *_p = packagelist->get_package(i);
-		switch(packagelist->get_package(i)->get_status())
+		if (_p->installed())
 		{
-			case PKGSTATUS_AVAILABLE:
+			switch(_p->action())
+			{
+			case ST_NONE:
 				if (state == Qt::Checked)
 				{
-					newStatus[i]=PKGSTATUS_INSTALL;
-					ui.statusbar->showMessage("Package added to install queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
+					newStatus[i]=ST_NONE;
+					ui.statusbar->showMessage("Package keeped in system");
 				}
 				else
 				{
-					newStatus[i]=PKGSTATUS_AVAILABLE;
-					ui.statusbar->showMessage("Package removed from install queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
-
+					newStatus[i]=ST_REMOVE;
+					ui.statusbar->showMessage("Package queued to remove");
 				}
 				break;
-			case PKGSTATUS_REMOVED_AVAILABLE:
+			case ST_REMOVE:
 				if (state == Qt::Checked)
 				{
-					newStatus[i]=PKGSTATUS_INSTALL;
-					ui.statusbar->showMessage("Package added to install queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-				}
-				else
-				{
-					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					newStatus[i]=PKGSTATUS_REMOVED_AVAILABLE;
-					ui.statusbar->showMessage("Package removed from install queue");
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
-				}
-				break;
-			case PKGSTATUS_INSTALL:
-				if (state == Qt::Checked)
-				{
-					newStatus[i]=PKGSTATUS_INSTALL;
-					ui.statusbar->showMessage("Package added to install queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/install.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
-				}
-				else
-				{
-					newStatus[i]=PKGSTATUS_AVAILABLE;
-					ui.statusbar->showMessage("Package removed from install queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/available.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-				}
-				break;
-
-	
-			case PKGSTATUS_INSTALLED:
-				if (state != Qt::Checked)
-				{
-					newStatus[i]=PKGSTATUS_PURGE;
-					ui.statusbar->showMessage("Package added to remove queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/purge.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
-
-				}
-				else
-				{
-					newStatus[i]=PKGSTATUS_INSTALLED;
+					newStatus[i]=ST_NONE;
 					ui.statusbar->showMessage("Package removed from remove queue");
-					string pName = "<table><tbody><tr><td><img src = \"icons/installed.png\"></img></td><td><b>"+ \
-							_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-
-					TableLabel *_z = new TableLabel(ui.packageTable);
-					_z->setTextFormat(Qt::RichText);
-					_z->setText(pName.c_str());
-					_z->row = x;
-					ui.packageTable->setCellWidget(x, PT_NAME, _z);
-
+				}
+				else
+				{
+					newStatus[i]=ST_REMOVE;
+					ui.statusbar->showMessage("Package queued to remove");
 				}
 				break;
+			case ST_PURGE:
+				if (state == Qt::Checked)
+				{
+					newStatus[i]=ST_NONE;
+					ui.statusbar->showMessage("Package removed from purge queue");
+				}
+				else
+				{
+					newStatus[i]=ST_PURGE;
+					ui.statusbar->showMessage("Package queued to purge");
+				}
+				break;
+			default:
+				ui.statusbar->showMessage("Unknown condition");
+			}
+		} // if(_p->installed())
+		else
+		{
+			switch(_p->action())
+			{
+				case ST_INSTALL:
+				case ST_NONE:
+					if (state==Qt::Checked)
+					{
+						newStatus[i]=ST_INSTALL;
+						ui.statusbar->showMessage("Package queued to install");
+					}
+					else
+					{
+						newStatus[i]=ST_NONE;
+						ui.statusbar->showMessage("Package unqueued");
+					}
+					break;
+				case ST_PURGE:
+					if (state==Qt::Checked)
+					{
+						newStatus[i]=ST_INSTALL;
+						ui.statusbar->showMessage("Package queued to install");
+					}
+					else
+					{
+						newStatus[i]=ST_PURGE;
+						ui.statusbar->showMessage("Package queued to purge");
+					}
+					break;
+				default:
+					ui.statusbar->showMessage("Unknown condition");
+			}
+		} // else
+		string package_icon;
+		switch (newStatus[i])
+		{
+		case ST_NONE:
+			if (_p->installed()) package_icon = "installed.png";
+			else
+			{
+				if (_p->available()){
+				       package_icon="available.png";
+				       if (_p->configexist()) package_icon="removed_available.png";
+				}
+				else package_icon="unknown.png";
+			}
+			break;
+		case ST_INSTALL:
+			package_icon="install.png";
+			break;
+		case ST_REMOVE:
+			package_icon="remove.png";
+			break;
+		case ST_PURGE:
+			package_icon="purge.png";
+			break;
 		}
+
+		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+ \
+			_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+\
+			"</td></tr></tbody></table>";
+		TableLabel *_z = new TableLabel(ui.packageTable);
+		_z->setTextFormat(Qt::RichText);
+		_z->setText(pName.c_str());
+		_z->row = x;
+		ui.packageTable->setCellWidget(x, PT_NAME, _z);
 }
+
 void MainWindow::loadData()
 {
 	emit loadPackageDatabase();

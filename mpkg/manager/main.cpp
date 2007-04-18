@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.17 2007/04/14 15:53:52 i27249 Exp $
+ *     $Id: main.cpp,v 1.18 2007/04/18 15:45:26 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -27,9 +27,12 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.actionClean_cache, SIGNAL(triggered()), &mw, SLOT(cleanCache()));
 	QObject::connect(mw.ui.actionShow_installed, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 	QObject::connect(mw.ui.actionShow_available, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
-	QObject::connect(mw.ui.actionShow_removed, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
-	QObject::connect(mw.ui.actionShow_unavailable, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
-	QObject::connect(mw.ui.actionShow_broken, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+	QObject::connect(mw.ui.actionShow_queue, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+	QObject::connect(mw.ui.actionShow_configexist, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+
+	//QObject::connect(mw.ui.actionShow_removed, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+	//QObject::connect(mw.ui.actionShow_unavailable, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+	//QObject::connect(mw.ui.actionShow_broken, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 
 	QObject::connect(mw.ui.actionCore_settings, SIGNAL(triggered()), &mw, SLOT(showCoreSettings()));
 	//QObject::connect(mw.ui.actionCustom_filter, SIGNAL(triggered()), &mw, SLOT(showCustomFilter()));

@@ -594,11 +594,11 @@
     <property name="title" >
      <string>Filters</string>
     </property>
-    <addaction name="actionShow_installed" />
     <addaction name="actionShow_available" />
+    <addaction name="actionShow_installed" />
     <addaction name="actionShow_broken" />
-    <addaction name="actionShow_removed" />
-    <addaction name="actionShow_unavailable" />
+    <addaction name="actionShow_configexist" />
+    <addaction name="actionShow_queue" />
     <addaction name="actionCustom_filter" />
     <addaction name="actionShow_install" />
     <addaction name="actionShow_purge" />
@@ -661,8 +661,11 @@
    <property name="text" >
     <string>Show broken</string>
    </property>
+   <property name="visible" >
+    <bool>false</bool>
+   </property>
   </action>
-  <action name="actionShow_removed" >
+  <action name="actionShow_configexist" >
    <property name="checkable" >
     <bool>true</bool>
    </property>
@@ -670,10 +673,16 @@
     <bool>true</bool>
    </property>
    <property name="text" >
-    <string>Show removed</string>
+    <string>Show not purged</string>
+   </property>
+   <property name="iconText" >
+    <string>Show not purged</string>
+   </property>
+   <property name="toolTip" >
+    <string>Show packages that have config files (i.e. not purged)</string>
    </property>
   </action>
-  <action name="actionShow_unavailable" >
+  <action name="actionShow_queue" >
    <property name="checkable" >
     <bool>true</bool>
    </property>
@@ -681,7 +690,13 @@
     <bool>true</bool>
    </property>
    <property name="text" >
-    <string>Show unavailable</string>
+    <string>Show queued</string>
+   </property>
+   <property name="iconText" >
+    <string>Show queued</string>
+   </property>
+   <property name="toolTip" >
+    <string>Show queued</string>
    </property>
   </action>
   <action name="actionCustom_filter" >
@@ -755,7 +770,10 @@
     <bool>true</bool>
    </property>
    <property name="text" >
-    <string>Show install</string>
+    <string>Show queued</string>
+   </property>
+   <property name="visible" >
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionShow_purge" >
@@ -767,6 +785,9 @@
    </property>
    <property name="text" >
     <string>Show purge</string>
+   </property>
+   <property name="visible" >
+    <bool>false</bool>
    </property>
   </action>
  </widget>
