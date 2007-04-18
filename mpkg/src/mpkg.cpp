@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.44 2007/04/17 14:35:19 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.45 2007/04/18 13:46:39 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -577,10 +577,10 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	}
 
 	// 3. Updating status. Seems that somewhere here is an error causing double scan is required
-	/*if (package->available()!=old_package.available())
-	{
+	//if (package->available()!=old_package.available())
+	//{
 		sqlUpdate.addField("package_available", IntToStr(package->available()));
-	}*/
+	//}
 
 
 	// 4. Updating locations
@@ -612,6 +612,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 		}
 		if (package->get_locations()->IsEmpty())
 		{
+			printf("empty locations...\n");
 			sqlUpdate.addField("package_available", IntToStr(ST_NOTAVAILABLE));
 		}
 	}
