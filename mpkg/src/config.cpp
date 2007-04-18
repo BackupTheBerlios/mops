@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.20 2007/04/15 23:42:27 i27249 Exp $
+ * $Id: config.cpp,v 1.21 2007/04/18 23:00:35 i27249 Exp $
  *
  * ***************************************************/
 
@@ -65,18 +65,13 @@ int loadGlobalConfig(string config_file)
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
 			printf("config parse error!\n");
-			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
-			while(getErrorReturn() == MPKG_RETURN_WAIT)
+			mpkgErrorReturn errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			if (errRet == MPKG_RETURN_REINIT)
 			{
-				printf("waiting responce...\n");
-				sleep(1);
-				if (getErrorReturn() == MPKG_RETURN_REINIT)
-				{
-					conf_init = true;
-					break;
-				}
+				conf_init = true;
 			}
 		}
+		
 		if (!conf_init)
 		{
 			if (config.nChildNode("run_scripts")!=0)
@@ -209,16 +204,10 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
 			printf("config parse error!\n");
-			setErrorCode(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
-			while(getErrorReturn() == MPKG_RETURN_WAIT)
+			mpkgErrorReturn errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
+			if (errRet == MPKG_RETURN_REINIT)
 			{
-				printf("waiting responce...\n");
-				sleep(1);
-				if (getErrorReturn() == MPKG_RETURN_REINIT)
-				{
-					conf_init = true;
-					break;
-				}
+				conf_init = true;
 			}
 		}
 

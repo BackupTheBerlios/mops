@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.48 2007/04/18 20:24:13 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.49 2007/04/18 23:00:34 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -47,12 +47,19 @@ void MainWindow::sqlQueryEnd()
 
 void MainWindow::loadingStarted()
 {
+	ui.loadingLabel->setText("<html><img src=\"splash.png\"></img></html>");
+	ui.splashFrame->show();
+	ui.packageTable->hide();
 	ui.statusbar->showMessage("Loading started");
 }
 
 void MainWindow::loadingFinished()
 {
 	ui.statusbar->showMessage("Loading finished");
+	hideEntireTable();
+	ui.splashFrame->hide();
+	ui.packageTable->show();
+	setTableSize();
 }
 
 void MainWindow::enableProgressBar()
@@ -91,6 +98,7 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
+	string pkgBoxLabel = "Packages";
 	QString nameMask;
 	bool nameOk = false;
 	bool statusOk = false;
@@ -102,6 +110,17 @@ void MainWindow::applyPackageFilter ()
 	bool installed;
 	bool configexist;
 
+
+	//pkgBoxLabel += " [name = \""+ui.quickPackageSearchEdit->text().toStdString()+"\", status = (";
+
+	//if (ui.actionShow_available->isChecked()) pkgBoxLabel+="Available, ";
+	//if (ui.actionShow_installed->isChecked()) pkgBoxLabel+=" Installed, ";
+	//if (ui.actionShow_configexist->isChecked()) pkgBoxLabel +=" Not purged, ";
+	//if (ui.actionShow_queue->isChecked()) pkgBoxLabel += " Queued)";
+	
+	pkgBoxLabel += " [" + (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
+	pkgBoxLabel += "]";
+	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		nameOk = false;
@@ -287,7 +306,7 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	consoleMode=false; // Setting event tracking to GUI mode
-	currentCategoryID=1;
+	currentCategoryID=2;
 	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 	qRegisterMetaType<QMessageBox::StandardButtons>("QMessageBox::StandardButtons");
 
@@ -313,7 +332,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
 	initCategories();
-
+	ui.packageTable->hide();
 	this->show();
 	clearForm();
 	disableProgressBar(); disableProgressBar2();
@@ -402,7 +421,7 @@ void MainWindow::initCategories()
 	}
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
-	ui.listWidget->setCurrentRow(3);
+	ui.listWidget->setCurrentRow(2);
 }
 
 void MainWindow::hideEntireTable()
@@ -533,7 +552,11 @@ void MainWindow::execMenu()
 	
 	tableMenu->exec(QCursor::pos());
 }
-
+void MainWindow::setTableSize()
+{
+	ui.packageTable->setColumnWidth(PT_INSTALLCHECK, 15);
+ 	ui.packageTable->setColumnWidth(PT_NAME, ui.packageTable->frameSize().width()-80);
+}
 void MainWindow::initPackageTable()
 {
 
@@ -542,8 +565,7 @@ void MainWindow::initPackageTable()
     QTableWidgetItem *__colItem0 = new QTableWidgetItem();
     __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
-    ui.packageTable->setColumnWidth(PT_INSTALLCHECK, 15);
-
+   
     QTableWidgetItem *__colItem = new QTableWidgetItem();
     __colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
@@ -552,13 +574,12 @@ void MainWindow::initPackageTable()
     QTableWidgetItem *__colItem1 = new QTableWidgetItem();
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
-    ui.packageTable->setColumnWidth(PT_NAME, ui.packageTable->frameSize().width()-80);
 
     QTableWidgetItem *__colItem7 = new QTableWidgetItem();
     __colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
     ui.packageTable->setColumnHidden(PT_ID, true);
-
+	setTableSize();
 }
 
 

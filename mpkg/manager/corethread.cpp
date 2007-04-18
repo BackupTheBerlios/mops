@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.27 2007/04/18 20:24:13 i27249 Exp $
+ * $Id: corethread.cpp,v 1.28 2007/04/18 23:00:34 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -714,7 +714,8 @@ void coreThread::_loadPackageDatabase()
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	//emit applyFilters();
+	sync();
+	emit applyFilters();
 	currentAction=CA_Idle;
 }
 

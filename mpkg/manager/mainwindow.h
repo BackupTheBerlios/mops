@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.30 2007/04/14 19:15:08 i27249 Exp $
+ * $Id: mainwindow.h,v 1.31 2007/04/18 23:00:34 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -54,6 +54,7 @@ class MainWindow: public QMainWindow
 		void initCategories();
 		void filterCategory(int category_id);
 		void applyPackageFilter();
+		void MainWindow::setTableSize();
 
 		void receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus);
 		void setStatus(QString status);
