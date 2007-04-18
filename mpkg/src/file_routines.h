@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.10 2007/04/16 21:23:48 i27249 Exp $
+* $Id: file_routines.h,v 1.11 2007/04/18 20:24:13 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -8,6 +8,7 @@
 #include <vector>
 #include "config.h"
 #include "dataunits.h"
+#include "string_operations.h"
 using namespace std;
 #define PKGTYPE_UNKNOWN 0
 #define PKGTYPE_SLACKWARE 1
@@ -33,6 +34,6 @@ int WriteFile(string filename, string data);
 int extractFromTgz(string filename, string file_to_extract, string output);
 string getCdromVolname();
 // Package type definition (also defines repository type)
-
+vector<string>ReadFileStrings(string filename);
 unsigned int CheckFileType(string fname);
 #endif

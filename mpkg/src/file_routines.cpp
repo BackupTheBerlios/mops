@@ -1,12 +1,12 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.14 2007/04/16 21:23:48 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.15 2007/04/18 20:24:13 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
 #include <assert.h>
 #include <sys/stat.h>
-
+#include <fstream>
 vector<string> temp_files;
 extern int errno;
 
@@ -70,9 +70,27 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count, bool ignore_failure)
 {
-	//printf("ReadFILE: %s\n", filename.c_str());
-	FILE *src;
 	string ret;
+	string line;
+	ifstream inputFile(filename.c_str(), ios::in|ios::ate);
+	char * memblock;
+	ifstream::pos_type size;
+
+	if (inputFile.is_open())
+	{
+		size=inputFile.tellg();
+		memblock = new char [size];
+		inputFile.seekg(0,ios::beg);
+		inputFile.read(memblock, size);
+		inputFile.close();
+		ret = memblock;
+		delete[] memblock;
+	}
+	return ret;
+/*
+#ifndef EXPERIMENTAL
+	FILE *src;
+	mstring ret;
 	char buf;
 	mpkgErrorReturn errRet;
 read_file:
@@ -91,7 +109,7 @@ read_file:
 			if (i==max_count-1) break; // This will stop reading if we reach max_count of bytes read. Also, it will continue until end if max_count==0.
 		}
 		fclose(src);
-		return ret;
+		return ret.s_str();
 	}
 	else
 	{
@@ -108,6 +126,24 @@ read_file:
 
 		return "";
 	}
+#endif*/
+}
+
+vector<string>ReadFileStrings(string filename)
+{
+	string data=ReadFile(filename);
+	vector<string> ret;
+	
+	string chunk;
+
+	for (int lim=data.find_first_of("\n"); lim!=std::string::npos; lim=data.find_first_of("\n"))
+	{
+		chunk = data.substr(0,lim);
+		ret.push_back(chunk);
+		if (lim<data.size()) data = data.substr(lim+1);
+		else data="";
+	}
+	return ret;
 }
 int extractFromTgz(string filename, string file_to_extract, string output)
 {

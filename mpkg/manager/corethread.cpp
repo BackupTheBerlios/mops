@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.26 2007/04/18 15:45:26 i27249 Exp $
+ * $Id: corethread.cpp,v 1.27 2007/04/18 20:24:13 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
@@ -506,7 +506,6 @@ statusThread::statusThread()
 
 void statusThread::run()
 {
-	printf("Status thread started\n");
 	setPriority(QThread::LowPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
@@ -548,7 +547,7 @@ void statusThread::run()
 				{
 					dtmp2 = 100 * (currentProgress2/progressMax2);
 					tmp_c2 = (int) dtmp2;
-					dlStatus = "[" + IntToStr(currentProgress2) +"/" + IntToStr(progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr(currentProgress) + "/" + IntToStr(progressMax) + ")" ;
+					dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
 					emit setStatus ((QString) dlStatus.c_str());
 					if (!enabledBar2)
 					{
@@ -713,9 +712,9 @@ void coreThread::_loadPackageDatabase()
 
 		emit setProgressBarValue(i);
 	}
-	//emit applyFilters();
 	emit disableProgressBar();
 	emit loadingFinished();
+	//emit applyFilters();
 	currentAction=CA_Idle;
 }
 
@@ -755,8 +754,9 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	}
 	
 	//string pName;
-	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	
+	//string pName = "<table><tbody><tr><td></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
 }
 

@@ -7,7 +7,7 @@ TableLabel::TableLabel(QTableWidget *table)
 
 void TableLabel::mousePressEvent(QMouseEvent *event)
 {
-	printf("Mouse pressed, row = %d\n",row);
+	//printf("Mouse pressed, row = %d\n",row);
 	packageTable->setCurrentCell(row, 0);
 	
 }

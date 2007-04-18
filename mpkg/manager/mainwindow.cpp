@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.47 2007/04/18 15:45:26 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.48 2007/04/18 20:24:13 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -402,6 +402,7 @@ void MainWindow::initCategories()
 	}
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
+	ui.listWidget->setCurrentRow(3);
 }
 
 void MainWindow::hideEntireTable()

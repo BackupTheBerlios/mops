@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.33 2007/04/14 15:53:52 i27249 Exp $
+$Id: local_package.cpp,v 1.34 2007/04/18 20:24:13 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -405,6 +405,23 @@ int LocalPackage::get_xml()
 
 int LocalPackage::fill_filelist(PACKAGE *package)
 {
+//#define OLD_FILELIST
+#ifndef OLD_FILELIST
+	FILES file_tmp;
+	string fname=get_tmp_file();
+	string tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
+	system(tar_cmd.c_str());
+	vector<string>file_names=ReadFileStrings(fname);
+	for (unsigned int i=2; i<file_names.size(); i++)
+	{
+		file_tmp.set_name(file_names[i]);
+		package->get_files()->add(file_tmp);
+	}
+	return 0;
+#endif
+
+
+#ifdef OLD_FILELIST
 	debug("fill_filelist start");
 	string tmp_flist=get_tmp_file();
 	string tmp_xml_flist=get_tmp_file();
@@ -429,11 +446,13 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	package->sync();
 	//printf("complete\n");
 	return 0;
+#endif
 }
 
 
 int LocalPackage::get_filelist()
 {
+	printf("get_filelist\n");
 	debug("get_filelist start");
 	string tmp_flist=get_tmp_file();
 	string tmp_xml_flist=get_tmp_file();
