@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.15 2007/04/17 14:35:19 i27249 Exp $
+$Id: dependencies.cpp,v 1.16 2007/04/18 13:29:41 i27249 Exp $
 */
 
 
@@ -59,13 +59,13 @@ bool DependencyTracker::commitToDb()
 {
 	for (int i=0; i<install_list.size(); i++)
 	{
-		db->set_status(install_list.get_package(i)->get_id(), install_list.get_package(i)->get_status());
+		db->set_action(install_list.get_package(i)->get_id(), install_list.get_package(i)->action());
 	}
 
 	// Because removing of packages still not defined exaclty, leave this commented out...
 	for (int i=0; i<remove_list.size(); i++)
 	{
-		db->set_status(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->get_status());
+		db->set_action(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->action());
 	}
 
 	return true;
@@ -123,10 +123,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 	//		if file conflict - return DEP_FILECONFLICT;
 	//Step 2. Check dependencies and build a list
 	debug("DependencyTracker::merge");
-	//RESULT status=0;
-	//status=db->check_install_package(package); // Checking status of package - is it principially possible to be installed?
 	
-	debug("Checking status of package...");
 	printf("Package ID = %d\n", package->get_id());
 	if (!do_normalize)
 	{
@@ -164,7 +161,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 
 	// OLDSTYLE SCAN HALTED HERE - TODO TODO TODO!!!!
 	debug("Status check passed. Continue with dependencies");
-	package->set_status(PKGSTATUS_INSTALL);
+	package->set_action(ST_INSTALL);
 	// In all other cases - continue with full procedure
 	PACKAGE_LIST package_list;	// Used to store list of packages with name required by dependency, independent to version
 	PACKAGE_LIST candidates;	// Contains all packages that meets dependency conditions
@@ -210,7 +207,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 		{
 			debug("found "+IntToStr(package_list.size()) + " packages with required name, filtering...");
 			// Does the package meets requirements?
-			if (IsAvailable(package_list.get_package(p)->get_status()))
+			if (package_list.get_package(p)->reachable())
 			{
 				debug("availability check passed");
 				if (this->checkVersion(package_list.get_package(p)->get_version(), \
@@ -219,17 +216,10 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 				{
 					// if it meets the requirements and not already installed - add it to candidates!
 					debug("Package meets requirements, adding to candidates");
-					if (package_list.get_package(p)->get_status()!=PKGSTATUS_INSTALLED) candidates.add(*package_list.get_package(p));
+					if (!package_list.get_package(p)->installed()) candidates.add(*package_list.get_package(p));
 					else already_resolved=true; // But, if it is installed - just keep it untouched, and mark that this dep is already resolved.
 				}
 			}
-#ifdef DEBUG
-			else 
-			{
-				if (!IsAvailable(package_list.get_package(p)->get_status())) debug ("Package is unavailable");
-				else debug("package has wrong version");
-			}
-#endif
 		}
 
 		if (candidates.size()==0 && !already_resolved && !this_dep_failed) // If no candidates found, and no other failures was up, and not already resolved 
@@ -257,7 +247,7 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 	{
 		debug("dep ok, adding to install list");
 		package->set_id(db->get_package_id(package));
-		package->set_status(PKGSTATUS_INSTALL);
+		package->set_action(ST_INSTALL);
 		if (!do_normalize) install_list.add(*package); 	// Add to install list
 		// One thing we have forgotten - is there any packages in broken list, who awaited this package?
 		for (int f=0;f<failure_list.size();f++)
@@ -279,9 +269,6 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 		}
 		// And, at last of all, check if any package was broken without this package and can be restored.
 		
-		// Conception: get all packages who depends on this and have status PKGSTATUS_REMOVE, and restore them to PKGSTATUS_INSTALLED state
-		// Also, on the way, check if these packages doesn't depend on any unavailable package...
-		// Other way is to use "normalize" function to resolve all dependencies.
 
 		return DEP_OK;			// return success code
 	}
@@ -316,8 +303,8 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge, bool do_upgrad
 	PACKAGE_LIST package_list;
 	PACKAGE_LIST required_by;
 	if (do_purge==0)
-		package->set_status(PKGSTATUS_REMOVE);
-	else package->set_status(PKGSTATUS_REMOVE_PURGE);
+		package->set_action(ST_REMOVE);
+	else package->set_action(ST_PURGE);
 	
 	remove_list.add(*package);
 	if (do_upgrade) return 0; // Exit here if we making upgrade
@@ -346,7 +333,7 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge, bool do_upgrad
 			return -2;
 		for (int i=0; i<package_list.size(); i++)
 		{
-			if (package_list.get_package(i)->get_status()==PKGSTATUS_INSTALLED) unmerge(package_list.get_package(i), do_purge);
+			if (package_list.get_package(i)->installed()) unmerge(package_list.get_package(i), do_purge);
 		}
 	}
 	return 0;
@@ -365,15 +352,13 @@ int DependencyTracker::normalize()
 	removeSearch.setSearchMode(SEARCH_OR);
 	availableSearch.setSearchMode(SEARCH_OR);
 
-	installSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALL));
-	installSearch.addField("package_status", IntToStr(PKGSTATUS_INSTALLED));
+	installSearch.addField("package_action", IntToStr(ST_INSTALL));
+	installSearch.addField("package_installed", IntToStr(ST_INSTALLED));
 
-	removeSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE));
-	removeSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVE_PURGE));
-	removeSearch.addField("package_status", IntToStr(PKGSTATUS_PURGE));
+	removeSearch.addField("package_action", IntToStr(ST_REMOVE));
+	removeSearch.addField("package_action", IntToStr(ST_PURGE));
 
-	availableSearch.addField("package_status", IntToStr(PKGSTATUS_AVAILABLE));
-	availableSearch.addField("package_status", IntToStr(PKGSTATUS_REMOVED_AVAILABLE));
+	availableSearch.addField("package_available", IntToStr(ST_AVAILABLE));
 
 	db->get_packagelist(installSearch, &ninstall_list);
 	db->get_packagelist(removeSearch, &nremove_list);

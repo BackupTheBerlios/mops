@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.21 2007/04/17 14:35:19 i27249 Exp $
+	$Id: dataunits.cpp,v 1.22 2007/04/18 13:29:41 i27249 Exp $
 */
 
 
@@ -1347,31 +1347,31 @@ string PACKAGE::get_vstatus(bool color)
 	char *CL_BLUE =	"\033[22;34m";
 
 	string stat;
-	if (available()) stat +="[A] ";
-	else stat+="[_] ";
+	if (available()) stat +="A";
+	else stat+="_";
 
-	if (installed()) stat += "[I] ";
+	if (installed()) stat += "I";
 	else {
-		stat += "[_] ";
-		if (configexist()) stat += "[C] ";
-		else stat+="[_] ";
+		stat += "_";
+		if (configexist()) stat += "C";
+		else stat+="_";
 	}
 	switch(action())
 	{
 		case ST_INSTALL:
-			stat+="[i]";
+			stat+="i";
 			break;
 		case ST_REMOVE:
-			stat+="[r]";
+			stat+="r";
 			break;
 		case ST_PURGE:
-			stat+="[p]";
+			stat+="p";
 			break;
 		case ST_NONE:
-			stat+="[_]";
+			stat+="_";
 			break;
 		default:
-			stat+="[?]";
+			stat+="?";
 			break;
 	}
 	return stat;
@@ -1650,25 +1650,6 @@ string IntToStr(int num)
   	else 
   	{
 		printf("Error: malloc() failed!!!\n");
-	  	abort();
-  	}
-  	return ss;
-}
-string IntToStr(bool value)
-{
-	int num;
-	if (value) num=1; else num=0;	
-  	char *s = (char *) malloc(2000);
-  	string ss;
-  	if (s)
-  	{
-		sprintf(s,"%d",num);
-	  	ss=s;
-	  	free(s);
-  	}
-  	else 
-  	{
-	  	printf("Error: malloc() failed!!!\n");
 	  	abort();
   	}
   	return ss;

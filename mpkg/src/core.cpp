@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.33 2007/04/17 14:35:19 i27249 Exp $
+ *	$Id: core.cpp,v 1.34 2007/04/18 13:29:41 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -116,7 +116,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 			if (package_id!=prev_package_id)
 			{
 
-				if (get_installed(package_id) || get_planned_action(package_id)==ST_INSTALL)
+				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
 					printf("File %s conflicts with package ID %d\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
 					return package_id;
@@ -489,10 +489,10 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_packager(sqlTable.getValue(i, "package_packager"));
 		package.set_packager_email(sqlTable.getValue(i, "package_packager_email"));
 		
-		package->set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
-		package->set_installed(atoi(sqlTable.getValue(i,"package_installed").c_str()));
-		package->set_configexist(atoi(sqlTable.getValue(i,"package_configexist").c_str()));
-		package->set_action(atoi(sqlTable.getValue(i,"package_action").c_str()));
+		package.set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
+		package.set_installed(atoi(sqlTable.getValue(i,"package_installed").c_str()));
+		package.set_configexist(atoi(sqlTable.getValue(i,"package_configexist").c_str()));
+		package.set_action(atoi(sqlTable.getValue(i,"package_action").c_str()));
 
 		package.set_md5(sqlTable.getValue(i, "package_md5"));
 		package.set_filename(sqlTable.getValue(i, "package_filename"));
@@ -1072,7 +1072,7 @@ int mpkgDatabase::get_purge(string package_name)
 				id=atoi(sqlTable.getValue(i, "package_id").c_str());
 				break;
 			}
-		}
+		}*/
 	}
 	return id;
 }

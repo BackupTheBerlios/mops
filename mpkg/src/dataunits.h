@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.12 2007/04/17 14:35:19 i27249 Exp $
+	$Id: dataunits.h,v 1.13 2007/04/18 13:29:41 i27249 Exp $
 */
 
 
@@ -430,7 +430,7 @@ class PACKAGE
 	bool configexist();
 	int action();
 	bool reachable();	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
-	string get_vstatus();
+	string get_vstatus(bool color=false);
 	string get_md5(bool sql=true);
 	string get_filename(bool sql=true);
 	int get_err_type();
@@ -521,6 +521,5 @@ class PACKAGE_LIST
 
 typedef int RESULT;
 string IntToStr(int num);
-string IntToStr(bool value);
 #endif //DATAUNITS_H_
 
