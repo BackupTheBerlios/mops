@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.18 2007/04/17 14:35:19 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.19 2007/04/19 01:38:57 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -66,7 +66,7 @@ class mpkgDatabase
 	private:
 		SQLProxy db;
 	public:
-		bool check_cache(PACKAGE *package);
+		bool check_cache(PACKAGE *package, bool clear_wrong=true);
 		int commit_actions(); // Commits ALL actions planned in database
 		int set_available(int package_id, int status);
 		int set_action(int package_id, int status);

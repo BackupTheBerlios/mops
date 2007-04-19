@@ -148,6 +148,19 @@ copy_file:
 
 DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
+	DownloadsList dlList;
+	DownloadItem dlItem;
+	dlItem.file = file;
+	dlItem.url_list.push_back(url);
+	dlItem.name = url;
+	dlItem.status = DL_STATUS_WAIT;
+	dlItem.priority = 0;
+	double dlnow, dltotal, itemnow, itemtotal;
+	string name;
+	dlList.push_back(dlItem);
+	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint);
+	
+	/*
 	DL_CDROM_DEVICE = cdromDevice;
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
 
@@ -170,8 +183,9 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	curl_easy_setopt(ch, CURLOPT_WRITEDATA, out_f);
 	//curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, &curlProgressCallback);
 	curl_easy_setopt(ch, CURLOPT_URL, uri.c_str());
-
+	curl_easy_setopt(ch, CURLOPT_MAXCONNECTS, 1);
 	CURLcode res = curl_easy_perform(ch);
+	//curl_easy_reset(ch);
 #ifdef DEBUG
        	printf("Download: Curl return %d\n", res);
 #endif	
@@ -180,10 +194,16 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 		return DOWNLOAD_OK;
 	} else
 		return DOWNLOAD_ERROR;
+		*/
 }
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint)
 {
+	if (list.empty()) 
+	{
+		printf("hmm.. download list is empty\n");
+		return DOWNLOAD_OK;
+	}
 	DL_CDROM_DEVICE = cdromDevice;
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
 	// reset status for retry
@@ -198,30 +218,41 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	FILE* out;
 	bool is_have_error = false;
 	*itemtotal = list.size();
+	//printf("list.size() = %d\n", list.size());
 	for (int i = 0; i < list.size(); i++ ) {
 process:
 		item = &(list.at(i));
 		*itemname = item->name;
 
-		if ( item->status == DL_STATUS_WAIT ) {
-		
+		if ( item->status == DL_STATUS_WAIT ) {		
 			out = fopen (item->file.c_str(), "wb");
 			if ( out == NULL ) {
 				fprintf(stderr, "open target file failed");
 				//setErrorCode (MPKG_DOWNLOAD_ERROR);
 				item->status = DL_STATUS_FILE_ERROR;
 				is_have_error = true;
-			} else {
-		        	
-    			for ( unsigned int j = 0; j < item->url_list.size(); j++ ) {
+			} 
+			else 
+			{
+				///printf("file opened to download, urls = %d\n", item->url_list.size());
+		        	if (item->url_list.size()==0)
+				{
+					item->status=DL_STATUS_FAILED;
+					is_have_error=true;
+				}
+
+    				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
+				{
     				if (item->url_list.at(j).find("file://")==0)
 				{
+					//printf("file URL\n");
 					fclose(out);
 					if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
 					else out = fopen (item->file.c_str(), "wb");
 				}
 				if (item->url_list.at(j).find("cdrom://")==0)
 				{
+					//printf("cd-rom URL\n");
 					fclose(out);
 					if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
 					else out = fopen (item->file.c_str(), "wb");
@@ -233,15 +264,17 @@ process:
     				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
     			
+				printf("downloading %s...\n", item->name.c_str());
     				result = curl_easy_perform(ch);
     				fclose(out);
     	
     				if ( result == CURLE_OK  ) {
-    					printf("Download seems to be OK\n");
+    				//	printf("Download seems to be OK\n");
 					item->status = DL_STATUS_OK;
     					break;
-    				} else {
-					printf("Perhaps the download fails.........\n");
+    				} else 
+				{
+					printf("FAILED\n");
     				    	is_have_error = true;
     					item->status = DL_STATUS_FAILED;
     				}

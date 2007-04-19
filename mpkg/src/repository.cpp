@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.27 2007/04/16 21:23:48 i27249 Exp $
+ * $Id: repository.cpp,v 1.28 2007/04/19 01:38:57 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -394,10 +394,11 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 	progressEnabled = false;
 
 	return 0;
-}	
+}	// End slackpackages2list()
 
 int xml2package(XMLNode pkgnode, PACKAGE *data)
 {
+	printf("xml2package\n");
 	PackageConfig p(pkgnode);
 	if (!p.parseOk) return -100;
 	
@@ -528,6 +529,7 @@ int Repository::build_index(string server_url)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
+	printf("get_index\n");
 	currentStatus = "Updating data from "+ server_url+"...";
 	debug("get_index!");
 	// First: detecting repository type
@@ -579,6 +581,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				}
 				else 
 				{
+					printf("Error downloading checksums\n");
 					return -1; // Download failed: no checksums or checksums download error
 				}
 			}
@@ -608,6 +611,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	string xml_name=index_filename;
 	XMLNode repository_root;
 	int pkg_count;
+	int ret=0;
 	currentStatus = "["+server_url+"] Importing data...";
 	switch(type)
 	{
@@ -635,13 +639,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			break;
 		case TYPE_SLACK:
 			//printf("Parsing slackware repository\n");
-			return slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages);
+			ret = slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages);
 
 		case TYPE_DEBIAN:
 		default:
 			break;
 	}
-	return 0;
+	return ret;
 }
 
 

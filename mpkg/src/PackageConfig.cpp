@@ -1,8 +1,8 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.10 2007/03/28 14:39:58 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.11 2007/04/19 01:38:57 i27249 Exp $
 */
-
+#include "file_routines.h"
 #include "PackageConfig.h"
 #include "debug.h"
 using namespace std;
@@ -17,21 +17,17 @@ retry:
 	_node = XMLNode::parseFile(fileName.c_str(), "PACKAGE", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
-		printf("XML parse error! Awaiting instructions\n");
+		printf("XML parse error while extracting metadata of package %s.File content:%s \n", fileName.c_str(), ReadFile(fileName).c_str());
 		parseOk = false;
-		setErrorCode(MPKG_INSTALL_META_ERROR);
-		while (getErrorReturn() == MPKG_RETURN_WAIT)
-		{
-			sleep(1);
-			if (getErrorReturn() == MPKG_RETURN_RETRY)
+		mpkgErrorReturn errRet=waitResponce(MPKG_INSTALL_META_ERROR);
+		if (errRet == MPKG_RETURN_RETRY)
 				goto retry;
-			if (getErrorReturn() == MPKG_RETURN_ABORT)
-			{
-				parseOk = false;
-				break;
-			}
+		if (errRet == MPKG_RETURN_ABORT)
+		{
+			parseOk = false;
 		}
 	}
+	
 	if (parseOk) debug("XML file opened");
 	if (parseOk) debug("XML file parse error");
 }

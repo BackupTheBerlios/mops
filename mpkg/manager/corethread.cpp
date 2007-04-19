@@ -1,11 +1,11 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.28 2007/04/18 23:00:34 i27249 Exp $
+ * $Id: corethread.cpp,v 1.29 2007/04/19 01:38:57 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 15
 #include "corethread.h"
-
+#define TIMER_RES 600
 
 errorBus::errorBus()
 {
@@ -43,7 +43,7 @@ void errorBus::run()
 								QMessageBox::Retry);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -71,7 +71,7 @@ void errorBus::run()
 								txt.c_str(), QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -93,7 +93,7 @@ void errorBus::run()
 								QMessageBox::Retry);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -119,7 +119,7 @@ void errorBus::run()
 								QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -156,7 +156,7 @@ void errorBus::run()
 								QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -177,7 +177,7 @@ void errorBus::run()
 						emit sendErrorMessage("Out of space!", "Error installing packages - out of space.\nFree some disk space and try again", QMessageBox::Retry | QMessageBox::Abort, QMessageBox::Retry);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -197,7 +197,7 @@ void errorBus::run()
 						emit sendErrorMessage("Script error", "Error executing script", QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_SKIP);
 						break;
@@ -206,7 +206,7 @@ void errorBus::run()
 						emit sendErrorMessage("Package extraction error", "Error extracting package.", QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_SKIP);
 						break;
@@ -216,7 +216,7 @@ void errorBus::run()
 						emit sendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_SKIP);
 						break;
@@ -226,7 +226,7 @@ void errorBus::run()
 						emit sendErrorMessage("File conflict detected", "File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -250,7 +250,7 @@ void errorBus::run()
 						emit sendErrorMessage("Some components not found!", "Some components were not found, the program can fail during runtime. Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -271,7 +271,7 @@ void errorBus::run()
 						emit sendErrorMessage("UID != 0", "You should run this program as root!", QMessageBox::Abort, QMessageBox::Abort);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_ABORT);
 						break;
@@ -285,7 +285,7 @@ void errorBus::run()
 								QMessageBox::No);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -308,7 +308,7 @@ void errorBus::run()
 								QMessageBox::Ok);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_ABORT);
 						break;
@@ -321,7 +321,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -344,7 +344,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -368,7 +368,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -389,7 +389,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -410,7 +410,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -434,7 +434,7 @@ void errorBus::run()
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						switch(userReply)
 						{
@@ -454,7 +454,7 @@ void errorBus::run()
 						emit sendErrorMessage("Unknown error!!!", "Unknown error occured!!", QMessageBox::Ignore, QMessageBox::Ignore);
 						while(userReply == QMessageBox::NoButton)
 						{
-							msleep(100);
+							msleep(TIMER_RES);
 						}
 						setErrorReturn(MPKG_RETURN_IGNORE);
 						break;
@@ -466,7 +466,7 @@ void errorBus::run()
 		{
 			return;
 		}
-		msleep(100);
+		msleep(TIMER_RES);
 	}
 }
 void errorBus::receiveUserReply(QMessageBox::StandardButton reply)
@@ -575,7 +575,7 @@ void statusThread::run()
 			case STT_Stop:
 				return;
 		}
-		msleep(100);
+		msleep(TIMER_RES);
 	}
 }
 

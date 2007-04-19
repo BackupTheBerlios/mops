@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.45 2007/04/18 13:46:39 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.46 2007/04/19 01:38:57 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -112,11 +112,16 @@ string mpkgDatabase::get_file_md5(string filename)
 	return md5str;
 }
 
-bool mpkgDatabase::check_cache(PACKAGE *package)
+bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 {
-	if (FileExists(SYS_CACHE + "/" + package->get_filename()) && package->get_md5() == get_file_md5(SYS_CACHE + "/" + package->get_filename()))
+	string fname = SYS_CACHE+"/"+package->get_filename();
+	if (FileExists(fname) && package->get_md5() == get_file_md5(SYS_CACHE + "/" + package->get_filename()))
 		return true;
-	else return false;
+	else
+	{
+		unlink(fname.c_str());
+		return false;
+	}
 }
 
 
@@ -184,7 +189,7 @@ int mpkgDatabase::commit_actions()
 		currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
 
 
-		if (!check_cache(install_list.get_package(i)))
+		if (!check_cache(install_list.get_package(i), true))
 		{
 			itemLocations.clear();
 						

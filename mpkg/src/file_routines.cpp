@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.15 2007/04/18 20:24:13 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.16 2007/04/19 01:38:57 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -39,15 +39,18 @@ create_tmp:
 
 void delete_tmp_files()
 {
-	debug("preparing to remove temp files");
+	printf("preparing to remove temp files\n");
 
+	string fname;
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
+		fname=temp_files[i]+".gz";
+		unlink(fname.c_str());
 		if ( unlink( temp_files[i].c_str() ) != 0 ) {
-			printf("cannot delete temp file %s\n", temp_files[i].c_str());
+			//printf("cannot delete temp file %s\n", temp_files[i].c_str());
 			debug( temp_files[i] );
 			debug("\n");
 			perror( strerror( errno ) );
-
+		
 		}		
 	}
 

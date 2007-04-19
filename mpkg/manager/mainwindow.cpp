@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.49 2007/04/18 23:00:34 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.50 2007/04/19 01:38:57 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -118,9 +118,9 @@ void MainWindow::applyPackageFilter ()
 	//if (ui.actionShow_configexist->isChecked()) pkgBoxLabel +=" Not purged, ";
 	//if (ui.actionShow_queue->isChecked()) pkgBoxLabel += " Queued)";
 	
-	pkgBoxLabel += " [" + (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
-	pkgBoxLabel += "]";
-	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
+	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
+	pkgBoxLabel += " ";
+	unsigned int pkgCount = 0;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		nameOk = false;
@@ -240,10 +240,14 @@ void MainWindow::applyPackageFilter ()
 
 		if (nameOk && statusOk && categoryOk)
 		{
+			pkgCount++;
 			ui.packageTable->setRowHidden(i, false);
 		}
 		else ui.packageTable->setRowHidden(i, true);
+
 	} // for (...)	
+	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+" packages)";
+	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
 }
 
 

@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.34 2007/04/18 20:24:13 i27249 Exp $
+$Id: local_package.cpp,v 1.35 2007/04/19 01:38:57 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -591,7 +591,11 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 {
 	string tmp_xml=get_tmp_file();
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
-	system(sys.c_str());
+	if (system(sys.c_str())!=0)
+	{
+		printf("no data.xml in file...\n");
+		return 0;
+	}
 	
 	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
 	if (!FileNotEmpty(tmp_xml))
@@ -605,6 +609,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
 	}
 
+	printf("fill_configfiles\n");
 	PackageConfig p(tmp_xml);
 	if (!p.parseOk) return -100;
 //	_packageXMLNode = p.getXMLNode(); // To be indexing work
