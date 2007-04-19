@@ -1,12 +1,15 @@
 <ui version="4.0" >
  <class>preferencesBox</class>
  <widget class="QWidget" name="preferencesBox" >
+  <property name="windowModality" >
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
     <width>757</width>
-    <height>425</height>
+    <height>433</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -339,37 +342,18 @@
           <number>6</number>
          </property>
          <item>
-          <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <item>
-              <widget class="QLabel" name="label_5" >
-               <property name="text" >
-                <string>Add new repository:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="repositoryEdit" />
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QListWidget" name="repositoryList" />
-           </item>
-          </layout>
+          <widget class="QTableWidget" name="repositoryTable" >
+           <column>
+            <property name="text" >
+             <string>Enabled</string>
+            </property>
+           </column>
+           <column>
+            <property name="text" >
+             <string>URL</string>
+            </property>
+           </column>
+          </widget>
          </item>
          <item>
           <layout class="QVBoxLayout" >
@@ -390,7 +374,7 @@
              <item row="2" column="0" >
               <widget class="QPushButton" name="editRepositoryButton" >
                <property name="text" >
-                <string>Modify</string>
+                <string>Edit...</string>
                </property>
               </widget>
              </item>
@@ -404,7 +388,7 @@
              <item row="0" column="0" >
               <widget class="QPushButton" name="addRepositoryButton" >
                <property name="text" >
-                <string>Add new</string>
+                <string>Add...</string>
                </property>
               </widget>
              </item>
@@ -426,6 +410,196 @@
           </layout>
          </item>
         </layout>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="addModifyRepositoryFrame" >
+         <property name="title" >
+          <string>Add/Modify repository</string>
+         </property>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>9</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <layout class="QHBoxLayout" >
+              <property name="margin" >
+               <number>0</number>
+              </property>
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="repTypeLabel" >
+                <property name="text" >
+                 <string>Type:</string>
+                </property>
+                <property name="buddy" >
+                 <cstring>repTypeComboBox</cstring>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QComboBox" name="repTypeComboBox" >
+                <item>
+                 <property name="text" >
+                  <string>Network (ftp, http...)</string>
+                 </property>
+                 <property name="icon" >
+                  <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/filesystems/network.png</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>Folder (file://)</string>
+                 </property>
+                 <property name="icon" >
+                  <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/filesystems/folder.png</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>CD/DVD (cdrom://)</string>
+                 </property>
+                 <property name="icon" >
+                  <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/devices/dvd_unmount.png</iconset>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="urlLabel" >
+                  <property name="text" >
+                   <string>URL:</string>
+                  </property>
+                  <property name="buddy" >
+                   <cstring>urlEdit</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="urlEdit" />
+                </item>
+                <item>
+                 <widget class="QToolButton" name="urlHelpSearch" >
+                  <property name="text" >
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" >
+              <property name="margin" >
+               <number>0</number>
+              </property>
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <item>
+               <widget class="QCheckBox" name="authCheckBox" >
+                <property name="text" >
+                 <string>Authorization required</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="loginLabel" >
+                  <property name="text" >
+                   <string>Login:</string>
+                  </property>
+                  <property name="buddy" >
+                   <cstring>loginEdit</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="loginEdit" />
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="passwdlabel" >
+                  <property name="text" >
+                   <string>Password:</string>
+                  </property>
+                  <property name="buddy" >
+                   <cstring>passwdEdit</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="passwdEdit" />
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>0</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="applyRepChangesButton" >
+              <property name="text" >
+               <string>Add</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cancelRepChangesButton" >
+              <property name="text" >
+               <string>Cancel</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>

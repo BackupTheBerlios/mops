@@ -1,18 +1,19 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.11 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.12 2007/04/19 18:14:13 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
-
+//#include "mainwindow.h"
 PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 {
 
 	ui.setupUi(this);
+	ui.addModifyRepositoryFrame->hide();
 	QObject::connect(ui.applyButton, SIGNAL(clicked()), this, SLOT(applyConfig()));
 	QObject::connect(ui.addRepositoryButton, SIGNAL(clicked()), this, SLOT(addRepository()));
 	QObject::connect(ui.editRepositoryButton, SIGNAL(clicked()), this, SLOT(editRepository()));
-	QObject::connect(ui.repositoryList, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(editRepository()));
+	//QObject::connect(ui.repositoryList, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(editRepository()));
 	QObject::connect(ui.delRepositoryButton, SIGNAL(clicked()), this, SLOT(delRepository()));
 	QObject::connect(ui.okButton, SIGNAL(clicked()), this, SLOT(okProcess()));
 	QObject::connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelProcess()));	
@@ -20,7 +21,7 @@ PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 
 void PreferencesBox::delRepository()
 {
-	ui.repositoryList->takeItem(ui.repositoryList->currentRow());
+	ui.repositoryTable->removeRow(ui.repositoryTable->currentRow());
 }
 
 void PreferencesBox::okProcess()
@@ -36,29 +37,34 @@ void PreferencesBox::cancelProcess()
 
 void PreferencesBox::addRepository()
 {
-	ui.repositoryList->addItem(ui.repositoryEdit->text());
-	ui.repositoryEdit->clear();
+	ui.addModifyRepositoryFrame->show();
+	//ui.repositoryTable->addItem(ui.repositoryEdit->text());
+	//ui.repositoryEdit->clear();
 }
 
 void PreferencesBox::editRepository()
 {
-	ui.repositoryEdit->setText(ui.repositoryList->takeItem(ui.repositoryList->currentRow())->text());
+	ui.addModifyRepositoryFrame->show();
+	//ui.repositoryEdit->setText(ui.repositoryList->takeItem(ui.repositoryList->currentRow())->text());
 	
 }
 
 void PreferencesBox::openAccounts()
 {
+	loadData();
 	show();
 }
 
 void PreferencesBox::openRepositories()
 {
-	ui.tabWidget->setCurrentIndex(3);
+	loadData();
+	ui.tabWidget->setCurrentIndex(2);
 	show();
 }
 
 void PreferencesBox::openInterface()
 {
+	loadData();
 	ui.tabWidget->setCurrentIndex(0);
 	show();
 }
@@ -98,22 +104,44 @@ void PreferencesBox::loadData()
 	// Load accounts
 	// Load repository
 	vector<string> rList = mDb->get_repositorylist();
+	vector<string> drList = mDb->get_disabled_repositorylist();
+
+	ui.repositoryTable->clearContents();
+	ui.repositoryTable->setRowCount(rList.size()+1+drList.size()+1);
 	for (int i=0; i < rList.size(); i++)
 	{
-		ui.repositoryList->addItem(rList[i].c_str());
+		RCheckBox *rCheckBox = new RCheckBox;
+		rCheckBox->setCheckState(Qt::Checked);
+		rCheckBox->row = i;
+		ui.repositoryTable->setCellWidget(i,0,rCheckBox);
+		ui.repositoryTable->setItem(i, 1, new QTableWidgetItem(rList[i].c_str()));
 	}
+	for (int i=0; i < drList.size(); i++)
+	{
+		RCheckBox *rCheckBox = new RCheckBox;
+		rCheckBox->setCheckState(Qt::Unchecked);
+		rCheckBox->row = i+rList.size();
+		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBox);
+		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
+	}
+	ui.repositoryTable->setColumnWidth(0, 15);
+ 	ui.repositoryTable->setColumnWidth(1, 400);
+
+
 	
 	// Load updates
 }
 
 void PreferencesBox::openCore()
 {
+	loadData();
 	ui.tabWidget->setCurrentIndex(1);
 	show();
 }
 
 void PreferencesBox::openUpdates()
 {
+	loadData();
 	ui.tabWidget->setCurrentIndex(4);
 	show();
 }
@@ -133,10 +161,14 @@ void PreferencesBox::applyConfig()
 	if (ui.fcheckDisable->isChecked()) fcheck = CHECKFILES_DISABLE;
 	mDb->set_checkFiles(fcheck);
 	vector<string>rList;
-	for (int i=0; i < ui.repositoryList->count(); i++)
+	for (int i=0; i < ui.repositoryTable->rowCount(); i++)
 	{
-		rList.push_back(ui.repositoryList->item(i)->text().toStdString());
+		rList.push_back(ui.repositoryTable->item(i, 1)->text().toStdString());
 	}
 	mDb->set_repositorylist(rList);
 	// TODO: Apply config
+}
+
+RCheckBox::RCheckBox()
+{
 }

@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.17 2007/04/19 01:38:57 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.18 2007/04/19 18:14:13 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -162,6 +162,10 @@ int mpkg::get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool G
 vector<string> mpkg::get_repositorylist()
 {
 	return mpkgconfig::get_repositorylist();
+}
+vector<string> mpkg::get_disabled_repositorylist()
+{
+	return mpkgconfig::get_disabled_repositorylist();
 }
 string mpkg::get_sysroot()
 {

@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.12 2007/04/13 13:52:27 i27249 Exp $
+ * $Id: libmpkg.h,v 1.13 2007/04/19 18:14:13 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -139,6 +139,7 @@ class mpkg
 
 		// Configuration and settings: retrieving
 		vector<string> get_repositorylist();
+		vector<string> get_disabled_repositorylist();
 		/* get_repositorylist():
 		 * returns a vector with URLs of currently enabled repositories.
 		 * @@*/

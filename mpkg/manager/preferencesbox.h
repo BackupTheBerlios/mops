@@ -1,6 +1,6 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.7 2007/03/12 15:02:59 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.8 2007/04/19 18:14:13 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
@@ -32,4 +32,18 @@ class PreferencesBox: public QWidget
 		mpkg *mDb;
 		unsigned int editingRepository;
 };
+
+class RCheckBox: public QCheckBox
+{
+	Q_OBJECT
+	public:
+		RCheckBox();
+	public slots:
+	//	void markChanges();
+	public:
+	int row;
+	
+};
+
+
 #endif
