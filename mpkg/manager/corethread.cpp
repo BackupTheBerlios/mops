@@ -1,9 +1,9 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.29 2007/04/19 01:38:57 i27249 Exp $
+ * $Id: corethread.cpp,v 1.30 2007/04/19 20:18:11 i27249 Exp $
  * *************************************************************************/
-#define USLEEP 15
+#define USLEEP 5
 #include "corethread.h"
 #define TIMER_RES 600
 

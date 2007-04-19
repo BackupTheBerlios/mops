@@ -25,7 +25,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -343,6 +343,18 @@
          </property>
          <item>
           <widget class="QTableWidget" name="repositoryTable" >
+           <property name="selectionMode" >
+            <enum>QAbstractItemView::SingleSelection</enum>
+           </property>
+           <property name="selectionBehavior" >
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+           <property name="showGrid" >
+            <bool>false</bool>
+           </property>
+           <property name="gridStyle" >
+            <enum>Qt::NoPen</enum>
+           </property>
            <column>
             <property name="text" >
              <string>Enabled</string>

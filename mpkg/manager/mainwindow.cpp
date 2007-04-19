@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.50 2007/04/19 01:38:57 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.51 2007/04/19 20:18:11 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -293,6 +293,9 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	pkgName->setText(cellItemText.c_str());
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
+
+	//ui.packageTable->itemAt(row, PT_INSTALLCHECK)->setFlags(Qt::ItemIsUserCheckable);
+	
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
@@ -564,16 +567,16 @@ void MainWindow::setTableSize()
 void MainWindow::initPackageTable()
 {
 
-    if (ui.packageTable->columnCount() < 4)
-    	ui.packageTable->setColumnCount(4);
+    if (ui.packageTable->columnCount() < 3)
+    	ui.packageTable->setColumnCount(3);
     QTableWidgetItem *__colItem0 = new QTableWidgetItem();
     __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
    
-    QTableWidgetItem *__colItem = new QTableWidgetItem();
-    __colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
-    ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
-    ui.packageTable->setColumnHidden(PT_STATUS, true);
+    //QTableWidgetItem *__colItem = new QTableWidgetItem();
+    //__colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
+    //ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
+    //ui.packageTable->setColumnHidden(PT_STATUS, true);
 
     QTableWidgetItem *__colItem1 = new QTableWidgetItem();
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
@@ -793,7 +796,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+\
 			"</td></tr></tbody></table>";
 		TableLabel *_z = new TableLabel(ui.packageTable);
-		_z->setTextFormat(Qt::RichText);
+		//_z->setTextFormat(Qt::RichText);
 		_z->setText(pName.c_str());
 		_z->row = x;
 		ui.packageTable->setCellWidget(x, PT_NAME, _z);
