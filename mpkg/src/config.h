@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.28 2007/04/17 14:35:19 i27249 Exp $
+    $Id: config.h,v 1.29 2007/04/20 04:01:42 i27249 Exp $
 */
 
 
@@ -143,7 +143,7 @@ namespace mpkgconfig
 	bool get_runscripts();
 	unsigned int get_checkFiles();
 
-	int set_repositorylist(vector<string> newrepositorylist);
+	int set_repositorylist(vector<string> newrepositorylist, vector<string> drList);
 	int set_disabled_repositorylist(vector<string> newrepositorylist);
 	int set_sysroot(string newsysroot);
 	int set_syscache(string newsyscache);

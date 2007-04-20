@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.30 2007/04/19 20:18:11 i27249 Exp $
+ * $Id: corethread.cpp,v 1.31 2007/04/20 04:01:42 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -65,6 +65,7 @@ void errorBus::run()
 					//---------------CD-ROM ERRORS/EVENTS---------------------//
 					case MPKG_CDROM_WRONG_VOLNAME:
 					case MPKG_CDROM_MOUNT_ERROR:
+						printf("event recvd\n");
 						userReply = QMessageBox::NoButton;
 						txt = "Please insert disk with label "+CDROM_VOLUMELABEL+" into "+CDROM_DEVICENAME;
 						emit sendErrorMessage("Please insert disk", \
@@ -642,6 +643,11 @@ void coreThread::run()
 				sync();
 				break;
 
+			case CA_GetCdromName:
+				_getCdromName();
+				sync();
+				break;
+
 			case CA_Idle:
 				emit setStatus(database->current_status().c_str());
 				msleep(50);
@@ -718,6 +724,19 @@ void coreThread::_loadPackageDatabase()
 	emit applyFilters();
 	currentAction=CA_Idle;
 }
+
+void coreThread::getCdromName()
+{
+	currentAction = CA_GetCdromName;
+}
+
+void coreThread::_getCdromName()
+{
+	string volname = getCdromVolname();
+	emit sendCdromName(volname);
+	currentAction = CA_Idle;
+}
+
 
 void coreThread::insertPackageIntoTable(unsigned int package_num)
 {

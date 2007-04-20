@@ -2,7 +2,7 @@
  <class>preferencesBox</class>
  <widget class="QWidget" name="preferencesBox" >
   <property name="windowModality" >
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry" >
    <rect>
@@ -25,7 +25,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>2</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -186,7 +186,7 @@
             <widget class="QLineEdit" name="syscacheEdit" />
            </item>
            <item row="2" column="5" >
-            <widget class="QToolButton" name="toolButton_3" >
+            <widget class="QToolButton" name="dbfileHelpBtn" >
              <property name="text" >
               <string>...</string>
              </property>
@@ -200,7 +200,7 @@
             </widget>
            </item>
            <item row="1" column="5" >
-            <widget class="QToolButton" name="toolButton_2" >
+            <widget class="QToolButton" name="syscacheHelpBtn" >
              <property name="text" >
               <string>...</string>
              </property>
@@ -217,14 +217,14 @@
             <widget class="QLineEdit" name="sysrootEdit" />
            </item>
            <item row="3" column="5" >
-            <widget class="QToolButton" name="toolButton_4" >
+            <widget class="QToolButton" name="scriptsfolderHelpBtn" >
              <property name="text" >
               <string>...</string>
              </property>
             </widget>
            </item>
            <item row="0" column="5" >
-            <widget class="QToolButton" name="toolButton" >
+            <widget class="QToolButton" name="sysrootHelpBtn" >
              <property name="text" >
               <string>...</string>
              </property>
@@ -529,6 +529,23 @@
               <property name="spacing" >
                <number>6</number>
               </property>
+              <item>
+               <widget class="QLabel" name="volNameLabel" >
+                <property name="text" >
+                 <string>Volume name:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="volNameEdit" />
+              </item>
+              <item>
+               <widget class="QPushButton" name="volNameDetectButton" >
+                <property name="text" >
+                 <string>Detect</string>
+                </property>
+               </widget>
+              </item>
               <item>
                <widget class="QCheckBox" name="authCheckBox" >
                 <property name="text" >

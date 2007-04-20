@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.51 2007/04/19 20:18:11 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.52 2007/04/20 04:01:42 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -398,6 +398,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
+	prefBox = new PreferencesBox(mDb);
+	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string)),Qt::QueuedConnection); 
+
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 
@@ -592,9 +596,8 @@ void MainWindow::initPackageTable()
 
 void MainWindow::showPreferences()
 {
-	PreferencesBox *prefbox = new PreferencesBox(mDb);
-	prefbox->loadData();
-	prefbox->openInterface();
+	prefBox->loadData();
+	prefBox->openInterface();
 }
 
 void MainWindow::showAbout()
@@ -626,6 +629,7 @@ void MainWindow::quitApp()
 }
 void MainWindow::showCoreSettings()
 {
+	prefBox->openCore();
 }
 void MainWindow::commitChanges()
 {
@@ -634,7 +638,6 @@ void MainWindow::commitChanges()
 //void MainWindow::resetChanges(){}
 //void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){
-	PreferencesBox *prefBox = new PreferencesBox(mDb);
 	prefBox->openRepositories();
 }
 //void MainWindow::showCustomFilter(){}

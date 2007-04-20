@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.32 2007/04/19 20:18:11 i27249 Exp $
+ * $Id: mainwindow.h,v 1.33 2007/04/20 04:01:42 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -9,6 +9,7 @@
 #include "ui_pkgmanager.h"
 #include "ui_aboutbox.h"
 #include "ui_preferencesbox.h"
+#include "preferencesbox.h"
 #include "ui_loading.h"
 #include <mpkg/libmpkg.h>
 #include "loading.h"
@@ -37,6 +38,8 @@ class MainWindow: public QMainWindow
 		coreThread *thread;
 		statusThread *StatusThread;
 		errorBus *ErrorBus;
+		PreferencesBox *prefBox;
+
 	signals:
 		void loadPackageDatabase();
 		void startThread();

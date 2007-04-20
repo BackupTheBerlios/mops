@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.28 2007/04/19 01:38:57 i27249 Exp $
+ * $Id: repository.cpp,v 1.29 2007/04/20 04:01:42 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -529,7 +529,6 @@ int Repository::build_index(string server_url)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
-	printf("get_index\n");
 	currentStatus = "Updating data from "+ server_url+"...";
 	debug("get_index!");
 	// First: detecting repository type
@@ -540,7 +539,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	// (and something else for RPM, in future)
 	string index_filename = get_tmp_file();
 	string md5sums_filename = get_tmp_file();
-	printf("Retrieving index from %s ...\n",server_url.c_str());
+	printf("\t[%s] ...\n",server_url.c_str());
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.16 2007/04/19 01:38:57 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.17 2007/04/20 04:01:42 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -39,7 +39,7 @@ create_tmp:
 
 void delete_tmp_files()
 {
-	printf("preparing to remove temp files\n");
+	//printf("preparing to remove temp files\n");
 
 	string fname;
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
@@ -75,6 +75,15 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 {
 	string ret;
 	string line;
+	ifstream test(filename.c_str(), ios::in);
+	ifstream::pos_type nullsize;
+	if (test.is_open())
+	{
+		nullsize = test.tellg();
+		test.close();
+	}
+	else return "";
+
 	ifstream inputFile(filename.c_str(), ios::in|ios::ate);
 	char * memblock;
 	ifstream::pos_type size;
@@ -83,7 +92,16 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 	{
 		size=inputFile.tellg();
 		memblock = new char [size];
+		//memset(memblock, 0, sizeof(memblock));
 		inputFile.seekg(0,ios::beg);
+		if (size == nullsize)
+		{
+			//printf("zero length file detected\n");
+			inputFile.close();
+			return "";
+		}
+		//else printf("not a null file\n");
+
 		inputFile.read(memblock, size);
 		inputFile.close();
 		ret = memblock;
@@ -235,6 +253,7 @@ unsigned int CheckFileType(string fname)
 }
 string getCdromVolname()
 {
+	//printf("cdromVolname\n");
 	mpkgErrorReturn errRet;
 check_volname:
 	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
@@ -253,6 +272,7 @@ check_volname:
 			return "";
 		}
 	}
+	volname=volname.substr(0,volname.find("\n"));
 	return volname;
 }
 

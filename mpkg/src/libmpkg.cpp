@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.18 2007/04/19 18:14:13 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.19 2007/04/20 04:01:42 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -167,6 +167,12 @@ vector<string> mpkg::get_disabled_repositorylist()
 {
 	return mpkgconfig::get_disabled_repositorylist();
 }
+
+/*int mpkg::set_disabled_repositorylist(vector<string>drList)
+{
+	printf("recv %d to disable list\n", drList.size());
+	return mpkgconfig::set_disabled_repositorylist(drList);
+}*/
 string mpkg::get_sysroot()
 {
 	return mpkgconfig::get_sysroot();
@@ -211,9 +217,10 @@ int mpkg::set_checkFiles(unsigned int value)
 
 
 // Configuration and settings: setting
-int mpkg::set_repositorylist(vector<string> newrepositorylist)
+int mpkg::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)
 {
-	return mpkgconfig::set_repositorylist(newrepositorylist);
+	printf("recv %d rep to enable\n", newrepositorylist.size());
+	return mpkgconfig::set_repositorylist(newrepositorylist, drList);
 }
 int mpkg::set_sysroot(string newsysroot)
 {

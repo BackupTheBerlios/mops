@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.21 2007/04/18 23:00:35 i27249 Exp $
+ * $Id: config.cpp,v 1.22 2007/04/20 04:01:42 i27249 Exp $
  *
  * ***************************************************/
 
@@ -356,7 +356,7 @@ unsigned int mpkgconfig::get_checkFiles()
 {
 	return fileConflictChecking;
 }
-int mpkgconfig::set_repositorylist(vector<string> newrepositorylist)
+int mpkgconfig::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)
 {
 	XMLNode tmp;
 	tmp=getXMLConfig();
@@ -367,11 +367,18 @@ int mpkgconfig::set_repositorylist(vector<string> newrepositorylist)
 		tmp.getChildNode("repository_list").addChild("repository");
 		tmp.getChildNode("repository_list").getChildNode("repository", i).addText(newrepositorylist[i].c_str());
 	}
+	for (unsigned int i=0; i<drList.size(); i++)
+	{
+		tmp.getChildNode("repository_list").addChild("disabled_repository");
+		tmp.getChildNode("repository_list").getChildNode("disabled_repository", i).addText(drList[i].c_str());
+	}
 	return setXMLConfig(tmp);
 }
 
 int mpkgconfig::set_disabled_repositorylist(vector <string> newrepositorylist)
 {
+	printf("WARNING! You should NOT use set_disabled_repositorylist!\n");
+	return -1;
 	XMLNode tmp;
 	tmp=getXMLConfig();
 	tmp.getChildNode("repository_list").deleteNodeContent(1);
@@ -511,12 +518,14 @@ mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 
 int consoleSendErrorMessage(string header, string text, string actionList, string defaultAction)
 {
-	printf("[%s]\n%s\n",header.c_str(), text.c_str());	
+	printf("[%s]\n%s\n",header.c_str(), text.c_str());
+	printf("DEBUG actionList: %s\n", actionList.c_str());
 	printf("Action:\n");
 	vector<string> actList;
-	while(actionList.find_first_of(" ")!=string::npos)
+	while(true)//actionList.find_first_of(" ")!=string::npos)
 	{
 		actList.push_back(actionList.substr(0,actionList.find_first_of(" ")));
+		if (actionList.find_first_of(" ")==string::npos) break;
 		actionList=actionList.substr(actionList.find_first_of(" ")+1);
 	}
 	for (unsigned int i=0; i<actList.size(); i++)
@@ -851,6 +860,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_RETRY);
 								break;
 							case 2:
+							
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
@@ -863,4 +873,4 @@ void consoleEventResolver()
 						setErrorReturn(MPKG_RETURN_IGNORE);
 						break;
 				}
-			}
+}

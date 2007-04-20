@@ -4,7 +4,7 @@
 #include <sys/sem.h>
 #include <sys/types.h>
 #include <stdlib.h>
-
+#include <errno.h>
 // CD-ROM support
 #include <sys/mount.h>
 #include <mntent.h>
@@ -54,7 +54,7 @@ int fileLinker(std::string source, std::string output)
 
 int cdromFetch(std::string source, std::string output) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
-	printf("fetching from CDROM %s\n", DL_CDROM_DEVICE.c_str());
+	//printf("fetching from CDROM %s\n", DL_CDROM_DEVICE.c_str());
 	// input format:
 	// source:
 	// 	CDROM_VOLNAME/dir/fname.tgz
@@ -70,7 +70,7 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 	int umount_ret;
 	// First, check if device mounted in proper directory. 
 	struct mntent *mountList;
-	FILE *mtab = fopen("/etc/mtab", "r");
+	FILE *mtab = fopen("/proc/mounts", "r");
 	bool mounted = false;
 	char volname[2000];
 	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
@@ -85,7 +85,7 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 			{
 				if (strcmp(mountList->mnt_dir, DL_CDROM_MOUNTPOINT.c_str())!=0)
 				{
-					umount(mountList->mnt_dir);
+					umount(DL_CDROM_MOUNTPOINT.c_str());
 				}
 				else mounted = true;
 			}
@@ -96,8 +96,17 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 	if (!mounted)
 	{
 try_mount:
-		if (mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL)!=0)
+#ifndef INTERNAL_MOUNT
+		string mnt_cmd = "mount "+DL_CDROM_DEVICE + " " + DL_CDROM_MOUNTPOINT;
+		int mret = system(mnt_cmd.c_str());
+#else
+		int mret = mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
+#endif
+		//printf("mret = %d\n", mret);
+		//if (mret!=0 && errno == EBUSY) mret = 0;
+		if (mret!=0)
 		{
+			perror("Mount error:");
 			errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
 			if (errRet == MPKG_RETURN_RETRY)
 			{
@@ -108,8 +117,13 @@ try_mount:
 				return -1;
 			}
 		}
+		// If we reached this point, device mounted. Write this to /etc/mtab...
+		//FILE *mt = fopen("/etc/mtab", "r");
+		//addmntent(mt, mountList);
+		//fclose(mt);
 	}
 
+	string Svolname;
 check_volname:
 	string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
 	system(vol_cmd.c_str());
@@ -117,10 +131,14 @@ check_volname:
 	if (volnameFile)
 	{
 		fscanf(volnameFile, "%s", &volname);
+		Svolname=volname;
+		Svolname=Svolname.substr(0,Svolname.find("\n"));
+
 		fclose(volnameFile);
 	}
-	if (strcmp(volname, cdromVolName.c_str())!=0)
+	if (Svolname == cdromVolName)
 	{
+		printf("Wrong volname\n");
 		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
@@ -134,8 +152,8 @@ check_volname:
 	}
 
 copy_file:
-	string cp_cmd = "cp "+sourceFileName + " " + output;
-	if (system(cp_cmd.c_str())!=0)
+	string cp_cmd = "cp "+sourceFileName + " " + output + " 2>/dev/null";
+	if (system(cp_cmd.c_str())!=0 && sourceFileName.find("packages")!=std::string::npos && sourceFileName.find("PACKAGES")!=std::string::npos)
 	{
 		errRet = waitResponce(MPKG_SUBSYS_FILE_READ_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)
@@ -206,6 +224,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	}
 	DL_CDROM_DEVICE = cdromDevice;
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
+	//printf("DL, cdromDev = %s, cdromMP = %s\n", DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str());
 	// reset status for retry
 	for (int i = 0; i<list.size(); i++)
 	{
