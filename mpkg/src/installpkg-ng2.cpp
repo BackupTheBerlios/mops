@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.5 2007/04/17 14:35:19 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.6 2007/04/21 11:07:39 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -234,13 +234,16 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_INDEX ) {
-		if (optind < argc)
+		if (argc == 4)
 		{
-			core.rep.build_index(argv[optind]);
+			
+			printf("Building repository index\nURL: %s\nName: %s\n", argv[optind], argv[optind+1]);
+			core.rep.build_index(argv[optind], argv[optind+1]);
 		}
 		else
-		{
-			core.rep.build_index();
+		{	
+			printf("To few arguments to index\n");
+			print_usage(stderr, 1);
 		}
 		return 0;
 	}
@@ -314,9 +317,9 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tsearch     search package\n"));
 	fprintf(stream,_("\tclean      remove all packages from cache\n"));
 	fprintf(stream,_("Repository maintaining functions:\n"));
-	fprintf(stream,_("\tindex [server_url]     create a repository index file \"packages.xml\"\n"));
-	fprintf(stream,_("\tconvert [package]      convert specified packages from Slackware to MPKG format\n"));
-	fprintf(stream,_("\tconvert_dir [outp_dir] convert whole directory (including sub-dirs) to MPKG format\n"));
+	fprintf(stream,_("\tindex <server_url> <file_url>     create a repository index file \"packages.xml.gz\"\n"));
+	fprintf(stream,_("\tconvert <package>      convert specified packages from Slackware to MPKG format\n"));
+	fprintf(stream,_("\tconvert_dir <outp_dir> convert whole directory (including sub-dirs) to MPKG format\n"));
 
 
 	exit(exit_code);

@@ -7,7 +7,7 @@
  * 	Debian (planned)
  * 	RPM (planned)
  *
- * $Id: repository.h,v 1.6 2007/04/16 21:23:48 i27249 Exp $
+ * $Id: repository.h,v 1.7 2007/04/21 11:07:39 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
@@ -24,7 +24,7 @@
 class Repository
 {
 	public:
-		int build_index(string server_url=""); // builds index of packages (creates packages.xml), consuming REPOSITORY_ROOT is current dir
+		int build_index(string server_url, string server_name); // builds index of packages (creates packages.xml), consuming REPOSITORY_ROOT is current dir
 		int get_index(string server_url, PACKAGE_LIST *packages, unsigned int type=TYPE_AUTO);
 		Repository();
 		~Repository();

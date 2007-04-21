@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.29 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: repository.cpp,v 1.30 2007/04/21 11:07:39 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -482,9 +482,10 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 	return 0;
 }
 
-
+unsigned int pkgcounter;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
+	pkgcounter++;
 	debug("processing package "+ (string) filename);
 	string _package=filename;
        	string ext;
@@ -505,11 +506,13 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 }
 
 
-int Repository::build_index(string server_url)
+int Repository::build_index(string server_url, string server_name)
 {
+	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	_root=XMLNode::createXMLTopNode("repository");
-	if (!server_url.empty()) _root.addAttribute("server_url", server_url.c_str());
+	if (!server_url.empty()) _root.addAttribute("url", server_url.c_str());
+	if (!server_name.empty()) _root.addAttribute("name", server_name.c_str());
 	
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
@@ -521,7 +524,9 @@ int Repository::build_index(string server_url)
 	// Finally, write our XML tree to file
 	_root.writeToFile("packages.xml");
 	// Compress file
-	if (system("gzip -f packages.xml")==0) printf("Repository index created successfully\n");
+	if (system("gzip -f packages.xml")==0)
+	       printf("\n-------------SUMMARY------------------\nRepository URL: %s\nRepository name: %s\nTotal: %d packages\n\nRepository index created successfully\n",\
+			       server_url.c_str(), server_name.c_str(), pkgcounter);
 	else printf("Error creating repository index!\n");
 	return 0;
 }
