@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.16 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: corethread.h,v 1.17 2007/04/21 22:09:32 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -62,6 +62,8 @@ class errorBus: public QThread
 		void sendErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
 
 	private:
+
+		unsigned int TIMER_RES;
 		QMessageBox::StandardButton userReply;
 		string txt;
 
@@ -90,6 +92,8 @@ class statusThread: public QThread
 		void setBarValue2(unsigned int value);
 
 	private:
+
+		unsigned int TIMER_RES;
 		bool enabledBar;
 		bool enabledBar2;
 };
@@ -113,6 +117,8 @@ class coreThread: public QThread
 		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
 		void getCdromName();
 	private:
+
+		unsigned int TIMER_RES;
 		void _loadPackageDatabase();	// loading data from database - real implementation
 		void _updatePackageDatabase();	// updating data from repositories - real implementation
 		void insertPackageIntoTable(unsigned int package_num); // Displaying function

@@ -1,15 +1,16 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.31 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: corethread.cpp,v 1.32 2007/04/21 22:09:32 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
-#define TIMER_RES 600
+//#define TIMER_RES 600
 
 errorBus::errorBus()
 {
 	action = eBUS_Pause;
+	TIMER_RES = 600;
 }
 
 void errorBus::run()
@@ -500,6 +501,7 @@ void errorBus::Stop()
 
 statusThread::statusThread()
 {
+	TIMER_RES = 600;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
@@ -521,6 +523,7 @@ void statusThread::run()
 				
 				if (progressEnabled)
 				{
+					TIMER_RES = 100;
 					dtmp = 100 * (currentProgress/progressMax);
 					tmp_c = (int) dtmp;
 					
@@ -537,6 +540,7 @@ void statusThread::run()
 				}
 				else
 				{
+					TIMER_RES = 600;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
@@ -546,6 +550,7 @@ void statusThread::run()
 				
 				if (progressEnabled2)
 				{
+					TIMER_RES = 100;
 					dtmp2 = 100 * (currentProgress2/progressMax2);
 					tmp_c2 = (int) dtmp2;
 					dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
@@ -563,6 +568,7 @@ void statusThread::run()
 				}
 				else
 				{
+					TIMER_RES=600;
 					if (enabledBar)
 					{
 						emit disableProgressBar2();
@@ -600,6 +606,7 @@ void statusThread::halt()
 
 coreThread::coreThread()
 {
+	TIMER_RES=50;
 	//printf("Core thread created\n");
 	database = new mpkg;
 	currentAction = CA_Idle;
@@ -650,7 +657,7 @@ void coreThread::run()
 
 			case CA_Idle:
 				emit setStatus(database->current_status().c_str());
-				msleep(50);
+				msleep(TIMER_RES);
 				break;
 			case CA_Quit:
 				delete database;

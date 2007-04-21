@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.52 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.53 2007/04/21 22:09:32 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -231,10 +231,11 @@ void MainWindow::applyPackageFilter ()
 						categoryOk = true;
 					}
 				} // for (... tmpTagList ...)
-				if (tmpTagList.size() == 0)
+				if (tmpTagList.size() == 0 && tagvalue != "_misc_")
 				{
 					categoryOk = false;
 				}
+				else if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
 			} // else (tagvalue)
 		} // if (statusOk)
 
