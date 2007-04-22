@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.54 2007/04/22 10:18:32 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.55 2007/04/22 12:03:27 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -554,8 +554,8 @@ void MainWindow::showPackageInfo()
 			       + (string) "<br><b>Version: </b>" + pkg->get_version() \
 			       + (string) "<br><b>Arch: </b>"+pkg->get_arch() \
 			       + (string) "<br><b>Build: </b>"+pkg->get_build() \
-			       + (string) "<br><b>Package size: </b>" + pkg->get_compressed_size() \
-			       + (string) "<br><b>Installed size: </b>" + pkg->get_installed_size() \
+			       + (string) "<br><b>Package size: </b>" + humanizeSize(pkg->get_compressed_size()) \
+			       + (string) "<br><b>Installed size: </b>" + humanizeSize(pkg->get_installed_size()) \
 			       + (string) "<br><b>Filename: </b>" + pkg->get_filename() \
 			       + (string) "<br><b>MD5 sum: </b>"+pkg->get_md5() \
 			       + (string) "<br><b>Maintainer: </b>"+pkg->get_packager() \

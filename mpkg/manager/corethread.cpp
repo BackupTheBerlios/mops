@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.32 2007/04/21 22:09:32 i27249 Exp $
+ * $Id: corethread.cpp,v 1.33 2007/04/22 12:03:27 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -783,7 +783,10 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	//string pName;
 	
 	//string pName = "<table><tbody><tr><td></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
-	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+			+_p->get_version()\
+			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]</font>"\
+		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
 }
 

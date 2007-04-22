@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.6 2007/03/21 17:49:26 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.7 2007/04/22 12:03:27 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -144,3 +144,50 @@ int main()
 	return 0;
 }
 */
+
+unsigned int fl2ul(float input)
+{
+	unsigned int preout = (unsigned int) input;
+	if (!(input - preout < .5))
+	{
+		preout++;
+	}
+	return preout;
+}
+
+string humanizeSize(string size)
+{
+	return humanizeSize(atoi(size.c_str()));
+}
+string humanizeSize(unsigned int size)
+{
+	int new_size;
+	string ret;
+
+	if (size >= 1024 && size < 1048576)
+	{
+		new_size = fl2ul(size/1024);
+		ret = IntToStr(new_size) + " Kb";
+		return ret;
+	}
+	if (size >= 1024*1024 && size < 1024*1024*1024)
+	{
+		new_size = fl2ul(size/(1024*1024));
+		ret = IntToStr(new_size) + " Mb";
+		return ret;
+	}
+	if (size >= 1024*1024*1024 && size < 1024 * 1024 * 1024 * 1024)
+	{
+		new_size = fl2ul(size/(1024*1024*1024));
+		ret = IntToStr(new_size) + " Gb";
+		return ret;
+	}
+	if (size >= 1024 * 1024 * 1024 * 1024)
+	{
+		new_size = fl2ul(size/(1024*1024*1024*1024));
+		ret = IntToStr(new_size) + " Tb";
+		return ret;
+	}
+}
+
+

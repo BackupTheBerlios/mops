@@ -360,6 +360,9 @@
         </property>
         <item>
          <widget class="QFrame" name="splashFrame" >
+          <property name="autoFillBackground" >
+           <bool>true</bool>
+          </property>
           <property name="frameShape" >
            <enum>QFrame::StyledPanel</enum>
           </property>
@@ -465,17 +468,23 @@
           <property name="horizontalScrollBarPolicy" >
            <enum>Qt::ScrollBarAlwaysOff</enum>
           </property>
+          <property name="autoScroll" >
+           <bool>true</bool>
+          </property>
           <property name="editTriggers" >
            <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="tabKeyNavigation" >
+           <bool>false</bool>
           </property>
           <property name="alternatingRowColors" >
            <bool>true</bool>
           </property>
           <property name="selectionMode" >
-           <enum>QAbstractItemView::SingleSelection</enum>
+           <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
           <property name="selectionBehavior" >
-           <enum>QAbstractItemView::SelectItems</enum>
+           <enum>QAbstractItemView::SelectRows</enum>
           </property>
           <property name="verticalScrollMode" >
            <enum>QAbstractItemView::ScrollPerItem</enum>
@@ -484,10 +493,10 @@
            <enum>QAbstractItemView::ScrollPerItem</enum>
           </property>
           <property name="showGrid" >
-           <bool>false</bool>
+           <bool>true</bool>
           </property>
           <property name="gridStyle" >
-           <enum>Qt::NoPen</enum>
+           <enum>Qt::DotLine</enum>
           </property>
           <property name="sortingEnabled" >
            <bool>false</bool>
@@ -695,6 +704,7 @@
     <addaction name="actionCustom_filter" />
     <addaction name="actionShow_install" />
     <addaction name="actionShow_purge" />
+    <addaction name="actionShow_unavailable" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />
@@ -729,6 +739,9 @@
    <property name="checked" >
     <bool>true</bool>
    </property>
+   <property name="icon" >
+    <iconset>icons/installed.png</iconset>
+   </property>
    <property name="text" >
     <string>Show installed</string>
    </property>
@@ -740,6 +753,9 @@
    <property name="checked" >
     <bool>true</bool>
    </property>
+   <property name="icon" >
+    <iconset>icons/available.png</iconset>
+   </property>
    <property name="text" >
     <string>Show available</string>
    </property>
@@ -750,6 +766,9 @@
    </property>
    <property name="checked" >
     <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset>icons/warning.png</iconset>
    </property>
    <property name="text" >
     <string>Show broken</string>
@@ -764,6 +783,9 @@
    </property>
    <property name="checked" >
     <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset>icons/remove.png</iconset>
    </property>
    <property name="text" >
     <string>Show not purged</string>
@@ -781,6 +803,9 @@
    </property>
    <property name="checked" >
     <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset>icons/install.png</iconset>
    </property>
    <property name="text" >
     <string>Show queued</string>
@@ -881,6 +906,17 @@
    </property>
    <property name="visible" >
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionShow_unavailable" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset>icons/unknown.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Show unavailable</string>
    </property>
   </action>
  </widget>
