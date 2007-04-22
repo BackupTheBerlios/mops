@@ -25,7 +25,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
@@ -350,19 +350,25 @@
             <enum>QAbstractItemView::SelectRows</enum>
            </property>
            <property name="showGrid" >
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="gridStyle" >
-            <enum>Qt::NoPen</enum>
+            <enum>Qt::DotLine</enum>
            </property>
            <column>
             <property name="text" >
-             <string>Enabled</string>
+             <string/>
+            </property>
+            <property name="icon" >
+             <iconset>icons/installed.png</iconset>
             </property>
            </column>
            <column>
             <property name="text" >
              <string>URL</string>
+            </property>
+            <property name="icon" >
+             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/filesystems/ftp.png</iconset>
             </property>
            </column>
           </widget>

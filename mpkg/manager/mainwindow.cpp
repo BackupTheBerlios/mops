@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.53 2007/04/21 22:09:32 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.54 2007/04/22 10:18:32 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -126,7 +126,9 @@ void MainWindow::applyPackageFilter ()
 		nameOk = false;
 		statusOk = false;
 		categoryOk = false;
-		nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
+
+		//nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
+		nameMask = nameMask.fromStdString(packagelist->get_package(i)->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			nameOk = true;
@@ -139,10 +141,15 @@ void MainWindow::applyPackageFilter ()
 		if (nameOk)
 		{
 			//------------
-			action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
-			available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
-			installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
-			configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+			//action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
+			//available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
+			//installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
+			//configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+			action = packagelist->get_package(i)->action();
+			available = packagelist->get_package(i)->available();
+			installed = packagelist->get_package(i)->installed();
+			configexist = packagelist->get_package(i)->configexist();
+
 			statusOk=false;
 
 			if (ui.actionShow_installed->isChecked() && installed)
@@ -223,7 +230,8 @@ void MainWindow::applyPackageFilter ()
 			else
 			{
 				categoryOk = false;
-				tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
+				//tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
+				tmpTagList = *packagelist->get_package(i)->get_tags();
 				for (int t = 0; t < tmpTagList.size(); t++)
 				{
 					if (tmpTagList.get_tag(t)->get_name() == tagvalue)
@@ -299,7 +307,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
-	ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
+	//ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
 	ui.packageTable->setRowHeight(row-1, 45);
 
 }
@@ -503,7 +511,8 @@ void MainWindow::quickPackageSearch()
 	QString tmp;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
-		tmp = tmp.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
+		tmp = tmp.fromStdString(packagelist->get_package(i)->get_name());
+		//tmp = tmp.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
 		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			ui.packageTable->setRowHidden(i, true);
@@ -529,7 +538,8 @@ void MainWindow::resetQueue()
 
 void MainWindow::showPackageInfo()
 {
-	long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
+	//long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
+	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
 	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
@@ -572,8 +582,8 @@ void MainWindow::setTableSize()
 void MainWindow::initPackageTable()
 {
 
-    if (ui.packageTable->columnCount() < 3)
-    	ui.packageTable->setColumnCount(3);
+    if (ui.packageTable->columnCount() < 2)
+    	ui.packageTable->setColumnCount(2);
     QTableWidgetItem *__colItem0 = new QTableWidgetItem();
     __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
@@ -587,10 +597,10 @@ void MainWindow::initPackageTable()
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
 
-    QTableWidgetItem *__colItem7 = new QTableWidgetItem();
-    __colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
-    ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
-    ui.packageTable->setColumnHidden(PT_ID, true);
+    //QTableWidgetItem *__colItem7 = new QTableWidgetItem();
+    //__colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
+    //ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
+    //ui.packageTable->setColumnHidden(PT_ID, true);
 	setTableSize();
 }
 
@@ -652,10 +662,15 @@ void MainWindow::setInstalledFilter()
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		showIt = false;
-		action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
-		available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
-		installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
-		configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+		//action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
+		//available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
+		//installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
+		//configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
+		action = packagelist->get_package(i)->action();
+		available = packagelist->get_package(i)->available();
+		installed = packagelist->get_package(i)->installed();
+		configexist = packagelist->get_package(i)->configexist();
+
 
 		if (ui.actionShow_installed->isChecked() && installed)
 		{
@@ -687,7 +702,8 @@ void MainWindow::setInstalledFilter()
 
 void MainWindow::markChanges(int x, Qt::CheckState state)
 {
-		unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();
+		//unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();
+		unsigned long i = x;
 		if (i >= newStatus.size())
 		{
 			printf("i is out of range: i=%ld, max = %d\n", i, packagelist->size());

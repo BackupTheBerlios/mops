@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.13 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.14 2007/04/22 10:18:32 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -354,8 +354,8 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBox);
 		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
 	}
-	ui.repositoryTable->setColumnWidth(0, 15);
- 	ui.repositoryTable->setColumnWidth(1, 400);
+	ui.repositoryTable->setColumnWidth(0, 32);
+ 	ui.repositoryTable->setColumnWidth(1, 900);
 
 
 	
