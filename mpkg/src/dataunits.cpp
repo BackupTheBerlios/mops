@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.22 2007/04/18 13:29:41 i27249 Exp $
+	$Id: dataunits.cpp,v 1.23 2007/04/22 17:47:37 i27249 Exp $
 */
 
 
@@ -1854,6 +1854,14 @@ void PACKAGE_LIST::destroy()
 {
 	packages.clear();
 }
+void PACKAGE_LIST::initClones()
+{
+	cList.init(packages);
+}
+int PACKAGE_LIST::getCloneID(int testID)
+{
+	return cList.getCloneID(testID);
+}
 PACKAGE_LIST::PACKAGE_LIST(){}
 PACKAGE_LIST::~PACKAGE_LIST()
 {
@@ -1966,3 +1974,87 @@ void DESCRIPTION_LIST::clear()
 
 DESCRIPTION_LIST::DESCRIPTION_LIST(){}
 DESCRIPTION_LIST::~DESCRIPTION_LIST(){}
+
+cloneList::cloneList(){}
+void cloneList::init(vector<PACKAGE> &pkgList)
+{
+	whoHasClones_IDs.clear(); 	// Список объектов, имеющих клоны
+	objectCloneListID.clear(); 	// Список клонов каждого объекта
+	masterCloneID.clear();		// ID клона, имеющего максимальную версию.
+	installedCloneID.clear();	// ID установленного клона. Если такого нету, ставится равным -1
+	
+	// Шаг 1. Ищем объекты, имеющие клонов. Заполняем списки.
+	vector<int>thisClonesList;
+	int thisInstalledID;
+	int thisClonePosition;
+	string maxCloneVersion;
+	int lastMasterCloneID;
+	bool itHasClone;
+	for (int i=0; i<pkgList.size(); i++)
+	{
+		itHasClone = false;
+		thisInstalledID = -1;
+		thisClonePosition = -1;
+		lastMasterCloneID = -1;
+		thisClonesList.clear();
+		for (int k=0; k<pkgList.size(); k++)
+		{
+			if (k != i && pkgList[k].get_name() == pkgList[i].get_name())
+			{
+				itHasClone = true;
+				if (thisClonesList.empty())
+				{
+					thisClonesList.push_back(i);
+					whoHasClones_IDs.push_back(i);
+					thisClonePosition = whoHasClones_IDs.size()-1;
+				}
+				thisClonesList.push_back(k);
+				if (pkgList[k].installed()) thisInstalledID = k;
+				if (maxCloneVersion.empty() || \
+						strverscmp(pkgList[k].get_version().c_str(), maxCloneVersion.c_str())>0)
+				{
+					maxCloneVersion = pkgList[k].get_version();
+					lastMasterCloneID = k;
+				}
+			}
+		}
+		if (itHasClone)
+		{
+			installedCloneID.push_back(thisInstalledID);
+			objectCloneListID.push_back(thisClonesList);
+			masterCloneID.push_back(lastMasterCloneID);
+		}
+	}
+#ifdef DEBUG
+	printf("whoHasClones_IDs: %d\nObjectCloneListID: %d\nmasterCloneID: %d\ninstalledCloneID: %d\n",\
+		       	whoHasClones_IDs.size(),\
+			objectCloneListID.size(),\
+			masterCloneID.size(),
+			installedCloneID.size());
+	printf("Clone tree list:\n");
+	for (unsigned int i=0; i<objectCloneListID.size(); i++)
+	{
+		printf("%s: ", pkgList[whoHasClones_IDs[i]].get_name().c_str());
+		for (unsigned int t = 0; t<objectCloneListID[i].size(); t++)
+		{
+			printf("%s, ", pkgList[objectCloneListID[i][t]].get_name().c_str());
+		}
+		printf("\n");
+	}
+#endif
+	//sleep(10000);
+
+}
+cloneList::~cloneList(){}
+
+int cloneList::getCloneID(int testID)
+{
+	for (unsigned int i=0; i<whoHasClones_IDs.size(); i++)
+	{
+		if (whoHasClones_IDs[i]==testID)
+		{
+			return i;
+		}
+	}
+	return -1;
+}

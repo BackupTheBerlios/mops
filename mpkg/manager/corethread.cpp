@@ -1,9 +1,9 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.33 2007/04/22 12:03:27 i27249 Exp $
+ * $Id: corethread.cpp,v 1.34 2007/04/22 17:47:37 i27249 Exp $
  * *************************************************************************/
-#define USLEEP 5
+//#define USLEEP 0
 #include "corethread.h"
 //#define TIMER_RES 600
 
@@ -697,11 +697,18 @@ void coreThread::_loadPackageDatabase()
 		return;
 	}
 	packageList = tmpPackageList;
+	packageList->initClones();
 	emit sqlQueryEnd();
-	
 	newStatus.clear();
-
+	for (int i=0; i<packageList->size(); i++)
+	{
+		newStatus.push_back(packageList->get_package(i)->action());
+	}
+	//cloneList cList(packageList);
+	// Internal structures ready - can sync with main thread
+	sync();
 	unsigned int count = packageList->size();
+	
 	emit initProgressBar(count);
 	emit enableProgressBar();
 	emit clearTable();
@@ -709,7 +716,6 @@ void coreThread::_loadPackageDatabase()
 	emit setTableSize(packageList->size());
 	for (int i=0; i<packageList->size(); i++)
 	{
-		newStatus.push_back(packageList->get_package(i)->action());
 		insertPackageIntoTable(i);
 
 #ifdef USLEEP
@@ -727,7 +733,6 @@ void coreThread::_loadPackageDatabase()
 	}
 	emit disableProgressBar();
 	emit loadingFinished();
-	sync();
 	emit applyFilters();
 	currentAction=CA_Idle;
 }
@@ -756,6 +761,48 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	}
 
 	PACKAGE *_p = packageList->get_package(package_num);
+	int cloneID = 0;
+       	cloneID = packageList->getCloneID(package_num);
+	string cloneHeader;
+	vector<int>whoHasClones_IDs = packageList->cList.whoHasClones_IDs; 	// Список объектов, имеющих клоны
+	vector< vector<int> >objectCloneListID = packageList->cList.objectCloneListID; 	// Список клонов каждого объекта
+	vector<int>masterCloneID = packageList->cList.masterCloneID;	// ID клона, имеющего максимальную версию.
+	vector<int>installedCloneID=packageList->cList.installedCloneID;	// ID установленного клона. Если такого нету, ставится равным -1
+
+	
+	
+	if (cloneID>=0)
+	{
+		/*for (unsigned int i=0; i<objectCloneListID.size(); i++)
+		{
+			if (i!=packageList->cList.getCloneID(whoHasClones_IDs[i])) printf("getCloneID bug!\n");
+			if (i == cloneID)
+			{
+				printf("[%d][%d] %s: ",i, whoHasClones_IDs[i], packageList->get_package(whoHasClones_IDs[i])->get_name().c_str());
+				for (unsigned int t = 0; t<objectCloneListID[i].size(); t++)
+				{
+					printf("%s, ", packageList->get_package(objectCloneListID[i][t])->get_name().c_str());
+				}
+				printf("\n");
+			}
+		}*/
+
+		//printf("cloned id = %d, package ID = %d, name = %s\n", cloneID, package_num, _p->get_name().c_str());
+		//if (packageList->cList.masterCloneID[cloneID] == package_num)
+		if (true)
+		{
+			//printf("expanding cloneHeader...\n");
+			cloneHeader = "<font color = \"red\">Other versions: <b>";
+			for (unsigned int i=1; i<objectCloneListID[cloneID].size(); i++)
+			{
+				cloneHeader += packageList->get_package(objectCloneListID[cloneID][i])->get_version();
+				if (i!=objectCloneListID[cloneID].size()-1) cloneHeader+=", ";
+				else cloneHeader+="</b></font>";
+			}
+		//	printf("CloneHeader = %s\n", cloneHeader.c_str());
+		}
+	}
+
 	switch (_p->action())
 	{
 		case ST_NONE:
@@ -785,7 +832,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	//string pName = "<table><tbody><tr><td></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
 			+_p->get_version()\
-			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]</font>"\
+			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
 }
@@ -868,3 +915,5 @@ void coreThread::cleanCache()
 {
 	database->clean_cache();
 }
+
+

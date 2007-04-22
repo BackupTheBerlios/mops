@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.55 2007/04/22 12:03:27 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.56 2007/04/22 17:47:37 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -52,6 +52,14 @@ void MainWindow::loadingStarted()
 	ui.packageTable->hide();
 	ui.statusbar->showMessage("Loading started");
 }
+
+void MainWindow::filterCloneItems()
+{
+
+	}
+
+		
+		
 
 void MainWindow::loadingFinished()
 {
@@ -172,6 +180,12 @@ void MainWindow::applyPackageFilter ()
 				ui.packageTable->setRowHidden(i, false);
 				statusOk = true;
 			}
+			if (ui.actionShow_unavailable->isChecked())
+			{
+				ui.packageTable->setRowHidden(i,false);
+				statusOk=true;
+			}
+				
 
 
 
@@ -291,25 +305,21 @@ void MainWindow::deselectAll()
 
 void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
 {
-	
+
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
 	else stat->setCheckState(Qt::Unchecked);
 	ui.packageTable->setCellWidget(row,PT_INSTALLCHECK, stat);
-
 	TableLabel *pkgName = new TableLabel(ui.packageTable);
 	pkgName->setTextFormat(Qt::RichText);
 	pkgName->setText(cellItemText.c_str());
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
-
-	//ui.packageTable->itemAt(row, PT_INSTALLCHECK)->setFlags(Qt::ItemIsUserCheckable);
-	
+	cellItemText+="<html><b>Description: </b><br>" + adjustStringWide(packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description().size())+"</html>";
+	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
-	//ui.packageTable->setItem(row,PT_ID, new QTableWidgetItem(IntToStr(row).c_str()));
 	ui.packageTable->setRowHeight(row-1, 45);
-
 }
 
 

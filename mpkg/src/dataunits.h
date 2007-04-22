@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.13 2007/04/18 13:29:41 i27249 Exp $
+	$Id: dataunits.h,v 1.14 2007/04/22 17:47:37 i27249 Exp $
 */
 
 
@@ -496,6 +496,20 @@ class PACKAGE
 	PACKAGE();
 	~PACKAGE();
 };
+class cloneList
+{
+	public:
+		vector<int>whoHasClones_IDs; 	// Список объектов, имеющих клоны
+		vector< vector<int> >objectCloneListID; 	// Список клонов каждого объекта
+		vector<int>masterCloneID;	// ID клона, имеющего максимальную версию.
+		vector<int>installedCloneID;	// ID установленного клона. Если такого нету, ставится равным -1
+
+		//cloneList(PACKAGE_LIST *pkgList); // Конструктор, здесь создается каталог клонов
+		cloneList();
+		void init(vector<PACKAGE> &pkgList);
+		~cloneList();
+		int getCloneID(int testID);
+};
 
 class PACKAGE_LIST
 {
@@ -515,9 +529,13 @@ class PACKAGE_LIST
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();
+	void initClones();
+	int getCloneID(int testID);
+	cloneList cList;
 	PACKAGE_LIST();
 	~PACKAGE_LIST();
 };
+
 
 typedef int RESULT;
 string IntToStr(int num);

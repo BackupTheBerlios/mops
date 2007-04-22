@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.7 2007/04/22 12:03:27 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.8 2007/04/22 17:47:37 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -190,4 +190,33 @@ string humanizeSize(unsigned int size)
 	}
 }
 
+string adjustStringWide(string input, unsigned int char_width)
+{
+	if (char_width < 50) char_width = 50;
+	vector<string> spaces;
+	vector<string> chunks;
+	int lspace;
+	for (int i=0; i<input.size(); i++)
+	{
+		if (input[i]==' ') lspace = i;
+		if (i>=char_width)
+		{
+			if (lspace==0) lspace = i;
+			chunks.push_back(input.substr(0,lspace));
+			input=input.substr(lspace);
+			i=-1;
+			lspace = 0;
+		}
+		if (i==input.size()-1) chunks.push_back(input);
 
+	}
+	
+	string ret;
+	for (int i=0; i<chunks.size(); i++)
+	{
+		ret+=chunks[i];
+		ret += "<br>";
+	}
+	return ret;
+
+}

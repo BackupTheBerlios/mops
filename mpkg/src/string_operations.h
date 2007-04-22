@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.6 2007/04/22 12:03:27 i27249 Exp $
+ * $Id: string_operations.h,v 1.7 2007/04/22 17:47:37 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -12,6 +12,7 @@ string cutSpaces(string str);
 string humanizeSize(unsigned int size);
 string humanizeSize(string size);
 unsigned int fl2ul(float input);
+string adjustStringWide(string input, unsigned int char_width);
 
 class mstring
 {
