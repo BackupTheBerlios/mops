@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.24 2007/04/24 01:13:17 i27249 Exp $
+	$Id: dataunits.cpp,v 1.25 2007/04/24 13:27:07 i27249 Exp $
 */
 
 
@@ -1840,11 +1840,13 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 {
 	string max_version="0";
 	int id=0;
+	string tmp_ver;
 	for (unsigned int i=0;i<packages.size();i++)
 	{
-		if (packages[i].get_version()>=max_version)
+		tmp_ver = packages[i].get_version() + packages[i].get_build();
+		if (strverscmp(tmp_ver.c_str(), max_version.c_str())>=0)
 		{
-			max_version=packages[i].get_version();
+			max_version=tmp_ver;
 			id=i;
 		}
 	}
@@ -1992,6 +1994,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 	string maxCloneVersion;
 	int lastMasterCloneID;
 	bool itHasClone;
+	string tmp_ver;
 	for (int i=0; i<pkgList.size(); i++)
 	{
 		itHasClone = false;
@@ -2012,10 +2015,11 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 				}
 				thisClonesList.push_back(k);
 				if (pkgList[k].installed()) thisInstalledID = k;
+				tmp_ver = pkgList[k].get_version()+pkgList[k].get_build();
 				if (maxCloneVersion.empty() || \
-						strverscmp(pkgList[k].get_version().c_str(), maxCloneVersion.c_str())>0)
+						strverscmp(tmp_ver.c_str(), maxCloneVersion.c_str())>0)
 				{
-					maxCloneVersion = pkgList[k].get_version();
+					maxCloneVersion = tmp_ver;
 					lastMasterCloneID = k;
 				}
 			}
@@ -2061,3 +2065,19 @@ int cloneList::getCloneID(int testID)
 	}
 	return -1;
 }
+
+dTreeItem::dTreeItem(){}
+dTreeItem::~dTreeItem(){}
+void dTreeItem::addChild(PACKAGE *pkg)
+{
+	childs.push_back(pkg->get_id());
+}
+
+PACKAGE *getChild(int package_id)
+{
+	for (int i=0; i<childs.size(); i++)
+	{
+		//if (childs[i]==package_id) return 
+	}
+}
+

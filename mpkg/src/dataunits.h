@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.15 2007/04/24 01:13:17 i27249 Exp $
+	$Id: dataunits.h,v 1.16 2007/04/24 13:27:08 i27249 Exp $
 */
 
 
@@ -386,6 +386,17 @@ class DESCRIPTION_LIST
 		unsigned int size();
 		bool empty();
 		void clear();
+};
+
+class dTreeItem
+{
+	public:
+		int thisID;
+		vector<*dTreeItem> childs;
+		dTreeItem();
+		~dTreeItem();
+		void addChild(PACKAGE *pkg);
+		PACKAGE *getChild(int package_id);
 };
 
 class PACKAGE
