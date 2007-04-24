@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.35 2007/04/19 01:38:57 i27249 Exp $
+$Id: local_package.cpp,v 1.36 2007/04/24 04:26:23 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -91,7 +91,7 @@ int slack2xml(string filename, string xml_output)
 	}
 	_node.getChildNode("build").addText(tmp.c_str());
 	tmp.clear();
-
+	/*
 	// DEPENDENCIES
 	// Dependencies
 	int dep_num=0;
@@ -206,7 +206,7 @@ int slack2xml(string filename, string xml_output)
 		}
 		debug("Description: "+ tmpDescStr);
 		_node.getChildNode("description").addText(tmpDescStr.c_str());
-	}
+	}*/
 	_node.writeToFile(xml_output.c_str());
 	return 0;
 }
@@ -242,20 +242,21 @@ string LocalPackage::files2xml(string input)
 int LocalPackage::fill_scripts(PACKAGE *package)
 {
 	debug("get_scripts start");
-	
+	//printf("SCRIPTS_DIR: %s\n", SCRIPTS_DIR.c_str());
+	//printf("package->filename: %s\n", package->get_filename().c_str());
 	string scripts_dir=SCRIPTS_DIR+"/" + package->get_filename() + "_" + package->get_md5();
-	//printf("[%s]\n", package->get_md5().c_str());
+	//printf("scripts_dir: %s\n\n\n", scripts_dir.c_str());
 	string tmp_preinstall=scripts_dir+"/preinstall.sh";
 	string tmp_postinstall=scripts_dir+"/doinst.sh";
 	string tmp_preremove=scripts_dir+"/preremove.sh";
 	string tmp_postremove=scripts_dir+"/postremove.sh";
-	string mkdir_pkg="mkdir "+scripts_dir+" 2>/dev/null";
+	string mkdir_pkg="mkdir -p "+scripts_dir+" 2>/dev/null";
+	//printf("mkdir_pkg = %s\n", mkdir_pkg.c_str());
+	//printf("tmp_preinstall: %s\n", tmp_preinstall.c_str());
 	system(mkdir_pkg.c_str());
 	string sys_cache=SYS_CACHE;
 	string filename=sys_cache+package->get_filename();
-#ifdef DEBUG
-	printf("extracting scripts for %s, filename: %s\n", package->get_name().c_str(), filename.c_str());
-#endif
+	//printf("extracting scripts for %s, filename: %s\n", package->get_name().c_str(), filename.c_str());
 	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
 	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+ tmp_postinstall + " 2>/dev/null";
 	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
@@ -314,7 +315,7 @@ int LocalPackage::get_xml()
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
 	system(sys.c_str());
 	
-	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
+	//printf("Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!\n");
 	if (!FileNotEmpty(tmp_xml))
 	{
 		// In most cases it means that we have legacy Slackware package.
@@ -325,6 +326,7 @@ int LocalPackage::get_xml()
 			return -1;
 		}
 	}
+	//printf("packageconfig...\n");
 
 	PackageConfig p(tmp_xml);
 	if (!p.parseOk)
@@ -452,7 +454,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 
 int LocalPackage::get_filelist()
 {
-	printf("get_filelist\n");
+	//printf("get_filelist\n");
 	debug("get_filelist start");
 	string tmp_flist=get_tmp_file();
 	string tmp_xml_flist=get_tmp_file();
@@ -547,10 +549,12 @@ int LocalPackage::set_additional_data()
 	string fpath;
 	string fname;
 	int fname_start=0;
+	//printf("filename manipulation...\n");
 	for(int i=data.get_filename().length()-1;i>=0 && data.get_filename()[i]!='/'; i--)
 	{
 		fname_start=i;
 	}
+	//printf("done manipulating\n");
 	if (fname_start!=1)
 	{
 
@@ -609,7 +613,6 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 		//	create_xml_data(tmp_xml); // This should create us a valid XML basing on old-style Slackware package format
 	}
 
-	printf("fill_configfiles\n");
 	PackageConfig p(tmp_xml);
 	if (!p.parseOk) return -100;
 //	_packageXMLNode = p.getXMLNode(); // To be indexing work
@@ -635,24 +638,26 @@ int LocalPackage::injectFile(bool index)
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
 	//int ret=0;
 	debug("local_package.cpp: injectFile(): start");
+	//printf("get_xml..\n");
 	if (get_xml()!=0)
 	{
 		debug("local_package.cpp: injectFile(): get_xml FAILED");
 		return -3;
 	}
-
+	//printf("get_size()\n");
 	if (get_size()!=0)
 	{
 		debug("local_package.cpp: injectFile(): get_size() FAILED");
 		return -1;
 	}
+	//printf("create_md5\n");
 	if (create_md5()!=0)
 	{
 		debug("local_package.cpp: injectFile(): create_md5 FAILED");
 		return -2;
 	}
-	
-	debug("local_package.cpp: injectFile(): filename is "+ filename);
+	//printf("set_additional_data\n");
+	debug("local_packaige.cpp: injectFile(): filename is "+ filename);
 	data.set_filename(filename);
 	
 	if (!index)

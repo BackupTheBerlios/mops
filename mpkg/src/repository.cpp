@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.31 2007/04/21 22:09:32 i27249 Exp $
+ * $Id: repository.cpp,v 1.32 2007/04/24 04:26:23 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -496,8 +496,11 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	if (filetype==FTW_F && ext==".tgz")
 	{
 		cout<< "indexing file " << filename << "..."<<endl;
+		//printf("Creating lp...\n");
 		LocalPackage lp(_package);
+		//printf("Injecting file\n");
 		lp.injectFile(true);
+		//printf("Adding child to main tree\n");
 		_root.addChild(lp.getPackageXMLNode());
 		//printf("done\n");
 	}

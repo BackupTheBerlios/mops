@@ -219,7 +219,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 {
 	if (list.empty()) 
 	{
-		printf("hmm.. download list is empty\n");
 		return DOWNLOAD_OK;
 	}
 	DL_CDROM_DEVICE = cdromDevice;
@@ -283,7 +282,7 @@ process:
     				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
     			
-				printf("downloading %s...\n", item->name.c_str());
+				//printf("downloading %s...\n", item->name.c_str());
     				result = curl_easy_perform(ch);
     				fclose(out);
     	

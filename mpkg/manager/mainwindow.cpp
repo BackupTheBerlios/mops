@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.57 2007/04/24 01:13:17 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.58 2007/04/24 04:26:23 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -106,7 +106,6 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
-	printf("applying package filter...\n");
 	string pkgBoxLabel = "Packages";
 	QString nameMask;
 	bool nameOk = false;
@@ -127,14 +126,14 @@ void MainWindow::applyPackageFilter ()
 	//if (ui.actionShow_installed->isChecked()) pkgBoxLabel+=" Installed, ";
 	//if (ui.actionShow_configexist->isChecked()) pkgBoxLabel +=" Not purged, ";
 	//if (ui.actionShow_queue->isChecked()) pkgBoxLabel += " Queued)";
-	vector<int>whoHasClones;
+	/*vector<int>whoHasClones;
 	vector<int>masterClones = packagelist->cList.masterCloneID;
 	vector<int>hiddenClones;
 	if (packagelist->cList.initialized)
 	{
 		for (int i=0; i<masterClones.size(); i++)
 		{
-			printf("Master: %d\n", masterClones[i]);
+		//	printf("Master: %d\n", masterClones[i]);
 		}
 		for (unsigned int i=0; i<packagelist->cList.objectCloneListID.size(); i++)
 		{
@@ -146,7 +145,7 @@ void MainWindow::applyPackageFilter ()
 				}
 			}
 		}
-	}
+	}*/
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
@@ -187,7 +186,7 @@ void MainWindow::applyPackageFilter ()
 				ui.packageTable->setRowHidden(i, false);
 				statusOk = true;
 			}
-			if (ui.actionShow_available->isChecked() && available)
+			if (ui.actionShow_available->isChecked() && available && !installed)
 			{
 				ui.packageTable->setRowHidden(i, false);
 				statusOk = true;
@@ -843,15 +842,17 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			package_icon="purge.png";
 			break;
 		}
-
+		
 		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+ \
 			_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+\
 			"</td></tr></tbody></table>";
-		TableLabel *_z = new TableLabel(ui.packageTable);
+		setTableItem(x, state, pName);
+		//TableLabel *_z = new TableLabel(ui.packageTable);
 		//_z->setTextFormat(Qt::RichText);
-		_z->setText(pName.c_str());
-		_z->row = x;
-		ui.packageTable->setCellWidget(x, PT_NAME, _z);
+		//_z->setText(pName.c_str());
+		//_z->row = x;
+		//ui.packageTable->setCellWidget(x, PT_NAME, _z);
+		
 }
 
 void MainWindow::loadData()

@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.16 2007/04/18 13:29:41 i27249 Exp $
+$Id: dependencies.cpp,v 1.17 2007/04/24 04:26:23 i27249 Exp $
 */
 
 
@@ -124,7 +124,6 @@ RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_nor
 	//Step 2. Check dependencies and build a list
 	debug("DependencyTracker::merge");
 	
-	printf("Package ID = %d\n", package->get_id());
 	if (!do_normalize)
 	{
 		if (package->installed() || package->action()==ST_INSTALL) // If package is already installed or already marked for install - it is already good :-)

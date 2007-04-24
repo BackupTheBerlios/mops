@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.47 2007/04/24 01:13:17 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.48 2007/04/24 04:26:23 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -245,11 +245,11 @@ int mpkgDatabase::commit_actions()
 		}
 		else
 		{
-			printf("Download successful\n");
+			//printf("Download successful\n");
 		}
 	
 		progressEnabled2 = false;
-		printf("Download complete\n");
+		//printf("Download complete\n");
 	}
 	debug("Calling INSTALL");
 
@@ -281,6 +281,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		no_purge=false;
 	}
 	currentStatus = statusHeader + "extracting installation scripts";
+	//printf("%s\n", currentStatus.c_str());
 	lp.fill_scripts(package);
 	currentStatus = statusHeader + "extracting file list";
 	lp.fill_filelist(package);
@@ -310,6 +311,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		{
 			string preinst="cd " + SYS_ROOT + " && /bin/sh "+package->get_scripts()->get_preinstall();
 			system(preinst.c_str());
+			//printf("Done.\n");
 		}
 	}
 
@@ -319,7 +321,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	//lp.fill_filelist(package);
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
-	string create_root="mkdir "+sys_root+" 2>/dev/null";
+	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
+	//printf("create_root: %s\n", create_root.c_str());
 	system(create_root.c_str());
 	printf("Extracting package %s\n",package->get_name().c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install";

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.17 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.18 2007/04/24 04:26:23 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -66,8 +66,41 @@ bool FileExists(string filename)
 
 bool FileNotEmpty(string filename)
 {
-	if (!ReadFile(filename, 4).empty()) return true;
-	else return false;
+	//printf("testing if a file is empty: filename = %s\n",filename.c_str());
+	ifstream test(filename.c_str(), ios::in);
+	ifstream::pos_type nullsize;
+	if (test.is_open())
+	{
+	//	printf("file opened\n");
+		nullsize = test.tellg();
+		test.close();
+	}
+	else {
+	//	perror("Error opening file");
+		return false;
+	}
+	ifstream test2(filename.c_str(), ios::in | ios::ate);
+	ifstream::pos_type endsize;
+	if (test2.is_open())
+	{
+	//	printf("file2 opened\n");
+		endsize = test2.tellg();
+		test2.close();
+	}
+	else {
+	  //     perror("Error opening file 2\n");
+       	       return false;
+	}
+	if (endsize == nullsize)
+	{
+	//	printf("File is empty\n");
+		return false;
+	}
+	else
+	{
+	//	printf("File contains data\n");
+		return true;
+	}
 }
 		
 
@@ -107,6 +140,7 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 		ret = memblock;
 		delete[] memblock;
 	}
+	if (max_count > 0) ret = ret.substr(0, max_count);
 	return ret;
 /*
 #ifndef EXPERIMENTAL

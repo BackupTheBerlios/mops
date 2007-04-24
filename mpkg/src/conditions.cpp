@@ -1,11 +1,11 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.7 2007/03/12 00:39:44 i27249 Exp $
+    $Id: conditions.cpp,v 1.8 2007/04/24 04:26:23 i27249 Exp $
 */
 
 
 #include "conditions.h"
-
+#include "string_operations.h"
 int condition2int(string condition)
 {
 	if (condition==COND_MORE) return VER_MORE;
@@ -23,14 +23,15 @@ int condition2int(string condition)
 
 string hcondition2xml(string condition)
 {
+	condition = cutSpaces(condition);
 	//condition=condition.substr(condition.find_first_of("<>="), condition.find_last_of("<>="));
-	if (condition.find(HCOND_MORE)!=std::string::npos) return COND_MORE;
-	if (condition.find(HCOND_LESS)!=std::string::npos) return COND_LESS;
-	if (condition.find(HCOND_NOTEQUAL)!=std::string::npos) return COND_NOTEQUAL;
-	if (condition.find(HCOND_XMORE)!=std::string::npos || condition.find(HCOND_XMORE2)!=std::string::npos) return COND_XMORE;
-	if (condition.find(HCOND_XLESS)!=std::string::npos || condition.find(HCOND_XLESS2)!=std::string::npos) return COND_XLESS;
-	if (condition.find(HCOND_EQUAL)!=std::string::npos || condition.find(HCOND_EQUAL2)!=std::string::npos) return COND_EQUAL;
-	if (condition.find(HCOND_ANY)!=std::string::npos) return COND_ANY;
+	if (condition == HCOND_MORE) return COND_MORE;
+	if (condition == HCOND_LESS) return COND_LESS;
+	if (condition == HCOND_NOTEQUAL) return COND_NOTEQUAL;
+	if (condition == HCOND_XMORE || condition == HCOND_XMORE2) return COND_XMORE;
+	if (condition == HCOND_XLESS || condition == HCOND_XLESS2) return COND_XLESS;
+	if (condition == HCOND_EQUAL || condition == HCOND_EQUAL2) return COND_EQUAL;
+	if (condition == HCOND_ANY) return COND_ANY;
 	printf("Unknown condition [%s]\n", condition.c_str());
 	return COND_ANY;
 }
