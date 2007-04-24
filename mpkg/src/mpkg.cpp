@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.46 2007/04/19 01:38:57 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.47 2007/04/24 01:13:17 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -306,8 +306,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
 		currentStatus = statusHeader + "executing pre-install scripts";
-		string preinst="/bin/sh "+package->get_scripts()->get_preinstall();
-		system(preinst.c_str());
+		if (FileExists(package->get_scripts()->get_preinstall()))
+		{
+			string preinst="cd " + SYS_ROOT + " && /bin/sh "+package->get_scripts()->get_preinstall();
+			system(preinst.c_str());
+		}
 	}
 
 	// Extracting package
@@ -367,8 +370,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
-		string postinst="/bin/sh "+package->get_scripts()->get_postinstall();
-		system(postinst.c_str());
+		if (FileExists(package->get_scripts()->get_postinstall()))
+		{
+			string postinst="cd " + SYS_ROOT + " && /bin/sh "+package->get_scripts()->get_postinstall();
+			system(postinst.c_str());
+		}
 	}
 
 	set_installed(package->get_id(), ST_INSTALLED);
@@ -465,9 +471,12 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		debug("REMOVE PACKAGE::Preparing scripts");
 		if(!DO_NOT_RUN_SCRIPTS)
 		{
-			currentStatus = statusHeader + "executing pre-remove scripts";
-			string prerem="/bin/sh "+package->get_scripts()->get_preremove();
-			system(prerem.c_str());
+			if (FileExists(package->get_scripts()->get_preremove()))
+			{
+				currentStatus = statusHeader + "executing pre-remove scripts";
+				string prerem="cd " + SYS_ROOT + " && /bin/sh "+package->get_scripts()->get_preremove();
+				system(prerem.c_str());
+			}
 		}
 		// removing package
 		debug("calling remove");
@@ -519,12 +528,15 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			empty_dirs.clear();
 		}
 	
-		currentStatus = statusHeader + "executing post-removal scripts";
 		// Creating and running POST-INSTALL script
 		if (!DO_NOT_RUN_SCRIPTS)
 		{
-			string postrem="/bin/sh "+package->get_scripts()->get_postremove();
-			system(postrem.c_str());
+			if (FileExists(package->get_scripts()->get_postremove()))
+			{
+				currentStatus = statusHeader + "executing post-removal scripts";
+				string postrem="cd " + SYS_ROOT + " && /bin/sh "+package->get_scripts()->get_postremove();
+				system(postrem.c_str());
+			}
 		}
 	}
 	set_installed(package->get_id(), ST_NOTINSTALLED);

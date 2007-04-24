@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.14 2007/04/22 17:47:37 i27249 Exp $
+	$Id: dataunits.h,v 1.15 2007/04/24 01:13:17 i27249 Exp $
 */
 
 
@@ -506,6 +506,7 @@ class cloneList
 
 		//cloneList(PACKAGE_LIST *pkgList); // Конструктор, здесь создается каталог клонов
 		cloneList();
+		bool initialized;
 		void init(vector<PACKAGE> &pkgList);
 		~cloneList();
 		int getCloneID(int testID);

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.56 2007/04/22 17:47:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.57 2007/04/24 01:13:17 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -106,11 +106,13 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
+	printf("applying package filter...\n");
 	string pkgBoxLabel = "Packages";
 	QString nameMask;
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
+	bool cloneOk = true;
 	TAG_LIST tmpTagList;
 	string tagvalue;
 	int action;
@@ -125,7 +127,26 @@ void MainWindow::applyPackageFilter ()
 	//if (ui.actionShow_installed->isChecked()) pkgBoxLabel+=" Installed, ";
 	//if (ui.actionShow_configexist->isChecked()) pkgBoxLabel +=" Not purged, ";
 	//if (ui.actionShow_queue->isChecked()) pkgBoxLabel += " Queued)";
-	
+	vector<int>whoHasClones;
+	vector<int>masterClones = packagelist->cList.masterCloneID;
+	vector<int>hiddenClones;
+	if (packagelist->cList.initialized)
+	{
+		for (int i=0; i<masterClones.size(); i++)
+		{
+			printf("Master: %d\n", masterClones[i]);
+		}
+		for (unsigned int i=0; i<packagelist->cList.objectCloneListID.size(); i++)
+		{
+			for (unsigned int k = 0; k < packagelist->cList.objectCloneListID[i].size(); k++)
+			{
+				if (packagelist->cList.masterCloneID[i]!=packagelist->cList.objectCloneListID[i][k])
+				{
+					hiddenClones.push_back(packagelist->cList.objectCloneListID[i][k]);
+				}
+			}
+		}
+	}
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
@@ -134,6 +155,7 @@ void MainWindow::applyPackageFilter ()
 		nameOk = false;
 		statusOk = false;
 		categoryOk = false;
+		cloneOk = true;
 
 		//nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
 		nameMask = nameMask.fromStdString(packagelist->get_package(i)->get_name());
@@ -261,7 +283,7 @@ void MainWindow::applyPackageFilter ()
 			} // else (tagvalue)
 		} // if (statusOk)
 
-		if (nameOk && statusOk && categoryOk)
+		if (nameOk && statusOk && categoryOk && cloneOk)
 		{
 			pkgCount++;
 			ui.packageTable->setRowHidden(i, false);

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.23 2007/04/22 17:47:37 i27249 Exp $
+	$Id: dataunits.cpp,v 1.24 2007/04/24 01:13:17 i27249 Exp $
 */
 
 
@@ -1975,7 +1975,9 @@ void DESCRIPTION_LIST::clear()
 DESCRIPTION_LIST::DESCRIPTION_LIST(){}
 DESCRIPTION_LIST::~DESCRIPTION_LIST(){}
 
-cloneList::cloneList(){}
+cloneList::cloneList(){
+initialized = false;
+}
 void cloneList::init(vector<PACKAGE> &pkgList)
 {
 	whoHasClones_IDs.clear(); 	// Список объектов, имеющих клоны
@@ -2043,6 +2045,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 	}
 #endif
 	//sleep(10000);
+	initialized = true;
 
 }
 cloneList::~cloneList(){}
