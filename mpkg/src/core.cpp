@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.34 2007/04/18 13:29:41 i27249 Exp $
+ *	$Id: core.cpp,v 1.35 2007/04/25 23:47:44 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -807,10 +807,15 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 	SQLRecord sqlFields;
 	sqlFields.addField("package_id");
 	SQLRecord sqlSearch;
+#ifndef NO_MD5_COMPARE
+	sqlSearch.addField("package_md5", package->get_md5());
+#endif
+#ifdef NO_MD5_COMPARE
 	sqlSearch.addField("package_name", package->get_name());
 	sqlSearch.addField("package_version", package->get_version());
 	sqlSearch.addField("package_arch", package->get_arch());
 	sqlSearch.addField("package_build", package->get_build());
+#endif
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
 	if (sql_ret!=0)
 	{

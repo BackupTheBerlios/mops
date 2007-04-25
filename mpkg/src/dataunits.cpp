@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.29 2007/04/25 20:58:55 i27249 Exp $
+	$Id: dataunits.cpp,v 1.30 2007/04/25 23:47:44 i27249 Exp $
 */
 
 
@@ -1770,10 +1770,15 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 #ifdef DEBUG
 				printf("add_list: comparing with package %d\n", s);
 #endif
+#ifndef NO_MD5_COMPARE
+				if (packages[s].get_md5()==pkgList->get_package(i)->get_md5())
+#endif
+#ifdef NO_MD5_COMPARE
 				if (packages[s].get_name()==pkgList->get_package(i)->get_name() \
 					&& packages[s].get_version()==pkgList->get_package(i)->get_version() \
 					&& packages[s].get_arch()==pkgList->get_package(i)->get_arch() \
 					&& packages[s].get_build()==pkgList->get_package(i)->get_build())
+#endif
 				{
 					identical_found=true;
 #ifdef DEBUG

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.49 2007/04/25 10:54:36 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.50 2007/04/25 23:47:44 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -706,6 +706,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 
 int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 {
+	printf("Received %d packages from repositories\n", newPackages->size());
 	debug("mpkg.cpp: updateRepositoryData(): requesting current packages");
 	PACKAGE_LIST currentPackages;
 	SQLRecord sqlSearch;

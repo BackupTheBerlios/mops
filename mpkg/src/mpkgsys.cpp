@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.13 2007/04/25 21:33:22 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.14 2007/04/25 23:47:44 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -70,13 +70,15 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	}
 
 	printf(_("Updating package data from %d repositories...\n"), REPOSITORY_LIST.size());
-	
+	int total_packages=0;
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
 		tmpPackages.clear();
 		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);
 		if (!tmpPackages.IsEmpty())
 		{
+			total_packages+=tmpPackages.size();
+			printf("Received %d packages from %d rep\n", tmpPackages.size(), i);
 			for (int s=0; s<tmpPackages.size(); s++)
 			{
 				tmpPackages.get_package(s)->set_available();
@@ -86,6 +88,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 			availablePackages.add_list(&tmpPackages);
 		}
 	}
+	printf("Total %d packages received, filtering...\n", total_packages);
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Update complete.\n");
 	return ret;

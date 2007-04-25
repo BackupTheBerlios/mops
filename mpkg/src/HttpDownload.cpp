@@ -178,7 +178,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 
 	// Sorting (for CD-ROM download optimization)
 	// Step 1. Retrieving list of cd-roms.
-	printf("Sorting...\n");
+	//printf("Sorting...\n");
 	vector<string> cdromVolumeLabels;
 	struct cdromItem cdItem;
 	vector<struct cdromItem>cdromSourcedPackages;
@@ -242,7 +242,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	}
 
 
-	printf("Sorting complete\n");
+	//printf("Sorting complete\n");
 
 
 
@@ -286,46 +286,46 @@ process:
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-    				if (item->url_list.at(j).find("file://")==0)
-				{
-					fclose(out);
-					if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
-					else out = fopen (item->file.c_str(), "wb");
-				}
-				if (item->url_list.at(j).find("cdrom://")==0)
-				{
-					fclose(out);
-					if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
-					else out = fopen (item->file.c_str(), "wb");
-				}
+					printf("Downloading %s\n", item->url_list.at(j).c_str());
+    				
+					if (item->url_list.at(j).find("file://")==0)
+					{
+						fclose(out);
+						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
+						else out = fopen (item->file.c_str(), "wb");
+					}
+					if (item->url_list.at(j).find("cdrom://")==0)
+					{
+						fclose(out);
+						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
+						else out = fopen (item->file.c_str(), "wb");
+					}
 				
-				curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
-    				curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
-    				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
-    				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
-    				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
+					curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+    					curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
+ 	   				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
+    					curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
+    					curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
     			
-    				result = curl_easy_perform(ch);
-    				fclose(out);
+    					result = curl_easy_perform(ch);
+    					fclose(out);
     	
-    				if ( result == CURLE_OK  ) {
+    					if ( result == CURLE_OK  ) {
 					item->status = DL_STATUS_OK;
     					break;
-    				} else 
-				{
-					printf("Download attempt FAILED\n");
-    				    	is_have_error = true;
-    					item->status = DL_STATUS_FAILED;
+    					}
+					else 
+					{
+						printf("Failed.\n");
+    				    		is_have_error = true;
+    						item->status = DL_STATUS_FAILED;
+    					}
     				}
-    	
     			}
-    		}
-        }
+        	}
 
-	*itemnow = i;
-	
-    }
-
+		*itemnow = i;
+    	}
 	if (!is_have_error) return DOWNLOAD_OK;
 	else return DOWNLOAD_ERROR;
 }

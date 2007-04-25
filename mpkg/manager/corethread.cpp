@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.36 2007/04/25 20:58:55 i27249 Exp $
+ * $Id: corethread.cpp,v 1.37 2007/04/25 23:47:44 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -503,7 +503,7 @@ void errorBus::Stop()
 
 statusThread::statusThread()
 {
-	TIMER_RES = 100;
+	TIMER_RES = 50;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
@@ -542,7 +542,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES = 100;
+					TIMER_RES = 50;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
@@ -570,7 +570,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES=100;
+					TIMER_RES=50;
 					if (enabledBar)
 					{
 						emit disableProgressBar2();
@@ -781,7 +781,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 
 	PACKAGE *_p = packageList->get_package(package_num);
 	string cloneHeader;
-	if (_p->hasMaxVersion && _p->installedVersion != _p->maxVersion) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
+	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
 	
 	switch (_p->action())
 	{
@@ -790,8 +790,11 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 			else
 			{
 				if (_p->available()){
-				       package_icon="available.png";
-				       if (_p->configexist()) package_icon="removed_available.png";
+				       if (_p->isUpdate()) package_icon = "update.png";
+				       else {
+					       package_icon="available.png";
+					       if (_p->configexist()) package_icon="removed_available.png";
+				       }
 				}
 				else package_icon="unknown.png";
 			}

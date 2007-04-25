@@ -29,7 +29,7 @@
        <property name="orientation" >
         <enum>Qt::Vertical</enum>
        </property>
-       <widget class="QGroupBox" name="groupBox" >
+       <widget class="QGroupBox" name="packageListBox" >
         <property name="sizePolicy" >
          <sizepolicy>
           <hsizetype>5</hsizetype>
@@ -238,7 +238,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QGroupBox" name="groupBox_3" >
+       <widget class="QGroupBox" name="packageInfoBox" >
         <property name="sizePolicy" >
          <sizepolicy>
           <hsizetype>1</hsizetype>
@@ -278,7 +278,7 @@
             <enum>QTabWidget::Rounded</enum>
            </property>
            <property name="currentIndex" >
-            <number>1</number>
+            <number>0</number>
            </property>
            <property name="usesScrollButtons" >
             <bool>true</bool>
@@ -718,7 +718,7 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>28</height>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRepositories" >

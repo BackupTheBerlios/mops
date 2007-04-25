@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.63 2007/04/25 22:15:14 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.64 2007/04/25 23:47:44 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -48,13 +48,14 @@ void MainWindow::sqlQueryEnd()
 void MainWindow::loadingStarted()
 {
 	ui.loadingLabel->setText("<html><img src=\"splash.png\"></img></html>");
-	ui.splashFrame->show();
+	ui.packageListBox->setEnabled(false);
+	ui.packageInfoBox->hide();
 	ui.packageTable->hide();
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
-
+	ui.splashFrame->show();
 }
 
 void MainWindow::filterCloneItems()
@@ -69,6 +70,8 @@ void MainWindow::loadingFinished()
 {
 	hideEntireTable();
 	ui.splashFrame->hide();
+	ui.packageListBox->setEnabled(true);
+	//ui.packageInfoBox->show();
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
 	ui.packageTable->show();
