@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.25 2007/04/24 13:27:07 i27249 Exp $
+	$Id: dataunits.cpp,v 1.26 2007/04/25 08:26:12 i27249 Exp $
 */
 
 
@@ -2066,7 +2066,7 @@ int cloneList::getCloneID(int testID)
 	return -1;
 }
 
-dTreeItem::dTreeItem(){}
+/*dTreeItem::dTreeItem(){}
 dTreeItem::~dTreeItem(){}
 void dTreeItem::addChild(PACKAGE *pkg)
 {
@@ -2080,4 +2080,4 @@ PACKAGE *getChild(int package_id)
 		//if (childs[i]==package_id) return 
 	}
 }
-
+*/
