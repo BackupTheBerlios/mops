@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.48 2007/04/24 04:26:23 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.49 2007/04/25 10:54:36 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -252,6 +252,36 @@ int mpkgDatabase::commit_actions()
 		//printf("Download complete\n");
 	}
 	debug("Calling INSTALL");
+
+	currentStatus = "Checking files (comparing MD5):";
+	for (int i=0; i<install_list.size(); i++)
+	{
+		currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
+
+
+		if (!check_cache(install_list.get_package(i), true))
+		{
+			errRet = waitResponce(MPKG_DOWNLOAD_ERROR);
+			switch(errRet)
+			{
+				case MPKG_RETURN_IGNORE:
+					printf("Wrong checksum ignored, continuing...\n");
+					break;
+				case MPKG_RETURN_RETRY:
+					printf("Re-downloading...\n");
+					break;
+				case MPKG_RETURN_ABORT:
+					printf("Aborting installation\n");
+					return -100;
+					break;
+				default:
+					printf("Unknown... aborting\n");
+					return -120;
+					break;
+			}
+		}
+		currentProgress = i;
+	}
 
 	for (int i=0;i<install_list.size();i++)
 	{

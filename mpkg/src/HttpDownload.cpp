@@ -5,11 +5,10 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <errno.h>
-// CD-ROM support
+#ifndef INTERNAL_MOUNT
 #include <sys/mount.h>
+#endif
 #include <mntent.h>
-//#include "cdconfig.h"
-//#include "xmlParser.h"
 
 string DL_CDROM_DEVICE="/dev/cdrom";
 string DL_CDROM_MOUNTPOINT="/mnt/cdrom";
@@ -18,12 +17,6 @@ HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
 }
-/*
-HttpDownload::~HttpDownload()
-{
-
-}
-*/
 
 	double *extDlNow;
 	double *extDlTotal;
@@ -38,7 +31,6 @@ static int downloadCallback(void *clientp,
 {
 	*extDlTotal = dltotal;
 	*extDlNow = dlnow;
-//	printf("Download %d/%d\n", *extDlNow, *extDlTotal);
 	return 0;
 }
 
@@ -102,8 +94,6 @@ try_mount:
 #else
 		int mret = mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
 #endif
-		//printf("mret = %d\n", mret);
-		//if (mret!=0 && errno == EBUSY) mret = 0;
 		if (mret!=0)
 		{
 			perror("Mount error:");
@@ -117,10 +107,6 @@ try_mount:
 				return -1;
 			}
 		}
-		// If we reached this point, device mounted. Write this to /etc/mtab...
-		//FILE *mt = fopen("/etc/mtab", "r");
-		//addmntent(mt, mountList);
-		//fclose(mt);
 	}
 
 	string Svolname;
@@ -166,6 +152,9 @@ copy_file:
 
 DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
+	string dir = file.substr(0,file.find_last_of("/"));
+	dir = "mkdir -p "+dir;
+	system(dir.c_str());
 	DownloadsList dlList;
 	DownloadItem dlItem;
 	dlItem.file = file;
@@ -178,41 +167,6 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlList.push_back(dlItem);
 	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint);
 	
-	/*
-	DL_CDROM_DEVICE = cdromDevice;
-	DL_CDROM_MOUNTPOINT = cdromMountPoint;
-
-	uri = url;
-	out = file;
-	if (url.find("file://")==0)
-	{
-		if (fileLinker(url.substr(strlen("file://")), file) == 0) return DOWNLOAD_OK;
-		else return DOWNLOAD_ERROR;
-	}
-	if (url.find("cdrom://")==0)
-	{
-		if (cdromFetch(url.substr(strlen("cdrom://")), file) == 0) return DOWNLOAD_OK;
-		else return DOWNLOAD_ERROR;
-	}
-	out_f = fopen( out.c_str(), "wb" );
-	if ( out_f == NULL )
-			return DOWNLOAD_ERROR;
-
-	curl_easy_setopt(ch, CURLOPT_WRITEDATA, out_f);
-	//curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, &curlProgressCallback);
-	curl_easy_setopt(ch, CURLOPT_URL, uri.c_str());
-	curl_easy_setopt(ch, CURLOPT_MAXCONNECTS, 1);
-	CURLcode res = curl_easy_perform(ch);
-	//curl_easy_reset(ch);
-#ifdef DEBUG
-       	printf("Download: Curl return %d\n", res);
-#endif	
-	if ( res == CURLE_OK ) {
-		fclose(out_f);
-		return DOWNLOAD_OK;
-	} else
-		return DOWNLOAD_ERROR;
-		*/
 }
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint)
@@ -221,9 +175,79 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	{
 		return DOWNLOAD_OK;
 	}
+
+	// Sorting (for CD-ROM download optimization)
+	// Step 1. Retrieving list of cd-roms.
+	printf("Sorting...\n");
+	vector<string> cdromVolumeLabels;
+	struct cdromItem cdItem;
+	vector<struct cdromItem>cdromSourcedPackages;
+	vector<int>nonCdromSourcedPackages;
+	DownloadItem *tmp_item;
+	bool volfound = false;
+	bool isCdromSourced = false;
+	string tmp_volname;
+	for (int i=0; i<list.size(); i++)
+	{
+		tmp_item = &(list.at(i));
+		isCdromSourced = false;
+		for (int j=0; j<tmp_item->url_list.size(); j++)
+		{
+			if (tmp_item->url_list.at(j).find("cdrom://")!=std::string::npos)
+			{
+				isCdromSourced=true;
+				cdItem.id=i;
+				tmp_volname = tmp_item->url_list.at(j).substr(strlen("cdrom://"));
+				tmp_volname = tmp_volname.substr(0,tmp_volname.find_first_of("/")-1);
+				cdItem.volname = tmp_volname;
+				volfound = false;
+				cdromSourcedPackages.push_back(cdItem);
+				for (int c = 0; c<cdromVolumeLabels.size(); c++)
+				{
+					if (cdromVolumeLabels.at(c) == tmp_volname)
+					{
+						volfound = true;
+					}
+				}
+				if (!volfound) cdromVolumeLabels.push_back(tmp_volname);
+				break;
+			}
+			
+		}
+		if (!isCdromSourced) nonCdromSourcedPackages.push_back(i);
+	}
+	DownloadsList sortedDownloadsList;
+	for (int i=0; i<cdromVolumeLabels.size(); i++)
+	{
+		for (int j=0; j<cdromSourcedPackages.size(); j++)
+		{
+			if (cdromSourcedPackages.at(j).volname == cdromVolumeLabels.at(i))
+			{
+				sortedDownloadsList.push_back(list.at(cdromSourcedPackages.at(j).id));
+			}
+		}
+	}
+	for (int i=0; i<nonCdromSourcedPackages.size(); i++)
+	{
+		sortedDownloadsList.push_back(list.at(nonCdromSourcedPackages.at(i)));
+	}
+	
+	if (list.size() == sortedDownloadsList.size())
+	{
+		list = sortedDownloadsList;
+	}
+	else
+	{
+		fprintf(stderr, "Error! Source and sorted lists doesn't equal in size!!!!\n");
+	}
+
+
+	printf("Sorting complete\n");
+
+
+
 	DL_CDROM_DEVICE = cdromDevice;
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
-	//printf("DL, cdromDev = %s, cdromMP = %s\n", DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str());
 	// reset status for retry
 	for (int i = 0; i<list.size(); i++)
 	{
@@ -236,23 +260,24 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	FILE* out;
 	bool is_have_error = false;
 	*itemtotal = list.size();
-	//printf("list.size() = %d\n", list.size());
+	string dir;
 	for (int i = 0; i < list.size(); i++ ) {
 process:
 		item = &(list.at(i));
 		*itemname = item->name;
 
-		if ( item->status == DL_STATUS_WAIT ) {		
+		if ( item->status == DL_STATUS_WAIT ) {
+			dir = "mkdir -p " + item->file.substr(0,item->file.find_last_of("/"));
+			system(dir.c_str());
+
 			out = fopen (item->file.c_str(), "wb");
 			if ( out == NULL ) {
 				fprintf(stderr, "open target file failed");
-				//setErrorCode (MPKG_DOWNLOAD_ERROR);
 				item->status = DL_STATUS_FILE_ERROR;
 				is_have_error = true;
 			} 
 			else 
 			{
-				///printf("file opened to download, urls = %d\n", item->url_list.size());
 		        	if (item->url_list.size()==0)
 				{
 					item->status=DL_STATUS_FAILED;
@@ -263,14 +288,12 @@ process:
 				{
     				if (item->url_list.at(j).find("file://")==0)
 				{
-					//printf("file URL\n");
 					fclose(out);
 					if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
 					else out = fopen (item->file.c_str(), "wb");
 				}
 				if (item->url_list.at(j).find("cdrom://")==0)
 				{
-					//printf("cd-rom URL\n");
 					fclose(out);
 					if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
 					else out = fopen (item->file.c_str(), "wb");
@@ -282,46 +305,20 @@ process:
     				curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     				curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
     			
-				//printf("downloading %s...\n", item->name.c_str());
     				result = curl_easy_perform(ch);
     				fclose(out);
     	
     				if ( result == CURLE_OK  ) {
-    				//	printf("Download seems to be OK\n");
 					item->status = DL_STATUS_OK;
     					break;
     				} else 
 				{
-					printf("FAILED\n");
+					printf("Download attempt FAILED\n");
     				    	is_have_error = true;
     					item->status = DL_STATUS_FAILED;
     				}
     	
     			}
-    			
-                /*if ( item->status == DL_STATUS_FAILED ) {
-    				//setErrorCode(MPKG_DOWNLOAD_ERROR);
-    				for (;;) {
-    					if ( getErrorReturn() == MPKG_RETURN_RETRY ) {
-    						printf("resolved\n");
-    						goto process;
-    					}
-    					
-    					if ( getErrorReturn() == MPKG_RETURN_IGNORE ) {
-    					    printf ("resolved\n");
-    					    break;
-    					} 
-
-    					if ( getErrorReturn() == MPKG_RETURN_ABORT ) {
-    						printf("abort\n");
-    						return DOWNLOAD_ERROR;
-    					}
-    					sleep (1);
-    				}
-    			} else {
-    				//setErrorCode(MPKG_DOWNLOAD_OK);
-    			}
-			*/
     		}
         }
 
@@ -331,5 +328,4 @@ process:
 
 	if (!is_have_error) return DOWNLOAD_OK;
 	else return DOWNLOAD_ERROR;
-	//return is_have_error ? DOWNLOAD_OK : DOWNLOAD_ERROR; 
 }

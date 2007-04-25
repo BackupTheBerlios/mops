@@ -7,7 +7,11 @@
 #include <curl/easy.h>
 
 #include "IDownload.h"
-
+struct cdromItem
+{
+	int id;
+	std::string volname;
+};
 class HttpDownload : public IDownload {
 public:
 	HttpDownload();

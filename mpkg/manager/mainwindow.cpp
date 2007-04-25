@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.58 2007/04/24 04:26:23 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.59 2007/04/25 10:54:36 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -50,6 +50,11 @@ void MainWindow::loadingStarted()
 	ui.loadingLabel->setText("<html><img src=\"splash.png\"></img></html>");
 	ui.splashFrame->show();
 	ui.packageTable->hide();
+	ui.selectAllButton->hide();
+	ui.deselectAllButton->hide();
+	ui.quickPackageSearchEdit->hide();
+	ui.clearSearchButton->hide();
+
 	ui.statusbar->showMessage("Loading started");
 }
 
@@ -66,6 +71,8 @@ void MainWindow::loadingFinished()
 	ui.statusbar->showMessage("Loading finished");
 	hideEntireTable();
 	ui.splashFrame->hide();
+	ui.quickPackageSearchEdit->show();
+	ui.clearSearchButton->show();
 	ui.packageTable->show();
 	setTableSize();
 }
@@ -379,6 +386,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
 	initCategories();
+	ui.selectAllButton->hide();
+	ui.deselectAllButton->hide();
+	ui.quickPackageSearchEdit->hide();
+	ui.clearSearchButton->hide();
 	ui.packageTable->hide();
 	this->show();
 	clearForm();
@@ -398,6 +409,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	packagelist = new PACKAGE_LIST;
 	
 	// Building thread connections
+	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
 	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
