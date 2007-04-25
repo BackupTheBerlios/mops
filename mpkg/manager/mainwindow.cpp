@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.62 2007/04/25 20:58:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.63 2007/04/25 22:15:14 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -298,7 +298,7 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 MainWindow::MainWindow(QMainWindow *parent)
 {
 	consoleMode=false; // Setting event tracking to GUI mode
-	currentCategoryID=2;
+	currentCategoryID=1;
 	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
 	qRegisterMetaType<QMessageBox::StandardButtons>("QMessageBox::StandardButtons");
 
@@ -427,7 +427,9 @@ void MainWindow::initCategories()
 	}
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
-	ui.listWidget->setCurrentRow(2);
+	ui.listWidget->setCurrentRow(1);
+	ui.listWidget->scrollToItem(ui.listWidget->item(0));
+
 }
 
 void MainWindow::hideEntireTable()
