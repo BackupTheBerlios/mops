@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.19 2007/04/25 14:52:24 i27249 Exp $
+	$Id: dataunits.h,v 1.20 2007/04/25 20:58:55 i27249 Exp $
 */
 
 
@@ -424,14 +424,25 @@ class PACKAGE
 	string package_filename;
 	int package_err_type;
     public:
+
+	vector<int>alternateVersions;
+	bool hasMaxVersion;
+	string maxVersion;
+	string installedVersion;
+	void clearVersioning();
+	bool isUpdate();
+	string get_fullversion();
+	//int maxVersionNumber();
+
 	
+/*
 	int masterCloneID;
 	bool isMasterClone;
 	bool hasClone;
 	bool hasUpdates;
 	string installedVersion;
 	bool isMaxVersion;
-	
+*/	
 	int get_id();
 	string get_name(bool sql=true);
 	string get_version(bool sql=true);
@@ -549,9 +560,10 @@ class PACKAGE_LIST
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();
-	void initClones();
-	int getCloneID(int testID);
-	cloneList cList;
+	void initVersioning();
+	void clearVersioning();
+	//int getCloneID(int testID);
+	//cloneList cList;
 	PACKAGE_LIST();
 	~PACKAGE_LIST();
 };

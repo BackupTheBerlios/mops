@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.28 2007/04/25 14:52:24 i27249 Exp $
+	$Id: dataunits.cpp,v 1.29 2007/04/25 20:58:55 i27249 Exp $
 */
 
 
@@ -1182,6 +1182,19 @@ bool PACKAGE::operator == (PACKAGE npkg)
 	return true;
 }
 
+bool PACKAGE::isUpdate()
+{
+	if (!installed() && hasMaxVersion && !installedVersion.empty() && installedVersion != maxVersion)
+	{
+		return true;
+	}
+	else return false;
+}
+string PACKAGE::get_fullversion()
+{
+	string ret = get_version() + " build " + get_build();
+	return ret;
+}
 
 void PACKAGE::clear()
 {
@@ -1632,6 +1645,21 @@ PACKAGE::PACKAGE()
 PACKAGE::~PACKAGE()
 {
 }
+void PACKAGE::clearVersioning()
+{
+	hasMaxVersion=false;
+	maxVersion.clear();
+	installedVersion.clear();
+	alternateVersions.clear();
+}
+
+void PACKAGE_LIST::clearVersioning()
+{
+	for (int i=0; i<packages.size(); i++)
+	{
+		packages[i].clearVersioning();
+	}
+}
 
 void PACKAGE::destroy()
 {
@@ -1843,7 +1871,7 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 	string tmp_ver;
 	for (unsigned int i=0;i<packages.size();i++)
 	{
-		tmp_ver = packages[i].get_version() + packages[i].get_build();
+		tmp_ver = packages[i].get_fullversion();// + packages[i].get_build();
 		if (strverscmp(tmp_ver.c_str(), max_version.c_str())>=0)
 		{
 			max_version=tmp_ver;
@@ -1856,14 +1884,10 @@ void PACKAGE_LIST::destroy()
 {
 	packages.clear();
 }
-void PACKAGE_LIST::initClones()
-{
-	cList.init(packages);
-}
-int PACKAGE_LIST::getCloneID(int testID)
+/*int PACKAGE_LIST::getCloneID(int testID)
 {
 	return cList.getCloneID(testID);
-}
+}*/
 PACKAGE_LIST::PACKAGE_LIST(){}
 PACKAGE_LIST::~PACKAGE_LIST()
 {
@@ -1980,8 +2004,100 @@ DESCRIPTION_LIST::~DESCRIPTION_LIST(){}
 cloneList::cloneList(){
 initialized = false;
 }
-void cloneList::init(vector<PACKAGE> &pkgList)
+
+void PACKAGE_LIST::initVersioning()
 {
+	// Что надо определить:
+	// Для каждого пакета - список номеров того же пакета других версий (НЕ ВКЛЮЧАЯ этот же пакет)
+	// Максимально доступную версию
+	// Версию установленного пакета
+	// Флаг максимальности версии (если таковых пакетов несколько, ставится у одного любого)
+	//
+	// Делаем пока не оптимально но надежно
+	// Шаг первый. Список альтернативных версий
+	for (int i=0; i<packages.size(); i++)
+	{
+		packages[i].clearVersioning();
+		for (int j=0; j<packages.size(); j++)
+		{
+			// Если это не тот же пакет и имена совпадают - добавляем номер в список
+			if (i!=j && packages[i].get_name() == packages[j].get_name())
+			{
+				packages[i].alternateVersions.push_back(j);
+			}
+		}
+	}
+
+	// Шаг второй. Для каждого пакета ищем максимальную версию
+	string max_version; // Переменная содержащая максимальную версию
+	int max_version_id; // номер пакета содержавшего максимальную версию
+	string this_version;
+	string installed_version;
+	for (int i=0; i<packages.size();i++)
+	{
+		max_version.clear();
+		max_version_id=-1;
+		this_version.clear();
+		installed_version.clear();
+		if (packages[i].installed())
+		{
+			installed_version = packages[i].get_fullversion();// + \
+					    packages[i].get_build();
+		}
+
+		// Если у пакета нет других версий - значит максимальную версию имеет он
+		
+		if (packages[i].alternateVersions.empty())
+		{
+			max_version = packages[i].get_fullversion();// + \
+				      packages[i].get_build();
+			packages[i].hasMaxVersion=true;
+		}
+		else
+		{
+			for (int j=0; j<packages[i].alternateVersions.size(); j++)
+			{
+				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();// + \
+					       packages[packages[i].alternateVersions[j]].get_build();
+				if (packages[packages[i].alternateVersions[j]].installed())
+				{
+					installed_version = packages[packages[i].alternateVersions[j]].get_fullversion();// + \
+							    packages[packages[i].alternateVersions[j]].get_build();
+				}
+				if (strverscmp(this_version.c_str(), max_version.c_str())>0)
+				{
+					max_version = this_version;
+					max_version_id = packages[i].alternateVersions[j];
+				}
+			}
+			if (max_version.empty()) // Если максимальной версии так и не нашлось (все пакеты - одинаковой версии) - то ставим максимум текущему
+			{
+				max_version = packages[i].get_version();
+				max_version_id = i;
+			}
+			else
+			{
+				// Проверим - а вдруг именно этот пакет имеет максимальную версию?
+				this_version = packages[i].get_fullversion();// + packages[i].get_build();
+				if (strverscmp(this_version.c_str(), max_version.c_str())>0)
+				{
+					max_version = this_version;
+					max_version_id = i;
+				}
+				// Устанавливаем найденному пакету нужные флаги
+			}
+		}
+		// Запишем установленную версию
+		packages[max_version_id].hasMaxVersion=true;
+		packages[i].maxVersion=max_version;
+		packages[i].installedVersion = installed_version;
+	}
+}
+
+
+/*void cloneList::init(vector<PACKAGE> &pkgList)
+{
+	
 	printf("Initializing clone list\n");
 	whoHasClones_IDs.clear(); 	// Список объектов, имеющих клоны
 	objectCloneListID.clear(); 	// Список клонов каждого объекта
@@ -1993,7 +2109,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		pkgList[i].masterCloneID=i;
 		pkgList[i].isMasterClone=false;
 		pkgList[i].isMaxVersion=false;
-		pkgList[i].hasUpdates=true;
+		pkgList[i].hasUpdates=false;
 		if (pkgList[i].installed()) pkgList[i].installedVersion=pkgList[i].get_version();
 	}
 
@@ -2044,7 +2160,11 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		}
 		if (itHasClone)
 		{
-			if (maxCloneVersion!=installedVersion && !installedVersion.empty()) pkgList[i].hasUpdates=true;
+			if (maxCloneVersion!=installedVersion && !installedVersion.empty())
+			{
+				printf("Installed version: %s, Max version: %s\n", installedVersion.c_str(), maxCloneVersion.c_str());
+				pkgList[i].hasUpdates=true;
+			}
 			pkgList[i].hasClone=true;
 			pkgList[i].masterCloneID=lastMasterCloneID;
 			installedCloneID.push_back(thisInstalledID);
@@ -2078,6 +2198,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 #endif
 	//sleep(10000);
 	initialized = true;
+	
 
 }
 cloneList::~cloneList(){}
@@ -2093,7 +2214,7 @@ int cloneList::getCloneID(int testID)
 	}
 	return -1;
 }
-
+*/
 /*dTreeItem::dTreeItem(){}
 dTreeItem::~dTreeItem(){}
 void dTreeItem::addChild(PACKAGE *pkg)

@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.35 2007/04/25 13:41:16 i27249 Exp $
+ * $Id: corethread.cpp,v 1.36 2007/04/25 20:58:55 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -709,8 +709,8 @@ void coreThread::_loadPackageDatabase()
 		return;
 	}
 	packageList = tmpPackageList;
-	currentStatus = "Building clone list";
-	packageList->initClones();
+	currentStatus = "Building version list";
+	packageList->initVersioning();
 	currentStatus = "Initializing status vectors";
 	newStatus.clear();
 	for (int i=0; i<packageList->size(); i++)
@@ -780,48 +780,9 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	}
 
 	PACKAGE *_p = packageList->get_package(package_num);
-	int cloneID = 0;
-       	cloneID = packageList->getCloneID(package_num);
 	string cloneHeader;
-	vector<int>whoHasClones_IDs = packageList->cList.whoHasClones_IDs; 	// Список объектов, имеющих клоны
-	vector< vector<int> >objectCloneListID = packageList->cList.objectCloneListID; 	// Список клонов каждого объекта
-	vector<int>masterCloneID = packageList->cList.masterCloneID;	// ID клона, имеющего максимальную версию.
-	vector<int>installedCloneID=packageList->cList.installedCloneID;	// ID установленного клона. Если такого нету, ставится равным -1
-
+	if (_p->hasMaxVersion && _p->installedVersion != _p->maxVersion) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
 	
-	
-	if (cloneID>=0)
-	{
-		/*for (unsigned int i=0; i<objectCloneListID.size(); i++)
-		{
-			if (i!=packageList->cList.getCloneID(whoHasClones_IDs[i])) printf("getCloneID bug!\n");
-			if (i == cloneID)
-			{
-				printf("[%d][%d] %s: ",i, whoHasClones_IDs[i], packageList->get_package(whoHasClones_IDs[i])->get_name().c_str());
-				for (unsigned int t = 0; t<objectCloneListID[i].size(); t++)
-				{
-					printf("%s, ", packageList->get_package(objectCloneListID[i][t])->get_name().c_str());
-				}
-				printf("\n");
-			}
-		}*/
-
-		//printf("cloned id = %d, package ID = %d, name = %s\n", cloneID, package_num, _p->get_name().c_str());
-		//if (packageList->cList.masterCloneID[cloneID] == package_num)
-		if (true)
-		{
-			//printf("expanding cloneHeader...\n");
-			cloneHeader = "<font color = \"red\">Other versions: <b>";
-			for (unsigned int i=1; i<objectCloneListID[cloneID].size(); i++)
-			{
-				cloneHeader += packageList->get_package(objectCloneListID[cloneID][i])->get_version();
-				if (i!=objectCloneListID[cloneID].size()-1) cloneHeader+=", ";
-				else cloneHeader+="</b></font>";
-			}
-		//	printf("CloneHeader = %s\n", cloneHeader.c_str());
-		}
-	}
-
 	switch (_p->action())
 	{
 		case ST_NONE:
@@ -886,6 +847,7 @@ void coreThread::_commitQueue()
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
+	vector<string> upgrade_queue;
 	vector<int> reset_queue;
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
@@ -897,6 +859,9 @@ void coreThread::_commitQueue()
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
 				case ST_INSTALL:
+					if (packageList->get_package(i)->isUpdate())
+						upgrade_queue.push_back(packageList->get_package(i)->get_name());
+					else
 					install_queue.push_back(packageList->get_package(i)->get_name());
 					break;
 				case ST_REMOVE:
@@ -910,6 +875,7 @@ void coreThread::_commitQueue()
 			}
 		}
 	}
+	database->upgrade(upgrade_queue);
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);
