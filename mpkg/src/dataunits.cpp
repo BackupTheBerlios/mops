@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.26 2007/04/25 08:26:12 i27249 Exp $
+	$Id: dataunits.cpp,v 1.27 2007/04/25 13:41:16 i27249 Exp $
 */
 
 
@@ -1982,11 +1982,18 @@ initialized = false;
 }
 void cloneList::init(vector<PACKAGE> &pkgList)
 {
+	printf("Initializing clone list\n");
 	whoHasClones_IDs.clear(); 	// Список объектов, имеющих клоны
 	objectCloneListID.clear(); 	// Список клонов каждого объекта
 	masterCloneID.clear();		// ID клона, имеющего максимальную версию.
 	installedCloneID.clear();	// ID установленного клона. Если такого нету, ставится равным -1
-	
+	for (int i=0; i<pkgList.size(); i++)
+	{
+		pkgList[i].hasClone=false;
+		pkgList[i].masterCloneID=i;
+		pkgList[i].isMasterClone=false;
+	}
+
 	// Шаг 1. Ищем объекты, имеющие клонов. Заполняем списки.
 	vector<int>thisClonesList;
 	int thisInstalledID;
@@ -2002,6 +2009,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		thisClonePosition = -1;
 		lastMasterCloneID = -1;
 		thisClonesList.clear();
+		maxCloneVersion = pkgList[i].get_version()+pkgList[i].get_build();
 		for (int k=0; k<pkgList.size(); k++)
 		{
 			if (k != i && pkgList[k].get_name() == pkgList[i].get_name())
@@ -2016,8 +2024,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 				thisClonesList.push_back(k);
 				if (pkgList[k].installed()) thisInstalledID = k;
 				tmp_ver = pkgList[k].get_version()+pkgList[k].get_build();
-				if (maxCloneVersion.empty() || \
-						strverscmp(tmp_ver.c_str(), maxCloneVersion.c_str())>0)
+				if (maxCloneVersion.empty() || strverscmp(tmp_ver.c_str(), maxCloneVersion.c_str())>0)
 				{
 					maxCloneVersion = tmp_ver;
 					lastMasterCloneID = k;
@@ -2026,11 +2033,19 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		}
 		if (itHasClone)
 		{
+			pkgList[i].hasClone=true;
+			pkgList[i].masterCloneID=lastMasterCloneID;
 			installedCloneID.push_back(thisInstalledID);
 			objectCloneListID.push_back(thisClonesList);
 			masterCloneID.push_back(lastMasterCloneID);
 		}
 	}
+	printf("MasterClones list:\n");
+	for (int i=0; i<masterCloneID.size(); i++)
+	{
+		pkgList[masterCloneID[i]].isMasterClone=true;
+	}
+	printf("(end)\n");
 #ifdef DEBUG
 	printf("whoHasClones_IDs: %d\nObjectCloneListID: %d\nmasterCloneID: %d\ninstalledCloneID: %d\n",\
 		       	whoHasClones_IDs.size(),\

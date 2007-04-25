@@ -33,15 +33,21 @@
         <property name="sizePolicy" >
          <sizepolicy>
           <hsizetype>5</hsizetype>
-          <vsizetype>5</vsizetype>
+          <vsizetype>4</vsizetype>
           <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
+          <verstretch>144</verstretch>
          </sizepolicy>
         </property>
         <property name="maximumSize" >
          <size>
           <width>16777215</width>
           <height>16777215</height>
+         </size>
+        </property>
+        <property name="sizeIncrement" >
+         <size>
+          <width>0</width>
+          <height>0</height>
          </size>
         </property>
         <property name="title" >
@@ -235,10 +241,10 @@
        <widget class="QGroupBox" name="groupBox_3" >
         <property name="sizePolicy" >
          <sizepolicy>
-          <hsizetype>4</hsizetype>
+          <hsizetype>1</hsizetype>
           <vsizetype>4</vsizetype>
           <horstretch>0</horstretch>
-          <verstretch>1</verstretch>
+          <verstretch>0</verstretch>
          </sizepolicy>
         </property>
         <property name="minimumSize" >
@@ -414,6 +420,49 @@
               <widget class="QLabel" name="loadingLabel" >
                <property name="text" >
                 <string/>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" >
+             <property name="margin" >
+              <number>0</number>
+             </property>
+             <property name="spacing" >
+              <number>6</number>
+             </property>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="indicatorLabel" >
+               <property name="text" >
+                <string>TextLabel</string>
                </property>
               </widget>
              </item>

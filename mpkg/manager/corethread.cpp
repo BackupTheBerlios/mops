@@ -1,20 +1,22 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.34 2007/04/22 17:47:37 i27249 Exp $
+ * $Id: corethread.cpp,v 1.35 2007/04/25 13:41:16 i27249 Exp $
  * *************************************************************************/
-//#define USLEEP 0
+#define USLEEP 5
 #include "corethread.h"
 //#define TIMER_RES 600
 
 errorBus::errorBus()
 {
 	action = eBUS_Pause;
-	TIMER_RES = 600;
+	TIMER_RES = 100;
 }
 
 void errorBus::run()
 {
+
+	setPriority(QThread::LowestPriority);
 	forever
 	{
 		if (action == eBUS_Run)
@@ -501,7 +503,7 @@ void errorBus::Stop()
 
 statusThread::statusThread()
 {
-	TIMER_RES = 600;
+	TIMER_RES = 100;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
@@ -509,7 +511,7 @@ statusThread::statusThread()
 
 void statusThread::run()
 {
-	setPriority(QThread::LowPriority);
+	setPriority(QThread::LowestPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
 	//int tmp_t, tmp_t2;
@@ -523,7 +525,7 @@ void statusThread::run()
 				
 				if (progressEnabled)
 				{
-					TIMER_RES = 100;
+					TIMER_RES = 50;
 					dtmp = 100 * (currentProgress/progressMax);
 					tmp_c = (int) dtmp;
 					
@@ -540,7 +542,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES = 600;
+					TIMER_RES = 100;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
@@ -550,7 +552,7 @@ void statusThread::run()
 				
 				if (progressEnabled2)
 				{
-					TIMER_RES = 100;
+					TIMER_RES = 50;
 					dtmp2 = 100 * (currentProgress2/progressMax2);
 					tmp_c2 = (int) dtmp2;
 					dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
@@ -568,7 +570,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES=600;
+					TIMER_RES=100;
 					if (enabledBar)
 					{
 						emit disableProgressBar2();
@@ -630,10 +632,19 @@ void coreThread::sync()
 
 void coreThread::run()
 {
-	setPriority(QThread::LowestPriority);
+
+	setPriority(QThread::LowPriority);
 	//printf("Running...\n");
 	forever 
 	{
+		if (currentAction == CA_Idle)
+		{
+			if (priority() != QThread::LowestPriority) setPriority(QThread::LowestPriority);
+		}
+		else
+		{
+			setPriority(QThread::LowPriority);
+		}
 		switch(currentAction)
 		{
 			case CA_LoadDatabase:
@@ -678,14 +689,15 @@ void coreThread::tellAreYouRunning()
 
 void coreThread::loadPackageDatabase()
 {
+
 	currentAction = CA_LoadDatabase;
 }
 
 void coreThread::_loadPackageDatabase()
 {
-	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
+	currentStatus = "Loading package database";
 	emit loadingStarted();
-	emit sqlQueryBegin();
+	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
 	//vector<int> *tmpNewStatus;
 	
@@ -697,23 +709,24 @@ void coreThread::_loadPackageDatabase()
 		return;
 	}
 	packageList = tmpPackageList;
+	currentStatus = "Building clone list";
 	packageList->initClones();
-	emit sqlQueryEnd();
+	currentStatus = "Initializing status vectors";
 	newStatus.clear();
 	for (int i=0; i<packageList->size(); i++)
 	{
 		newStatus.push_back(packageList->get_package(i)->action());
 	}
-	//cloneList cList(packageList);
-	// Internal structures ready - can sync with main thread
+	currentStatus = "Syncronizing";
 	sync();
 	unsigned int count = packageList->size();
-	
+	currentStatus = "Setting up GUI elements";
 	emit initProgressBar(count);
 	emit enableProgressBar();
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
+	currentStatus = "Loading packages into table";
 	for (int i=0; i<packageList->size(); i++)
 	{
 		insertPackageIntoTable(i);
@@ -728,12 +741,15 @@ void coreThread::_loadPackageDatabase()
 		sleep(SLEEP);
 #endif
 
-
+		
 		emit setProgressBarValue(i);
 	}
+
 	emit disableProgressBar();
 	emit loadingFinished();
+	currentStatus = "Applying package filters";
 	emit applyFilters();
+	currentStatus = "Loading finished";
 	currentAction=CA_Idle;
 }
 
@@ -744,6 +760,7 @@ void coreThread::getCdromName()
 
 void coreThread::_getCdromName()
 {
+	currentStatus = "Checking CD-ROM media...";
 	string volname = getCdromVolname();
 	emit sendCdromName(volname);
 	currentAction = CA_Idle;
@@ -752,6 +769,8 @@ void coreThread::_getCdromName()
 
 void coreThread::insertPackageIntoTable(unsigned int package_num)
 {
+	currentStatus = "Loading packages into table: "+IntToStr(package_num);
+
 	bool checked = false;
 	string package_icon;
 	if (packageList->get_package(package_num)->action()==ST_INSTALL || \
@@ -845,9 +864,9 @@ PACKAGE_LIST *coreThread::getPackageList()
 
 void coreThread::_updatePackageDatabase()
 {
+	currentStatus = "Updating package database from repositories...";
 	emit loadingStarted();
 	database->update_repository_data();
-	emit loadingFinished();
 	emit loadData();
 }
 
@@ -863,6 +882,7 @@ void coreThread::commitQueue(vector<int> nStatus)
 }
 void coreThread::_commitQueue()
 {
+	currentStatus = "Committing...";
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
@@ -890,8 +910,6 @@ void coreThread::_commitQueue()
 			}
 		}
 	}
-	//printf("install_queue size = %d\n", install_queue.size());
-	//printf("remove_queue size = %d\n", remove_queue.size());
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);
@@ -899,9 +917,9 @@ void coreThread::_commitQueue()
 	{
 		database->unqueue(reset_queue[i]);
 	}
-	emit setStatus("Committing changes...");
+	currentStatus = "Committing changes...";
 	database->commit();
-	emit setStatus("All operations completed");
+	currentStatus = "All operations completed";
 	delete database;
 	database = new mpkg;
 	currentAction = CA_LoadDatabase;
@@ -909,11 +927,16 @@ void coreThread::_commitQueue()
 
 void coreThread::syncData()
 {
+	printf("syncData shouldn't be used, because it does NOTHING!\n");
 }
 
 void coreThread::cleanCache()
 {
+	currentStatus = "Cleaning package cache";
 	database->clean_cache();
+	currentStatus = "Cleanup complete";
+	sleep(1);
+	emit loadingFinished();
 }
 
 

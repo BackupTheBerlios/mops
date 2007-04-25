@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.34 2007/04/22 17:47:37 i27249 Exp $
+ * $Id: mainwindow.h,v 1.35 2007/04/25 13:41:16 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -138,6 +138,8 @@ class MainWindow: public QMainWindow
 		
 		//Ui::loadingBox loadBox;
 	private:
+		//QLabel *indicator;
+		QMovie *movie; 
 		mpkg *mDb;
 		void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST *packagelist;

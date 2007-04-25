@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.59 2007/04/25 10:54:36 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.60 2007/04/25 13:41:16 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -37,12 +37,12 @@ void MainWindow::showErrorMessage(QString headerText, QString bodyText, QMessage
 }
 void MainWindow::sqlQueryBegin()
 {
-	ui.statusbar->showMessage("Loading database...");
+	currentStatus="Loading database...";
 }
 
 void MainWindow::sqlQueryEnd()
 {
-	ui.statusbar->showMessage("Data loaded, rendering visuals");
+	currentStatus="Data loaded, rendering visuals";
 }
 
 void MainWindow::loadingStarted()
@@ -55,7 +55,6 @@ void MainWindow::loadingStarted()
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 
-	ui.statusbar->showMessage("Loading started");
 }
 
 void MainWindow::filterCloneItems()
@@ -68,13 +67,13 @@ void MainWindow::filterCloneItems()
 
 void MainWindow::loadingFinished()
 {
-	ui.statusbar->showMessage("Loading finished");
 	hideEntireTable();
 	ui.splashFrame->hide();
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
 	ui.packageTable->show();
 	setTableSize();
+	currentStatus = "Idle";
 }
 
 void MainWindow::enableProgressBar()
@@ -126,33 +125,6 @@ void MainWindow::applyPackageFilter ()
 	bool installed;
 	bool configexist;
 
-
-	//pkgBoxLabel += " [name = \""+ui.quickPackageSearchEdit->text().toStdString()+"\", status = (";
-
-	//if (ui.actionShow_available->isChecked()) pkgBoxLabel+="Available, ";
-	//if (ui.actionShow_installed->isChecked()) pkgBoxLabel+=" Installed, ";
-	//if (ui.actionShow_configexist->isChecked()) pkgBoxLabel +=" Not purged, ";
-	//if (ui.actionShow_queue->isChecked()) pkgBoxLabel += " Queued)";
-	/*vector<int>whoHasClones;
-	vector<int>masterClones = packagelist->cList.masterCloneID;
-	vector<int>hiddenClones;
-	if (packagelist->cList.initialized)
-	{
-		for (int i=0; i<masterClones.size(); i++)
-		{
-		//	printf("Master: %d\n", masterClones[i]);
-		}
-		for (unsigned int i=0; i<packagelist->cList.objectCloneListID.size(); i++)
-		{
-			for (unsigned int k = 0; k < packagelist->cList.objectCloneListID[i].size(); k++)
-			{
-				if (packagelist->cList.masterCloneID[i]!=packagelist->cList.objectCloneListID[i][k])
-				{
-					hiddenClones.push_back(packagelist->cList.objectCloneListID[i][k]);
-				}
-			}
-		}
-	}*/
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
@@ -163,7 +135,6 @@ void MainWindow::applyPackageFilter ()
 		categoryOk = false;
 		cloneOk = true;
 
-		//nameMask = nameMask.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
 		nameMask = nameMask.fromStdString(packagelist->get_package(i)->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
@@ -176,11 +147,6 @@ void MainWindow::applyPackageFilter ()
 
 		if (nameOk)
 		{
-			//------------
-			//action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
-			//available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
-			//installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
-			//configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
 			action = packagelist->get_package(i)->action();
 			available = packagelist->get_package(i)->available();
 			installed = packagelist->get_package(i)->installed();
@@ -213,82 +179,45 @@ void MainWindow::applyPackageFilter ()
 				ui.packageTable->setRowHidden(i,false);
 				statusOk=true;
 			}
-				
-
-
-
-
-/*
-			//----------
-			switch(newStatus[i])
-			{
-				case ST_INSTALL:
-					if (ui.actionShow_installed->isChecked())
-					{
-						statusOk = true;
-					}
-					else statusOk = false;
-					break;
-				case PKGSTATUS_INSTALL:
-					if (ui.actionShow_install->isChecked()) statusOk = true;
-					else statusOk = false;
-					break;
-				case PKGSTATUS_AVAILABLE:
-					if (ui.actionShow_available->isChecked()) statusOk = true;
-					else statusOk = false;
-
-					break;
-				case PKGSTATUS_PURGE:
-					if (ui.actionShow_purge->isChecked()) statusOk = true;
-					else statusOk = false;
-
-					break;
-
-				case PKGSTATUS_UNAVAILABLE:
-					if (ui.actionShow_unavailable->isChecked()) statusOk = true;
-					else statusOk = false;
-
-					break;
-				case PKGSTATUS_REMOVED_AVAILABLE:
-					if (ui.actionShow_available->isChecked()) statusOk = true;
-					else statusOk = false;
-					break;
-				case PKGSTATUS_REMOVED_UNAVAILABLE:
-					if (ui.actionShow_unavailable->isChecked()) statusOk = true;
-					else statusOk = false;	
-					break;
-				default:
-					statusOk = false;
-			} // switch(status)
-*/
 		} // if(nameOk)
 		if (statusOk)
 		{
+
 			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
-			if (tagvalue == "_all_")
+			if (tagvalue == "_updates_")
 			{
-				categoryOk = true;
+				if (packagelist->get_package(i)->hasClone && packagelist->get_package(i)->isMasterClone) categoryOk = true;
+				else categoryOk = false;
 			}
 			else
 			{
-				categoryOk = false;
-				//tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
-				tmpTagList = *packagelist->get_package(i)->get_tags();
-				for (int t = 0; t < tmpTagList.size(); t++)
+				if (tagvalue == "_all_")
 				{
-					if (tmpTagList.get_tag(t)->get_name() == tagvalue)
-					{
-						categoryOk = true;
-					}
-				} // for (... tmpTagList ...)
-				if (tmpTagList.size() == 0 && tagvalue != "_misc_")
-				{
-					categoryOk = false;
+					categoryOk = true;
 				}
-				else if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
-			} // else (tagvalue)
-		} // if (statusOk)
-
+				else
+					{
+					categoryOk = false;
+					//tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
+					tmpTagList = *packagelist->get_package(i)->get_tags();
+					for (int t = 0; t < tmpTagList.size(); t++)
+					{
+						if (tmpTagList.get_tag(t)->get_name() == tagvalue)
+						{
+							categoryOk = true;
+						}
+					} // for (... tmpTagList ...)
+					if (tmpTagList.size() == 0 && tagvalue != "_misc_")
+					{
+						categoryOk = false;
+					}
+					else
+					{
+						if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
+					}
+				} // else (tagvalue)
+			} // if (statusOk)
+		}
 		if (nameOk && statusOk && categoryOk && cloneOk)
 		{
 			pkgCount++;
@@ -391,6 +320,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 	ui.packageTable->hide();
+	movie = new QMovie("icons/indicator.mng");
+	ui.indicatorLabel->setMovie(movie);
+	movie->start();
+
 	this->show();
 	clearForm();
 	disableProgressBar(); disableProgressBar2();
@@ -407,7 +340,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
-	
 	// Building thread connections
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
 	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
@@ -451,6 +383,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
 	prefBox = new PreferencesBox(mDb);
+		//ui.statusbar->addWidget(indicator);
+
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string)),Qt::QueuedConnection); 
 
@@ -676,7 +610,7 @@ void MainWindow::updateData()
 	
 void MainWindow::quitApp()
 {
-	setStatus("exiting...");
+	currentStatus="exiting...";
 	thread->callQuit();
 	qApp->quit();
 
@@ -761,40 +695,40 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					ui.statusbar->showMessage("Package keeped in system");
+					currentStatus="Package keeped in system";
 				}
 				else
 				{
 					newStatus[i]=ST_REMOVE;
-					ui.statusbar->showMessage("Package queued to remove");
+					currentStatus="Package queued to remove";
 				}
 				break;
 			case ST_REMOVE:
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					ui.statusbar->showMessage("Package removed from remove queue");
+					currentStatus="Package removed from remove queue";
 				}
 				else
 				{
 					newStatus[i]=ST_REMOVE;
-					ui.statusbar->showMessage("Package queued to remove");
+					currentStatus="Package queued to remove";
 				}
 				break;
 			case ST_PURGE:
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					ui.statusbar->showMessage("Package removed from purge queue");
+					currentStatus="Package removed from purge queue";
 				}
 				else
 				{
 					newStatus[i]=ST_PURGE;
-					ui.statusbar->showMessage("Package queued to purge");
+					currentStatus="Package queued to purge";
 				}
 				break;
 			default:
-				ui.statusbar->showMessage("Unknown condition");
+				currentStatus="Unknown condition";
 			}
 		} // if(_p->installed())
 		else
@@ -806,28 +740,28 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					if (state==Qt::Checked)
 					{
 						newStatus[i]=ST_INSTALL;
-						ui.statusbar->showMessage("Package queued to install");
+						currentStatus="Package queued to install";
 					}
 					else
 					{
 						newStatus[i]=ST_NONE;
-						ui.statusbar->showMessage("Package unqueued");
+						currentStatus="Package unqueued";
 					}
 					break;
 				case ST_PURGE:
 					if (state==Qt::Checked)
 					{
 						newStatus[i]=ST_INSTALL;
-						ui.statusbar->showMessage("Package queued to install");
+						currentStatus="Package queued to install";
 					}
 					else
 					{
 						newStatus[i]=ST_PURGE;
-						ui.statusbar->showMessage("Package queued to purge");
+						currentStatus="Package queued to purge";
 					}
 					break;
 				default:
-					ui.statusbar->showMessage("Unknown condition");
+					currentStatus="Unknown condition";
 			}
 		} // else
 		string package_icon;
