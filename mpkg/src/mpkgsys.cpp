@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.12 2007/04/17 14:35:19 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.13 2007/04/25 21:33:22 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -197,10 +197,15 @@ int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *Dep
 
 int mpkgSys::upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+	printf("Upgrade: Calling uninstall\n");
 	uninstall(pkgname, db, DepTracker, 0, true);
+	printf("Upgrade: Calling install\n");
 	install(pkgname, db, DepTracker, true);
+	printf("Upgrade: normalizing\n");
 	DepTracker->normalize();
+	printf("Upgrade: committing deptracker\n");
 	DepTracker->commitToDb();
+	printf("Upgrade: committing actions\n");
 	db->commit_actions();
 	return 0;
 }

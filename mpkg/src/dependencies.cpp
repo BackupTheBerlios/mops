@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.17 2007/04/24 04:26:23 i27249 Exp $
+$Id: dependencies.cpp,v 1.18 2007/04/25 21:33:22 i27249 Exp $
 */
 
 
@@ -341,6 +341,7 @@ RESULT DependencyTracker::unmerge(PACKAGE *package, int do_purge, bool do_upgrad
 int DependencyTracker::normalize()
 {
 #ifdef DEP_NORMALIZE
+	printf("init variables\n");
 	PACKAGE_LIST ninstall_list;
 	PACKAGE_LIST nremove_list;
 	PACKAGE_LIST navailable_list;
@@ -359,10 +360,15 @@ int DependencyTracker::normalize()
 
 	availableSearch.addField("package_available", IntToStr(ST_AVAILABLE));
 
-	db->get_packagelist(installSearch, &ninstall_list);
-	db->get_packagelist(removeSearch, &nremove_list);
-	db->get_packagelist(availableSearch, &navailable_list);
+	printf("sql requests\n");
+	printf("1...\n");
+	db->get_packagelist(installSearch, &ninstall_list,false);
+	printf("2...\n");
+	db->get_packagelist(removeSearch, &nremove_list,false);
+	printf("3...\n");
+	db->get_packagelist(availableSearch, &navailable_list,false);
 
+	printf("cycle (install_list)\n");
 	for (int i=0; i<ninstall_list.size(); i++)
 	{
 		if (merge(ninstall_list.get_package(i), true, true)!=DEP_OK)
@@ -371,10 +377,12 @@ int DependencyTracker::normalize()
 		}
 	}
 	//install_list.clear();
+	printf("cycle (remove list)\n");
 	for (int i=0; i<doremove_list.size(); i++)
 	{
 		unmerge(doremove_list.get_package(i), 0, true);
 	}
+	printf("normalize complete\n");
 #endif
 	return 0;
 
