@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.60 2007/04/25 13:41:16 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.61 2007/04/25 14:52:23 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -186,7 +186,7 @@ void MainWindow::applyPackageFilter ()
 			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
 			if (tagvalue == "_updates_")
 			{
-				if (packagelist->get_package(i)->hasClone && packagelist->get_package(i)->isMasterClone) categoryOk = true;
+				if (packagelist->get_package(i)->isMaxVersion) categoryOk = true;
 				else categoryOk = false;
 			}
 			else
@@ -258,7 +258,11 @@ void MainWindow::deselectAll()
 	}
 }
 
-
+string bool2str(bool data)
+{
+	if (data) return "true";
+	else return "false";
+}
 
 void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
 {
@@ -272,7 +276,18 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	pkgName->setText(cellItemText.c_str());
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
-	cellItemText+="<html><b>Description: </b><br>" + adjustStringWide(packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description().size())+"</html>";
+	string truefalse;
+	if (packagelist->get_package(row)->isMaxVersion) truefalse="true";
+	else truefalse="false";
+	cellItemText+="<html><b>Installed version: </b>" + packagelist->get_package(row)->installedVersion + \
+		       "<br><b>isMaxVersion: </b>" + bool2str(packagelist->get_package(row)->isMaxVersion)+\
+		       "<br><b>isMasterClone: </b>" + bool2str(packagelist->get_package(row)->isMasterClone) + \
+		       "<br><b>hasUpdates: </b>" + bool2str(packagelist->get_package(row)->hasUpdates) +\
+		       "<br><b>masterCloneID: </b>" + IntToStr(packagelist->get_package(row)->masterCloneID) + \
+		       "<br><b>hasClone: </b>" + bool2str(packagelist->get_package(row)->hasClone) + \
+			"<br><br><b>Description: </b><br>" + \
+		       adjustStringWide(packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description().size())+ \
+		       		       "</html>";
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));

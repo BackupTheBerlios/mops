@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.18 2007/04/25 13:41:16 i27249 Exp $
+	$Id: dataunits.h,v 1.19 2007/04/25 14:52:24 i27249 Exp $
 */
 
 
@@ -424,9 +424,14 @@ class PACKAGE
 	string package_filename;
 	int package_err_type;
     public:
+	
 	int masterCloneID;
 	bool isMasterClone;
 	bool hasClone;
+	bool hasUpdates;
+	string installedVersion;
+	bool isMaxVersion;
+	
 	int get_id();
 	string get_name(bool sql=true);
 	string get_version(bool sql=true);

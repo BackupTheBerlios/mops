@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.27 2007/04/25 13:41:16 i27249 Exp $
+	$Id: dataunits.cpp,v 1.28 2007/04/25 14:52:24 i27249 Exp $
 */
 
 
@@ -1992,6 +1992,9 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		pkgList[i].hasClone=false;
 		pkgList[i].masterCloneID=i;
 		pkgList[i].isMasterClone=false;
+		pkgList[i].isMaxVersion=false;
+		pkgList[i].hasUpdates=true;
+		if (pkgList[i].installed()) pkgList[i].installedVersion=pkgList[i].get_version();
 	}
 
 	// Шаг 1. Ищем объекты, имеющие клонов. Заполняем списки.
@@ -2002,19 +2005,27 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 	int lastMasterCloneID;
 	bool itHasClone;
 	string tmp_ver;
+	string installedVersion;
+	progressEnabled = true;
+	progressMax = pkgList.size();
 	for (int i=0; i<pkgList.size(); i++)
 	{
+		currentProgress = i;
 		itHasClone = false;
 		thisInstalledID = -1;
 		thisClonePosition = -1;
 		lastMasterCloneID = -1;
 		thisClonesList.clear();
-		maxCloneVersion = pkgList[i].get_version()+pkgList[i].get_build();
+		installedVersion.clear();
+		maxCloneVersion.clear();
+		if (pkgList[i].installed()) installedVersion = pkgList[i].get_version()+pkgList[i].get_build();
 		for (int k=0; k<pkgList.size(); k++)
 		{
 			if (k != i && pkgList[k].get_name() == pkgList[i].get_name())
 			{
 				itHasClone = true;
+				if (pkgList[k].installed()) installedVersion = pkgList[k].get_version()+pkgList[i].get_build();
+
 				if (thisClonesList.empty())
 				{
 					thisClonesList.push_back(i);
@@ -2033,6 +2044,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 		}
 		if (itHasClone)
 		{
+			if (maxCloneVersion!=installedVersion && !installedVersion.empty()) pkgList[i].hasUpdates=true;
 			pkgList[i].hasClone=true;
 			pkgList[i].masterCloneID=lastMasterCloneID;
 			installedCloneID.push_back(thisInstalledID);
@@ -2043,6 +2055,7 @@ void cloneList::init(vector<PACKAGE> &pkgList)
 	printf("MasterClones list:\n");
 	for (int i=0; i<masterCloneID.size(); i++)
 	{
+		if (pkgList[masterCloneID[i]].hasUpdates) pkgList[masterCloneID[i]].isMaxVersion=true;
 		pkgList[masterCloneID[i]].isMasterClone=true;
 	}
 	printf("(end)\n");
