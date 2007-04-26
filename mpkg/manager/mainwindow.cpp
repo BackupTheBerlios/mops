@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.64 2007/04/25 23:47:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.65 2007/04/26 00:37:27 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -227,7 +227,28 @@ void MainWindow::applyPackageFilter ()
 			ui.packageTable->setRowHidden(i, false);
 		}
 		else ui.packageTable->setRowHidden(i, true);
+#ifdef CATEGORY_HIGHLIGHTING
+		// The last enhancement - category highlight =)
+		tmpTagList = *packagelist->get_package(i)->get_tags();
 
+		if (statusOk && nameOk && cloneOk && !ui.quickPackageSearchEdit->text().isEmpty())
+		{
+			string tmpcat;
+			for (int k=0; k<tmpTagList.size(); k++)
+			{
+
+				for (int d=0; d<ui.listWidget->count(); d++)
+				{
+					tmpcat = (string) _categories.getChildNode("group", d).getAttribute("tag");
+					if (tmpTagList.get_tag(k)->get_name()==tmpcat)
+					{
+						// Do something with ui.listWidget
+					}
+				}
+
+			}
+		}
+#endif
 	} // for (...)	
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+" packages)";
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
