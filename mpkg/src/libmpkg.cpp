@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.19 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.20 2007/04/26 12:17:37 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -80,6 +80,25 @@ int mpkg::install(string fname)
 	return ret;
 }
 
+int mpkg::install(PACKAGE *pkg)
+{
+	return mpkgSys::install(pkg->get_id(), db, DepTracker);
+}
+
+int mpkg::install(int package_id)
+{
+	return mpkgSys::install(package_id, db, DepTracker);
+}
+
+int mpkg::install(PACKAGE_LIST *pkgList)
+{
+	int ret=0;
+	for (unsigned int i=0; i<pkgList->size(); i++)
+	{
+		ret+=mpkgSys::install(pkgList->get_package(i)->get_id(), db, DepTracker);
+	}
+	return ret;
+}
 // Packages removing
 int mpkg::uninstall(vector<string> pkg_name)
 {
@@ -120,7 +139,22 @@ int mpkg::upgrade (vector<string> pkgname)
 	}
 	return ret;
 }	
-		
+
+int mpkg::upgrade(PACKAGE *pkg)
+{
+	return mpkgSys::upgrade(pkg->get_id(), db, DepTracker);
+}
+
+int mpkg::upgrade(PACKAGE_LIST *pkgList)
+{
+	int ret=0;
+	for (unsigned int i=0; i<pkgList->size(); i++)
+	{
+		ret+=mpkgSys::upgrade(pkgList->get_package(i)->get_id(), db, DepTracker);
+	}
+	return ret;
+}
+
 // Repository data updating
 int mpkg::update_repository_data()
 {

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.4 2007/03/22 12:38:06 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.5 2007/04/26 12:17:37 i27249 Exp $
  * ******************************************************/
 
 
@@ -25,6 +25,7 @@
 namespace mpkgSys {
 	int build_package();
 	int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade=false);
+	int install(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker);
 	int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade=false);
 	int update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker);
 	int _clean(const char *filename, const struct stat *file_status, int filetype);
@@ -34,6 +35,7 @@ namespace mpkgSys {
 	int convert_directory(string output_dir);
 	int _conv_dir(const char *filename, const struct stat *file_status, int filetype);
 	int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
+	int upgrade(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker);
 	int build_package();
 
 }

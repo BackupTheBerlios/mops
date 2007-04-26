@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.36 2007/04/24 04:26:23 i27249 Exp $
+$Id: local_package.cpp,v 1.37 2007/04/26 12:17:37 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -410,6 +410,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 //#define OLD_FILELIST
 #ifndef OLD_FILELIST
 	FILES file_tmp;
+	// Retrieving regular files
 	string fname=get_tmp_file();
 	string tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
 	system(tar_cmd.c_str());
@@ -417,6 +418,18 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	for (unsigned int i=2; i<file_names.size(); i++)
 	{
 		file_tmp.set_name(file_names[i]);
+		package->get_files()->add(file_tmp);
+	}
+	// Retrieving symlinks (from doinst.sh)
+	string lnfname=get_tmp_file();
+	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < " + \
+			  package->get_scripts()->get_postinstall() + \
+			  " > "+lnfname;
+	system(sed_cmd.c_str());
+	vector<string>link_names=ReadFileStrings(lnfname);
+	for (unsigned int i=0; i<link_names.size();i++)
+	{
+		file_tmp.set_name(link_names[i]);
 		package->get_files()->add(file_tmp);
 	}
 	return 0;

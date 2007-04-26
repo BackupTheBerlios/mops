@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.14 2007/04/25 23:47:44 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.15 2007/04/26 12:17:37 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -93,6 +93,20 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	printf("Update complete.\n");
 	return ret;
 }
+
+int mpkgSys::install(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	PACKAGE tmp_package;
+	if (db->get_package(package_id, &tmp_package, false)!=0)
+	{
+		printf("No such package\n");
+		return -1;
+	}
+	DepTracker->merge(&tmp_package);
+	return 0;
+}
+
+	
 
 int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
@@ -209,6 +223,22 @@ int mpkgSys::upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTr
 	printf("Upgrade: committing deptracker\n");
 	DepTracker->commitToDb();
 	printf("Upgrade: committing actions\n");
+	db->commit_actions();
+	return 0;
+}
+
+int mpkgSys::upgrade(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	PACKAGE tmp_package;
+	if (db->get_package(package_id, &tmp_package, false)!=0)
+	{
+		printf("No such package\n");
+		return -1;
+	}
+	uninstall(tmp_package.get_name(), db, DepTracker, 0, true);
+	install(package_id, db, DepTracker);
+	DepTracker->normalize();
+	DepTracker->commitToDb();
 	db->commit_actions();
 	return 0;
 }
