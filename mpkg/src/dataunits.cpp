@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.30 2007/04/25 23:47:44 i27249 Exp $
+	$Id: dataunits.cpp,v 1.31 2007/04/27 00:59:14 i27249 Exp $
 */
 
 
@@ -1128,6 +1128,7 @@ SCRIPTS::~SCRIPTS()
 bool PACKAGE::operator != (PACKAGE npkg)
 {
 //	if (package_id!=npkg.get_id()) return true;
+printf("Using operator != \n");
 	if (package_name!=npkg.get_name(false)) return true;
 	if (package_version!=npkg.get_version(false)) return true;
 	if (package_arch!=npkg.get_arch(false)) return true;
@@ -1139,7 +1140,7 @@ bool PACKAGE::operator != (PACKAGE npkg)
 	if (package_changelog!=npkg.get_changelog(false)) return true;
 	if (package_packager!=npkg.get_packager(false)) return true;
 	if (package_packager_email!=npkg.get_packager_email(false)) return true;
-	if (package_available!=npkg.available()) return true;
+	//if (package_available!=npkg.available()) return true;
 	if (package_installed!=npkg.installed()) return true;
 	if (package_configexist!=npkg.configexist()) return true;
 	if (package_action!=npkg.action()) return true;
@@ -1155,6 +1156,7 @@ bool PACKAGE::operator != (PACKAGE npkg)
 
 bool PACKAGE::operator == (PACKAGE npkg)
 {
+	printf("Using operator == \n");
 //	if (package_id!=npkg.get_id()) return false;
 	if (package_name!=npkg.get_name(false)) return false;
 	if (package_version!=npkg.get_version(false)) return false;
@@ -1167,7 +1169,7 @@ bool PACKAGE::operator == (PACKAGE npkg)
 	if (package_changelog!=npkg.get_changelog(false)) return false;
 	if (package_packager!=npkg.get_packager(false)) return false;
 	if (package_packager_email!=npkg.get_packager_email(false)) return false;
-	if (package_available!=npkg.available()) return false;
+	//if (package_available!=npkg.available()) return false;
 	if (package_installed!=npkg.installed()) return false;
 	if (package_configexist!=npkg.configexist()) return false;
 	if (package_action!=npkg.action()) return false;
@@ -1198,7 +1200,7 @@ string PACKAGE::get_fullversion()
 
 void PACKAGE::clear()
 {
-	package_id=0;
+	package_id=-1;
 	package_name.clear();
 	package_version.clear();
 	package_arch.clear();
@@ -1331,11 +1333,13 @@ string PACKAGE::get_packager_email(bool sql)
 
 bool PACKAGE::available()
 {
-	return package_available;
+	if (package_locations.IsEmpty()) return false;
+	else return true;
+	//return package_available;
 }
 bool PACKAGE::reachable()
 {
-	if (package_available || package_installed) return true;
+	if (available() || installed()) return true;
 }
 bool PACKAGE::installed()
 {
@@ -1489,6 +1493,7 @@ int PACKAGE::set_packager_email(string packager_email)
 
 void PACKAGE::set_available(bool flag)
 {
+	printf("set_available is deprecated. Please do not use this\n");
 	package_available = flag;
 }
 
@@ -1634,11 +1639,12 @@ bool PACKAGE::IsEmpty()
 
 PACKAGE::PACKAGE()
 {
-	package_id=0;
+	package_id=-1;
 	package_available=0;
 	package_installed=0;
 	package_configexist=0;
 	package_action=0;
+	newPackage = false;
 
 	package_err_type=DEP_OK;
 }
@@ -1653,6 +1659,14 @@ void PACKAGE::clearVersioning()
 	alternateVersions.clear();
 }
 
+int PACKAGE_LIST::getPackageNumberByMD5(string md5)
+{
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].get_md5()==md5) return i;
+	}
+	return -1;
+}
 void PACKAGE_LIST::clearVersioning()
 {
 	for (int i=0; i<packages.size(); i++)
@@ -1871,9 +1885,10 @@ DEPENDENCY_LIST PACKAGE_LIST::getDepList(int i)
 
 PACKAGE PACKAGE_LIST::findMaxVersion()
 {
-	string max_version="0";
+	string max_version="";
 	int id=0;
 	string tmp_ver;
+	printf("FindMaxVersion: packagelist size = %d\n",packages.size());
 	for (unsigned int i=0;i<packages.size();i++)
 	{
 		tmp_ver = packages[i].get_fullversion();// + packages[i].get_build();
@@ -2012,6 +2027,8 @@ initialized = false;
 
 void PACKAGE_LIST::initVersioning()
 {
+	progressMax = packages.size();
+	progressEnabled = true;
 	// Что надо определить:
 	// Для каждого пакета - список номеров того же пакета других версий (НЕ ВКЛЮЧАЯ этот же пакет)
 	// Максимально доступную версию
@@ -2022,13 +2039,14 @@ void PACKAGE_LIST::initVersioning()
 	// Шаг первый. Список альтернативных версий
 	for (int i=0; i<packages.size(); i++)
 	{
+		currentProgress=i;
 		packages[i].clearVersioning();
 		for (int j=0; j<packages.size(); j++)
 		{
 			// Если это не тот же пакет и имена совпадают - добавляем номер в список
 			if (i!=j && packages[i].get_name() == packages[j].get_name())
 			{
-				packages[i].alternateVersions.push_back(j);
+				if (packages[j].available() || packages[j].installed()) packages[i].alternateVersions.push_back(j);
 			}
 		}
 	}
@@ -2046,28 +2064,24 @@ void PACKAGE_LIST::initVersioning()
 		installed_version.clear();
 		if (packages[i].installed())
 		{
-			installed_version = packages[i].get_fullversion();// + \
-					    packages[i].get_build();
+			installed_version = packages[i].get_fullversion();
 		}
 
 		// Если у пакета нет других версий - значит максимальную версию имеет он
 		
 		if (packages[i].alternateVersions.empty())
 		{
-			max_version = packages[i].get_fullversion();// + \
-				      packages[i].get_build();
+			max_version = packages[i].get_fullversion();
 			packages[i].hasMaxVersion=true;
 		}
 		else
 		{
 			for (int j=0; j<packages[i].alternateVersions.size(); j++)
 			{
-				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();// + \
-					       packages[packages[i].alternateVersions[j]].get_build();
+				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();
 				if (packages[packages[i].alternateVersions[j]].installed())
 				{
-					installed_version = packages[packages[i].alternateVersions[j]].get_fullversion();// + \
-							    packages[packages[i].alternateVersions[j]].get_build();
+					installed_version = packages[packages[i].alternateVersions[j]].get_fullversion();
 				}
 				if (strverscmp(this_version.c_str(), max_version.c_str())>0)
 				{

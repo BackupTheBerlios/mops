@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.50 2007/04/25 23:47:44 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.51 2007/04/27 00:59:14 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -706,6 +706,56 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 
 int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 {
+	// Одна из самых страшных функций в этой программе.
+	// Попытаемся применить принципиально новый алгоритм.
+	// 
+	// Для этого введем некоторые тезисы:
+	// 1. Пакет однозначно идентифицируется по его контрольной сумме.
+	// 2. Пакет без контрольной суммы - не пакет а мусор, выкидываем такое нахрен.
+	// 
+	// Алгоритм:
+	// 1. Стираем все записи о locations и servers в базе.
+	// 2. Забираем из базы весь список пакетов. Этот список и будет рабочим.
+	// 3. Для каждого пакета из нового списка ищем соответствие в старой базе.
+	// 	3а. В случае если такое соответствие найдено, вписываем в список записи о locations. Остальное остается неизменным, ибо MD5 та же.
+	// 	3б. В случае если соответствие не найдено, пакет добавляется в конец рабочего списка с флагом new = true
+	// 4. Вызывается синхронизация рабочего списка и данных в базе (это уже отдельная тема).
+	//
+	// ////////////////////////////////////////////////
+	
+	// Стираем locations и servers
+	db.clear_table("locations");
+	db.clear_table("servers");
+
+	// Забираем текущий список пакетов
+	PACKAGE_LIST pkgList;
+	SQLRecord sqlSearch;
+	get_packagelist(sqlSearch, &pkgList, false);
+	
+	// Ищем соответствия
+	int pkgNumber;
+	for (int i=0; i<newPackages->size(); i++)
+	{
+		pkgNumber = pkgList.getPackageNumberByMD5(newPackages->get_package(i)->get_md5());
+		
+		if (pkgNumber!=-1)	// Если соответствие найдено...
+		{
+			pkgList.get_package(pkgNumber)->set_locations(*newPackages->get_package(i)->get_locations());	// Записываем locations
+		}
+		else			// Если соответствие НЕ найдено...
+		{
+			newPackages->get_package(i)->newPackage=true;
+			pkgList.add(*newPackages->get_package(i));
+		}
+	}
+
+	// Вызываем синхронизацию данных.
+	// Вообще говоря, ее можно было бы делать прямо здесь, но пусть таки будет универсальность.
+	syncronize_data(&pkgList);
+	return 0;
+}
+/*
+
 	printf("Received %d packages from repositories\n", newPackages->size());
 	debug("mpkg.cpp: updateRepositoryData(): requesting current packages");
 	PACKAGE_LIST currentPackages;
@@ -750,10 +800,14 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 			package_num=0;
 			for (int s=0; s<newPackages->size(); s++)
 			{
+#ifndef NO_MD5_COMPARE
+				if (currentPackages.get_package(i)->get_md5()==newPackages->get_package(s)->get_md5())
+#else
 				if (currentPackages.get_package(i)->get_name()==newPackages->get_package(s)->get_name() \
 						&& currentPackages.get_package(i)->get_version()==newPackages->get_package(s)->get_version() \
 						&& currentPackages.get_package(i)->get_arch()==newPackages->get_package(s)->get_arch() \
 						&& currentPackages.get_package(i)->get_build()==newPackages->get_package(s)->get_build())
+#endif
 				{
 					debug("mpkg.cpp: updateRepositoryData(): package_num="+IntToStr(s)+", found - skipping");
 					package_num=s+1;
@@ -765,12 +819,32 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 				debug("mpkg.cpp: updateRepositoryData(): package_num=0, clearing package with id "+\
 						IntToStr(currentPackages.get_package(i)->get_id()));
 				currentPackages.get_package(i)->get_locations()->clear();
-				currentPackages.get_package(i)->set_available(ST_NOTAVAILABLE);
+				//currentPackages.get_package(i)->set_available(ST_NOTAVAILABLE);
 				update_package_data(currentPackages.get_package(i)->get_id(), currentPackages.get_package(i));
 			}
 		}
 	}
 	progressEnabled = false;
+	return 0;
+}
+*/
+
+int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
+{
+	// Идея:
+	// Добавить в базу пакеты, у которых флаг newPackage
+	// Добавить locations к тем пакетам, которые такого флага не имеют
+	// 
+	// Алгоритм:
+	// Бежим по списку пакетов.
+	// 	Если пакет имеет влаг newPackage, то сразу добавляем его в базу функцией add_package_record()
+	//	Если флага нету, то сразу добавляем ему locations функцией add_locationlist_record()
+	// 
+	for (int i=0; i<pkgList->size(); i++)
+	{
+		if (pkgList->get_package(i)->newPackage) add_package_record(pkgList->get_package(i));
+		else add_locationlist_record(pkgList->get_package(i)->get_id(), pkgList->get_package(i)->get_locations());
+	}
 	return 0;
 }
 

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.15 2007/04/26 12:17:37 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.16 2007/04/27 00:59:14 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -60,35 +60,44 @@ int mpkgSys::build_package()
 
 int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	Repository rep;
-	PACKAGE_LIST availablePackages;
-	PACKAGE_LIST tmpPackages;
-	if (REPOSITORY_LIST.empty())
-	{
-		printf("No repositories defined, add at least one to proceed\n");
-		return -1;
-	}
+	// Функция, с которой начинается обновление данных.
+	
+	Repository rep;		// Объект репозиториев
+	PACKAGE_LIST availablePackages;		// Список пакетов, полученных из всех репозиториев...
+	PACKAGE_LIST tmpPackages;		// Список пакетов, полученных из текущего репозитория (временное хранилище)
+
+	// А есть ли у нас вообще репозитории? Может нам и ловить-то нечего?...
+	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
+	// Поэтому - проверка устранена.
 
 	printf(_("Updating package data from %d repositories...\n"), REPOSITORY_LIST.size());
-	int total_packages=0;
+	
+	int total_packages=0; // Счетчик полученных пакетов.
+
+	// Поехали! Запрашиваем каждый репозиторий через функцию get_index()
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
-		tmpPackages.clear();
-		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);
-		if (!tmpPackages.IsEmpty())
+		tmpPackages.clear();					//Очищаем временный список.
+		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);	// Получаем список пакетов.
+		
+		if (!tmpPackages.IsEmpty())				// Если мы таки получили что-то, добавляем это в список.
 		{
-			total_packages+=tmpPackages.size();
-			printf("Received %d packages from %d rep\n", tmpPackages.size(), i);
-			for (int s=0; s<tmpPackages.size(); s++)
+			total_packages+=tmpPackages.size();		// Увеличим счетчик
+			availablePackages.add_list(&tmpPackages);	// Прибавляем данные к общему списку.
+			// Должен заметить, что сама функция add_list ранее была достаточно умной и что-то фильтровала.
+			// Результат этой деятельности себя не оправдал - получили тормоза и глюки.
+			// Поэтому - теперь функция будет просто тупо прибавлять список в конец.
+			
+			// А вот эти действия теперь будут перенесены в get_index. Просто потому, что это будет гораздо быстрее.
+			/*for (int s=0; s<tmpPackages.size(); s++)
 			{
-				tmpPackages.get_package(s)->set_available();
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_url(REPOSITORY_LIST[i]);
 				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_priority(IntToStr(i+1));
-			}
-			availablePackages.add_list(&tmpPackages);
+			}*/
 		}
 	}
 	printf("Total %d packages received, filtering...\n", total_packages);
+	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Update complete.\n");
 	return ret;
@@ -131,13 +140,14 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 			if (!do_upgrade && candidates.get_package(i)->installed())
 			{
 				alreadyInstalled=true;
-				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_version().c_str());
+				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_fullversion().c_str());
 				break;
 			}
 			if (candidates.get_package(i)->available())
 			{
 				debug("Status passed to installation");
-				if (tmp_pkg.IsEmpty() || tmp_pkg.get_version()<candidates.get_package(i)->get_version())
+				if (tmp_pkg.IsEmpty() || strverscmp(tmp_pkg.get_fullversion().c_str(), \
+						       	candidates.get_package(i)->get_fullversion().c_str())<0)
 				{
 					debug("tmp stored successfully");
 					tmp_pkg=*candidates.get_package(i);
@@ -148,6 +158,11 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 		{
 			printf("already installed\n");
 			return 0;
+		}
+		if (tmp_pkg.IsEmpty())
+		{
+			printf("No suitable package found to install\n");
+			return -1;
 		}
 		DepTracker->merge(&tmp_pkg);
 		return 0;

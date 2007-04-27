@@ -1,12 +1,13 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.37 2007/04/25 23:47:44 i27249 Exp $
+ * $Id: corethread.cpp,v 1.38 2007/04/27 00:59:14 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
 //#define TIMER_RES 600
-
+#define IDLE_RES 600
+#define RUNNING_RES 50
 errorBus::errorBus()
 {
 	action = eBUS_Pause;
@@ -504,6 +505,8 @@ void errorBus::Stop()
 statusThread::statusThread()
 {
 	TIMER_RES = 50;
+	idleTime=0;
+	idleThreshold=40;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
@@ -517,7 +520,17 @@ void statusThread::run()
 	//int tmp_t, tmp_t2;
 	string dlStatus;
 	forever 
-	{
+	{	if (!progressEnabled && !progressEnabled2)
+		{
+			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
+			else idleTime++;
+		}
+		else
+		{
+			idleTime=0;
+			TIMER_RES=RUNNING_RES;
+		}
+
 		switch(action)
 		{
 			case STT_Run:
@@ -609,6 +622,8 @@ void statusThread::halt()
 coreThread::coreThread()
 {
 	TIMER_RES=50;
+	idleTime=0;
+	idleThreshold=40;
 	//printf("Core thread created\n");
 	database = new mpkg;
 	currentAction = CA_Idle;
@@ -639,11 +654,13 @@ void coreThread::run()
 	{
 		if (currentAction == CA_Idle)
 		{
-			if (priority() != QThread::LowestPriority) setPriority(QThread::LowestPriority);
+			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
+			else idleTime++;
 		}
 		else
 		{
-			setPriority(QThread::LowPriority);
+			idleTime=0;
+			TIMER_RES=RUNNING_RES;
 		}
 		switch(currentAction)
 		{
@@ -676,7 +693,7 @@ void coreThread::run()
 				return; // Exiting!
 			default:
 				//printf("Out of loop! WARNING!!!\n");
-				msleep(1);
+				msleep(100);
 		}
 	}
 }
@@ -832,6 +849,7 @@ void coreThread::_updatePackageDatabase()
 	emit loadingStarted();
 	database->update_repository_data();
 	emit loadData();
+	currentAction = CA_Idle;
 }
 
 void coreThread::updatePackageDatabase()

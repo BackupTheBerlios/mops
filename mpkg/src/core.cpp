@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.35 2007/04/25 23:47:44 i27249 Exp $
+ *	$Id: core.cpp,v 1.36 2007/04/27 00:59:14 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -442,7 +442,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	package->set_changelog(sqlTable.getValue(0,"package_changelog"));
 	package->set_packager(sqlTable.getValue(0,"package_packager"));
 	package->set_packager_email(sqlTable.getValue(0,"package_packager_email"));
-	package->set_available(atoi(sqlTable.getValue(0,"package_available").c_str()));
+	//package->set_available(atoi(sqlTable.getValue(0,"package_available").c_str()));
 	package->set_installed(atoi(sqlTable.getValue(0,"package_installed").c_str()));
 	package->set_configexist(atoi(sqlTable.getValue(0,"package_configexist").c_str()));
 	package->set_action(atoi(sqlTable.getValue(0,"package_action").c_str()));
@@ -489,7 +489,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_packager(sqlTable.getValue(i, "package_packager"));
 		package.set_packager_email(sqlTable.getValue(i, "package_packager_email"));
 		
-		package.set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
+		//package.set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
 		package.set_installed(atoi(sqlTable.getValue(i,"package_installed").c_str()));
 		package.set_configexist(atoi(sqlTable.getValue(i,"package_configexist").c_str()));
 		package.set_action(atoi(sqlTable.getValue(i,"package_action").c_str()));
@@ -841,14 +841,14 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 }
 
 
-int mpkgDatabase::set_available(int package_id, int status)
+/*int mpkgDatabase::set_available(int package_id, int status)
 {
        	SQLRecord sqlUpdate;
 	sqlUpdate.addField("package_available", IntToStr(status));
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", IntToStr(package_id));
 	return db.sql_update("packages", sqlUpdate, sqlSearch);
-}
+}*/
 int mpkgDatabase::set_installed(int package_id, int status)
 {
        	SQLRecord sqlUpdate;
@@ -960,10 +960,10 @@ int mpkgDatabase::get_available(int package_id)
 {
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
-	sqlFields.addField("package_available");
+	sqlFields.addField("packages_package_id");
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_id", IntToStr(package_id));
-	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
+	sqlSearch.addField("packages_package_id", IntToStr(package_id));
+	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "locations", sqlSearch);
 	if (sql_ret!=0)
 	{
 		return -2;
@@ -971,14 +971,14 @@ int mpkgDatabase::get_available(int package_id)
 
 	if (sqlTable.empty())
 	{
-		return -1;
+		return 0;
 	}
 	if (sqlTable.getRecordCount()==1)
 	{
-		return atoi(sqlTable.getValue(0, "package_available").c_str());
+		//return atoi(sqlTable.getValue(0, "package_available").c_str());
 	}
 	if (sqlTable.getRecordCount()>1)
-		return -3;
+		return 1;
 	
 	return -100;
 }

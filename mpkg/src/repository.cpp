@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.32 2007/04/24 04:26:23 i27249 Exp $
+ * $Id: repository.cpp,v 1.33 2007/04/27 00:59:14 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -10,7 +10,7 @@ Repository::~Repository(){}
 
 XMLNode _root;
 
-int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist)
+int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist, string server_url)
 {
 	if (packageslist.length()<20)
 	{
@@ -274,6 +274,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			slackPackageLocation = slackPackageLocation.substr(2);
 		}
 		tmplocation.set_path(slackPackageLocation);
+		tmplocation.get_server()->set_url(server_url);
 		pkg.get_locations()->add(tmplocation);
 		debug("LOC_SET: "+pkg.get_locations()->get_location(0)->get_path());
 
@@ -639,13 +640,21 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					currentProgress = i;
 					pkg.clear();
 					xml2package(repository_root.getChildNode("package", i), &pkg);
+					// Adding location data
+					// Debug-time function: if multi locations - it means that something goes wrong, need to fix.
+					if (pkg.get_locations()->size()!=1)
+					{
+						printf("NONE or MULTIPLE LOCATIONS IN PACKAGE THAT SHOULD HAVE ONE!\n");
+						abort();
+					}
+					pkg.get_locations()->get_location(0)->get_server()->set_url(server_url);
 					packages->add(pkg);
 				}
 				progressEnabled = false;
 			break;
 		case TYPE_SLACK:
 			//printf("Parsing slackware repository\n");
-			ret = slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages);
+			ret = slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages, server_url);
 
 		case TYPE_DEBIAN:
 		default:

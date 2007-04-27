@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.20 2007/04/25 20:58:55 i27249 Exp $
+	$Id: dataunits.h,v 1.21 2007/04/27 00:59:14 i27249 Exp $
 */
 
 
@@ -428,6 +428,7 @@ class PACKAGE
 	vector<int>alternateVersions;
 	bool hasMaxVersion;
 	string maxVersion;
+	bool newPackage;	// Используется пока что только при обновлении. Есть мысль использовать в GUI (еще не знаю по какому принципу)
 	string installedVersion;
 	void clearVersioning();
 	bool isUpdate();
@@ -557,6 +558,7 @@ class PACKAGE_LIST
 	bool IsEmpty();
 	int size();
 	void set_size(unsigned int new_size);
+	int getPackageNumberByMD5(string md5);		// return number (NOT package ID!) of package in vector (if found). Else, returns -1.
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();

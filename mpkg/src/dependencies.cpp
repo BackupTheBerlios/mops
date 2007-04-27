@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.18 2007/04/25 21:33:22 i27249 Exp $
+$Id: dependencies.cpp,v 1.19 2007/04/27 00:59:14 i27249 Exp $
 */
 
 
@@ -62,7 +62,6 @@ bool DependencyTracker::commitToDb()
 		db->set_action(install_list.get_package(i)->get_id(), install_list.get_package(i)->action());
 	}
 
-	// Because removing of packages still not defined exaclty, leave this commented out...
 	for (int i=0; i<remove_list.size(); i++)
 	{
 		db->set_action(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->action());
@@ -112,6 +111,7 @@ bool DependencyTracker::checkVersion(string version1, int condition, string vers
 // Emerge :-)
 RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_normalize)
 {
+	printf("Emerging %s-%s (build %s)\n",package->get_name().c_str(), package->get_version().c_str(), package->get_build().c_str());
 	//Step 1. Check install (maybe, package is already installed?)
 	//Actions: 	if package is already installed - do nothing
 	//		if package is already marked for install - this means that it passed all checks before, do nothing

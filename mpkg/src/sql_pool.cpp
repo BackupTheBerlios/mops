@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.22 2007/04/17 14:35:19 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.23 2007/04/27 00:59:14 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -36,6 +36,12 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 	}
 }
 
+int SQLiteDB::clear_table(string table_name)
+{
+	// Функция стирает всю информацию из указанной таблицы
+	string exec = "delete from "+table_name+";";
+	return sql_exec(exec);
+}
 
 RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
@@ -501,6 +507,11 @@ SQLiteDB::~SQLiteDB(){
 int SQLProxy::sqlCommit()
 {
 	return sqliteDB.sqlCommit();
+}
+
+int SQLProxy::clear_table(string table_name)
+{
+	return sqliteDB.clear_table(table_name);
 }
 
 int SQLProxy::sqlBegin()

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.19 2007/04/19 01:38:57 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.20 2007/04/27 00:59:14 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -68,7 +68,7 @@ class mpkgDatabase
 	public:
 		bool check_cache(PACKAGE *package, bool clear_wrong=true);
 		int commit_actions(); // Commits ALL actions planned in database
-		int set_available(int package_id, int status);
+		//int set_available(int package_id, int status);
 		int set_action(int package_id, int status);
 		int set_configexist(int package_id, int status);
 		int set_installed(int package_id, int status);
@@ -79,6 +79,7 @@ class mpkgDatabase
 		int purge_package(PACKAGE *package); // removes config files
 		int uninstall(vector<string> pkgnames); // Wrapper, uninstalls all packages with given names.
 		int updateRepositoryData(PACKAGE_LIST *newPackages);
+		int syncronize_data(PACKAGE_LIST *pkgList);
 		PACKAGE get_installed_package(string pkg_name); // Returns installed package
 
 		string get_file_md5(string filename);
