@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.31 2007/04/27 00:59:14 i27249 Exp $
+	$Id: dataunits.cpp,v 1.32 2007/04/27 11:45:21 i27249 Exp $
 */
 
 
@@ -2037,6 +2037,7 @@ void PACKAGE_LIST::initVersioning()
 	//
 	// Делаем пока не оптимально но надежно
 	// Шаг первый. Список альтернативных версий
+	//printf("initVersioning: step 1\n");
 	for (int i=0; i<packages.size(); i++)
 	{
 		currentProgress=i;
@@ -2044,7 +2045,7 @@ void PACKAGE_LIST::initVersioning()
 		for (int j=0; j<packages.size(); j++)
 		{
 			// Если это не тот же пакет и имена совпадают - добавляем номер в список
-			if (i!=j && packages[i].get_name() == packages[j].get_name())
+			if (i!=j && strcmp(packages[i].get_name().c_str(), packages[j].get_name().c_str())==0)
 			{
 				if (packages[j].available() || packages[j].installed()) packages[i].alternateVersions.push_back(j);
 			}
@@ -2052,12 +2053,14 @@ void PACKAGE_LIST::initVersioning()
 	}
 
 	// Шаг второй. Для каждого пакета ищем максимальную версию
+	//printf("initVersioning: step 2\n");
 	string max_version; // Переменная содержащая максимальную версию
 	int max_version_id; // номер пакета содержавшего максимальную версию
 	string this_version;
 	string installed_version;
 	for (int i=0; i<packages.size();i++)
 	{
+		debug("initVersioning [stage 2]: step "+IntToStr(i));
 		max_version.clear();
 		max_version_id=-1;
 		this_version.clear();
@@ -2078,6 +2081,10 @@ void PACKAGE_LIST::initVersioning()
 		{
 			for (int j=0; j<packages[i].alternateVersions.size(); j++)
 			{
+				if (packages[i].alternateVersions[j]<0 || packages[i].alternateVersions[j]>=packages.size())
+				{
+					printf("WARNING!!! packages[%d].alternateVersions[%d] == %d\n",i,j,packages[i].alternateVersions[j]);
+				}
 				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();
 				if (packages[packages[i].alternateVersions[j]].installed())
 				{

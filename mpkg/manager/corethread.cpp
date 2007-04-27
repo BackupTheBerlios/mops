@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.38 2007/04/27 00:59:14 i27249 Exp $
+ * $Id: corethread.cpp,v 1.39 2007/04/27 11:45:21 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -621,6 +621,7 @@ void statusThread::halt()
 
 coreThread::coreThread()
 {
+	packageList = new PACKAGE_LIST;
 	TIMER_RES=50;
 	idleTime=0;
 	idleThreshold=40;
@@ -632,6 +633,7 @@ coreThread::coreThread()
 coreThread::~coreThread()
 {
 	delete database;
+	delete packageList;
 	//printf("Thread destroyed correctly\n");
 }
 
@@ -716,8 +718,6 @@ void coreThread::_loadPackageDatabase()
 	emit loadingStarted();
 	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	//vector<int> *tmpNewStatus;
-	
 	if (database->get_packagelist(sqlSearch, tmpPackageList, false)!=0)
 	{
 		emit errorLoadingDatabase();
@@ -725,10 +725,11 @@ void coreThread::_loadPackageDatabase()
 		delete tmpPackageList;
 		return;
 	}
-	packageList = tmpPackageList;
+	delete packageList;
 	currentStatus = "Building version list";
-	packageList->initVersioning();
+	tmpPackageList->initVersioning();
 	currentStatus = "Initializing status vectors";
+	packageList = tmpPackageList;
 	newStatus.clear();
 	for (int i=0; i<packageList->size(); i++)
 	{
@@ -738,8 +739,8 @@ void coreThread::_loadPackageDatabase()
 	sync();
 	unsigned int count = packageList->size();
 	currentStatus = "Setting up GUI elements";
-	emit initProgressBar(count);
-	emit enableProgressBar();
+	progressMax = count;
+	//emit enableProgressBar();
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
@@ -759,7 +760,7 @@ void coreThread::_loadPackageDatabase()
 #endif
 
 		
-		emit setProgressBarValue(i);
+		currentProgress=i;
 	}
 
 	emit disableProgressBar();

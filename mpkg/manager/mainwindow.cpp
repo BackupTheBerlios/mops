@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.65 2007/04/26 00:37:27 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.66 2007/04/27 11:45:21 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -390,7 +390,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
 	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
 	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
 
@@ -421,6 +421,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string)),Qt::QueuedConnection); 
 
+	// Wait threads to start
+	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
+	{
+		printf("Waiting threads to start...\n");
+		sleep(1);
+	}
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 

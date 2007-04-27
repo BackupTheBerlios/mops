@@ -15,5 +15,6 @@
 #define ACT_CONVERT_DIR	0x0d
 #define ACT_LIST_REP	0x0e
 #define ACT_TAG		0x0f
+#define ACT_TEST	0x10
 #endif
 

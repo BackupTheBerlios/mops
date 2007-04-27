@@ -12,6 +12,9 @@
   <property name="windowTitle" >
    <string>MOPSLinux package manager</string>
   </property>
+  <property name="windowIcon" >
+   <iconset>icons/removed_available.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QVBoxLayout" >
     <property name="margin" >
