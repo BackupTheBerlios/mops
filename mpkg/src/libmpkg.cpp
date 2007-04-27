@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.21 2007/04/27 00:59:14 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.22 2007/04/27 23:50:15 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -63,7 +63,7 @@ int mpkg::install(vector<string> fname)
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
-		ret+=mpkgSys::install(fname[i], db, DepTracker);
+		if (mpkgSys::requestInstall(fname[i], db, DepTracker)!=0) ret--;
 	}
 	//currentStatus = "Installation complete";
 	return ret;
@@ -71,23 +71,18 @@ int mpkg::install(vector<string> fname)
 
 int mpkg::install(string fname)
 {
-	currentStatus = "Installing package "+fname;
-	vector<string> fname2;
-	fname2.push_back(fname);
-	int ret = install(fname2);
-	if (ret==0) currentStatus = "Installation successful";
-	else currentStatus = "Error installing package "+fname;
-	return ret;
+	currentStatus = "Building queue: "+fname;
+	return mpkgSys::requestInstall(fname, db, DepTracker);
 }
 
 int mpkg::install(PACKAGE *pkg)
 {
-	return mpkgSys::install(pkg->get_id(), db, DepTracker);
+	return mpkgSys::requestInstall(pkg, db, DepTracker);
 }
 
 int mpkg::install(int package_id)
 {
-	return mpkgSys::install(package_id, db, DepTracker);
+	return mpkgSys::requestInstall(package_id, db, DepTracker);
 }
 
 int mpkg::install(PACKAGE_LIST *pkgList)
@@ -95,7 +90,7 @@ int mpkg::install(PACKAGE_LIST *pkgList)
 	int ret=0;
 	for (unsigned int i=0; i<pkgList->size(); i++)
 	{
-		ret+=mpkgSys::install(pkgList->get_package(i)->get_id(), db, DepTracker);
+		if (mpkgSys::requestInstall(pkgList->get_package(i), db, DepTracker)!=0) ret--;
 	}
 	return ret;
 }
@@ -106,9 +101,7 @@ int mpkg::uninstall(vector<string> pkg_name)
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
-
-		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Uninstalling package "+pkg_name[i];
-		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 0);
+		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0) ret--;
 	}
 	return ret;
 }
@@ -120,14 +113,27 @@ int mpkg::purge(vector<string> pkg_name)
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
+		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0, true) ret--;
+	}
+	return ret;
+}
+/*
+
+
+
+	int ret=0;
+	for (unsigned int i = 0; i < pkg_name.size(); i++)
+	{
+		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 
 		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Purging package "+pkg_name[i];
 		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 1);
 	}
 	return ret;
-}
-
+}*/
+/*
 // Packages upgrading
+
 int mpkg::upgrade (vector<string> pkgname)
 {
 	int ret=0;
@@ -154,7 +160,7 @@ int mpkg::upgrade(PACKAGE_LIST *pkgList)
 	}
 	return ret;
 }
-
+*/
 // Repository data updating
 int mpkg::update_repository_data()
 {

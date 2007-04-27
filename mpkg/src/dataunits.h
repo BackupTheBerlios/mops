@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.21 2007/04/27 00:59:14 i27249 Exp $
+	$Id: dataunits.h,v 1.22 2007/04/27 23:50:15 i27249 Exp $
 */
 
 
@@ -548,6 +548,7 @@ class PACKAGE_LIST
     private:
 	vector<PACKAGE> packages;
     public:
+	bool versioningInitialized;
 	PACKAGE* get_package(int num);
 	int set_package(int num, PACKAGE package);
 	bool operator != (PACKAGE_LIST nlist);
@@ -559,6 +560,7 @@ class PACKAGE_LIST
 	int size();
 	void set_size(unsigned int new_size);
 	int getPackageNumberByMD5(string md5);		// return number (NOT package ID!) of package in vector (if found). Else, returns -1.
+	int getMaxVersionID(string package_name);
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();

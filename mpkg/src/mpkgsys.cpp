@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.16 2007/04/27 00:59:14 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.17 2007/04/27 23:50:15 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -84,16 +84,6 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 		{
 			total_packages+=tmpPackages.size();		// Увеличим счетчик
 			availablePackages.add_list(&tmpPackages);	// Прибавляем данные к общему списку.
-			// Должен заметить, что сама функция add_list ранее была достаточно умной и что-то фильтровала.
-			// Результат этой деятельности себя не оправдал - получили тормоза и глюки.
-			// Поэтому - теперь функция будет просто тупо прибавлять список в конец.
-			
-			// А вот эти действия теперь будут перенесены в get_index. Просто потому, что это будет гораздо быстрее.
-			/*for (int s=0; s<tmpPackages.size(); s++)
-			{
-				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_url(REPOSITORY_LIST[i]);
-				tmpPackages.get_package(s)->get_locations()->get_location(0)->get_server()->set_priority(IntToStr(i+1));
-			}*/
 		}
 	}
 	printf("Total %d packages received, filtering...\n", total_packages);
@@ -103,6 +93,111 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	return ret;
 }
 
+// Установка (обновление)
+// Делаются следующие проверки:
+// 1) Проверяется есть ли такой пакет в базе
+// 2) Проверяется его доступность
+// Если все ок, направляем в DepTracker
+	
+int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	PACKAGE tmpPackage;
+	int ret = db->get_package(package_id, &tmpPackage);
+	if (ret == 0)
+	{
+		if (tmpPackage.available())
+		{
+			tmpPackage.set_action(ST_INSTALL);
+			DepTracker->addToInstallQuery(&tmpPackage);
+			return tmpPackage.get_id();
+		}
+		else return MPKGERROR_IMPOSSIBLE;
+	}
+	else return ret;
+}
+
+int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	return requestInstall(package->get_id(), db, DepTracker);
+}
+
+
+int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", package_name);
+	PACKAGE_LIST candidates;
+	int ret = db->get_packagelist(sqlSearch, &candidates, false);
+	int id=-1;
+	if (ret == 0)
+	{
+		id = candidates.getMaxVersionID(package_name);
+		if (id>=0)
+		{
+			return requestInstall(id, db, DepTracker);
+		}
+		else return MPKGERROR_NOPACKAGE;
+	}
+	else return ret;
+}	
+// Удаление
+int mpkgSys::requestUninstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
+{
+	return requestUninstall(package->get_id(), db, DepTracker, purge);
+}
+
+int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
+{
+	PACKAGE tmpPackage;
+	int ret = db->get_package(package_id, &tmpPackage);
+	if (ret == 0)
+	{
+		if (tmpPackage.installed())
+		{
+			if (purge) tmpPackage.set_action(ST_PURGE);
+			else tmpPackage.set_action(ST_REMOVE);
+			DepTracker->addToRemoveQuery(&tmpPackage);
+			return tmpPackage.get_id();
+		}
+		else return MPKGERROR_IMPOSSIBLE;
+	}
+	else return ret;
+}
+int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", package_name);
+	sqlSearch.addField("installed", "1");
+	PACKAGE_LIST candidates;
+	int ret = db->get_packagelist(sqlSearch, &candidates, false);
+	int id=-1;
+	if (ret == 0)
+	{
+		if (candidates.size()>1) return MPKGERROR_AMBIGUITY;
+		if (candidates.IsEmpty()) return MPKGERROR_NOPACKAGE;
+		id = candidates.get_package(0)->get_id();
+		if (id>=0)
+		{
+			return requestUninstall(id, db, DepTracker, purge);
+		}
+		else return MPKGERROR_NOPACKAGE;
+	}
+	else return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#ifdef OLD_INSTALL_SYSTEM
 int mpkgSys::install(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
 	PACKAGE tmp_package;
@@ -119,10 +214,6 @@ int mpkgSys::install(int package_id, mpkgDatabase *db, DependencyTracker *DepTra
 
 int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
 {
-	
-	// Step 0. Checking source
-
-	//printf(_("Querying the database, please wait...\n"));
 	// Step 1. Checking if it is just a name of a package
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", fname);
@@ -169,31 +260,6 @@ int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTrack
 	}
 	else printf("no candidates");
 	return -1;
-	/*	// Local installation disabled, because it need to do complete re-design... Have to think about..
-	printf("LOCAL INSTALL ATTEMPT DETECTED\n");
-	
-	// If reached this point, the package isn't in the database. Trying to install from local file.
-	// Part 1. Extracts all information from file and fill the package structure, and insert into dep tracker
-	// NOTE: ALL PACKAGE FORMATTING TOOLS ARE CALLED HERE! Add any new formats here.
-	
-	int pkgType = CheckFileType(fname);
-	
-	if (pkgType == PKGTYPE_UNKNOWN)
-	{
-		printf("Unknown package - skipping\n");
-		return -1;
-	}
-	else
-	{
-		LocalPackage lp(fname, pkgType);
-		if (lp.injectFile()==0)
-		{	
-			lp.data.set_available();
-			db->emerge_to_db(&lp.data);
-			DepTracker->merge(&lp.data);
-		}
-	}
-	return 0;	*/
 }
 
 int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
@@ -257,6 +323,8 @@ int mpkgSys::upgrade(int package_id, mpkgDatabase *db, DependencyTracker *DepTra
 	db->commit_actions();
 	return 0;
 }
+#endif // OLD_INSTALL_SYSTEM ---------------------------------------
+
 
 int mpkgSys::_clean(const char *filename, const struct stat *file_status, int filetype)
 {

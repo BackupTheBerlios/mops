@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.15 2007/04/26 12:17:37 i27249 Exp $
+ * $Id: libmpkg.h,v 1.16 2007/04/27 23:50:15 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -94,10 +94,10 @@ class mpkg
 		 * It builds dependency tree, and marks all required packages to remove.
 		 * Returns 0 if successful, <0 if fails.
 		 * @@*/
-
+		/*
 		int upgrade (vector<string> pkgname);
 		int upgrade (PACKAGE *pkg);
-		int upgrade (PACKAGE_LIST *pkg);
+		int upgrade (PACKAGE_LIST *pkg);*/
 		/* upgrade (vector<string> pkgname):
 		 * Upgrades packages defined by pkgname vector.
 		 * It builds dependency tree, and marks all required packages to remove and install.

@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.7 2007/04/07 11:15:21 i27249 Exp $
+$Id: dependencies.h,v 1.8 2007/04/27 23:50:15 i27249 Exp $
 */
 
 
@@ -20,6 +20,8 @@ $Id: dependencies.h,v 1.7 2007/04/07 11:15:21 i27249 Exp $
 #define DEP_DBERROR 7
 #define DEP_FILECONFLICT 8
 
+PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList);
+
 
 class DependencyTracker
 {
@@ -27,9 +29,15 @@ class DependencyTracker
 		PACKAGE_LIST install_list;
 		PACKAGE_LIST remove_list;
 		PACKAGE_LIST failure_list;
+
+		PACKAGE_LIST installQueryList;
+		PACKAGE_LIST removeQueryList;
 		mpkgDatabase *db;
 
 	public:
+		int renderFinalQuery();
+		void addToInstallQuery(PACKAGE *pkg);
+		void addToRemoveQuery(PACKAGE *pkg);
 		PACKAGE_LIST* get_install_list();
 		PACKAGE_LIST* get_remove_list();
 		PACKAGE_LIST* get_failure_list();

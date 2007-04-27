@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.36 2007/04/27 00:59:14 i27249 Exp $
+ *	$Id: core.cpp,v 1.37 2007/04/27 23:50:15 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -414,6 +414,11 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 
 int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInfo)
 {
+	if (package_id<0)
+	{
+		printf("Requested to find a package without ID\n");
+		return MPKGERROR_INCORRECTDATA;
+	}
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
@@ -426,9 +431,9 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 		return sql_ret;
 	}
 	if (sqlTable.empty())
-		return -1;
+		return MPKGERROR_NOPACKAGE;
 	if (sqlTable.getRecordCount()>1)
-		return -2;
+		return MPKGERROR_AMBIGUITY;
 
 	package->set_id(package_id);
 	package->set_name(sqlTable.getValue(0,"package_name"));
@@ -469,7 +474,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
 	if (sql_ret!=0)
 	{
-		return sql_ret;
+		return MPKGERROR_SQLQUERYERROR;
 	}
 	packagelist->clear(sqlTable.getRecordCount());
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
@@ -498,9 +503,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		package.set_filename(sqlTable.getValue(i, "package_filename"));
 		if (GetExtraInfo)
 		{
-			debug("getting filelist");
 			get_filelist(package.get_id(), package.get_files());
-			debug("script list...");
 			get_scripts(package.get_id(), package.get_scripts());
 		}
 		package.sync();

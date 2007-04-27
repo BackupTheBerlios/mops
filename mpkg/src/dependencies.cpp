@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.19 2007/04/27 00:59:14 i27249 Exp $
+$Id: dependencies.cpp,v 1.20 2007/04/27 23:50:15 i27249 Exp $
 */
 
 
@@ -20,6 +20,48 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 {
 	return &failure_list;
 }
+
+void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
+{
+	installQueryList.add(*pkg);
+}
+void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
+{
+	removeQueryList.add(*pkg);
+}
+
+int DependencyTracker::renderFinalQuery()
+{
+	// Шаг первый. Строим список требований устанавливаемых пакетов. Добавляем эти пакеты в список устанавливаемых пакетов.
+	// 	Повторяем операцию до тех пор пока не достигнем стабилизации (то бишь - количество добавленных пакетов будет нулевым).
+	// Шаг второй. Исключаем из списка удаляемых те пакеты, которые попадают под требования устанавливаемых пакетов.
+	// Шаг третий. Записываем все это дело в базу.
+	
+	int requiredCount;
+	PACKAGE_LIST allPackages;
+	SQLRecord sqlSearch;
+	db->get_packagelist(sqlSearch, &allPackages, false);
+	// TODO! [stub]
+
+}
+
+PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList)
+{
+	// TODO! [Stub] - returns required packages.
+	PACKAGE_LIST requiredList;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 void DependencyTracker::PrintFailure(PACKAGE* package)
 {

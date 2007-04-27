@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.32 2007/04/27 11:45:21 i27249 Exp $
+	$Id: dataunits.cpp,v 1.33 2007/04/27 23:50:15 i27249 Exp $
 */
 
 
@@ -1198,6 +1198,7 @@ string PACKAGE::get_fullversion()
 	return ret;
 }
 
+
 void PACKAGE::clear()
 {
 	package_id=-1;
@@ -1900,6 +1901,21 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 	}
 	return packages[id];
 }
+
+int PACKAGE_LIST::getMaxVersionID(string package_name)
+{
+	if (!versioningInitialized) initVersioning();
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].get_name() == package_name && packages[i].hasMaxVersion)
+		{
+			return packages[i].get_id();
+		}
+	}
+	return MPKGERROR_NOPACKAGE;
+}
+
+
 void PACKAGE_LIST::destroy()
 {
 	packages.clear();
@@ -1908,7 +1924,10 @@ void PACKAGE_LIST::destroy()
 {
 	return cList.getCloneID(testID);
 }*/
-PACKAGE_LIST::PACKAGE_LIST(){}
+PACKAGE_LIST::PACKAGE_LIST()
+{
+	versioningInitialized=false;
+}
 PACKAGE_LIST::~PACKAGE_LIST()
 {
 }
@@ -2118,6 +2137,7 @@ void PACKAGE_LIST::initVersioning()
 		packages[i].maxVersion=max_version;
 		packages[i].installedVersion = installed_version;
 	}
+	versioningInitialized=true;
 }
 
 

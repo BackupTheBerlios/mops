@@ -1,11 +1,11 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.29 2007/04/20 04:01:42 i27249 Exp $
+    $Id: config.h,v 1.30 2007/04/27 23:50:15 i27249 Exp $
 */
 
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
-
+#include "errorcodes.h"
 #include <string>
 #include <vector>
 using namespace std;
