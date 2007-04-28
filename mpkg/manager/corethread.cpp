@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.39 2007/04/27 11:45:21 i27249 Exp $
+ * $Id: corethread.cpp,v 1.40 2007/04/28 09:23:51 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -869,7 +869,7 @@ void coreThread::_commitQueue()
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
-	vector<string> upgrade_queue;
+	//vector<string> upgrade_queue;
 	vector<int> reset_queue;
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
@@ -881,9 +881,9 @@ void coreThread::_commitQueue()
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
 				case ST_INSTALL:
-					if (packageList->get_package(i)->isUpdate())
-						upgrade_queue.push_back(packageList->get_package(i)->get_name());
-					else
+		//			if (packageList->get_package(i)->isUpdate())
+	//					upgrade_queue.push_back(packageList->get_package(i)->get_name());
+		//			else
 					install_queue.push_back(packageList->get_package(i)->get_name());
 					break;
 				case ST_REMOVE:
@@ -897,7 +897,7 @@ void coreThread::_commitQueue()
 			}
 		}
 	}
-	database->upgrade(upgrade_queue);
+	//database->upgrade(upgrade_queue);
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.33 2007/04/27 23:50:15 i27249 Exp $
+	$Id: dataunits.cpp,v 1.34 2007/04/28 09:23:51 i27249 Exp $
 */
 
 
@@ -1907,7 +1907,7 @@ int PACKAGE_LIST::getMaxVersionID(string package_name)
 	if (!versioningInitialized) initVersioning();
 	for (int i=0; i<packages.size(); i++)
 	{
-		if (packages[i].get_name() == package_name && packages[i].hasMaxVersion)
+		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
 			return packages[i].get_id();
 		}
@@ -2060,13 +2060,13 @@ void PACKAGE_LIST::initVersioning()
 	for (int i=0; i<packages.size(); i++)
 	{
 		currentProgress=i;
-		packages[i].clearVersioning();
+		packages.at(i).clearVersioning();
 		for (int j=0; j<packages.size(); j++)
 		{
 			// Если это не тот же пакет и имена совпадают - добавляем номер в список
-			if (i!=j && strcmp(packages[i].get_name().c_str(), packages[j].get_name().c_str())==0)
+			if (i!=j && strcmp(packages.at(i).get_name().c_str(), packages.at(j).get_name().c_str())==0)
 			{
-				if (packages[j].available() || packages[j].installed()) packages[i].alternateVersions.push_back(j);
+				if (packages.at(j).available() || packages.at(j).installed()) packages.at(i).alternateVersions.push_back(j);
 			}
 		}
 	}
@@ -2077,6 +2077,7 @@ void PACKAGE_LIST::initVersioning()
 	int max_version_id; // номер пакета содержавшего максимальную версию
 	string this_version;
 	string installed_version;
+	try {
 	for (int i=0; i<packages.size();i++)
 	{
 		debug("initVersioning [stage 2]: step "+IntToStr(i));
@@ -2084,46 +2085,47 @@ void PACKAGE_LIST::initVersioning()
 		max_version_id=-1;
 		this_version.clear();
 		installed_version.clear();
-		if (packages[i].installed())
+		if (packages.at(i).installed())
 		{
-			installed_version = packages[i].get_fullversion();
+			installed_version = packages.at(i).get_fullversion();
 		}
 
 		// Если у пакета нет других версий - значит максимальную версию имеет он
 		
-		if (packages[i].alternateVersions.empty())
+		if (packages.at(i).alternateVersions.empty())
 		{
-			max_version = packages[i].get_fullversion();
-			packages[i].hasMaxVersion=true;
+			max_version = packages.at(i).get_fullversion();
+			packages.at(i).hasMaxVersion=true;
+			max_version_id = i;
 		}
 		else
 		{
-			for (int j=0; j<packages[i].alternateVersions.size(); j++)
+			for (int j=0; j<packages.at(i).alternateVersions.size(); j++)
 			{
-				if (packages[i].alternateVersions[j]<0 || packages[i].alternateVersions[j]>=packages.size())
+				if (packages.at(i).alternateVersions.at(j)<0 || packages.at(i).alternateVersions.at(j)>=packages.size())
 				{
-					printf("WARNING!!! packages[%d].alternateVersions[%d] == %d\n",i,j,packages[i].alternateVersions[j]);
+					printf("WARNING!!! packages[%d].alternateVersions[%d] == %d\n",i,j,packages.at(i).alternateVersions.at(j));
 				}
-				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();
-				if (packages[packages[i].alternateVersions[j]].installed())
+				this_version = packages.at(packages.at(i).alternateVersions.at(j)).get_fullversion();
+				if (packages.at(packages.at(i).alternateVersions.at(j)).installed())
 				{
-					installed_version = packages[packages[i].alternateVersions[j]].get_fullversion();
+					installed_version = packages.at(packages.at(i).alternateVersions.at(j)).get_fullversion();
 				}
 				if (strverscmp(this_version.c_str(), max_version.c_str())>0)
 				{
 					max_version = this_version;
-					max_version_id = packages[i].alternateVersions[j];
+					max_version_id = packages.at(i).alternateVersions.at(j);
 				}
 			}
 			if (max_version.empty()) // Если максимальной версии так и не нашлось (все пакеты - одинаковой версии) - то ставим максимум текущему
 			{
-				max_version = packages[i].get_version();
+				max_version = packages.at(i).get_version();
 				max_version_id = i;
 			}
 			else
 			{
 				// Проверим - а вдруг именно этот пакет имеет максимальную версию?
-				this_version = packages[i].get_fullversion();// + packages[i].get_build();
+				this_version = packages.at(i).get_fullversion();// + packages[i].get_build();
 				if (strverscmp(this_version.c_str(), max_version.c_str())>0)
 				{
 					max_version = this_version;
@@ -2133,13 +2135,19 @@ void PACKAGE_LIST::initVersioning()
 			}
 		}
 		// Запишем установленную версию
-		packages[max_version_id].hasMaxVersion=true;
-		packages[i].maxVersion=max_version;
-		packages[i].installedVersion = installed_version;
+		packages.at(max_version_id).hasMaxVersion=true;
+		packages.at(i).maxVersion=max_version;
+		packages.at(i).installedVersion = installed_version;
 	}
 	versioningInitialized=true;
 }
 
+catch(...)
+{
+	printf("Range check error: max_version_id=%d\n", max_version_id);
+}
+
+}
 
 /*void cloneList::init(vector<PACKAGE> &pkgList)
 {
