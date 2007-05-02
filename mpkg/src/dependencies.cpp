@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.20 2007/04/27 23:50:15 i27249 Exp $
+$Id: dependencies.cpp,v 1.21 2007/05/02 10:53:25 i27249 Exp $
 */
 
 
@@ -51,10 +51,163 @@ PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList)
 	PACKAGE_LIST requiredList;
 }
 
+// Tree
+PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQueue)
+{
+	// installationQueue - user-composed request for installation
+	// outStream - result, including all required packages.
+	PACKAGE_LIST outStream;
+	outStream.add(installationQueue);
+	for (int i=0; i<outStream.size(); i++)
+	{
+		outStream.add(get_required_packages(outStream.get_package(i)));
+	}
+	return outStream;
+}
+
+PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
+{
+	// Returns a list of required packages. Broken ones is marked internally
+	PACKAGE_LIST requiredPackages;
+	PACKAGE tmpPackage;
+	for (int i=0; i<package->get_dependencies()->size(); i++)
+	{
+		get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage);
+		requiredPackages.add(tmpPackage);
+	}
+	return requiredPackages;
+}
+
+
+int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
+{
+	returnPackage->clear();
+	returnPackage->set_name(dep->get_package_name());
+	returnPackage->set_broken(true);
+	returnPackage->set_requiredVersion(dep->get_version_data());
+	PACKAGE_LIST reachablePackages;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", dep->get_package_name());
+	db->get_packagelist(sqlSearch, &reachablePackages, false);
+	
+	if (reachablePackages.IsEmpty())
+		return MPKGERROR_NOPACKAGE;
+	
+	PACKAGE_LIST candidates;
+	for (int i=0; i<reachablePackages.size(); i++)
+	{
+		if (reachablePackages.get_package(i)->reachable() && meetVersion(dep->get_version_data(), reachablePackages.get_package(i)->get_version()))
+		{
+			candidates.add(reachablePackages.get_package(i));
+		}
+	}
+	if (candidates.IsEmpty()) return MPKGERROR_NOPACKAGE;
+	if (candidates.hasInstalledOnes()) *returnPackage = candidates.getInstalledOne();
+	else *returnPackage = candidates.getMaxVersion();
+	return MPKGERROR_OK;
+}
+
+PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
+{
+	// removeQueue - user-composed remove queue
+	// removeStream - result. Filtered.
+	PACKAGE_LIST removeStream;
+	removeStream.add(*removeQueue);
+	for (int i=0; i<removeStream.size(); i++)
+	{
+		removeStream.add(get_dependant_packages(removeStream.get_package(i)));
+	}
+	return removeStream;
+}
+
+PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_installed", "1");
+	PACKAGE_LIST installedPackages;
+	PACKAGE_LIST dependantPackages;
+	db->get_packagelist(sqlSearch, &installedPackages,false);
+	for (int i=0; i<installedPackages.size(); i++)
+	{
+		if (installedPackages.get_package(i)->isItRequired(package))
+		{
+			dependantPackages.add(installedPackages.get_package(i));
+		}
+	}
+	return dependantPackages;
+}
+
+int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream)
+{
+	PACKAGE_LIST install_list;
+	PACKAGE_LIST remove_list;
+	PACKAGE_LIST conflict_list;
+	PACKAGE_LIST installedList;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_installed", "1");
+	db->get_packagelist(sqlSearch, &installedList, false);
+	bool found;
+	// What we should do?
+	// 1. Remove from removeStream all items who are in installStream.
+	// 2. Add to remove_list resulting removeStream;
+	for (int i=0; i<removeStream.size(); i++)
+	{
+		found=false;
+		for (int t=0;t<installStream.size();t++)
+		{
+			if (installStream.get_package(t)==installStream.get_package(i))
+			{
+				found=true;
+				break;
+			}
+		}
+		if (!found) remove_list.add(removeStream.get_package(i));
+	}
+	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
+	for (int i=0; i<installStream.size(); i++)
+	{
+		found=false;
+		for (int t=0; t<installedList.size(); t++)
+		{
+			if (installedList.get_package(t)->installed() && \
+					installedList.get_package(t)->get_name() == installStream.get_package(i)->get_name() && \
+					installedList.get_package(t)->get_md5() != installStream.get_package(i)->get_md5() \
+			   )
+			{
+				conflict_list.add(installedList.get_package(t));
+				break;
+			}
+		}
+	}
+	// 3.1 Filter conflict_list. Search for packages who required anything in conflict_list and it cannot be replaced by anything in installStream.
+	PACKAGE_LIST removeCandidates;
+	PACKAGE_LIST removeQueue2;
+	PACKAGE_LIST willInstalled = installStream + installedList;
+	for (int i=0; i<conflict_list.size(); i++)
+	{
+		removeCandidates = get_dependant_packages(conflict_list.get_package(i));
+		for (int t=0; t<removeCandidates.size(); t++)
+		{
+			if (checkBrokenDeps(removeCandidates.get_package(t), willInstalled)) removeQueue2.add(removeCandidates[t]);
+		}
+	}
+	removeQueue2 = renderRemoveQueue (&removeQueue2);
+	// TODO!
 
 
 
 
+
+
+	// 4. Put in install_list all installStream
+	install_list = installStream;
+	// 5. Return results.
+}
+
+bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList)
+{
+//STUB! TODO
+}
 
 
 

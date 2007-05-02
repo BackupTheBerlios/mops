@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.8 2007/04/27 23:50:15 i27249 Exp $
+$Id: dependencies.h,v 1.9 2007/05/02 10:53:25 i27249 Exp $
 */
 
 
@@ -19,8 +19,6 @@ $Id: dependencies.h,v 1.8 2007/04/27 23:50:15 i27249 Exp $
 #define DEP_UNAVAILABLE 6
 #define DEP_DBERROR 7
 #define DEP_FILECONFLICT 8
-
-PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList);
 
 
 class DependencyTracker
@@ -47,8 +45,21 @@ class DependencyTracker
 		bool commitToDb();
 		void PrintFailure(PACKAGE *package);
 		bool checkVersion(string version1, int condition, string version2);
+		
+		PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList);
+		PACKAGE_LIST renderRequiredList(PACKAGE_LIST *installationQueue);
+		PACKAGE_LIST get_required_packages(PACKAGE *package);
+		int get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage);
+		PACKAGE_LIST renderRemoveQueue(PACKAGE_LIST *removeQueue);
+		PACKAGE_LIST get_dependant_packages(PACKAGE *package);
+		int muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream);
+		bool checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList);
+
+
+
 		DependencyTracker(mpkgDatabase *mpkgDB);
 		~DependencyTracker();
+
 };
 
 class depTreeItem: private mpkgDatabase
@@ -61,3 +72,4 @@ class depTreeItem: private mpkgDatabase
 		~depTreeItem();
 };
 #endif //DEPENDENCIES_H_
+

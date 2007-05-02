@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.22 2007/04/27 23:50:15 i27249 Exp $
+	$Id: dataunits.h,v 1.23 2007/05/02 10:53:25 i27249 Exp $
 */
 
 
@@ -174,6 +174,12 @@ class LOCATION_LIST
 	~LOCATION_LIST();
 };
 
+struct versionData
+{
+	string min_version;
+	string max_version;
+};
+
 class DEPENDENCY
 {
     private:
@@ -184,6 +190,7 @@ class DEPENDENCY
 	string dependency_package_name;
 	string dependency_package_version;
 	int dependency_broken;
+	versionData version_data;
     public:
 	int get_id();
 	string get_condition(bool sql=true);
@@ -193,6 +200,7 @@ class DEPENDENCY
 	string get_package_version(bool sql=true);
 	string get_vbroken();
 	int get_broken();
+	versionData get_version_data();
 
 	int set_id(int id);
 	int set_condition(string condition);
@@ -285,6 +293,8 @@ class DEPENDENCY_LIST
 	vector <DEPENDENCY> dependencies;
     public:
 	DEPENDENCY* get_dependency(int num);
+	DEPENDENCY* at(int num);
+	DEPENDENCY* operator [] (int num);
 	int set_dependency(int num, DEPENDENCY dependency);
 	
 	bool operator != (DEPENDENCY_LIST ndep);
@@ -388,17 +398,6 @@ class DESCRIPTION_LIST
 		void clear();
 };
 
-/*class dTreeItem
-{
-	public:
-		int thisID;
-		vector<*dTreeItem> childs;
-		dTreeItem();
-		~dTreeItem();
-		void addChild(PACKAGE *pkg);
-		PACKAGE *getChild(int package_id);
-};
-*/
 class PACKAGE
 {
     private:
@@ -423,8 +422,14 @@ class PACKAGE
 	string package_md5;
 	string package_filename;
 	int package_err_type;
-    public:
 
+	bool isBroken;
+	versionData requiredVersion;
+
+    public:
+	bool isItRequired(PACKAGE *testPackage);
+	void set_broken(bool flag=true);
+	void set_requiredVersion(versionData reqVersion);
 	vector<int>alternateVersions;
 	bool hasMaxVersion;
 	string maxVersion;
@@ -433,17 +438,6 @@ class PACKAGE
 	void clearVersioning();
 	bool isUpdate();
 	string get_fullversion();
-	//int maxVersionNumber();
-
-	
-/*
-	int masterCloneID;
-	bool isMasterClone;
-	bool hasClone;
-	bool hasUpdates;
-	string installedVersion;
-	bool isMaxVersion;
-*/	
 	int get_id();
 	string get_name(bool sql=true);
 	string get_version(bool sql=true);
@@ -548,12 +542,21 @@ class PACKAGE_LIST
     private:
 	vector<PACKAGE> packages;
     public:
+	bool hasInstalledOnes();
+	PACKAGE getInstalledOne();
+	PACKAGE getMaxVersion();
 	bool versioningInitialized;
 	PACKAGE* get_package(int num);
 	int set_package(int num, PACKAGE package);
 	bool operator != (PACKAGE_LIST nlist);
 	bool operator == (PACKAGE_LIST nlist);
+	bool operator += (PACKAGE_LIST pkgList);
+	PACKAGE* operator [] (int num);
+	PACKAGE_LIST operator + (PACKAGE_LIST pkgList2);
 	int add(PACKAGE package);
+	int add(PACKAGE *package);
+	int add(PACKAGE_LIST *pkgList);
+	int add(PACKAGE_LIST pkgList);
 	int add_list(PACKAGE_LIST *pkgList, bool skip_identical=true);
 	void clear(unsigned int new_size = 0);
 	bool IsEmpty();
@@ -575,5 +578,7 @@ class PACKAGE_LIST
 
 typedef int RESULT;
 string IntToStr(int num);
+bool meetVersion(versionData condition, string packageVersion);
+
 #endif //DATAUNITS_H_
 

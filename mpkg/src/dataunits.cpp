@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.34 2007/04/28 09:23:51 i27249 Exp $
+	$Id: dataunits.cpp,v 1.35 2007/05/02 10:53:25 i27249 Exp $
 */
 
 
@@ -550,6 +550,10 @@ bool DEPENDENCY::operator == (DEPENDENCY ndep)
 	return true;
 }
 
+versionData DEPENDENCY::get_version_data()
+{
+	return version_data;
+}
 
 void DEPENDENCY::clear()
 {
@@ -887,6 +891,11 @@ DEPENDENCY* DEPENDENCY_LIST::get_dependency(int num)
 	else return NULL;
 }
 
+DEPENDENCY* DEPENDENCY_LIST::at(int num)
+{
+	return get_dependency(num);
+}
+
 int DEPENDENCY_LIST::set_dependency(int num, DEPENDENCY dependency)
 {
 	if (num>=0 && num<size())
@@ -1182,6 +1191,24 @@ bool PACKAGE::operator == (PACKAGE npkg)
 	if (package_scripts!=*npkg.get_scripts()) return false;
 	if (package_files!=*npkg.get_files()) return false;
 	return true;
+}
+bool PACKAGE::isItRequired(PACKAGE *testPackage)
+{
+	for (int i=0; i<package_dependencies.size(); i++)
+	{
+		if (package_dependencies.at(i)->get_package_name() == testPackage->get_name() && \
+				meetVersion(package_dependencies.at(i)->get_version_data(), testPackage->get_version()))
+			return true;
+	}
+	return false;
+}
+void PACKAGE::set_broken(bool flag)
+{
+	isBroken=flag;
+}
+void PACKAGE::set_requiredVersion(versionData reqVersion)
+{
+	requiredVersion = reqVersion;
 }
 
 bool PACKAGE::isUpdate()
@@ -1719,6 +1746,37 @@ bool PACKAGE_LIST::operator == (PACKAGE_LIST nlist)
 	return true;
 }
 
+PACKAGE* PACKAGE_LIST::operator [] (int num)
+{
+	return get_package(num);
+}
+	
+bool PACKAGE_LIST::hasInstalledOnes()
+{
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].installed()) return true;
+	}
+}
+
+PACKAGE PACKAGE_LIST::getInstalledOne()
+{
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].installed()) return packages[i];
+	}
+	fprintf(stderr, "Error using getInstalledOne\n");
+	PACKAGE p;
+	return p;
+}
+
+PACKAGE PACKAGE_LIST::getMaxVersion()
+{
+	if (!IsEmpty())
+	return packages.at(getMaxVersionID(packages[0].get_name()));
+}
+
+
 PACKAGE* PACKAGE_LIST::get_package(int num)
 {
 	//PACKAGE s_package;
@@ -1752,8 +1810,29 @@ int PACKAGE_LIST::add(PACKAGE package)
     packages[ret]=package;
     return ret;
 }
+int PACKAGE_LIST::add(PACKAGE *package)
+{
+	return add(*package);
+}
 
-
+int PACKAGE_LIST::add(PACKAGE_LIST *pkgList)
+{
+	return add_list(pkgList, false);
+}
+int PACKAGE_LIST::add(PACKAGE_LIST pkgList)
+{
+	return add(&pkgList);
+}
+PACKAGE_LIST PACKAGE_LIST::operator + (PACKAGE_LIST pkgList)
+{
+	PACKAGE_LIST tmp=*this;
+	tmp.add(pkgList);
+	return tmp;
+}
+bool PACKAGE_LIST::operator += (PACKAGE_LIST pkgList)
+{
+	add(pkgList);
+}
 int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 {
 //	printf("dataunits.cpp:add_list() started\n");
@@ -1766,25 +1845,15 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 	//packages.resize(ret);
 	bool identical_found=false;
 	//int identical_id;
-	bool location_found;
+	bool location_found=false;
 	for (int i=0; i<pkgList->size();i++)
 	{
-#ifdef DEBUG
-		printf("add_list: adding package %d\n", i);
-		if (skip_identical) printf("add_list: skip_identical=true)\n");
-#endif
 		if (skip_identical)
 		{
-#ifdef DEBUG
-			printf("add_list: Skipping identical packages, just adding locations for them\n");
-#endif
 			identical_found=false;
 			// Checking if lists have identical items, remove it
 			for (unsigned int s=0; s<packages.size(); s++)
 			{
-#ifdef DEBUG
-				printf("add_list: comparing with package %d\n", s);
-#endif
 #ifndef NO_MD5_COMPARE
 				if (packages[s].get_md5()==pkgList->get_package(i)->get_md5())
 #endif
@@ -1796,64 +1865,30 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 #endif
 				{
 					identical_found=true;
-#ifdef DEBUG
-					printf("add_list: Found identical package %s with %d locations, merging locations\n", \
-							pkgList->get_package(i)->get_name().c_str(), \
-							pkgList->get_package(i)->get_locations()->size());
-#endif
 					// Comparing locations and merging
 					for (int l=0; l<pkgList->get_package(i)->get_locations()->size(); l++)
 					{
-#ifdef DEBUG
-						printf("add_list: Testing location %d\n", l);
-#endif
 						location_found=false;
 						for (int ls=0; ls<packages[s].get_locations()->size(); ls++)
 						{
 							if (*packages[s].get_locations()->get_location(ls)==*pkgList->get_package(i)->get_locations()->get_location(l))
 							{
-#ifdef DEBUG
-								printf("Location already exists\n");
-#endif
 								location_found=true;
 								break;
 							}
 						}
-#ifdef DEBUG
-						if (location_found) printf("add_list: location_found=true, so -> location is not new\n");
-						else printf("add_list: location_found=false, so location is NEW\n");
-#endif
 						if (!location_found)
 						{
-#ifdef DEBUG
-							printf("New location, adding\n");
-#endif
 							packages[s].get_locations()->add(*pkgList->get_package(i)->get_locations()->get_location(l));
 						}
 					}
 					break;
 				}
-#ifdef DEBUG
-				else	// end: if packages seems identical
-				{
-					printf("add_list: package is NEW, adding fully");
-				}
-#endif
 
 			}
 		}
-#ifdef DEBUG
-		else
-		{
-			printf("add_list: simply adding packages\n");
-		}
-#endif
 		if (!identical_found)
 		{
-#ifdef DEBUG
-			printf("add_list: (at end of cycle) identical_found=false, so -> New package with %d locations, adding\n", \
-					pkgList->get_package(i)->get_locations()->size());
-#endif
 			this->add(*pkgList->get_package(i));
 		}
 	}
@@ -2147,6 +2182,14 @@ catch(...)
 	printf("Range check error: max_version_id=%d\n", max_version_id);
 }
 
+}
+
+bool meetVersion(versionData condition, string packageVersion)
+{
+	if (strverscmp(condition.min_version.c_str(), packageVersion.c_str())>=0 && \
+	    strverscmp(condition.max_version.c_str(), packageVersion.c_str())<=0)
+		return true;
+	else return false;
 }
 
 /*void cloneList::init(vector<PACKAGE> &pkgList)
