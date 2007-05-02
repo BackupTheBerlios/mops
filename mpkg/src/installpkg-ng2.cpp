@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.8 2007/04/27 23:50:15 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.9 2007/05/02 12:27:15 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -296,7 +296,7 @@ int main (int argc, char **argv)
 		for (int i=0;i<core.DepTracker->get_failure_list()->size();i++)
 		{
 			printf("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name(false).c_str());
-			core.DepTracker->PrintFailure(core.DepTracker->get_failure_list()->get_package(i));
+			//core.DepTracker->PrintFailure(core.DepTracker->get_failure_list()->get_package(i));
 		}
 	}
 	printf("\n");

@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.21 2007/05/02 10:53:25 i27249 Exp $
+$Id: dependencies.cpp,v 1.22 2007/05/02 12:27:15 i27249 Exp $
 */
 
 
@@ -8,12 +8,12 @@ $Id: dependencies.cpp,v 1.21 2007/05/02 10:53:25 i27249 Exp $
 #include "constants.h"
 PACKAGE_LIST* DependencyTracker::get_install_list()
 {
-	return &install_list;
+	return &installList;
 }
 
 PACKAGE_LIST* DependencyTracker::get_remove_list()
 {
-	return &remove_list;
+	return &removeList;
 }
 
 PACKAGE_LIST* DependencyTracker::get_failure_list()
@@ -30,27 +30,61 @@ void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 	removeQueryList.add(*pkg);
 }
 
-int DependencyTracker::renderFinalQuery()
+int findBrokenPackages(PACKAGE_LIST pkgList, PACKAGE_LIST *output)
 {
-	// Шаг первый. Строим список требований устанавливаемых пакетов. Добавляем эти пакеты в список устанавливаемых пакетов.
-	// 	Повторяем операцию до тех пор пока не достигнем стабилизации (то бишь - количество добавленных пакетов будет нулевым).
-	// Шаг второй. Исключаем из списка удаляемых те пакеты, которые попадают под требования устанавливаемых пакетов.
-	// Шаг третий. Записываем все это дело в базу.
+	int counter=0;
+	for (int i=0; i<pkgList.size(); i++)
+	{
+		if (pkgList.get_package(i)->isBroken)
+		{
+			counter++;
+			output->add(pkgList.get_package(i));
+		}
+	}
+	return counter;
+}
+void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
+{
+	PACKAGE_LIST output;
 	
-	int requiredCount;
-	PACKAGE_LIST allPackages;
-	SQLRecord sqlSearch;
-	db->get_packagelist(sqlSearch, &allPackages, false);
-	// TODO! [stub]
-
+	// Comparing by MD5.
+	vector<string> known_md5;
+	bool dupe;
+	for (int i=0; i<pkgList->size(); i++)
+	{
+		dupe=false;
+		if (removeEmpty && pkgList->get_package(i)->IsEmpty())
+		{
+			dupe=true;
+		}
+		else
+		{
+			for (int t=0; t<known_md5.size(); t++)
+			{
+				if (pkgList->get_package(i)->get_md5()==known_md5.at(t))
+				{
+					dupe=true;
+					break;
+				}
+			}
+		}
+		if (!dupe) output.add(pkgList->get_package(i));
+	}
+	*pkgList=output;
 }
 
-PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList)
+
+int DependencyTracker::renderData()
 {
-	// TODO! [Stub] - returns required packages.
-	PACKAGE_LIST requiredList;
+	int failureCounter = 0;
+	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
+	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
+	filterDupes(&installStream);
+	filterDupes(&removeStream);
+	muxStreams(installStream, removeStream);
+	failureCounter = findBrokenPackages(installList, &failure_list);
+	return failureCounter;
 }
-
 // Tree
 PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQueue)
 {
@@ -72,7 +106,7 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	PACKAGE tmpPackage;
 	for (int i=0; i<package->get_dependencies()->size(); i++)
 	{
-		get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage);
+		if (get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage)!=0) package->set_broken();
 		requiredPackages.add(tmpPackage);
 	}
 	return requiredPackages;
@@ -82,6 +116,7 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 {
 	returnPackage->clear();
+	returnPackage->isRequirement=true;
 	returnPackage->set_name(dep->get_package_name());
 	returnPackage->set_broken(true);
 	returnPackage->set_requiredVersion(dep->get_version_data());
@@ -188,11 +223,11 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 		removeCandidates = get_dependant_packages(conflict_list.get_package(i));
 		for (int t=0; t<removeCandidates.size(); t++)
 		{
-			if (checkBrokenDeps(removeCandidates.get_package(t), willInstalled)) removeQueue2.add(removeCandidates[t]);
+			if (checkBrokenDeps(removeCandidates.get_package(t), willInstalled)) removeQueue2.add(removeCandidates.get_package(t));
 		}
 	}
 	removeQueue2 = renderRemoveQueue (&removeQueue2);
-	// TODO!
+	remove_list += removeQueue2;
 
 
 
@@ -202,15 +237,33 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 	// 4. Put in install_list all installStream
 	install_list = installStream;
 	// 5. Return results.
+	installList = install_list;
+	removeList = remove_list;
 }
 
-bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList)
+bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) // Tests if all depencencies of package pkg can be resolved by searchList
 {
-//STUB! TODO
+	bool passed;
+	for (int i=0; i<pkg->get_dependencies()->size(); i++)
+	{
+		passed=false;
+		for (int t=0; t<searchList.size(); t++)
+		{
+			if (pkg->get_dependencies()->get_dependency(i)->get_package_name() == searchList.get_package(t)->get_name() && \
+					meetVersion(pkg->get_dependencies()->get_dependency(i)->get_version_data(), searchList.get_package(t)->get_version()))
+			{
+				passed=true;
+				break;
+			}
+		}
+		if (!passed) return false;
+	}
+	return true;
+	
 }
 
 
-
+/*
 
 
 
@@ -248,23 +301,23 @@ void DependencyTracker::PrintFailure(PACKAGE* package)
 
 }
 
-
+*/
 
 bool DependencyTracker::commitToDb()
 {
-	for (int i=0; i<install_list.size(); i++)
+	for (int i=0; i<installList.size(); i++)
 	{
-		db->set_action(install_list.get_package(i)->get_id(), install_list.get_package(i)->action());
+		db->set_action(installList.get_package(i)->get_id(), installList.get_package(i)->action());
 	}
 
-	for (int i=0; i<remove_list.size(); i++)
+	for (int i=0; i<removeList.size(); i++)
 	{
-		db->set_action(remove_list.get_package(i)->get_id(), remove_list.get_package(i)->action());
+		db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 	}
 
 	return true;
 }
-
+/*
 bool DependencyTracker::checkVersion(string version1, int condition, string version2)
 {
 	//printf("Comparing %s with %s\n", version1.c_str(), version2.c_str());
@@ -304,6 +357,7 @@ bool DependencyTracker::checkVersion(string version1, int condition, string vers
 }
 
 // Emerge :-)
+
 RESULT DependencyTracker::merge(PACKAGE *package, bool suggest_skip, bool do_normalize)
 {
 	printf("Emerging %s-%s (build %s)\n",package->get_name().c_str(), package->get_version().c_str(), package->get_build().c_str());
@@ -583,14 +637,14 @@ int DependencyTracker::normalize()
 
 
 }
-	
+	*/
 
 DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
 {
 	db=mpkgDB;
 }
 DependencyTracker::~DependencyTracker(){}
-
+/*
 depTreeItem::depTreeItem(PACKAGE packageItem)
 {
 	thisItem = packageItem;
@@ -606,4 +660,4 @@ depTreeItem::~depTreeItem(){}
 
 
 	
-
+*/

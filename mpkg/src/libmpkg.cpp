@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.22 2007/04/27 23:50:15 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.23 2007/05/02 12:27:15 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -299,12 +299,20 @@ int mpkg::commit()
 {
 	currentStatus = "Checking dependencies...";
 	//printf("committing...\n");
-	
-	DepTracker->commitToDb();
-	currentStatus = "Committing changes...";
-	db->commit_actions();
-
-	currentStatus = "Complete.";
+	int errorCount = DepTracker->renderData();
+	if (errorCount==0)
+	{
+		DepTracker->commitToDb();
+		currentStatus = "Committing changes...";
+		db->commit_actions();
+		currentStatus = "Complete.";
+	}
+	else
+	{
+		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
+		printf("Error in dependencies: %d failures \n", errorCount);
+		currentStatus = "Failed - depencency errors";
+	}
 	return 0;
 }
 

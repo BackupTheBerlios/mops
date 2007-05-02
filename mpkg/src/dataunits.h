@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.23 2007/05/02 10:53:25 i27249 Exp $
+	$Id: dataunits.h,v 1.24 2007/05/02 12:27:15 i27249 Exp $
 */
 
 
@@ -423,10 +423,12 @@ class PACKAGE
 	string package_filename;
 	int package_err_type;
 
-	bool isBroken;
 	versionData requiredVersion;
 
     public:
+
+	bool isBroken;
+	bool isRequirement;
 	bool isItRequired(PACKAGE *testPackage);
 	void set_broken(bool flag=true);
 	void set_requiredVersion(versionData reqVersion);

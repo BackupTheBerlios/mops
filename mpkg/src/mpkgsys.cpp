@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.17 2007/04/27 23:50:15 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.18 2007/05/02 12:27:15 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -167,7 +167,7 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 {
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", package_name);
-	sqlSearch.addField("installed", "1");
+	sqlSearch.addField("package_installed", "1");
 	PACKAGE_LIST candidates;
 	int ret = db->get_packagelist(sqlSearch, &candidates, false);
 	int id=-1;

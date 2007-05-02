@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.9 2007/05/02 10:53:25 i27249 Exp $
+$Id: dependencies.h,v 1.10 2007/05/02 12:27:15 i27249 Exp $
 */
 
 
@@ -20,12 +20,13 @@ $Id: dependencies.h,v 1.9 2007/05/02 10:53:25 i27249 Exp $
 #define DEP_DBERROR 7
 #define DEP_FILECONFLICT 8
 
+void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty=true);
 
 class DependencyTracker
 {
 	private:
-		PACKAGE_LIST install_list;
-		PACKAGE_LIST remove_list;
+		PACKAGE_LIST installList;
+		PACKAGE_LIST removeList;
 		PACKAGE_LIST failure_list;
 
 		PACKAGE_LIST installQueryList;
@@ -33,20 +34,18 @@ class DependencyTracker
 		mpkgDatabase *db;
 
 	public:
-		int renderFinalQuery();
 		void addToInstallQuery(PACKAGE *pkg);
 		void addToRemoveQuery(PACKAGE *pkg);
 		PACKAGE_LIST* get_install_list();
 		PACKAGE_LIST* get_remove_list();
 		PACKAGE_LIST* get_failure_list();
-		RESULT merge(PACKAGE *package, bool suggest_skip=true, bool do_normalize=false);
-		RESULT unmerge(PACKAGE *package, int do_purge=0, bool do_upgrade=false);
-		int normalize();
+		//RESULT merge(PACKAGE *package, bool suggest_skip=true, bool do_normalize=false);
+		//RESULT unmerge(PACKAGE *package, int do_purge=0, bool do_upgrade=false);
+		//int normalize();
+		int renderData();	// Returns 0 if all ok, failure count if something fails (broken dependencies, etc)
 		bool commitToDb();
-		void PrintFailure(PACKAGE *package);
-		bool checkVersion(string version1, int condition, string version2);
+		//bool checkVersion(string version1, int condition, string version2);
 		
-		PACKAGE_LIST getDependencies(PACKAGE *package, PACKAGE_LIST *pkgList);
 		PACKAGE_LIST renderRequiredList(PACKAGE_LIST *installationQueue);
 		PACKAGE_LIST get_required_packages(PACKAGE *package);
 		int get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage);
@@ -61,7 +60,7 @@ class DependencyTracker
 		~DependencyTracker();
 
 };
-
+/*
 class depTreeItem: private mpkgDatabase
 {
 	public:
@@ -70,6 +69,6 @@ class depTreeItem: private mpkgDatabase
 		vector<depTreeItem> deps;
 		depTreeItem(PACKAGE packageItem);
 		~depTreeItem();
-};
+};*/
 #endif //DEPENDENCIES_H_
 

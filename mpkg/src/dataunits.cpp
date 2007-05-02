@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.35 2007/05/02 10:53:25 i27249 Exp $
+	$Id: dataunits.cpp,v 1.36 2007/05/02 12:27:15 i27249 Exp $
 */
 
 
@@ -1667,6 +1667,8 @@ bool PACKAGE::IsEmpty()
 
 PACKAGE::PACKAGE()
 {
+	isBroken = false;
+	isRequirement = false;
 	package_id=-1;
 	package_available=0;
 	package_installed=0;
@@ -1691,7 +1693,7 @@ int PACKAGE_LIST::getPackageNumberByMD5(string md5)
 {
 	for (unsigned int i=0; i<packages.size(); i++)
 	{
-		if (packages[i].get_md5()==md5) return i;
+		if (packages.at(i).get_md5()==md5) return i;
 	}
 	return -1;
 }
@@ -1699,7 +1701,7 @@ void PACKAGE_LIST::clearVersioning()
 {
 	for (int i=0; i<packages.size(); i++)
 	{
-		packages[i].clearVersioning();
+		packages.at(i).clearVersioning();
 	}
 }
 
@@ -1731,7 +1733,7 @@ bool PACKAGE_LIST::operator != (PACKAGE_LIST nlist)
 	if (size()!=nlist.size()) return true;
 	for (int i=0; i<size(); i++)
 	{
-		if (packages[i]!=*nlist.get_package(i)) return true;
+		if (packages.at(i)!=*nlist.get_package(i)) return true;
 	}
 	return false;
 }
@@ -1741,21 +1743,21 @@ bool PACKAGE_LIST::operator == (PACKAGE_LIST nlist)
 	if (size()!=nlist.size()) return false;
 	for (int i=0; i<size(); i++)
 	{
-		if (packages[i]!=*nlist.get_package(i)) return false;
+		if (packages.at(i)!=*nlist.get_package(i)) return false;
 	}
 	return true;
 }
 
 PACKAGE* PACKAGE_LIST::operator [] (int num)
 {
-	return get_package(num);
+	return this->get_package(num);
 }
 	
 bool PACKAGE_LIST::hasInstalledOnes()
 {
 	for (int i=0; i<packages.size(); i++)
 	{
-		if (packages[i].installed()) return true;
+		if (packages.at(i).installed()) return true;
 	}
 }
 
@@ -1763,7 +1765,7 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 {
 	for (int i=0; i<packages.size(); i++)
 	{
-		if (packages[i].installed()) return packages[i];
+		if (packages.at(i).installed()) return packages.at(i);
 	}
 	fprintf(stderr, "Error using getInstalledOne\n");
 	PACKAGE p;
@@ -1773,7 +1775,7 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 PACKAGE PACKAGE_LIST::getMaxVersion()
 {
 	if (!IsEmpty())
-	return packages.at(getMaxVersionID(packages[0].get_name()));
+	return packages.at(getMaxVersionID(packages.at(0).get_name()));
 }
 
 
@@ -1782,7 +1784,7 @@ PACKAGE* PACKAGE_LIST::get_package(int num)
 	//PACKAGE s_package;
 	if (num>=0 && num<size())
 	{
-		return &packages[num];
+		return &packages.at(num);
 	}
 	else return NULL;
 }
@@ -1791,7 +1793,7 @@ int PACKAGE_LIST::set_package(int num, PACKAGE package)
 {
 	if (num>=0 && num<size())
 	{
-		packages[num]=package;
+		packages.at(num)=package;
 		return 0;
 	}
 	else return 1;
