@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.18 2007/05/02 12:27:15 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.19 2007/05/02 14:23:59 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -105,7 +105,15 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	int ret = db->get_package(package_id, &tmpPackage);
 	if (ret == 0)
 	{
-		if (tmpPackage.available())
+		if (tmpPackage.installed())
+		{
+			printf("Package %s %s cannot be installed, because it is already installed.\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+		}
+		if (!tmpPackage.available())
+		{
+			printf("Package %s %s cannot be installed, because it is unavailable\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+		}
+		if (tmpPackage.available() && !tmpPackage.installed())
 		{
 			tmpPackage.set_action(ST_INSTALL);
 			DepTracker->addToInstallQuery(&tmpPackage);
@@ -150,21 +158,40 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 {
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
+	bool process=false;
 	if (ret == 0)
 	{
-		if (tmpPackage.installed())
+		if (tmpPackage.configexist())
 		{
-			if (purge) tmpPackage.set_action(ST_PURGE);
-			else tmpPackage.set_action(ST_REMOVE);
-			DepTracker->addToRemoveQuery(&tmpPackage);
-			return tmpPackage.get_id();
+			if (purge)
+			{
+				tmpPackage.set_action(ST_PURGE);
+				process=true;
+			}
+			else if (tmpPackage.installed())
+			{
+				tmpPackage.set_action(ST_REMOVE);
+				process=true;
+			}
+			if (process)
+			{
+				DepTracker->addToRemoveQuery(&tmpPackage);
+				return tmpPackage.get_id();
+			}
+			else
+			{
+				if (purge) printf("Package %s %s cannot be purged, because it is already purged\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+				else printf("Package %s %s cannot be uninstalled, because it is already removed\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+
+
+				return MPKGERROR_IMPOSSIBLE;
 		}
 		else return MPKGERROR_IMPOSSIBLE;
 	}
 	else return ret;
 }
 int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
-{
+{	
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", package_name);
 	sqlSearch.addField("package_installed", "1");
@@ -185,145 +212,6 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 	else return ret;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-#ifdef OLD_INSTALL_SYSTEM
-int mpkgSys::install(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
-{
-	PACKAGE tmp_package;
-	if (db->get_package(package_id, &tmp_package, false)!=0)
-	{
-		printf("No such package\n");
-		return -1;
-	}
-	DepTracker->merge(&tmp_package);
-	return 0;
-}
-
-	
-
-int mpkgSys::install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade)
-{
-	// Step 1. Checking if it is just a name of a package
-	SQLRecord sqlSearch;
-	sqlSearch.addField("package_name", fname);
-	PACKAGE_LIST candidates;
-	PACKAGE tmp_pkg;
-	db->get_packagelist(sqlSearch, &candidates);
-	debug("candidates size = "+IntToStr(candidates.size()));
-	bool alreadyInstalled=false;
-	if (candidates.size()>0)
-	{
-		for (int i=0; i<candidates.size(); i++)
-		{
-			debug("Candidate #"+IntToStr(i)+": "+candidates.get_package(i)->get_name()+" with ID "+IntToStr(candidates.get_package(i)->get_id())+" and status "+ \
-					candidates.get_package(i)->get_vstatus());
-			if (!do_upgrade && candidates.get_package(i)->installed())
-			{
-				alreadyInstalled=true;
-				printf(_("Package is already installed (ver. %s). For upgrade, choose upgrade option\n"), candidates.get_package(i)->get_fullversion().c_str());
-				break;
-			}
-			if (candidates.get_package(i)->available())
-			{
-				debug("Status passed to installation");
-				if (tmp_pkg.IsEmpty() || strverscmp(tmp_pkg.get_fullversion().c_str(), \
-						       	candidates.get_package(i)->get_fullversion().c_str())<0)
-				{
-					debug("tmp stored successfully");
-					tmp_pkg=*candidates.get_package(i);
-				}
-			}
-		}
-		if (alreadyInstalled)
-		{
-			printf("already installed\n");
-			return 0;
-		}
-		if (tmp_pkg.IsEmpty())
-		{
-			printf("No suitable package found to install\n");
-			return -1;
-		}
-		DepTracker->merge(&tmp_pkg);
-		return 0;
-	}
-	else printf("no candidates");
-	return -1;
-}
-
-int mpkgSys::uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade)
-{
-	if (do_purge==0) printf(_("You are going to uninstall package %s\n"), pkg_name.c_str());
-	if (do_purge==1) printf(_("You are going to purge package %s\n"), pkg_name.c_str());
-	
-	PACKAGE package=db->get_installed_package(pkg_name);
-	if (package.IsEmpty())
-	{
-		debug("Not installed package");
-		int id;
-		if (do_purge==1) id=db->get_purge(pkg_name);
-		else id=0;
-		if (id==0)
-		{
-			if (do_purge) printf(_("Package %s is already purged\n"), pkg_name.c_str());
-			else printf(_("Package %s is not installed\n"), pkg_name.c_str());
-			return 0;
-		}
-		if (id<0)
-		{
-			printf("Internal error while calling get_purge(): error code = %d\n", id);
-			return id;
-		}
-		printf("setting status to purge for ID %d\n", id);
-		db->set_action(id, ST_PURGE);
-		return 0;
-	}
-	DepTracker->unmerge(&package, do_purge, do_upgrade);
-	return 0;
-}
-
-int mpkgSys::upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker)
-{
-	printf("Upgrade: Calling uninstall\n");
-	uninstall(pkgname, db, DepTracker, 0, true);
-	printf("Upgrade: Calling install\n");
-	install(pkgname, db, DepTracker, true);
-	printf("Upgrade: normalizing\n");
-	DepTracker->normalize();
-	printf("Upgrade: committing deptracker\n");
-	DepTracker->commitToDb();
-	printf("Upgrade: committing actions\n");
-	db->commit_actions();
-	return 0;
-}
-
-int mpkgSys::upgrade(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
-{
-	PACKAGE tmp_package;
-	if (db->get_package(package_id, &tmp_package, false)!=0)
-	{
-		printf("No such package\n");
-		return -1;
-	}
-	uninstall(tmp_package.get_name(), db, DepTracker, 0, true);
-	install(package_id, db, DepTracker);
-	DepTracker->normalize();
-	DepTracker->commitToDb();
-	db->commit_actions();
-	return 0;
-}
-#endif // OLD_INSTALL_SYSTEM ---------------------------------------
 
 
 int mpkgSys::_clean(const char *filename, const struct stat *file_status, int filetype)

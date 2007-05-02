@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.23 2007/05/02 12:27:15 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.24 2007/05/02 14:23:59 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -112,8 +112,9 @@ int mpkg::purge(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
+		//printf("Filling purge queue...\n");
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
-		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0, true) ret--;
+		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker, true)!=0) ret--;
 	}
 	return ret;
 }
@@ -257,7 +258,7 @@ int mpkg::set_checkFiles(unsigned int value)
 // Configuration and settings: setting
 int mpkg::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)
 {
-	printf("recv %d rep to enable\n", newrepositorylist.size());
+	//printf("recv %d rep to enable\n", newrepositorylist.size());
 	return mpkgconfig::set_repositorylist(newrepositorylist, drList);
 }
 int mpkg::set_sysroot(string newsysroot)

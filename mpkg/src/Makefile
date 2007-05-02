@@ -1,11 +1,11 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.34 2007/02/22 12:51:19 adiakin Exp $
+# $Id: Makefile,v 1.35 2007/05/02 14:23:59 i27249 Exp $
 #
 
 CC=gcc
 CXX=g++
 CFLAGS=-c -Wall -std=c99 -g
-
+ROOT_DIR=/root/development/sys_root/
 # VERY BAD HACK!!!
 CXXFLAGS=-c -g -DDEBUG -DDEP_NORMALIZE -DUSE_SYSTEM_SED -Wall -I/sw/include 
 LDFLAGS=-L/sw/lib -lsqlite3 -ldl
@@ -43,6 +43,10 @@ sqlinit:
 
 sqlclean:
 	cp ../sql/packages.db /var/log/mpkg/
+
+fullclean:
+	cp ../sql/packages.db /var/log/mpkg/
+	rm -rf $(ROOT_DIR)
 
 lib:
 	make -f Makefile.lib

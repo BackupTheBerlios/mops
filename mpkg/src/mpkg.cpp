@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.51 2007/04/27 00:59:14 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.52 2007/05/02 14:23:59 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -424,7 +424,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	currentStatus = statusHeader + "initialization";
 
 	// purging package config files.
-	printf("calling purge\n");
+	//printf("calling purge\n");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	string fname;
@@ -439,7 +439,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	FILE_LIST remove_files=*package->get_files(); // Try to remove ALL files
 #endif
 
-	printf("remove_files size = %d\n", remove_files.size());
+	//printf("remove_files size = %d\n", remove_files.size());
 
 	currentStatus = statusHeader + "removing configuration files...";
 	for (int i=0; i<remove_files.size(); i++)
@@ -450,7 +450,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 		{
 			if (unlink (fname.c_str())!=0)
 			{
-				printf("Cannot delete file %s\n", fname.c_str());
+				//printf("Cannot delete file %s\n", fname.c_str());
 			}
 		}
 	}
@@ -481,7 +481,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	}
 
 	currentStatus = statusHeader + "purge complete";
-	printf("done\n");
+	//printf("Done.\n");
 	set_installed(package->get_id(), ST_NOTINSTALLED);
 	set_configexist(package->get_id(), ST_CONFIGNOTEXIST);
 	set_action(package->get_id(), ST_NONE);
@@ -530,8 +530,8 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			{
 				if (unlink (fname.c_str())!=0)
 				{
-					printf("Cannot delete file %s: ", fname.c_str());
-					perror("Reason: ");
+					//printf("Cannot delete file %s: ", fname.c_str());
+					//perror("Reason: ");
 				}
 			}
 		}
@@ -577,14 +577,14 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	currentStatus = statusHeader + "cleaning file list";
 	cleanFileList(package->get_id());
 	currentStatus = statusHeader + "remove complete";
-	printf("done\n");
+	//printf("done\n");
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
 }	// End of remove_package
 
 int mpkgDatabase::cleanFileList(int package_id)
 {
-	printf("Cleaning up...\n");
+	//printf("Cleaning up...\n");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", IntToStr(package_id));
 	if (get_configexist(package_id)) sqlSearch.addField("file_type", IntToStr(FTYPE_PLAIN));

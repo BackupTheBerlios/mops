@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.22 2007/05/02 12:27:15 i27249 Exp $
+$Id: dependencies.cpp,v 1.23 2007/05/02 14:23:59 i27249 Exp $
 */
 
 
@@ -169,6 +169,11 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 			dependantPackages.add(installedPackages.get_package(i));
 		}
 	}
+	// Setting appropriary actions
+	for (int i=0; i<dependantPackages.size(); i++)
+	{
+		dependantPackages.get_package(i)->set_action(ST_REMOVE);
+	}
 	return dependantPackages;
 }
 
@@ -178,9 +183,22 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 	PACKAGE_LIST remove_list;
 	PACKAGE_LIST conflict_list;
 	PACKAGE_LIST installedList;
+	PACKAGE_LIST installQueuedList;
+	PACKAGE_LIST removeQueuedList;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_installed", "1");
 	db->get_packagelist(sqlSearch, &installedList, false);
+
+	sqlSearch.clear();
+	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
+	db->get_packagelist(sqlSearch, &installQueuedList, false);
+#ifdef EXTRACHECK_REMOVE_QUEUE
+	sqlSearch.clear();
+	sqlSearch.setSearchMode(SEARCH_IN);
+	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
+	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+	db->get_packagelist(sqlSearch, &removeQueuedList);
+#endif
 	bool found;
 	// What we should do?
 	// 1. Remove from removeStream all items who are in installStream.
@@ -198,26 +216,33 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 		}
 		if (!found) remove_list.add(removeStream.get_package(i));
 	}
+	//printf("Stage 2: remove_list size = %d\n", remove_list.size());
 	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
+	PACKAGE_LIST proxyinstalledList = installedList + installQueuedList;
 	for (int i=0; i<installStream.size(); i++)
 	{
 		found=false;
-		for (int t=0; t<installedList.size(); t++)
+		for (int t=0; t<proxyinstalledList.size(); t++)
 		{
-			if (installedList.get_package(t)->installed() && \
-					installedList.get_package(t)->get_name() == installStream.get_package(i)->get_name() && \
-					installedList.get_package(t)->get_md5() != installStream.get_package(i)->get_md5() \
+			if (proxyinstalledList.get_package(t)->installed() && \
+					proxyinstalledList.get_package(t)->get_name() == installStream.get_package(i)->get_name() && \
+					proxyinstalledList.get_package(t)->get_md5() != installStream.get_package(i)->get_md5() \
 			   )
 			{
-				conflict_list.add(installedList.get_package(t));
+				proxyinstalledList.get_package(t)->set_action(ST_REMOVE);
+				conflict_list.add(proxyinstalledList.get_package(t));
 				break;
 			}
 		}
 	}
+	//printf("Stage 3: conflict list size = %d\n", conflict_list.size());
 	// 3.1 Filter conflict_list. Search for packages who required anything in conflict_list and it cannot be replaced by anything in installStream.
+	remove_list += conflict_list;
+#ifdef BACKTRACE_DEPS
 	PACKAGE_LIST removeCandidates;
 	PACKAGE_LIST removeQueue2;
 	PACKAGE_LIST willInstalled = installStream + installedList;
+	removeCandidates = conflict_list;
 	for (int i=0; i<conflict_list.size(); i++)
 	{
 		removeCandidates = get_dependant_packages(conflict_list.get_package(i));
@@ -226,8 +251,12 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 			if (checkBrokenDeps(removeCandidates.get_package(t), willInstalled)) removeQueue2.add(removeCandidates.get_package(t));
 		}
 	}
+	//printf("Stage 3.1 removeQueue2 size (berofe filtering) = %d\n", removeQueue2.size());
 	removeQueue2 = renderRemoveQueue (&removeQueue2);
+	//printf("Stage 3.1: removeQueue2 size (after filtering) = %d\n", removeQueue2.size());
 	remove_list += removeQueue2;
+#endif
+	//printf("Stage 3.1: remove_list size = %d\n", remove_list.size());
 
 
 
@@ -241,9 +270,16 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 	removeList = remove_list;
 }
 
-bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) // Tests if all depencencies of package pkg can be resolved by searchList
+bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) // Tests if all items in searchList can be installed without pkg
 {
 	bool passed;
+	// Step 1. Check if it conflicts with someone in searchlist
+	int alternateID;
+	for (int i=0; i<searchList.size(); i++)
+	{
+		if (pkg->get_name() == searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
+	}
+
 	for (int i=0; i<pkg->get_dependencies()->size(); i++)
 	{
 		passed=false;
