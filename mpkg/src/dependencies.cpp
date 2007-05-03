@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.23 2007/05/02 14:23:59 i27249 Exp $
+$Id: dependencies.cpp,v 1.24 2007/05/03 11:38:44 i27249 Exp $
 */
 
 
@@ -24,6 +24,7 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
 {
 	installQueryList.add(*pkg);
+	printf("added. size = %d\n", installQueryList.size());
 }
 void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 {
@@ -77,11 +78,21 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 int DependencyTracker::renderData()
 {
 	int failureCounter = 0;
+	printf("installQueryList size = %d\n", installQueryList.size());
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
+	printf("installStream size = %d\n", installStream.size());
+	for (int i=0; i<installStream.size(); i++)
+	{
+		printf("[%d] %s\n", i, installStream.get_package(i)->get_name().c_str());
+	}
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	filterDupes(&installStream);
 	filterDupes(&removeStream);
+	printf("installStream size (after filter) = %d\n", installStream.size());
+
 	muxStreams(installStream, removeStream);
+	printf("installList size (final) = %d\n", installList.size());
+
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	return failureCounter;
 }
@@ -106,8 +117,8 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	PACKAGE tmpPackage;
 	for (int i=0; i<package->get_dependencies()->size(); i++)
 	{
-		if (get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage)!=0) package->set_broken();
-		requiredPackages.add(tmpPackage);
+		if (get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage)!=0) {printf("broken pkg\n"); package->set_broken();}
+		else requiredPackages.add(tmpPackage);
 	}
 	return requiredPackages;
 }
@@ -341,9 +352,10 @@ void DependencyTracker::PrintFailure(PACKAGE* package)
 
 bool DependencyTracker::commitToDb()
 {
+	printf("commitToDb: %d packages to install\n", installList.size());
 	for (int i=0; i<installList.size(); i++)
 	{
-		db->set_action(installList.get_package(i)->get_id(), installList.get_package(i)->action());
+		db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);// installList.get_package(i)->action());
 	}
 
 	for (int i=0; i<removeList.size(); i++)

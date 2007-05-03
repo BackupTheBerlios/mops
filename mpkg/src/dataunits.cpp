@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.36 2007/05/02 12:27:15 i27249 Exp $
+	$Id: dataunits.cpp,v 1.37 2007/05/03 11:38:44 i27249 Exp $
 */
 
 
@@ -533,9 +533,9 @@ LOCATION_LIST::~LOCATION_LIST(){}
 bool DEPENDENCY::operator != (DEPENDENCY ndep)
 {
 //	if (dependency_id!=ndep.get_id()) return true;
-	if (dependency_condition!=ndep.get_condition(false)) return true;
+	if (version_data.condition!=ndep.get_condition(false)) return true;
 	if (dependency_package_name!=ndep.get_package_name(false)) return true;
-	if (dependency_package_version!=ndep.get_package_version(false)) return true;
+	if (version_data.version!=ndep.get_package_version(false)) return true;
 	if (dependency_broken!=ndep.get_broken()) return true;
 	return false;
 }
@@ -543,9 +543,9 @@ bool DEPENDENCY::operator != (DEPENDENCY ndep)
 bool DEPENDENCY::operator == (DEPENDENCY ndep)
 {
 //	if (dependency_id!=ndep.get_id()) return false;
-	if (dependency_condition!=ndep.get_condition(false)) return false;
+	if (version_data.condition!=ndep.get_condition(false)) return false;
 	if (dependency_package_name!=ndep.get_package_name(false)) return false;
-	if (dependency_package_version!=ndep.get_package_version(false)) return false;
+	if (version_data.version!=ndep.get_package_version(false)) return false;
 	if (dependency_broken!=ndep.get_broken()) return false;
 	return true;
 }
@@ -558,10 +558,10 @@ versionData DEPENDENCY::get_version_data()
 void DEPENDENCY::clear()
 {
 	dependency_broken=0;
-	dependency_package_version.clear();
+	version_data.version.clear();
 	dependency_package_name.clear();
 	dependency_type.clear();
-	dependency_condition.clear();
+	version_data.condition.clear();
 	dependency_id=0;
 }
 
@@ -572,20 +572,20 @@ int DEPENDENCY::get_id()
 
 string DEPENDENCY::get_condition(bool sql)
 {
-	if (sql) return PrepareSql(dependency_condition);
-	return dependency_condition;
+	if (sql) return PrepareSql(version_data.condition);
+	return version_data.condition;
 }
 
 string DEPENDENCY::get_vcondition()
 {
-	if (dependency_condition==IntToStr(VER_MORE)) return ">";
-	if (dependency_condition==IntToStr(VER_LESS)) return "<";
-	if (dependency_condition==IntToStr(VER_EQUAL)) return "==";
-	if (dependency_condition==IntToStr(VER_NOTEQUAL)) return "!=";
-	if (dependency_condition==IntToStr(VER_XMORE)) return ">=";
-	if (dependency_condition==IntToStr(VER_XLESS)) return "<=";
-	if (dependency_condition==IntToStr(VER_ANY)) return "(any)";
-	string tmp = "(unknown condition " + dependency_condition + ")";
+	if (version_data.condition==IntToStr(VER_MORE)) return ">";
+	if (version_data.condition==IntToStr(VER_LESS)) return "<";
+	if (version_data.condition==IntToStr(VER_EQUAL)) return "==";
+	if (version_data.condition==IntToStr(VER_NOTEQUAL)) return "!=";
+	if (version_data.condition==IntToStr(VER_XMORE)) return ">=";
+	if (version_data.condition==IntToStr(VER_XLESS)) return "<=";
+	if (version_data.condition==IntToStr(VER_ANY)) return "(any)";
+	string tmp = "(unknown condition " + version_data.condition + ")";
 	return tmp;
 }
 
@@ -603,8 +603,8 @@ string DEPENDENCY::get_package_name(bool sql)
 
 string DEPENDENCY::get_package_version(bool sql)
 {
-	if (sql) return PrepareSql(dependency_package_version);
-	return dependency_package_version;
+	if (sql) return PrepareSql(version_data.version);
+	return version_data.version;
 }
 
 int DEPENDENCY::get_broken()
@@ -634,7 +634,7 @@ int DEPENDENCY::set_id(int id)
 
 int DEPENDENCY::set_condition(string condition)
 {
-	dependency_condition=condition;
+	version_data.condition=condition;
 	return 0;
 }
 
@@ -652,7 +652,7 @@ int DEPENDENCY::set_package_name(string package_name)
 
 int DEPENDENCY::set_package_version(string package_version)
 {
-	dependency_package_version=package_version;
+	version_data.version=package_version;
 	return 0;
 }
 
@@ -1670,10 +1670,10 @@ PACKAGE::PACKAGE()
 	isBroken = false;
 	isRequirement = false;
 	package_id=-1;
-	package_available=0;
-	package_installed=0;
-	package_configexist=0;
-	package_action=0;
+	package_available=false;
+	package_installed=false;
+	package_configexist=false;
+	package_action=ST_NONE;
 	newPackage = false;
 
 	package_err_type=DEP_OK;
@@ -1755,10 +1755,17 @@ PACKAGE* PACKAGE_LIST::operator [] (int num)
 	
 bool PACKAGE_LIST::hasInstalledOnes()
 {
+	printf("packages size = %d\n", packages.size());
+	if (packages.size()==0) return false;
 	for (int i=0; i<packages.size(); i++)
 	{
-		if (packages.at(i).installed()) return true;
+		if (packages.at(i).installed())
+		{
+			printf("package %s is installed\n", packages.at(i).get_name().c_str());
+			return true;
+		}
 	}
+	return false;
 }
 
 PACKAGE PACKAGE_LIST::getInstalledOne()
@@ -1767,15 +1774,21 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 	{
 		if (packages.at(i).installed()) return packages.at(i);
 	}
-	fprintf(stderr, "Error using getInstalledOne\n");
+	fprintf(stderr, "getInstalledOne: no installed ones\n");
 	PACKAGE p;
+	p.set_name("VOID!!!\n");
 	return p;
 }
 
 PACKAGE PACKAGE_LIST::getMaxVersion()
 {
-	if (!IsEmpty())
-	return packages.at(getMaxVersionID(packages.at(0).get_name()));
+	if (packages.size()>0)	return packages.at(getMaxVersionNumber(packages.at(0).get_name()));
+	else
+	{
+		printf("Error in getMaxVersion: list empty\n");
+		PACKAGE p;
+		return p;
+	}
 }
 
 
@@ -1942,13 +1955,32 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 int PACKAGE_LIST::getMaxVersionID(string package_name)
 {
 	if (!versioningInitialized) initVersioning();
+	printf("getMaxVersionID: packages.size = %d\n", packages.size());
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
-			return packages[i].get_id();
+			printf("getMaxVersionID: returning %d\n", packages.at(i).get_id());//i);
+			return packages.at(i).get_id();//i;
 		}
 	}
+	printf("Nothing found...\n");
+	return MPKGERROR_NOPACKAGE;
+}
+
+int PACKAGE_LIST::getMaxVersionNumber(string package_name)
+{
+	if (!versioningInitialized) initVersioning();
+	printf("getMaxVersionID: packages.size = %d\n", packages.size());
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
+		{
+			printf("getMaxVersionID: returning %d\n", i);//packages.at(i).get_id());//i);
+			return i;//packages.at(i).get_id();//i;
+		}
+	}
+	printf("Nothing found...\n");
 	return MPKGERROR_NOPACKAGE;
 }
 
@@ -2188,144 +2220,39 @@ catch(...)
 
 bool meetVersion(versionData condition, string packageVersion)
 {
-	if (strverscmp(condition.min_version.c_str(), packageVersion.c_str())>=0 && \
-	    strverscmp(condition.max_version.c_str(), packageVersion.c_str())<=0)
-		return true;
-	else return false;
+	int iCondition=atoi(condition.condition.c_str());
+	string version1=packageVersion;
+	string version2=condition.version;
+	switch (iCondition)
+	{
+		case VER_MORE:
+			if (strverscmp(version1.c_str(),version2.c_str())>0)  return true;
+			else return false;
+			break;
+		case VER_LESS:
+			if (strverscmp(version1.c_str(),version2.c_str())<0) return true;
+			else return false;
+			break;
+		case VER_EQUAL:
+			if (strverscmp(version1.c_str(),version2.c_str())==0) return true;
+			else return false;
+			break;
+		case VER_NOTEQUAL:
+			if (strverscmp(version1.c_str(),version2.c_str())!=0) return true;
+			else return false;
+			break;
+		case VER_XMORE:
+			if (strverscmp(version1.c_str(),version2.c_str())>=0) return true;
+			else return false;
+			break;
+		case VER_XLESS:
+			if (strverscmp(version1.c_str(),version2.c_str())<=0) return true;
+			else return false;
+			break;
+		default:
+			printf("unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n", iCondition);
+			return true;
+	}
+	return true;
 }
 
-/*void cloneList::init(vector<PACKAGE> &pkgList)
-{
-	
-	printf("Initializing clone list\n");
-	whoHasClones_IDs.clear(); 	// Список объектов, имеющих клоны
-	objectCloneListID.clear(); 	// Список клонов каждого объекта
-	masterCloneID.clear();		// ID клона, имеющего максимальную версию.
-	installedCloneID.clear();	// ID установленного клона. Если такого нету, ставится равным -1
-	for (int i=0; i<pkgList.size(); i++)
-	{
-		pkgList[i].hasClone=false;
-		pkgList[i].masterCloneID=i;
-		pkgList[i].isMasterClone=false;
-		pkgList[i].isMaxVersion=false;
-		pkgList[i].hasUpdates=false;
-		if (pkgList[i].installed()) pkgList[i].installedVersion=pkgList[i].get_version();
-	}
-
-	// Шаг 1. Ищем объекты, имеющие клонов. Заполняем списки.
-	vector<int>thisClonesList;
-	int thisInstalledID;
-	int thisClonePosition;
-	string maxCloneVersion;
-	int lastMasterCloneID;
-	bool itHasClone;
-	string tmp_ver;
-	string installedVersion;
-	progressEnabled = true;
-	progressMax = pkgList.size();
-	for (int i=0; i<pkgList.size(); i++)
-	{
-		currentProgress = i;
-		itHasClone = false;
-		thisInstalledID = -1;
-		thisClonePosition = -1;
-		lastMasterCloneID = -1;
-		thisClonesList.clear();
-		installedVersion.clear();
-		maxCloneVersion.clear();
-		if (pkgList[i].installed()) installedVersion = pkgList[i].get_version()+pkgList[i].get_build();
-		for (int k=0; k<pkgList.size(); k++)
-		{
-			if (k != i && pkgList[k].get_name() == pkgList[i].get_name())
-			{
-				itHasClone = true;
-				if (pkgList[k].installed()) installedVersion = pkgList[k].get_version()+pkgList[i].get_build();
-
-				if (thisClonesList.empty())
-				{
-					thisClonesList.push_back(i);
-					whoHasClones_IDs.push_back(i);
-					thisClonePosition = whoHasClones_IDs.size()-1;
-				}
-				thisClonesList.push_back(k);
-				if (pkgList[k].installed()) thisInstalledID = k;
-				tmp_ver = pkgList[k].get_version()+pkgList[k].get_build();
-				if (maxCloneVersion.empty() || strverscmp(tmp_ver.c_str(), maxCloneVersion.c_str())>0)
-				{
-					maxCloneVersion = tmp_ver;
-					lastMasterCloneID = k;
-				}
-			}
-		}
-		if (itHasClone)
-		{
-			if (maxCloneVersion!=installedVersion && !installedVersion.empty())
-			{
-				printf("Installed version: %s, Max version: %s\n", installedVersion.c_str(), maxCloneVersion.c_str());
-				pkgList[i].hasUpdates=true;
-			}
-			pkgList[i].hasClone=true;
-			pkgList[i].masterCloneID=lastMasterCloneID;
-			installedCloneID.push_back(thisInstalledID);
-			objectCloneListID.push_back(thisClonesList);
-			masterCloneID.push_back(lastMasterCloneID);
-		}
-	}
-	printf("MasterClones list:\n");
-	for (int i=0; i<masterCloneID.size(); i++)
-	{
-		if (pkgList[masterCloneID[i]].hasUpdates) pkgList[masterCloneID[i]].isMaxVersion=true;
-		pkgList[masterCloneID[i]].isMasterClone=true;
-	}
-	printf("(end)\n");
-#ifdef DEBUG
-	printf("whoHasClones_IDs: %d\nObjectCloneListID: %d\nmasterCloneID: %d\ninstalledCloneID: %d\n",\
-		       	whoHasClones_IDs.size(),\
-			objectCloneListID.size(),\
-			masterCloneID.size(),
-			installedCloneID.size());
-	printf("Clone tree list:\n");
-	for (unsigned int i=0; i<objectCloneListID.size(); i++)
-	{
-		printf("%s: ", pkgList[whoHasClones_IDs[i]].get_name().c_str());
-		for (unsigned int t = 0; t<objectCloneListID[i].size(); t++)
-		{
-			printf("%s, ", pkgList[objectCloneListID[i][t]].get_name().c_str());
-		}
-		printf("\n");
-	}
-#endif
-	//sleep(10000);
-	initialized = true;
-	
-
-}
-cloneList::~cloneList(){}
-
-int cloneList::getCloneID(int testID)
-{
-	for (unsigned int i=0; i<whoHasClones_IDs.size(); i++)
-	{
-		if (whoHasClones_IDs[i]==testID)
-		{
-			return i;
-		}
-	}
-	return -1;
-}
-*/
-/*dTreeItem::dTreeItem(){}
-dTreeItem::~dTreeItem(){}
-void dTreeItem::addChild(PACKAGE *pkg)
-{
-	childs.push_back(pkg->get_id());
-}
-
-PACKAGE *getChild(int package_id)
-{
-	for (int i=0; i<childs.size(); i++)
-	{
-		//if (childs[i]==package_id) return 
-	}
-}
-*/

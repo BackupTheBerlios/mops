@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.24 2007/05/02 12:27:15 i27249 Exp $
+	$Id: dataunits.h,v 1.25 2007/05/03 11:38:44 i27249 Exp $
 */
 
 
@@ -176,8 +176,8 @@ class LOCATION_LIST
 
 struct versionData
 {
-	string min_version;
-	string max_version;
+	string version;
+	string condition;
 };
 
 class DEPENDENCY
@@ -185,10 +185,8 @@ class DEPENDENCY
     private:
 	// INTERNAL DATA //
 	int dependency_id;
-	string dependency_condition;
 	string dependency_type;
 	string dependency_package_name;
-	string dependency_package_version;
 	int dependency_broken;
 	versionData version_data;
     public:
@@ -565,7 +563,9 @@ class PACKAGE_LIST
 	int size();
 	void set_size(unsigned int new_size);
 	int getPackageNumberByMD5(string md5);		// return number (NOT package ID!) of package in vector (if found). Else, returns -1.
-	int getMaxVersionID(string package_name);
+	int getMaxVersionID(string package_name); // Return package ID
+	int getMaxVersionNumber(string package_name);	// Return package number (in array)
+
 	PACKAGE findMaxVersion();
 	DEPENDENCY_LIST getDepList(int i);
 	void destroy();

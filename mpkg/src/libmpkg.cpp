@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.24 2007/05/02 14:23:59 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.25 2007/05/03 11:38:44 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -118,50 +118,6 @@ int mpkg::purge(vector<string> pkg_name)
 	}
 	return ret;
 }
-/*
-
-
-
-	int ret=0;
-	for (unsigned int i = 0; i < pkg_name.size(); i++)
-	{
-		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
-
-		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkg_name.size()+1)+"] Purging package "+pkg_name[i];
-		ret+=mpkgSys::uninstall(pkg_name[i], db, DepTracker, 1);
-	}
-	return ret;
-}*/
-/*
-// Packages upgrading
-
-int mpkg::upgrade (vector<string> pkgname)
-{
-	int ret=0;
-	for (unsigned int i = 0; i < pkgname.size(); i++)
-	{
-		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkgname.size()) +" ["+pkgname[i]+"]";
-		currentStatus = "["+IntToStr(i+1)+"/"+IntToStr(pkgname.size()+1)+"] Upgrading package "+pkgname[i];
-		ret+=mpkgSys::upgrade(pkgname[i], db, DepTracker);
-	}
-	return ret;
-}	
-
-int mpkg::upgrade(PACKAGE *pkg)
-{
-	return mpkgSys::upgrade(pkg->get_id(), db, DepTracker);
-}
-
-int mpkg::upgrade(PACKAGE_LIST *pkgList)
-{
-	int ret=0;
-	for (unsigned int i=0; i<pkgList->size(); i++)
-	{
-		ret+=mpkgSys::upgrade(pkgList->get_package(i)->get_id(), db, DepTracker);
-	}
-	return ret;
-}
-*/
 // Repository data updating
 int mpkg::update_repository_data()
 {
@@ -207,11 +163,6 @@ vector<string> mpkg::get_disabled_repositorylist()
 	return mpkgconfig::get_disabled_repositorylist();
 }
 
-/*int mpkg::set_disabled_repositorylist(vector<string>drList)
-{
-	printf("recv %d to disable list\n", drList.size());
-	return mpkgconfig::set_disabled_repositorylist(drList);
-}*/
 string mpkg::get_sysroot()
 {
 	return mpkgconfig::get_sysroot();
@@ -258,7 +209,6 @@ int mpkg::set_checkFiles(unsigned int value)
 // Configuration and settings: setting
 int mpkg::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)
 {
-	//printf("recv %d rep to enable\n", newrepositorylist.size());
 	return mpkgconfig::set_repositorylist(newrepositorylist, drList);
 }
 int mpkg::set_sysroot(string newsysroot)
@@ -299,7 +249,6 @@ int mpkg::set_runscripts(bool dorun)
 int mpkg::commit()
 {
 	currentStatus = "Checking dependencies...";
-	//printf("committing...\n");
 	int errorCount = DepTracker->renderData();
 	if (errorCount==0)
 	{

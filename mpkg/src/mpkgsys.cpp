@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.19 2007/05/02 14:23:59 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.20 2007/05/03 11:38:44 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -101,6 +101,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	
 int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+	printf("requestInstall\n");
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
 	if (ret == 0)
@@ -119,9 +120,17 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 			DepTracker->addToInstallQuery(&tmpPackage);
 			return tmpPackage.get_id();
 		}
-		else return MPKGERROR_IMPOSSIBLE;
+		else
+		{
+			printf("Impossible\n");
+			return MPKGERROR_IMPOSSIBLE;
+		}
 	}
-	else return ret;
+	else
+	{
+		printf("requestInstall: get_package error: returned %d\n", ret);
+		return ret;
+	}
 }
 
 int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker)
@@ -173,22 +182,25 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 				tmpPackage.set_action(ST_REMOVE);
 				process=true;
 			}
-			if (process)
-			{
-				DepTracker->addToRemoveQuery(&tmpPackage);
-				return tmpPackage.get_id();
-			}
-			else
-			{
-				if (purge) printf("Package %s %s cannot be purged, because it is already purged\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
-				else printf("Package %s %s cannot be uninstalled, because it is already removed\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
-
-
-				return MPKGERROR_IMPOSSIBLE;
 		}
-		else return MPKGERROR_IMPOSSIBLE;
+		if (process)
+		{
+			printf("Processing...\n");
+			DepTracker->addToRemoveQuery(&tmpPackage);
+			return tmpPackage.get_id();
+		}
+		else
+		{
+			if (purge) printf("Package %s %s cannot be purged, because it is already purged\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+			else printf("Package %s %s cannot be uninstalled, because it is already removed\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+			return MPKGERROR_IMPOSSIBLE;
+		}
 	}
-	else return ret;
+	else
+	{
+		printf("get_package returned %d\n", ret);
+		return ret;
+	}
 }
 int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
 {	
