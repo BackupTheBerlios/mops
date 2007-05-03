@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.33 2007/04/27 00:59:14 i27249 Exp $
+ * $Id: repository.cpp,v 1.34 2007/05/03 14:18:00 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -485,7 +485,6 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 unsigned int pkgcounter;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
-	pkgcounter++;
 	debug("processing package "+ (string) filename);
 	string _package=filename;
        	string ext;
@@ -496,6 +495,8 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 
 	if (filetype==FTW_F && ext==".tgz")
 	{
+
+		pkgcounter++;
 		cout<< "indexing file " << filename << "..."<<endl;
 		//printf("Creating lp...\n");
 		LocalPackage lp(_package);
@@ -509,8 +510,15 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 }
 
 
-int Repository::build_index(string server_url, string server_name)
+int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
+	if (rebuild)
+	{
+		system("gunzip packages.xml.gz");
+		XMLNode tmpNode = XMLNode::parseFile("packages.xml.gz", "repository");
+		server_url = (string) tmpNode.getAttributeValue(0);
+		server_name = (string) tmpNode.getAttributeValue(1);
+	}	
 	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	_root=XMLNode::createXMLTopNode("repository");

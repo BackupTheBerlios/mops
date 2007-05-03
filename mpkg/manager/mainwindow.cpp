@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.67 2007/05/02 14:23:59 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.68 2007/05/03 14:17:59 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -51,8 +51,10 @@ void MainWindow::loadingStarted()
 	ui.packageListBox->setEnabled(false);
 	ui.packageInfoBox->hide();
 	ui.packageTable->hide();
+#ifdef RELEASE
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
+#endif
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 	ui.splashFrame->show();
@@ -348,8 +350,10 @@ MainWindow::MainWindow(QMainWindow *parent)
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
 	initCategories();
+#ifdef RELEASE
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
+#endif
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 	ui.packageTable->hide();
@@ -396,7 +400,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::DirectConnection);
 	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()), Qt::QueuedConnection);
 	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)), Qt::QueuedConnection);

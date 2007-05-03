@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.53 2007/05/03 12:20:46 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.54 2007/05/03 14:18:00 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -327,7 +327,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		currentStatus = statusHeader + "executing pre-install scripts";
 		if (FileExists(package->get_scripts()->get_preinstall()))
 		{
-			string preinst="chroot " + SYS_ROOT + " /bin/sh "+package->get_scripts()->get_preinstall();
+			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_preinstall();
+			printf("preinst: %s\n", preinst.c_str());
 			system(preinst.c_str());
 		}
 	}
@@ -389,7 +390,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		if (FileExists(package->get_scripts()->get_postinstall()))
 		{
-			string postinst="chroot " + SYS_ROOT + " /bin/sh "+package->get_scripts()->get_postinstall();
+			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_postinstall();
 			system(postinst.c_str());
 		}
 	}
@@ -490,7 +491,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			if (FileExists(package->get_scripts()->get_preremove()))
 			{
 				currentStatus = statusHeader + "executing pre-remove scripts";
-				string prerem="chroot " + SYS_ROOT + " /bin/sh "+package->get_scripts()->get_preremove();
+				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_preremove();
 				system(prerem.c_str());
 			}
 		}
@@ -549,7 +550,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			if (FileExists(package->get_scripts()->get_postremove()))
 			{
 				currentStatus = statusHeader + "executing post-removal scripts";
-				string postrem="chroot " + SYS_ROOT + " /bin/sh "+package->get_scripts()->get_postremove();
+				string postrem="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_postremove();
 				system(postrem.c_str());
 			}
 		}

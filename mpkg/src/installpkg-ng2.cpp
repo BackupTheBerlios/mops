@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.9 2007/05/02 12:27:15 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.10 2007/05/03 14:18:00 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -248,7 +248,11 @@ int main (int argc, char **argv)
 			core.rep.build_index(argv[optind], argv[optind+1]);
 		}
 		else
-		{	
+		{
+			if (FileExists("packages.xml.gz"))
+			{
+				core.rep.build_index("", "", true);
+			}
 			printf("To few arguments to index\n");
 			print_usage(stderr, 1);
 		}
