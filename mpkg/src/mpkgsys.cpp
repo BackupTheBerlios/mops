@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.20 2007/05/03 11:38:44 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.21 2007/05/03 12:20:46 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -101,7 +101,6 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	
 int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-	printf("requestInstall\n");
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
 	if (ret == 0)
@@ -122,7 +121,6 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		}
 		else
 		{
-			printf("Impossible\n");
 			return MPKGERROR_IMPOSSIBLE;
 		}
 	}
@@ -185,7 +183,7 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		if (process)
 		{
-			printf("Processing...\n");
+			//printf("Processing...\n");
 			DepTracker->addToRemoveQuery(&tmpPackage);
 			return tmpPackage.get_id();
 		}

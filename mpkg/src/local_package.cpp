@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.37 2007/04/26 12:17:37 i27249 Exp $
+$Id: local_package.cpp,v 1.38 2007/05/03 12:20:46 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -610,7 +610,6 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
 	if (system(sys.c_str())!=0)
 	{
-		printf("no data.xml in file...\n");
 		return 0;
 	}
 	

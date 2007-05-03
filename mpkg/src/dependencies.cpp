@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.24 2007/05/03 11:38:44 i27249 Exp $
+$Id: dependencies.cpp,v 1.25 2007/05/03 12:20:46 i27249 Exp $
 */
 
 
@@ -24,7 +24,6 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
 {
 	installQueryList.add(*pkg);
-	printf("added. size = %d\n", installQueryList.size());
 }
 void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 {
@@ -78,9 +77,9 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 int DependencyTracker::renderData()
 {
 	int failureCounter = 0;
-	printf("installQueryList size = %d\n", installQueryList.size());
+	//printf("installQueryList size = %d\n", installQueryList.size());
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
-	printf("installStream size = %d\n", installStream.size());
+	//printf("installStream size = %d\n", installStream.size());
 	for (int i=0; i<installStream.size(); i++)
 	{
 		printf("[%d] %s\n", i, installStream.get_package(i)->get_name().c_str());
@@ -88,10 +87,10 @@ int DependencyTracker::renderData()
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	filterDupes(&installStream);
 	filterDupes(&removeStream);
-	printf("installStream size (after filter) = %d\n", installStream.size());
+	//printf("installStream size (after filter) = %d\n", installStream.size());
 
 	muxStreams(installStream, removeStream);
-	printf("installList size (final) = %d\n", installList.size());
+	//printf("installList size (final) = %d\n", installList.size());
 
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	return failureCounter;
@@ -352,16 +351,29 @@ void DependencyTracker::PrintFailure(PACKAGE* package)
 
 bool DependencyTracker::commitToDb()
 {
-	printf("commitToDb: %d packages to install\n", installList.size());
+	if (installList.size()>0) printf("Committing %d packages to install:\n", installList.size());
+	int iC=1;
 	for (int i=0; i<installList.size(); i++)
 	{
-		db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);// installList.get_package(i)->action());
+		if (!installList.get_package(i)->installed())
+		{
+			printf("  [%d] %s %s\n", iC, installList.get_package(i)->get_name().c_str(), installList.get_package(i)->get_fullversion().c_str());
+			iC++;
+			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+		}
 	}
-
+	if (removeList.size()>0) printf("Committing %d packages to remove\n", removeList.size());
+	int rC=1;
 	for (int i=0; i<removeList.size(); i++)
 	{
-		db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+		if (removeList.get_package(i)->configexist())
+		{
+			printf("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name().c_str(), removeList.get_package(i)->get_fullversion().c_str());
+			rC++;
+			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+		}
 	}
+	printf("Total %d action to proceed, committing...\n\n", iC-1+rC-1);
 
 	return true;
 }

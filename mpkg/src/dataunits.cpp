@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.37 2007/05/03 11:38:44 i27249 Exp $
+	$Id: dataunits.cpp,v 1.38 2007/05/03 12:20:46 i27249 Exp $
 */
 
 
@@ -1755,13 +1755,11 @@ PACKAGE* PACKAGE_LIST::operator [] (int num)
 	
 bool PACKAGE_LIST::hasInstalledOnes()
 {
-	printf("packages size = %d\n", packages.size());
 	if (packages.size()==0) return false;
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).installed())
 		{
-			printf("package %s is installed\n", packages.at(i).get_name().c_str());
 			return true;
 		}
 	}
@@ -1776,7 +1774,7 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 	}
 	fprintf(stderr, "getInstalledOne: no installed ones\n");
 	PACKAGE p;
-	p.set_name("VOID!!!\n");
+	//p.set_name("VOID!!!\n");
 	return p;
 }
 
@@ -1955,32 +1953,32 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 int PACKAGE_LIST::getMaxVersionID(string package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	printf("getMaxVersionID: packages.size = %d\n", packages.size());
+	//printf("getMaxVersionID: packages.size = %d\n", packages.size());
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
-			printf("getMaxVersionID: returning %d\n", packages.at(i).get_id());//i);
+	//		printf("getMaxVersionID: returning %d\n", packages.at(i).get_id());//i);
 			return packages.at(i).get_id();//i;
 		}
 	}
-	printf("Nothing found...\n");
+	//printf("Nothing found...\n");
 	return MPKGERROR_NOPACKAGE;
 }
 
 int PACKAGE_LIST::getMaxVersionNumber(string package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	printf("getMaxVersionID: packages.size = %d\n", packages.size());
+	//printf("getMaxVersionID: packages.size = %d\n", packages.size());
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
-			printf("getMaxVersionID: returning %d\n", i);//packages.at(i).get_id());//i);
+	//		printf("getMaxVersionID: returning %d\n", i);//packages.at(i).get_id());//i);
 			return i;//packages.at(i).get_id();//i;
 		}
 	}
-	printf("Nothing found...\n");
+	//printf("Nothing found...\n");
 	return MPKGERROR_NOPACKAGE;
 }
 
