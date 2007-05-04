@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <groups>
 	<group tag="_any_" name = "All packages" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png"/>
-	<group tag="_latestupdates_" name = "Latest updates" icon = "icons/icons/default.kde/32x32/apps/superkaramba.png"/>
+	<group tag="_updates_" name = "Latest updates" icon = "icons/icons/default.kde/32x32/apps/superkaramba.png"/>
 	<group tag="base" name = "Base system" icon = "icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
 	<group tag="utilities" name = "Utilities" icon = "icons/icons/default.kde/32x32/apps/xconsole.png"/>
 	<group tag="development" name="Development" icon="icons/icons/default.kde/32x32/apps/alevt.png"/>
