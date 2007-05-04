@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.55 2007/05/04 13:40:44 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.56 2007/05/04 19:05:55 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -109,10 +109,12 @@ string mpkgDatabase::get_file_md5(string filename)
 bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 {
 	string fname = SYS_CACHE+"/"+package->get_filename();
-	if (FileExists(fname) && package->get_md5() == get_file_md5(SYS_CACHE + "/" + package->get_filename()))
+	string got_md5 = get_file_md5(SYS_CACHE + "/" + package->get_filename());
+	if (FileExists(fname) && package->get_md5() == got_md5)
 		return true;
 	else
 	{
+		printf("Package %s: wrong MD5: has [%s], should be [%s], %s re-downloading\n",package->get_name().c_str(), got_md5.c_str(), package->get_md5().c_str(), package->get_filename().c_str());
 		unlink(fname.c_str());
 		return false;
 	}
@@ -131,14 +133,16 @@ int mpkgDatabase::commit_actions()
 	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
 
 	PACKAGE_LIST purge_list;
+	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
 	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
 
 	PACKAGE_LIST install_list;
+	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-	if (get_packagelist(sqlSearch, &install_list)!=0) return -5;
+	if (get_packagelist(sqlSearch, &install_list,false)!=0) return -5;
 
 	for (int i=0; i<remove_list.size(); i++)
 	{
@@ -231,12 +235,13 @@ int mpkgDatabase::commit_actions()
 		progressEnabled2 = true;
 		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
 		{
-			printf("Download failed, waiting responce\n");
+			printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
 			errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
 			switch(errRet)
 			{
 				case MPKG_RETURN_IGNORE:
 					printf("Download errors ignored, continue installing\n");
+					goto installProcess;
 					break;
 			
 				case MPKG_RETURN_RETRY:
@@ -253,13 +258,16 @@ int mpkgDatabase::commit_actions()
 				
 		}
 	
-		progressEnabled2 = false;
 	}
+installProcess:
+
+	progressEnabled2 = false;
 	debug("Calling INSTALL");
 
 	currentStatus = "Checking files (comparing MD5):";
 	for (int i=0; i<install_list.size(); i++)
 	{
+		printf("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
 		currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
 
 

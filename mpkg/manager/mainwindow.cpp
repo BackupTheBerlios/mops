@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.69 2007/05/04 13:40:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.70 2007/05/04 19:05:55 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -73,6 +73,7 @@ void MainWindow::loadingFinished()
 	hideEntireTable();
 	ui.splashFrame->hide();
 	ui.packageListBox->setEnabled(true);
+	ui.progressTable->hide();
 	//ui.packageInfoBox->show();
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
@@ -377,12 +378,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
-	progWindow = new ProgressWindow;
+	ui.progressTable->hide();
 	// Building thread connections
 	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
 	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
 
-	QObject::connect(StatusThread, SIGNAL(loadProgressData()), progWindow, SLOT(loadData()));
+	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
@@ -439,8 +440,31 @@ MainWindow::MainWindow(QMainWindow *parent)
 }
 void MainWindow::showProgressWindow(bool flag)
 {
-	if (flag) progWindow->show();
-	else progWindow->hide();
+	if (flag) ui.progressTable->show();
+	else ui.progressTable->hide();
+}
+
+void MainWindow::updateProgressData()
+{
+	double dtmp;
+	int tmp_c;
+	if (pData.size()>0)
+	{
+		for (int i=0; i<pData.size(); i++)
+		{
+			ui.progressTable->setItem(i,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
+			ui.progressTable->setItem(i,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
+			QProgressBar *pBar = new QProgressBar;
+			dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
+			tmp_c = (int) dtmp;
+
+			pBar->setMaximum(100);
+			pBar->setValue(tmp_c);
+			ui.progressTable->setCellWidget(i,2,pBar);
+			ui.progressTable->setRowHeight(i,16);
+		}
+	}
+
 }
 void MainWindow::cleanCache()
 {

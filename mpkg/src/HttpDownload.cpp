@@ -290,6 +290,7 @@ process:
 			{
 		        	if (item->url_list.size()==0)
 				{
+					printf("Downloading %s is Failed: void download list\n", item->name.c_str());
 					item->status=DL_STATUS_FAILED;
 					is_have_error=true;
 				}
@@ -330,7 +331,7 @@ process:
     					}
 					else 
 					{
-						printf("Failed.\n");
+						printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
     				    		is_have_error = true;
     						item->status = DL_STATUS_FAILED;
     					}

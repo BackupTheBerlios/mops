@@ -14,20 +14,18 @@ HEADERS += aboutbox.h \
            loading.h \
            mainwindow.h \
            preferencesbox.h \
-           progress.h \
            tablelabel.h
 FORMS += aboutbox.ui \
          db.ui \
          loading.ui \
          pkgmanager.ui \
-         preferencesbox.ui \
-         progresswindow.ui
-SOURCES += aboutbox.cpp \
+         preferencesbox.ui
+
+ SOURCES += aboutbox.cpp \
            corethread.cpp \
            db.cpp \
            loading.cpp \
            main.cpp \
            mainwindow.cpp \
            preferencesbox.cpp \
-           progress.cpp \
            tablelabel.cpp

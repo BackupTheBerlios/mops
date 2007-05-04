@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.36 2007/05/04 13:40:44 i27249 Exp $
+ * $Id: mainwindow.h,v 1.37 2007/05/04 19:05:55 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -16,7 +16,7 @@
 #include "db.h"
 #include "corethread.h"
 
-#include "progress.h"
+//#include "progress.h"
 //#include "checkbox.h";
 #include <QThread>
 // TABLE INDEX
@@ -41,7 +41,6 @@ class MainWindow: public QMainWindow
 		statusThread *StatusThread;
 		errorBus *ErrorBus;
 		PreferencesBox *prefBox;
-		ProgressWindow *progWindow;
 
 	signals:
 		void loadPackageDatabase();
@@ -55,6 +54,7 @@ class MainWindow: public QMainWindow
 		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void updateProgressData();
 		void showProgressWindow(bool flag);
 		void hideEntireTable();
 		void showErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
