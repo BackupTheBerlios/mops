@@ -15,7 +15,7 @@ class AboutBox: public QWidget
 {
 	Q_OBJECT
 public:
-	AboutBox (QWidget *parent = 0);
+	AboutBox ();
 	
 public:
 	Ui::aboutBox ui;

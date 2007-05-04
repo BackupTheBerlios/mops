@@ -9,7 +9,8 @@
 
 #include "aboutbox.h"
 
-AboutBox::AboutBox(QWidget *parent)
+AboutBox::AboutBox()
 {
 	ui.setupUi(this);
 }
+

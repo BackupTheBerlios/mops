@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.40 2007/04/28 09:23:51 i27249 Exp $
+ * $Id: corethread.cpp,v 1.41 2007/05/04 13:40:44 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -500,16 +500,20 @@ void errorBus::Stop()
 
 
 
-
+void statusThread::setPDataActive(bool flag)
+{
+	pDataActive=flag;
+}
 
 statusThread::statusThread()
 {
-	TIMER_RES = 50;
+	TIMER_RES = 10;
 	idleTime=0;
-	idleThreshold=40;
+	idleThreshold=40000;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
+	pDataActive=false;
 }
 
 void statusThread::run()
@@ -519,8 +523,17 @@ void statusThread::run()
 	double dtmp, dtmp2;
 	//int tmp_t, tmp_t2;
 	string dlStatus;
+	double lastMaxProgress=0;
 	forever 
-	{	if (!progressEnabled && !progressEnabled2)
+	{
+		if (pDataActive && pData.size()>0 && pData.currentItem<pData.size())
+		{
+			pData.itemProgressMaximum.at(pData.currentItem)=progressMax;
+			pData.itemProgress.at(pData.currentItem)=currentProgress;
+
+			emit loadProgressData();
+		}
+		if (!progressEnabled && !progressEnabled2)
 		{
 			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
 			else idleTime++;
@@ -534,6 +547,7 @@ void statusThread::run()
 		switch(action)
 		{
 			case STT_Run:
+				
 				if (!progressEnabled2) emit setStatus((QString) currentStatus.c_str());
 				
 				if (progressEnabled)
@@ -866,6 +880,7 @@ void coreThread::commitQueue(vector<int> nStatus)
 void coreThread::_commitQueue()
 {
 	currentStatus = "Committing...";
+	emit showProgressWindow(true);
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;

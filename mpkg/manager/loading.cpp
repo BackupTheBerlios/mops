@@ -9,7 +9,7 @@
 
 #include "loading.h"
 
-LoadingBox::LoadingBox(QWidget *parent)
+LoadingBox::LoadingBox()
 {
 	ui.setupUi(this);
 }

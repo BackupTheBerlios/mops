@@ -8,5 +8,4 @@ TableLabel::TableLabel(QTableWidget *table)
 void TableLabel::mousePressEvent(QMouseEvent *event)
 {
 	packageTable->setCurrentCell(row,1);
-	
 }

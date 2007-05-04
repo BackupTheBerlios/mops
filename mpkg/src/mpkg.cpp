@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.54 2007/05/03 14:18:00 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.55 2007/05/04 13:40:44 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -123,13 +123,37 @@ int mpkgDatabase::commit_actions()
 {
 	// Zero: purging required packages
 	// First: removing required packages
-	currentStatus = "Looking for remove queue";
+
 	PACKAGE_LIST remove_list;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
 	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
-	debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
+
+	PACKAGE_LIST purge_list;
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
+
+	PACKAGE_LIST install_list;
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
+	if (get_packagelist(sqlSearch, &install_list)!=0) return -5;
+
+	for (int i=0; i<remove_list.size(); i++)
+	{
+		remove_list.get_package(i)->itemID = pData.addItem(remove_list.get_package(i)->get_name(), 10);
+	}
+	for (int i=0; i<purge_list.size(); i++)
+	{
+		purge_list.get_package(i)->itemID = pData.addItem(purge_list.get_package(i)->get_name(), 20);
+	}
+	for (int i=0; i<install_list.size(); i++)
+	{
+		install_list.get_package(i)->itemID = pData.addItem(install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size().c_str()));
+	}
+	currentStatus = "Looking for remove queue";
+		debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 	currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
 	progressEnabled = true;
 	progressMax = remove_list.size();
@@ -144,10 +168,6 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.clear();
 
 	currentStatus = "Looking for purge queue";
-	PACKAGE_LIST purge_list;
-	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
 	currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
 	currentProgress = 0;
 	progressEnabled = true;
@@ -163,10 +183,6 @@ int mpkgDatabase::commit_actions()
 
 	currentStatus = "Looking for install queue";
 	// Second: installing required packages
-	PACKAGE_LIST install_list;
-	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-	if (get_packagelist(sqlSearch, &install_list)!=0) return -5;
 	debug("Calling FETCH");
 	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
@@ -191,6 +207,7 @@ int mpkgDatabase::commit_actions()
 			tmpDownloadItem.name = install_list.get_package(i)->get_name();
 			tmpDownloadItem.priority = 0;
 			tmpDownloadItem.status = DL_STATUS_WAIT;
+			tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
 
 
 			for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
@@ -212,7 +229,7 @@ int mpkgDatabase::commit_actions()
 		do_download = false;
 		progressEnabled = true;
 		progressEnabled2 = true;
-		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem) == DOWNLOAD_ERROR)
+		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
 		{
 			printf("Download failed, waiting responce\n");
 			errRet = waitResponce (MPKG_DOWNLOAD_ERROR);

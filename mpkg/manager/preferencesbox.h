@@ -1,6 +1,6 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.9 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.10 2007/05/04 13:40:44 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
@@ -13,7 +13,7 @@ class PreferencesBox: public QWidget
 {
 	Q_OBJECT
 	public:
-		PreferencesBox(mpkg *mDb, QWidget *parent = 0);
+		PreferencesBox(mpkg *mDB);
 		Ui::preferencesBox ui;
 
 		vector<bool>repStatus;

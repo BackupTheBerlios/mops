@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.30 2007/04/27 23:50:15 i27249 Exp $
+    $Id: config.h,v 1.31 2007/05/04 13:40:44 i27249 Exp $
 */
 
 
@@ -13,6 +13,29 @@ using namespace std;
 #define CHECKFILES_POSTINSTALL 2
 #define CHECKFILES_DISABLE 0
 
+#define ITEMSTATE_WAIT 0
+#define ITEMSTATE_INPROGRESS 1
+#define ITEMSTATE_FINISHED 2
+#define ITEMSTATE_FAILED 3
+class ProgressData
+{
+	public:
+		vector<string> itemName;
+		vector<string> itemCurrentAction;
+		vector<double> itemProgress;
+		vector<double> itemProgressMaximum;
+		string currentAction;
+		double getTotalProgress();
+		double getTotalProgressMax();
+		vector<int>itemState;
+		int currentItem;
+
+		ProgressData();
+		~ProgressData();
+		int addItem(string iName, double maxProgress, int iState=ITEMSTATE_WAIT);
+		unsigned int size();
+};
+	
 // Database type definitions
 #define DB_SQLITE_LOCAL 0x01
 #define DB_REMOTE 0x02
@@ -96,7 +119,7 @@ extern string CDROM_VOLUMELABEL;
 extern string CDROM_DEVICENAME;
 void setErrorCode(mpkgErrorCode value);
 void setErrorReturn(mpkgErrorReturn value);
-
+extern ProgressData pData;
 mpkgErrorCode getErrorCode();
 mpkgErrorReturn getErrorReturn();
 

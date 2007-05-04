@@ -24,11 +24,11 @@
      <number>6</number>
     </property>
     <item>
-     <widget class="QSplitter" name="splitter_2" >
+     <widget class="QSplitter" name="splitter_3" >
       <property name="orientation" >
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QSplitter" name="splitter" >
+      <widget class="QSplitter" name="splitter_2" >
        <property name="orientation" >
         <enum>Qt::Vertical</enum>
        </property>
@@ -64,179 +64,205 @@
           <number>6</number>
          </property>
          <item>
-          <widget class="QListWidget" name="listWidget" >
-           <property name="maximumSize" >
-            <size>
-             <width>515</width>
-             <height>16777215</height>
-            </size>
+          <widget class="QSplitter" name="splitter" >
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
            </property>
-           <property name="iconSize" >
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <item>
-            <property name="text" >
-             <string>Everything</string>
+           <widget class="QListWidget" name="listWidget" >
+            <property name="maximumSize" >
+             <size>
+              <width>515</width>
+              <height>16777215</height>
+             </size>
             </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png</iconset>
+            <property name="iconSize" >
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
             </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Latest updates</string>
+            <item>
+             <property name="text" >
+              <string>Everything</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Latest updates</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/superkaramba.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Base system</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Utilities</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Development tools</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/alevt.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Emacs</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/plan.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Kernel source</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>KDE</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/go.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>KDE Internationalization</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kmenu.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>KOffice</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/wp.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Libraries</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Network</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>OpenOffice</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/ooo-base.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Server software</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/gnomemeeting.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>TeX</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/fonts.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Tk/TCL</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kcmdevices.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Wine</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/wine.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>X Window system</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>X Applications</string>
+             </property>
+             <property name="icon" >
+              <iconset>../../../opt/kde/share/icons/crystalsvg/64x64/apps/style.png</iconset>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Miscellaneous</string>
+             </property>
+             <property name="icon" >
+              <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
+             </property>
+            </item>
+           </widget>
+           <widget class="QTableWidget" name="categoryTable" >
+            <property name="selectionMode" >
+             <enum>QAbstractItemView::SingleSelection</enum>
             </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/superkaramba.png</iconset>
+            <property name="selectionBehavior" >
+             <enum>QAbstractItemView::SelectRows</enum>
             </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Base system</string>
+            <property name="showGrid" >
+             <bool>false</bool>
             </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Utilities</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Development tools</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/alevt.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Emacs</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/plan.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Kernel source</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>KDE</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/go.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>KDE Internationalization</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kmenu.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>KOffice</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/wp.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Libraries</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Network</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>OpenOffice</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/ooo-base.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Server software</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/gnomemeeting.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>TeX</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/fonts.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Tk/TCL</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kcmdevices.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Wine</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/wine.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>X Window system</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>X Applications</string>
-            </property>
-            <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/64x64/apps/style.png</iconset>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>Miscellaneous</string>
-            </property>
-            <property name="icon" >
-             <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
-            </property>
-           </item>
+            <column>
+             <property name="text" >
+              <string>I</string>
+             </property>
+            </column>
+            <column>
+             <property name="text" >
+              <string>Cat name</string>
+             </property>
+            </column>
+           </widget>
           </widget>
          </item>
         </layout>
@@ -721,7 +747,7 @@
      <x>0</x>
      <y>0</y>
      <width>1096</width>
-     <height>31</height>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRepositories" >

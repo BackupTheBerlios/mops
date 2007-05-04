@@ -16,7 +16,7 @@ class DatabaseBox: public QWidget
 {
 	Q_OBJECT
 public:
-	DatabaseBox (QWidget *parent = 0);
+	DatabaseBox ();
 	
 public:
 	Ui::databaseBox ui;

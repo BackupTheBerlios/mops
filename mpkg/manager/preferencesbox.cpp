@@ -1,14 +1,14 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.14 2007/04/22 10:18:32 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.15 2007/05/04 13:40:44 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
 #include <QFileDialog>
 //#include "mainwindow.h"
-PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
+PreferencesBox::PreferencesBox(mpkg *mDB)
 {
-
+	mDb=mDB;
 	ui.setupUi(this);
 	ui.addModifyRepositoryFrame->hide();
 	QObject::connect(ui.urlEdit, SIGNAL(textEdited(const QString &)), this, SLOT(changeRepositoryType()));
@@ -19,7 +19,6 @@ PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 	QObject::connect(ui.applyButton, SIGNAL(clicked()), this, SLOT(applyConfig()));
 	QObject::connect(ui.addRepositoryButton, SIGNAL(clicked()), this, SLOT(addRepositoryShow()));
 	QObject::connect(ui.editRepositoryButton, SIGNAL(clicked()), this, SLOT(editRepositoryShow()));
-	//QObject::connect(ui.repositoryList, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(editRepository()));
 	QObject::connect(ui.delRepositoryButton, SIGNAL(clicked()), this, SLOT(delRepository()));
 	QObject::connect(ui.okButton, SIGNAL(clicked()), this, SLOT(okProcess()));
 	QObject::connect(ui.cancelButton, SIGNAL(clicked()), this, SLOT(cancelProcess()));	
@@ -29,10 +28,6 @@ PreferencesBox::PreferencesBox(mpkg *mDb, QWidget *parent)
 	QObject::connect(ui.dbfileHelpBtn, SIGNAL(clicked()), this, SLOT(sysDBHelpShow()));
 	QObject::connect(ui.scriptsfolderHelpBtn, SIGNAL(clicked()), this, SLOT(sysScriptsHelpShow()));
 	QObject::connect(ui.volNameDetectButton, SIGNAL(clicked()), this, SLOT(detectCdromVolnameCall()));
-
-
-
-
 }
 
 void PreferencesBox::delRepository()
@@ -42,9 +37,9 @@ void PreferencesBox::delRepository()
 	{
 		ui.repositoryTable->removeRow(remIndex);
 		vector<bool> tmpRepStatus;
-		for (int i=0; i<repStatus.size(); i++)
+		for (unsigned int i=0; i<repStatus.size(); i++)
 		{
-			if (i == remIndex) i++;
+			if (i == (unsigned int) remIndex) i++;
 			tmpRepStatus.push_back(repStatus[i]);
 		}
 		repStatus = tmpRepStatus;
@@ -148,7 +143,7 @@ void PreferencesBox::changeRepositoryType()
 
 void PreferencesBox::detectCdromVolnameCall()
 {
-	mpkgErrorReturn errRet;
+	//mpkgErrorReturn errRet;
 	ui.volNameDetectButton->setEnabled(false);
 	ui.volNameDetectButton->setText("Detecting...");
 	emit getCdromName();
@@ -300,6 +295,7 @@ void PreferencesBox::loadData()
 {
 	// Load interface
 	// Load core
+	printf("Loading core data\n");
 	ui.sysrootEdit->setText(mDb->get_sysroot().c_str());
 	ui.syscacheEdit->setText(mDb->get_syscache().c_str());
 	ui.dbfileEdit->setText(mDb->get_dburl().c_str());
@@ -308,6 +304,7 @@ void PreferencesBox::loadData()
 	ui.mountPointEdit->setText(mDb->get_cdrommountpoint().c_str());
 	ui.volNameLabel->setTextFormat(Qt::RichText);
 	ui.urlLabel->setTextFormat(Qt::RichText);
+	printf("Loading checkfiles configuration\n");
 	switch(mDb->get_checkFiles())
 	{
 		case CHECKFILES_PREINSTALL:
@@ -332,13 +329,15 @@ void PreferencesBox::loadData()
 	ui.scriptsfolderEdit->setText(mDb->get_scriptsdir().c_str());
 	// Load accounts
 	// Load repository
-	vector<string> rList = mDb->get_repositorylist();
-	vector<string> drList = mDb->get_disabled_repositorylist();
-
+	printf("Loading repository vectors\n");
+	vector<string> rList;
+        rList = mDb->get_repositorylist();
+	vector<string> drList;
+        drList = mDb->get_disabled_repositorylist();
+	printf("Filling repository table\n");
 	ui.repositoryTable->clearContents();
 	ui.repositoryTable->setRowCount(rList.size()+drList.size());
-	//repStatus.resize(rList.size()+drList.size());
-	for (int i=0; i < rList.size(); i++)
+	for (unsigned int i=0; i < rList.size(); i++)
 	{
 		RCheckBox *rCheckBox = new RCheckBox(this);
 		rCheckBox->setCheckState(Qt::Checked);
@@ -346,7 +345,8 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i,0,rCheckBox);
 		ui.repositoryTable->setItem(i, 1, new QTableWidgetItem(rList[i].c_str()));
 	}
-	for (int i=0; i < drList.size(); i++)
+	printf("Filling disabled repository table\n");
+	for (unsigned int i=0; i < drList.size(); i++)
 	{
 		RCheckBox *rCheckBox = new RCheckBox(this);
 		rCheckBox->setCheckState(Qt::Unchecked);
@@ -354,18 +354,16 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBox);
 		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
 	}
+	printf("Setting table sizes\n");
 	ui.repositoryTable->setColumnWidth(0, 32);
  	ui.repositoryTable->setColumnWidth(1, 900);
-
-
-	
-	// Load updates
+	printf("Data loaded\n");
 }
 
 void PreferencesBox::applyRepositoryChanges()
 {
 	string urlString, tmp_url;
-	int body_pos;
+	unsigned int body_pos;
 
 	switch(ui.repTypeComboBox->currentIndex())
 	{
@@ -419,7 +417,7 @@ void PreferencesBox::applyRepositoryChanges()
 	}
 
 
-	int insert_pos;
+	int insert_pos=ui.repositoryTable->rowCount();
 	if (editMode==REP_ADDMODE)
 	{
 		RCheckBox *rCheckBox = new RCheckBox(this);
@@ -452,7 +450,9 @@ void PreferencesBox::cancelRepositoryEdit()
 
 void PreferencesBox::openCore()
 {
+	printf("loading data...\n");
 	loadData();
+	printf("Enabling window...\n");
 	ui.tabWidget->setCurrentIndex(1);
 	show();
 }
@@ -473,7 +473,7 @@ void PreferencesBox::applyConfig()
 	mDb->set_runscripts(ui.runscriptsCheckBox->checkState());
 	mDb->set_cdromdevice(ui.cdromDeviceEdit->text().toStdString());
 	mDb->set_cdrommountpoint(ui.mountPointEdit->text().toStdString());
-	unsigned int fcheck;
+	unsigned int fcheck=CHECKFILES_DISABLE;
 	if (ui.fcheckInstallation->isChecked()) fcheck = CHECKFILES_PREINSTALL;
 	if (ui.fcheckRemove->isChecked()) fcheck = CHECKFILES_POSTINSTALL;
 	if (ui.fcheckDisable->isChecked()) fcheck = CHECKFILES_DISABLE;
@@ -500,7 +500,7 @@ void PreferencesBox::applyConfig()
 RCheckBox::RCheckBox(PreferencesBox *parent)
 {
 	mw = parent;
-	if (mw->repStatus.size()<row+1) mw->repStatus.resize(row+1);
+	if (mw->repStatus.size()<(unsigned int) row+1) mw->repStatus.resize(row+1);
 
 	QObject::connect(this, SIGNAL(stateChanged(int)), this, SLOT(markChanges()));
 
@@ -508,14 +508,14 @@ RCheckBox::RCheckBox(PreferencesBox *parent)
 
 void RCheckBox::markChanges()
 {
-	if (mw->repStatus.size()<row+1) mw->repStatus.resize(row+1);
+	if (mw->repStatus.size()<(unsigned int) row+1) mw->repStatus.resize(row+1);
 	if (checkState() == Qt::Checked) mw->repStatus[row] = true;
 	else mw->repStatus[row] = false;
 }
 void RCheckBox::setRow(int rowNum)
 {
 	row = rowNum;
-	if (mw->repStatus.size()<row+1) mw->repStatus.resize(row+1);
+	if (mw->repStatus.size()<(unsigned int)row+1) mw->repStatus.resize(row+1);
 	markChanges();
 }
 int RCheckBox::getRow()

@@ -15,7 +15,7 @@ class LoadingBox: public QWidget
 {
 	Q_OBJECT
 public:
-	LoadingBox (QWidget *parent = 0);
+	LoadingBox ();
 	
 public:
 	Ui::loadingBox ui;

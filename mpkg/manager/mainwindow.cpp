@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.68 2007/05/03 14:17:59 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.69 2007/05/04 13:40:44 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -377,7 +377,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
+	progWindow = new ProgressWindow;
 	// Building thread connections
+	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
+	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
+
+	QObject::connect(StatusThread, SIGNAL(loadProgressData()), progWindow, SLOT(loadData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
@@ -432,7 +437,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 	}
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
-
+void MainWindow::showProgressWindow(bool flag)
+{
+	if (flag) progWindow->show();
+	else progWindow->hide();
+}
 void MainWindow::cleanCache()
 {
 	emit callCleanCache();
@@ -442,17 +451,16 @@ void MainWindow::initCategories()
 {
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 
-	//printf("File exists\n");
 	XMLResults xmlErrCode;
 	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
 		// Init defaults here...
-	//	printf("Should initialize defaults for groups, doing nothing for now\n");
 		return;
 	}
+#ifndef CAT_TABLE
 	ui.listWidget->clear();
-	for (unsigned int i = 0; i< _categories.nChildNode("group"); i++)
+	for (int i = 0; i< _categories.nChildNode("group"); i++)
 	{
 		QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
     		__item->setText(QApplication::translate("MainWindow", _categories.getChildNode("group",i).getAttribute("name"), 0, QApplication::UnicodeUTF8));
@@ -462,6 +470,32 @@ void MainWindow::initCategories()
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	ui.listWidget->setCurrentRow(1);
 	ui.listWidget->scrollToItem(ui.listWidget->item(0));
+#else
+	ui.categoryTable->clearContents();
+	ui.categoryTable->setRowCount(_categories.nChildNode("group"));
+	QString itemText;
+	
+	for (int i=0; i<_categories.nChildNode("group"); i++)
+	{
+		CheckBox *cBox = new CheckBox(this);
+		cBox->row = i;
+
+		ui.categoryTable->setRowHeight(i,64);
+		QIcon catIcon;
+		const QString iconName = QString::fromUtf8(_categories.getChildNode("group", i).getAttribute("icon"));
+		const QSize iconSize = *new QSize (64,64);
+		catIcon.addFile(iconName, iconSize);
+		ui.categoryTable->setItem(i,1, new QTableWidgetItem(catIcon, _categories.getChildNode("group",i).getAttribute("name")));
+		ui.categoryTable->setCellWidget(i,0,cBox);
+		ui.categoryTable->setColumnWidth(0,15);
+		ui.categoryTable->setColumnWidth(1,400);
+
+	}
+#endif
+
+		
+
+
 
 }
 

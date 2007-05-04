@@ -9,7 +9,7 @@
 
 #include "db.h"
 
-DatabaseBox::DatabaseBox(QWidget *parent)
+DatabaseBox::DatabaseBox()
 {
 	mDb = new mpkg;
 	ui.setupUi(this);

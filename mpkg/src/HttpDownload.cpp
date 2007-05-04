@@ -163,13 +163,16 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlItem.status = DL_STATUS_WAIT;
 	dlItem.priority = 0;
 	double dlnow, dltotal, itemnow, itemtotal;
+	ProgressData z;
 	string name;
+	dlItem.itemID=0;
 	dlList.push_back(dlItem);
-	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint);
+	int currentItem;
+	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint, &z);
 	
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint)
+DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint, ProgressData *prData)
 {
 	if (list.empty()) 
 	{
@@ -190,6 +193,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	for (int i=0; i<list.size(); i++)
 	{
 		tmp_item = &(list.at(i));
+
 		isCdromSourced = false;
 		for (int j=0; j<tmp_item->url_list.size(); j++)
 		{
@@ -255,6 +259,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	}
 	extDlNow = dlnow;
 	extDlTotal = dltotal;
+
 	CURLcode result;
 	DownloadItem *item;
 	FILE* out;
@@ -265,6 +270,11 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 process:
 		item = &(list.at(i));
 		*itemname = item->name;
+		if (prData->size()>0)
+		{
+			prData->currentItem=item->itemID;
+		}
+
 
 		if ( item->status == DL_STATUS_WAIT ) {
 			dir = "mkdir -p " + item->file.substr(0,item->file.find_last_of("/"));
@@ -287,6 +297,8 @@ process:
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
 					printf("Downloading %s\n", item->url_list.at(j).c_str());
+					prData->itemCurrentAction.at(item->itemID)="Downloading";
+
     				
 					if (item->url_list.at(j).find("file://")==0)
 					{
@@ -311,7 +323,9 @@ process:
     					fclose(out);
     	
     					if ( result == CURLE_OK  ) {
-					item->status = DL_STATUS_OK;
+						item->status = DL_STATUS_OK;
+						prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
+						prData->itemCurrentAction.at(item->itemID)="Done";
     					break;
     					}
 					else 

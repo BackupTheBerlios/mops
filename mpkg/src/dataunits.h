@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.25 2007/05/03 11:38:44 i27249 Exp $
+	$Id: dataunits.h,v 1.26 2007/05/04 13:40:44 i27249 Exp $
 */
 
 
@@ -425,6 +425,7 @@ class PACKAGE
 
     public:
 
+	int itemID;	// For status purposes only, means the number in PackageData vector
 	bool isBroken;
 	bool isRequirement;
 	bool isItRequired(PACKAGE *testPackage);

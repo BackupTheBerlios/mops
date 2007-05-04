@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.22 2007/04/20 04:01:42 i27249 Exp $
+ * $Id: config.cpp,v 1.23 2007/05/04 13:40:44 i27249 Exp $
  *
  * ***************************************************/
 
@@ -27,7 +27,7 @@ unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
 vector<string> DISABLED_REPOSITORY_LIST;
-
+ProgressData pData;
 #ifndef HTTP_LIB
 string CDROM_DEVICE;// = "/dev/hda";
 string CDROM_MOUNTPOINT;// = "/mnt/cdrom";
@@ -39,6 +39,50 @@ string CDROM_DEVICENAME;
 string DL_CDROM_DEVICE;
 string DL_CDROM_MOUNTPOINT;
 #endif
+
+
+ProgressData::ProgressData()
+{
+	currentItem=0;
+}
+
+ProgressData::~ProgressData(){}
+
+int ProgressData::addItem(string iName, double maxProgress, int iState)
+{
+	itemName.push_back(iName);
+	itemCurrentAction.push_back("waiting");
+	itemProgress.push_back(0);
+	itemProgressMaximum.push_back(maxProgress);
+	itemState.push_back(iState);
+	return itemName.size()-1;
+}
+
+unsigned int ProgressData::size()
+{
+	return itemName.size();
+}
+double ProgressData::getTotalProgressMax()
+{
+	double ret=0;
+	for (int i=0; i<itemProgressMaximum.size(); i++)
+	{
+		ret+=itemProgressMaximum.at(i);
+	}
+	return ret;
+}
+
+double ProgressData::getTotalProgress()
+{
+	double ret=0;
+	for (int i=0; i<itemProgress.size(); i++)
+	{
+		ret+=itemProgress.at(i);
+	}
+	return ret;
+}
+
+
 int loadGlobalConfig(string config_file)
 {
 #ifdef HTTP_LIB

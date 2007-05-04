@@ -30,6 +30,7 @@ public:
 	std::string name;
 	unsigned int priority;
 	int status;
+	int itemID;
 };
 
 typedef std::vector<DownloadItem> DownloadsList;
@@ -41,7 +42,7 @@ typedef std::vector<DownloadItem> DownloadsList;
 class IDownload {
 public:
 	virtual DownloadResults getFile(std::string url, std::string file, std::string cdromDevice = CDROM_DEVICE, std::string cdromMountPoint = CDROM_MOUNTPOINT) = 0;
-	virtual DownloadResults getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice = CDROM_DEVICE, std::string cdromMountPoint = CDROM_MOUNTPOINT) = 0;
+	virtual DownloadResults getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice = CDROM_DEVICE, std::string cdromMountPoint = CDROM_MOUNTPOINT, ProgressData *prData = &pData) = 0;
 	virtual ~IDownload() {};
 };
 

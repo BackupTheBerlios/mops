@@ -61,7 +61,7 @@ CommonGetFile(std::string url, std::string output, void *callback)
 }	
 
 DownloadResults
-CommonGetFileEx(DownloadsList &list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname)
+CommonGetFileEx(DownloadsList &list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, ProgressData *prData=&pData)
 {
 
 	DownloadFactory *g_pDownloadFactory = new DownloadFactory();

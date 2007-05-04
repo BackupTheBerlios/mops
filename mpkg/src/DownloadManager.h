@@ -14,7 +14,7 @@ typedef IDownload* (*GetHandler)();
 
 IDownload*  InitializeDownloadObjects(DownloadFactory* factory);
 DownloadResults CommonGetFile( std::string url, std::string output, void *callback = NULL); 
-DownloadResults CommonGetFileEx( DownloadsList &list,  double *dlnow, double *dltotal , double *itemnow, double *itemtotal, std::string *itemname); 
+DownloadResults CommonGetFileEx( DownloadsList &list,  double *dlnow, double *dltotal , double *itemnow, double *itemtotal, std::string *itemname, ProgressData *prData); 
 
 #endif
 
