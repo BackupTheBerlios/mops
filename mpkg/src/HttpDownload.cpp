@@ -298,7 +298,7 @@ process:
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
 					printf("Downloading %s\n", item->url_list.at(j).c_str());
-					prData->itemCurrentAction.at(item->itemID)="Downloading";
+					if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Downloading";
 
     				
 					if (item->url_list.at(j).find("file://")==0)
@@ -325,8 +325,8 @@ process:
     	
     					if ( result == CURLE_OK  ) {
 						item->status = DL_STATUS_OK;
-						prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
-						prData->itemCurrentAction.at(item->itemID)="Done";
+						if (prData->size()>0) prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
+						if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Done";
     					break;
     					}
 					else 
