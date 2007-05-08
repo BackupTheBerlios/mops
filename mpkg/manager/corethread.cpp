@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.44 2007/05/08 12:07:07 i27249 Exp $
+ * $Id: corethread.cpp,v 1.45 2007/05/08 21:45:22 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -11,7 +11,7 @@
 errorBus::errorBus()
 {
 	action = eBUS_Pause;
-	TIMER_RES = 100;
+	TIMER_RES = 400;
 }
 
 void errorBus::run()
@@ -507,7 +507,7 @@ void statusThread::setPDataActive(bool flag)
 
 statusThread::statusThread()
 {
-	TIMER_RES = 190;
+	TIMER_RES = 600;
 	idleTime=0;
 	idleThreshold=40;
 	enabledBar = false;
@@ -537,7 +537,7 @@ void statusThread::run()
 			}
 		}
 		else emit showProgressWindow(false);
-		if (!progressEnabled && !progressEnabled2)
+	/*	if (!progressEnabled && !progressEnabled2)
 		{
 			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
 			else idleTime++;
@@ -547,7 +547,7 @@ void statusThread::run()
 			idleTime=0;
 			TIMER_RES=RUNNING_RES;
 		}
-
+*/
 		switch(action)
 		{
 			case STT_Run:
@@ -556,7 +556,7 @@ void statusThread::run()
 				
 				if (progressEnabled)
 				{
-					TIMER_RES = 50;
+					//TIMER_RES = 50;
 					dtmp = 100 * (currentProgress/progressMax);
 					tmp_c = (int) dtmp;
 					
@@ -573,7 +573,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES = 50;
+					//TIMER_RES = 50;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
@@ -583,7 +583,7 @@ void statusThread::run()
 				
 				if (progressEnabled2)
 				{
-					TIMER_RES = 50;
+					//TIMER_RES = 50;
 					dtmp2 = 100 * (currentProgress2/progressMax2);
 					tmp_c2 = (int) dtmp2;
 					dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
@@ -601,7 +601,7 @@ void statusThread::run()
 				}
 				else
 				{
-					TIMER_RES=50;
+					//TIMER_RES=50;
 					if (enabledBar)
 					{
 						emit disableProgressBar2();

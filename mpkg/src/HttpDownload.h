@@ -1,7 +1,7 @@
 #ifndef HTTPDOWNLOAD_H_
 #define HTTPDOWNLOAD_H_
 
-#include <string>
+#include "faststl.h"
 #include <stdio.h>
 #include <curl/curl.h>
 #include <curl/easy.h>
@@ -10,22 +10,22 @@
 struct cdromItem
 {
 	int id;
-	std::string volname;
+	string volname;
 };
 class HttpDownload : public IDownload {
 public:
 	HttpDownload();
 	
 	virtual ~HttpDownload() {};
-	DownloadResults getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint);
-	DownloadResults getFile(DownloadsList &list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint, ProgressData *prData);
+	DownloadResults getFile(string url, string file, string cdromDevice, string cdromMountPoint);
+	DownloadResults getFile(DownloadsList &list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, string *itemname, string cdromDevice, string cdromMountPoint, ProgressData *prData);
 
 private:
 	FILE* out_f;
 	CURL* ch;
 
-	std::string uri;
-	std::string out;
+	string uri;
+	string out;
 		
 };
 

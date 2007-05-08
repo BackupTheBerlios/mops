@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.72 2007/05/08 12:07:07 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.73 2007/05/08 21:45:22 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -273,7 +273,7 @@ void MainWindow::selectAll()
 {
 	for (int i = 0; i<ui.packageTable->rowCount(); i++)
 	{
-		markChanges(i, Qt::Checked);
+		if (!ui.packageTable->isRowHidden(i)) markChanges(i, Qt::Checked);
 	}
 }
 
@@ -281,7 +281,7 @@ void MainWindow::deselectAll()
 {
 	for (int i = 0; i<ui.packageTable->rowCount(); i++)
 	{
-		markChanges(i, Qt::Unchecked);
+		if (!ui.packageTable->isRowHidden(i)) markChanges(i, Qt::Unchecked);
 	}
 }
 
@@ -457,21 +457,32 @@ void MainWindow::updateProgressData()
 	double dtmp;
 	int tmp_c;
 	ui.progressTable->clearContents();
-	ui.progressTable->setRowCount(pData.size());
+	int totalCount=0;
+	for (int i=0; i<pData.size(); i++)
+	{
+		if (pData.itemActive.at(i)) totalCount++;
+	}
+	ui.progressTable->setRowCount(totalCount);
+
+	int tablePos = 0;
 	if (pData.size()>0)
 	{
 		for (int i=0; i<pData.size(); i++)
 		{
-			ui.progressTable->setItem(i,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
-			ui.progressTable->setItem(i,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
-			QProgressBar *pBar = new QProgressBar;
-			dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
-			tmp_c = (int) dtmp;
+			if (pData.itemActive.at(i))
+			{
+				ui.progressTable->setItem(tablePos,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
+				ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
+				QProgressBar *pBar = new QProgressBar;
+				dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
+				tmp_c = (int) dtmp;
 
-			pBar->setMaximum(100);
-			pBar->setValue(tmp_c);
-			ui.progressTable->setCellWidget(i,2,pBar);
-			ui.progressTable->setRowHeight(i,16);
+				pBar->setMaximum(100);
+				pBar->setValue(tmp_c);
+				ui.progressTable->setCellWidget(tablePos,2,pBar);
+				ui.progressTable->setRowHeight(tablePos,20);
+				tablePos++;
+			}
 		}
 	}
 
@@ -900,8 +911,16 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			package_icon="purge.png";
 			break;
 		}
+		string cloneHeader;
+		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
+
 		
-		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+ \
+		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+			+_p->get_version()\
+			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
+		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+
+		//string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+ \
 			_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+\
 			"</td></tr></tbody></table>";
 		setTableItem(x, state, pName);

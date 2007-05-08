@@ -299,7 +299,12 @@ process:
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
 					printf("Downloading %s\n", item->url_list.at(j).c_str());
-					if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Downloading";
+					if (prData->size()>0)
+					{
+						prData->itemCurrentAction.at(item->itemID)="Downloading";
+						prData->itemActive.at(item->itemID)=true;
+					}
+
 
     				
 					if (item->url_list.at(j).find("file://")==0)

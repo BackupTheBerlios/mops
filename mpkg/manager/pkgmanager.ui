@@ -516,6 +516,9 @@
           <property name="selectionBehavior" >
            <enum>QAbstractItemView::SelectRows</enum>
           </property>
+          <property name="showGrid" >
+           <bool>false</bool>
+          </property>
           <column>
            <property name="text" >
             <string>Item</string>
@@ -599,14 +602,14 @@
           <item>
            <widget class="QPushButton" name="selectAllButton" >
             <property name="text" >
-             <string>Select all</string>
+             <string>Install all visible</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="deselectAllButton" >
             <property name="text" >
-             <string>Deselect all</string>
+             <string>Remove all visible</string>
             </property>
            </widget>
           </item>
@@ -696,7 +699,7 @@
       <item>
        <widget class="QPushButton" name="updateButton" >
         <property name="text" >
-         <string>Update</string>
+         <string>Update package data</string>
         </property>
        </widget>
       </item>

@@ -1,12 +1,13 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.32 2007/05/08 11:54:51 i27249 Exp $
+    $Id: config.h,v 1.33 2007/05/08 21:45:23 i27249 Exp $
 */
 
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
 #include "errorcodes.h"
-#include <string>
+//#include <string>
+include "faststl.h"
 #include <vector>
 using namespace std;
 #define CHECKFILES_PREINSTALL 1
@@ -25,7 +26,7 @@ class ProgressData
 		vector<double> itemProgress;
 		vector<double> itemProgressMaximum;
 		vector<int>itemState;
-
+		vector<bool> itemActive;
 		string currentAction;
 		int currentItem;
 
@@ -42,6 +43,12 @@ class ProgressData
 #define DB_SQLITE_LOCAL 0x01
 #define DB_REMOTE 0x02
 // Global error code definition
+struct errorMessage
+{
+	string itemName;
+	string errorHeader;
+	string errorText;
+};
 
 typedef enum {
     MPKG_OK = 0,
