@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.71 2007/05/08 11:25:03 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.72 2007/05/08 12:07:07 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -380,8 +380,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	packagelist = new PACKAGE_LIST;
 	ui.progressTable->hide();
 	// Building thread connections
-	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
-	QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
+	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
+	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
 
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()), Qt::QueuedConnection);
@@ -443,18 +443,17 @@ void MainWindow::showProgressWindow(bool flag)
 	if (flag)
 	{
 		ui.progressTable->show();
-		ui.packageTable->hide();
+		if (ui.packageTable->isVisible()) ui.packageTable->hide();
 	}
 	else
 	{
+		if (ui.progressTable->isVisible()) ui.packageTable->show();
 		ui.progressTable->hide();
-		ui.packageTable->show();
 	}
 }
 
 void MainWindow::updateProgressData()
 {
-	printf("updating from %d sources\n", pData.size());
 	double dtmp;
 	int tmp_c;
 	ui.progressTable->clearContents();

@@ -13,8 +13,8 @@ CXX           = g++
 LEX           = flex
 YACC          = yacc
 DEFINES       = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
-CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT  $(DEFINES)
-CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT  $(DEFINES)
+CFLAGS        = -pipe -O3 -march=prescott -fomit-frame-pointer -Wall -W -D_REENTRANT  $(DEFINES)
+CXXFLAGS      = -pipe -O3 -march=prescott -fomit-frame-pointer -Wall -W -D_REENTRANT  $(DEFINES)
 LEXFLAGS      = 
 YACCFLAGS     = -d
 INCPATH       = -I/usr/local/Trolltech/Qt-4.2.3/mkspecs/linux-g++ -I. -I/usr/local/Trolltech/Qt-4.2.3/include/QtCore -I/usr/local/Trolltech/Qt-4.2.3/include/QtCore -I/usr/local/Trolltech/Qt-4.2.3/include/QtGui -I/usr/local/Trolltech/Qt-4.2.3/include/QtGui -I/usr/local/Trolltech/Qt-4.2.3/include -I. -I. -I.

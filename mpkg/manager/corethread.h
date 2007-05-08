@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.19 2007/05/04 13:40:44 i27249 Exp $
+ * $Id: corethread.h,v 1.20 2007/05/08 12:07:07 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -84,6 +84,8 @@ class statusThread: public QThread
 		void halt();
 		void setPDataActive(bool flag);
 	signals:
+
+		void showProgressWindow(bool flag);
 		void setStatus(QString status);
 		void loadProgressData();
 		void enableProgressBar();
@@ -136,7 +138,6 @@ class coreThread: public QThread
 
 
 	signals:
-		void showProgressWindow(bool flag);
 		void sendCdromName(string volname);
 		void applyFilters();
 		void setStatus(QString msg);

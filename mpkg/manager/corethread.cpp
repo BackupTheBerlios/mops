@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.43 2007/05/08 11:25:03 i27249 Exp $
+ * $Id: corethread.cpp,v 1.44 2007/05/08 12:07:07 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -526,13 +526,17 @@ void statusThread::run()
 	double lastMaxProgress=0;
 	forever 
 	{
-		if (pDataActive && pData.size()>0 && pData.currentItem<pData.size())
+		if (pData.size()>0 && pData.currentItem<pData.size())
 		{
-			pData.itemProgressMaximum.at(pData.currentItem)=progressMax;
-			pData.itemProgress.at(pData.currentItem)=currentProgress;
-
-			emit loadProgressData();
+			if (pData.currentItem>=0)
+			{
+				pData.itemProgressMaximum.at(pData.currentItem)=progressMax;
+				pData.itemProgress.at(pData.currentItem)=currentProgress;
+				emit showProgressWindow(true);
+				emit loadProgressData();
+			}
 		}
+		else emit showProgressWindow(false);
 		if (!progressEnabled && !progressEnabled2)
 		{
 			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
@@ -880,7 +884,6 @@ void coreThread::commitQueue(vector<int> nStatus)
 void coreThread::_commitQueue()
 {
 	currentStatus = "Committing...";
-	emit showProgressWindow(true);
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
