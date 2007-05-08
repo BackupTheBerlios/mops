@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.56 2007/05/04 19:05:55 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.57 2007/05/08 11:25:03 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -90,7 +90,7 @@ string mpkgDatabase::get_file_md5(string filename)
 	debug("get_file_md5 start");
 	string tmp_md5=get_tmp_file();
 
-	string sys="md5sum "+filename+" > "+tmp_md5;
+	string sys="md5sum "+filename+" > "+tmp_md5 + " 2>/dev/null";
 	system(sys.c_str());
 	FILE* md5=fopen(tmp_md5.c_str(), "r");
 	if (!md5)
@@ -99,6 +99,7 @@ string mpkgDatabase::get_file_md5(string filename)
 		return "";
 	}
 	char _c_md5[1000];
+	memset(&_c_md5, 0, sizeof(_c_md5));
 	fscanf(md5, "%s", &_c_md5);
 	string md5str;
 	md5str=_c_md5;
@@ -114,7 +115,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 		return true;
 	else
 	{
-		printf("Package %s: wrong MD5: has [%s], should be [%s], %s re-downloading\n",package->get_name().c_str(), got_md5.c_str(), package->get_md5().c_str(), package->get_filename().c_str());
+		//printf("Package %s: wrong MD5: has [%s], should be [%s], %s re-downloading\n",package->get_name().c_str(), got_md5.c_str(), package->get_md5().c_str(), package->get_filename().c_str());
 		unlink(fname.c_str());
 		return false;
 	}
@@ -353,7 +354,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		if (FileExists(package->get_scripts()->get_preinstall()))
 		{
 			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_preinstall();
-			printf("preinst: %s\n", preinst.c_str());
 			system(preinst.c_str());
 		}
 	}

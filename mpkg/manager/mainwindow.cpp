@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.70 2007/05/04 19:05:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.71 2007/05/08 11:25:03 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -440,14 +440,25 @@ MainWindow::MainWindow(QMainWindow *parent)
 }
 void MainWindow::showProgressWindow(bool flag)
 {
-	if (flag) ui.progressTable->show();
-	else ui.progressTable->hide();
+	if (flag)
+	{
+		ui.progressTable->show();
+		ui.packageTable->hide();
+	}
+	else
+	{
+		ui.progressTable->hide();
+		ui.packageTable->show();
+	}
 }
 
 void MainWindow::updateProgressData()
 {
+	printf("updating from %d sources\n", pData.size());
 	double dtmp;
 	int tmp_c;
+	ui.progressTable->clearContents();
+	ui.progressTable->setRowCount(pData.size());
 	if (pData.size()>0)
 	{
 		for (int i=0; i<pData.size(); i++)

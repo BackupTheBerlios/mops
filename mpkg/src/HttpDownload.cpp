@@ -39,7 +39,8 @@ int fileLinker(std::string source, std::string output)
 	if(access(source.c_str(), R_OK)!=0) return -1;
 	
 	std::string execLine = "ln -sf "+source+" "+output;
-	return system(execLine.c_str());
+	int ret = system(execLine.c_str());
+	return ret;
 }
 
 
@@ -304,37 +305,42 @@ process:
 					if (item->url_list.at(j).find("file://")==0)
 					{
 						fclose(out);
-						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0) break;
-						else out = fopen (item->file.c_str(), "wb");
+						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0)
+						{
+							result=CURLE_OK;
+						}
+						else result=CURLE_READ_ERROR;
 					}
 					if (item->url_list.at(j).find("cdrom://")==0)
 					{
 						fclose(out);
-						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) break;
-						else out = fopen (item->file.c_str(), "wb");
+						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) result=CURLE_OK;
+						else result=CURLE_READ_ERROR;
 					}
-				
-					curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
-    					curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
- 	   				curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
-    					curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
-    					curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
-    			
-    					result = curl_easy_perform(ch);
-    					fclose(out);
-    	
-    					if ( result == CURLE_OK  ) {
-						item->status = DL_STATUS_OK;
-						if (prData->size()>0) prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
-						if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Done";
-    					break;
-    					}
-					else 
-					{
-						printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
-    				    		is_have_error = true;
-    						item->status = DL_STATUS_FAILED;
-    					}
+
+					if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
+					{	
+						curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+    						curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
+ 	   					curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
+    						curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
+    						curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
+	    					result = curl_easy_perform(ch);
+    						fclose(out);
+	    					if ( result == CURLE_OK  ) 
+						{
+							item->status = DL_STATUS_OK;
+							if (prData->size()>0) prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
+							if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Done";
+	    						break;
+    						}
+						else 
+						{
+							printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
+    				    			is_have_error = true;
+    							item->status = DL_STATUS_FAILED;
+    						}
+					}
     				}
     			}
         	}

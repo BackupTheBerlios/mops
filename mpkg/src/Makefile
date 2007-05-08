@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.35 2007/05/02 14:23:59 i27249 Exp $
+# $Id: Makefile,v 1.36 2007/05/08 11:25:03 i27249 Exp $
 #
 
 CC=gcc
@@ -53,6 +53,13 @@ lib:
 
 shared:
 	make -f Makefile.installpkg
+
+init:
+	mkdir -p /var/log/mpkg/scripts
+	mkdir -p /root/development/sys_cache
+	cp mpkg.xml /etc/
+	cp ../manager/groups.xml /etc/mpkg-groups.xml
+	cp ../sql/packages.db /var/log/mpkg/
 
 install:
 	cp libmpkg.so /usr/local/lib/
