@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.57 2007/05/08 11:25:03 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.58 2007/05/08 11:54:51 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -262,6 +262,7 @@ int mpkgDatabase::commit_actions()
 	}
 installProcess:
 
+	pData.clear();
 	progressEnabled2 = false;
 	debug("Calling INSTALL");
 

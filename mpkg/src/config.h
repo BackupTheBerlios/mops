@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.31 2007/05/04 13:40:44 i27249 Exp $
+    $Id: config.h,v 1.32 2007/05/08 11:54:51 i27249 Exp $
 */
 
 
@@ -24,16 +24,18 @@ class ProgressData
 		vector<string> itemCurrentAction;
 		vector<double> itemProgress;
 		vector<double> itemProgressMaximum;
-		string currentAction;
-		double getTotalProgress();
-		double getTotalProgressMax();
 		vector<int>itemState;
+
+		string currentAction;
 		int currentItem;
 
 		ProgressData();
 		~ProgressData();
 		int addItem(string iName, double maxProgress, int iState=ITEMSTATE_WAIT);
+		double getTotalProgress();
+		double getTotalProgressMax();
 		unsigned int size();
+		void clear();
 };
 	
 // Database type definitions
