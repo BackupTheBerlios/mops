@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.25 2007/05/08 21:45:23 i27249 Exp $
+ * $Id: config.cpp,v 1.26 2007/05/09 17:46:49 i27249 Exp $
  *
  * ***************************************************/
 
@@ -54,6 +54,7 @@ int ProgressData::addItem(string iName, double maxProgress, int iState)
 	itemCurrentAction.push_back("waiting");
 	itemActive.push_back(false);
 	itemProgress.push_back(0);
+	idleTime.push_back(0);
 	itemProgressMaximum.push_back(maxProgress);
 	itemState.push_back(iState);
 	return itemName.size()-1;

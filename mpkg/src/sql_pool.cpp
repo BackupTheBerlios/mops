@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.23 2007/04/27 00:59:14 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.24 2007/05/09 17:46:49 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -42,19 +42,21 @@ int SQLiteDB::clear_table(string table_name)
 	string exec = "delete from "+table_name+";";
 	return sql_exec(exec);
 }
-
+int get_sql_table_counter=0;
 RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
 #ifdef _SQL_DEBUG_
 	debug("get_sql_table:");
 	printf("%s\n", sql_query->c_str());
 #endif
+	get_sql_table_counter++;
 	char *errmsg=0;
 	mpkgErrorReturn errRet;
 	int query_return;
 	//printf("CONVERSION\n");
 	const char *qqq = sql_query->c_str();
-	//printf("CALL to GET_TABLE\n");
+	//printf("COUNT=%d\n",get_sql_table_counter);
+	//printf("CALL to GET_TABLE, length=%d\n", sql_query->size());
 	query_return=sqlite3_get_table(db, qqq, table, rows, cols, &errmsg);
 	//printf("END\n");
 	if (query_return!=SQLITE_OK) // Means error

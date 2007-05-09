@@ -326,6 +326,8 @@ process:
 						{
 							prData->itemCurrentAction.at(item->itemID)="Downloading";
 							prData->itemActive.at(item->itemID)=true;
+							prData->itemState.at(item->itemID)=ITEMSTATE_INPROGRESS;
+
 						}
 						out = fopen (item->file.c_str(), "wb");
 						if ( out == NULL )
@@ -346,12 +348,18 @@ process:
 	    					if ( result == CURLE_OK  ) 
 						{
 							item->status = DL_STATUS_OK;
-							if (prData->size()>0) prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
-							if (prData->size()>0) prData->itemCurrentAction.at(item->itemID)="Done";
+							if (prData->size()>0)
+							{
+								prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
+								prData->itemCurrentAction.at(item->itemID)="Done";
+								prData->itemState.at(item->itemID)=ITEMSTATE_FINISHED;
+							}
 	    						break;
     						}
 						else 
 						{
+							if (prData->size()>0) prData->itemState.at(item->itemID)=ITEMSTATE_FAILED;
+
 							printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
     				    			is_have_error = true;
     							item->status = DL_STATUS_FAILED;

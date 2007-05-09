@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.74 2007/05/09 01:30:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.75 2007/05/09 17:46:49 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -472,7 +472,8 @@ void MainWindow::updateProgressData()
 	{
 		for (int i=0; i<pData.size(); i++)
 		{
-			if (pData.itemActive.at(i))
+			if (pData.itemState.at(i)==ITEMSTATE_FINISHED) pData.idleTime.at(i)++; 
+			if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<100)
 			{
 				if (pData.size()>0) ui.progressTable->setItem(tablePos,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
 				if (pData.size()>0) ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.37 2007/04/27 23:50:15 i27249 Exp $
+ *	$Id: core.cpp,v 1.38 2007/05/09 17:46:49 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -465,7 +465,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	return 0;
 }
 
-int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo)
+int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
 	debug("get_packagelist start");
 	SQLTable sqlTable;
@@ -508,8 +508,11 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		}
 		package.sync();
 		get_locationlist(package.get_id(), package.get_locations());
-		get_dependencylist(package.get_id(), package.get_dependencies());
-		get_taglist(package.get_id(), package.get_tags());
+		if (!ultraFast)
+		{
+			get_dependencylist(package.get_id(), package.get_dependencies());
+			get_taglist(package.get_id(), package.get_tags());
+		}
 #ifdef ENABLE_INTERNATIONAL
 		
 		debug("description list...");
