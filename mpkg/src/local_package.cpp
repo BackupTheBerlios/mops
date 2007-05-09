@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.38 2007/05/03 12:20:46 i27249 Exp $
+$Id: local_package.cpp,v 1.39 2007/05/09 01:30:44 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -516,13 +516,17 @@ int LocalPackage::get_size()
 {
 	debug("get_size start");
 	string tmp=get_tmp_file();
-	string sys="gzip -l "+filename+" > "+tmp;
-	system(sys.c_str());
+	string sys="gzip -l "+filename+" > "+tmp + " 2>/dev/null";
+	if (system(sys.c_str())!=0)
+	{
+		printf("Error: zero-length package %s\n", filename.c_str());
+		return -2;
+	}
 	FILE *zdata=fopen(tmp.c_str(), "r");
 	if (!zdata)
 	{
 		printf(_("Unable to extract size of package\n"));
-		return 1;
+		return -1;
 	}
 	char c_size[40000]; //FIXME: Overflow are possible here
 	char i_size[40000]; //FIXME: Same problem
@@ -533,7 +537,7 @@ int LocalPackage::get_size()
 		if (fscanf(zdata, "%s", &c_size)==EOF)
 		{
 			printf("Unexcepted EOF while reading gzip data\n");
-			return 1;
+			return -1;
 		}
 	}
 	fscanf(zdata, "%s", &i_size);

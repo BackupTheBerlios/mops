@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.73 2007/05/08 21:45:22 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.74 2007/05/09 01:30:44 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -458,11 +458,14 @@ void MainWindow::updateProgressData()
 	int tmp_c;
 	ui.progressTable->clearContents();
 	int totalCount=0;
+//	int startPos=0;
+//	int endPos=0;
+//	int currentItem
 	for (int i=0; i<pData.size(); i++)
 	{
 		if (pData.itemActive.at(i)) totalCount++;
 	}
-	ui.progressTable->setRowCount(totalCount);
+	ui.progressTable->setRowCount(pData.size());
 
 	int tablePos = 0;
 	if (pData.size()>0)
@@ -471,10 +474,10 @@ void MainWindow::updateProgressData()
 		{
 			if (pData.itemActive.at(i))
 			{
-				ui.progressTable->setItem(tablePos,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
-				ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
+				if (pData.size()>0) ui.progressTable->setItem(tablePos,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
+				if (pData.size()>0) ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
 				QProgressBar *pBar = new QProgressBar;
-				dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
+				if (pData.size()>0) dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
 				tmp_c = (int) dtmp;
 
 				pBar->setMaximum(100);

@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.33 2007/05/08 21:45:23 i27249 Exp $
+    $Id: config.h,v 1.34 2007/05/09 01:30:44 i27249 Exp $
 */
 
 
@@ -7,7 +7,7 @@
 #define CONFIG_H_
 #include "errorcodes.h"
 //#include <string>
-include "faststl.h"
+#include "faststl.h"
 #include <vector>
 using namespace std;
 #define CHECKFILES_PREINSTALL 1
@@ -38,7 +38,33 @@ class ProgressData
 		unsigned int size();
 		void clear();
 };
+
+struct ItemStatusData
+{
+	string itemName;
+	string currentAction;
+	int progress;
+	int maximumProgress;
+};
+
+class ActionBus
+{
+	public:
 	
+	string globalActionName;
+	vector<ItemStatusData> items;
+	
+	ActionBus();
+	~ActionBus();
+
+	int totalProgress();
+	int pending();
+	int completed();
+	int size();
+	bool idle();
+	int currentProcessing();
+};
+extern ActionBus actionBus;
 // Database type definitions
 #define DB_SQLITE_LOCAL 0x01
 #define DB_REMOTE 0x02

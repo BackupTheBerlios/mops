@@ -36,10 +36,11 @@ static int downloadCallback(void *clientp,
 
 int fileLinker(std::string source, std::string output)
 {
-	if(access(source.c_str(), R_OK)!=0) return -1;
-	
-	std::string execLine = "ln -sf "+source+" "+output;
-	int ret = system(execLine.c_str());
+	//if(access(source.c_str(), R_OK)!=0) return -1;
+	unlink(output.c_str());
+	int ret = symlink(source.c_str(), output.c_str());
+	//std::string execLine = "ln -sf "+source+" "+output;
+	//int ret = system(execLine.c_str());
 	return ret;
 }
 
@@ -278,16 +279,10 @@ process:
 
 
 		if ( item->status == DL_STATUS_WAIT ) {
-			dir = "mkdir -p " + item->file.substr(0,item->file.find_last_of("/"));
-			system(dir.c_str());
+//			dir = "mkdir -p " + item->file.substr(0,item->file.find_last_of("/"));
+//			system(dir.c_str());
 
-			out = fopen (item->file.c_str(), "wb");
-			if ( out == NULL ) {
-				fprintf(stderr, "open target file failed");
-				item->status = DL_STATUS_FILE_ERROR;
-				is_have_error = true;
-			} 
-			else 
+			//TODO else 
 			{
 		        	if (item->url_list.size()==0)
 				{
@@ -298,33 +293,49 @@ process:
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-					printf("Downloading %s\n", item->url_list.at(j).c_str());
+				/*	printf("Downloading %s\n", item->url_list.at(j).c_str());
 					if (prData->size()>0)
 					{
 						prData->itemCurrentAction.at(item->itemID)="Downloading";
 						prData->itemActive.at(item->itemID)=true;
 					}
-
+*/
 
     				
 					if (item->url_list.at(j).find("file://")==0)
 					{
-						fclose(out);
+						//fclose(out);
 						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0)
 						{
 							result=CURLE_OK;
 						}
 						else result=CURLE_READ_ERROR;
 					}
+					else
 					if (item->url_list.at(j).find("cdrom://")==0)
 					{
-						fclose(out);
+						//fclose(out);
 						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) result=CURLE_OK;
 						else result=CURLE_READ_ERROR;
 					}
 
-					if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
+					else if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
 					{	
+						printf("Downloading %s\n", item->url_list.at(j).c_str());
+						if (prData->size()>0)
+						{
+							prData->itemCurrentAction.at(item->itemID)="Downloading";
+							prData->itemActive.at(item->itemID)=true;
+						}
+						out = fopen (item->file.c_str(), "wb");
+						if ( out == NULL )
+						{
+							fprintf(stderr, "open target file failed");
+							item->status = DL_STATUS_FILE_ERROR;
+							is_have_error = true;
+						}
+
+
 						curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     						curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   					curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);

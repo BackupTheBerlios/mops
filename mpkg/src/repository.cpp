@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.34 2007/05/03 14:18:00 i27249 Exp $
+ * $Id: repository.cpp,v 1.35 2007/05/09 01:30:44 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -514,10 +514,18 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
 	if (rebuild)
 	{
-		system("gunzip packages.xml.gz");
-		XMLNode tmpNode = XMLNode::parseFile("packages.xml.gz", "repository");
-		server_url = (string) tmpNode.getAttributeValue(0);
-		server_name = (string) tmpNode.getAttributeValue(1);
+		if (system("gunzip packages.xml.gz")!=0)
+		{
+			printf("No previous index found, using defaults\n");
+			server_url="no_url";
+			server_name="no_name";
+		}
+		else
+		{
+			XMLNode tmpNode = XMLNode::parseFile("packages.xml", "repository");
+			server_url = (string) tmpNode.getAttributeValue(0);
+			server_name = (string) tmpNode.getAttributeValue(1);
+		}
 	}	
 	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.

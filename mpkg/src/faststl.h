@@ -2,8 +2,9 @@
 #ifndef FASTSTL_H_
 #define FASTSTL_H_
 #include <stdio.h>
-
-class string
+#include <string>
+using namespace std;
+/*class string
 {
 	private:
 		char *data;
@@ -28,7 +29,7 @@ class string
 		void push_back(char c);
 		void clear();
 		bool empty();
-};
+};*/
 
 
 
