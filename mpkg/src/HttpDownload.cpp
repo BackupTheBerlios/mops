@@ -23,14 +23,18 @@ HttpDownload::HttpDownload()
 	double *extItemTotal;
 	double *extItemNow;
 
+	ProgressData *ppData;
+	int currentItemID;
 static int downloadCallback(void *clientp,
                        double dltotal,
                        double dlnow,
                        double ultotal,
                        double ulnow)
 {
-	*extDlTotal = dltotal;
-	*extDlNow = dlnow;
+	ppData->setItemProgress(currentItemID, dlnow);
+	ppData->setItemProgressMaximum(currentItemID, dltotal);
+	//*extDlTotal = dltotal;
+	//*extDlNow = dlnow;
 	return 0;
 }
 
@@ -169,13 +173,14 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	string name;
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
-	int currentItem;
+	int currentItem=0;
 	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint, &z);
 	
 }
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint, ProgressData *prData)
 {
+	ppData=prData;
 	if (list.empty()) 
 	{
 		return DOWNLOAD_OK;
@@ -272,10 +277,11 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 process:
 		item = &(list.at(i));
 		*itemname = item->name;
-		if (prData->size()>0)
+		currentItemID=item->itemID;
+		/*if (prData->size()>0)
 		{
 			prData->currentItem=item->itemID;
-		}
+		}*/
 
 
 		if ( item->status == DL_STATUS_WAIT ) {
@@ -324,9 +330,9 @@ process:
 						printf("Downloading %s\n", item->url_list.at(j).c_str());
 						if (prData->size()>0)
 						{
-							prData->itemCurrentAction.at(item->itemID)="Downloading";
-							prData->itemActive.at(item->itemID)=true;
-							prData->itemState.at(item->itemID)=ITEMSTATE_INPROGRESS;
+							prData->setItemCurrentAction(item->itemID, "Downloading");
+							//prData->setItemActive.at(item->itemID)=true;
+							prData->setItemState(item->itemID,ITEMSTATE_INPROGRESS);
 
 						}
 						out = fopen (item->file.c_str(), "wb");
@@ -353,15 +359,15 @@ process:
 							item->status = DL_STATUS_OK;
 							if (prData->size()>0)
 							{
-								prData->itemProgress.at(item->itemID)=prData->itemProgressMaximum.at(item->itemID);
-								prData->itemCurrentAction.at(item->itemID)="Done";
-								prData->itemState.at(item->itemID)=ITEMSTATE_FINISHED;
+								prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
+								prData->setItemCurrentAction(item->itemID, "Downloading finished");
+								prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
 							}
 	    						break;
     						}
 						else 
 						{
-							if (prData->size()>0) prData->itemState.at(item->itemID)=ITEMSTATE_FAILED;
+							if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
 
 							printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
     				    			is_have_error = true;

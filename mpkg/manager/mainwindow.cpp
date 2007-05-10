@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.76 2007/05/10 02:39:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.77 2007/05/10 14:28:13 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -338,9 +338,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	ErrorBus = new errorBus;
 	QObject::connect(this, SIGNAL(startErrorBus()), ErrorBus, SLOT(Start()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)));
 	QObject::connect(ErrorBus, SIGNAL(sendErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), \
-				this, SLOT(showErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), Qt::QueuedConnection);
+				this, SLOT(showErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)));
 
 
 	emit startErrorBus();
@@ -380,7 +380,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	qRegisterMetaType<string>("string");
 	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
 	qRegisterMetaType< vector<int> >("vector<int>");
-	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()), Qt::QueuedConnection);
+	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
 	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
@@ -391,53 +391,53 @@ MainWindow::MainWindow(QMainWindow *parent)
 	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
 	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
-	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
+	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
+	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()));
 	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
-	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
+	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
+	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
+	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
+	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
+	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
 	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
-	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
+	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()));
+	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)));
+	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)));
+	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)));
+	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
 	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
 	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
 
-	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()));
+	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
+	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)));
 	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)), Qt::QueuedConnection);
+	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()));
+	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()));
+	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)));
+	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
+	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
+	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
 
-	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)), Qt::QueuedConnection);
-	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()), Qt::QueuedConnection);
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()));
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()));
+	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)));
+	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)));
+	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()));
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
 	prefBox = new PreferencesBox(mDb);
 		//ui.statusbar->addWidget(indicator);
 
-	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()), Qt::QueuedConnection);
-	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string)),Qt::QueuedConnection); 
+	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
+	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
 
 	// Wait threads to start
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
@@ -472,34 +472,46 @@ void MainWindow::updateProgressData()
 	double dtmp;
 	int tmp_c;
 	ui.progressTable->clearContents();
-	int totalCount=0;
-//	int startPos=0;
-//	int endPos=0;
-//	int currentItem
-	if (pData.size()<20) totalCount=pData.size();
-	else for (int i=0; i<pData.size(); i++)
+	int totalCount=pData.size();
+	int totalVisible=0;
+	for (int i=0; i<pData.size(); i++)
 	{
-		if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<1000 ) totalCount++;
+		if (pData.getItemState(i)!=ITEMSTATE_WAIT ) totalVisible++;
 	}
+	printf("totalVisible=%d\n", totalVisible);
 	ui.progressTable->setRowCount(totalCount);
+	ui.progressTable->setColumnWidth(0,100);
+	ui.progressTable->setColumnWidth(1,100);
+	ui.progressTable->setColumnWidth(2,400);
 
 	int tablePos = 0;
 	bool showIt;
+	bool updateIt;
+	bool keepCount;
 	if (pData.size()>0)
 	{
 		for (int i=0; i<pData.size(); i++)
 		{
-			showIt=false;
-			if (pData.size()<20) showIt=true;
-			if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<1000) showIt=true;
+			tablePos=i;
+			//ui.packageTable->setRowHidden(i, true);
 
-			if (pData.itemState.at(i)==ITEMSTATE_FINISHED) pData.idleTime.at(i)++; 
+			showIt=false;
+			updateIt=false;
+			keepCount=false;
+			if (pData.getIdleTime(i)>10 && totalVisible>5) keepCount=true;
+			if (pData.getItemState(i)!=ITEMSTATE_WAIT && !keepCount) showIt=true;
+
+			if (pData.getItemState(i)==ITEMSTATE_FINISHED) pData.increaseIdleTime(i); 
+			
 			if (showIt)
 			{
+				ui.progressTable->setRowHidden(tablePos, false);
+				pData.setItemUnchanged(i);
+				
 				QTableWidgetItem *__name = new QTableWidgetItem;
-				__name->setText(pData.itemName.at(i).c_str());
-				if (pData.size()>0)
-				switch (pData.itemState.at(i))
+				__name->setText(pData.getItemName(i).c_str());
+				
+				switch (pData.getItemState(i))
 				{
 					case ITEMSTATE_INPROGRESS:
 						__name->setIcon(QIcon(QString::fromUtf8("/opt/kde/share/icons/crystalsvg/32x32/apps/kget.png")));
@@ -512,34 +524,28 @@ void MainWindow::updateProgressData()
 						break;
 				}
 				
-				if (pData.size()>0) ui.progressTable->setItem(tablePos,0, __name);
-				if (pData.size()>0) ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
-				/*if (pData.itemState.at(i)==ITEMSTATE_FINISHED)
-				{
-					QTableWidgetItem *__item = new QTableWidgetItem;
-			    		__item->setText("Complete");
-    					ui.progressTable->itemAt(tablePos, 0)->setIcon(QIcon(QString::fromUtf8("icons/installed.png")));
-
-					ui.progressTable->setItem(tablePos, 2, __item);
-
-				}
-				if (pData.itemState.at(i)==ITEMSTATE_FAILED)
-				{
-					ui.progressTable->setItem(tablePos, 2, new QTableWidgetItem("Failed"));
-				}*/
-				if (pData.itemState.at(i)==ITEMSTATE_INPROGRESS)
+				ui.progressTable->setItem(tablePos,0, __name);
+				ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.getItemCurrentAction(i).c_str()));
+				
+				if (pData.getItemState(i)==ITEMSTATE_INPROGRESS)
 				{
 					QProgressBar *pBar = new QProgressBar;
-					if (pData.size()>0) dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
+					if (pData.size()>0) dtmp = 100 * (pData.getItemProgress(i)/pData.getItemProgressMaximum(i));
 					tmp_c = (int) dtmp;
 
 					pBar->setMaximum(100);
 					pBar->setValue(tmp_c);
 					ui.progressTable->setCellWidget(tablePos,2,pBar);
 				}
+				else
+				{
+					ui.progressTable->setItem(tablePos, 2, new QTableWidgetItem(""));
+				}
 				ui.progressTable->setRowHeight(tablePos,20);
-				tablePos++;
 			}
+			else ui.progressTable->setRowHidden(tablePos, true);
+
+			tablePos++;
 		}
 	}
 	emit redrawReady(true);

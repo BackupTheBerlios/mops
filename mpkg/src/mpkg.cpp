@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.59 2007/05/10 02:39:08 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.60 2007/05/10 14:28:13 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -297,33 +297,32 @@ installProcess:
 		}
 		currentProgress = i;
 	}
-	pData.currentAction="Installing...";
+	pData.setCurrentAction("Installing...");
 	int installItemID;
 	for (int i=0; i<install_list.size(); i++)
 	{
 
 		installItemID=install_list.get_package(i)->itemID;
-		pData.itemState.at(installItemID)=ITEMSTATE_WAIT;
-		pData.itemCurrentAction.at(installItemID)="Waiting";
-		pData.itemActive.at(installItemID)=false;
-		pData.idleTime.at(installItemID)=0;
-		pData.itemProgress.at(installItemID)=0;
-		pData.itemProgressMaximum.at(installItemID)=9;
+		pData.setItemState(installItemID, ITEMSTATE_WAIT);
+		pData.setItemCurrentAction(installItemID, "Waiting");
+		pData.resetIdleTime(installItemID);
+		pData.setItemProgress(installItemID, 0);
+		pData.setItemProgressMaximum(installItemID,8);
 	}
 	for (int i=0;i<install_list.size();i++)
 	{
-		pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_INPROGRESS;
+		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 		currentStatus = "Installing package " + install_list.get_package(i)->get_name();
 		currentProgress = i;
 		if (install_package(install_list.get_package(i))!=0)
 		{
-			pData.itemCurrentAction.at(install_list.get_package(i)->itemID)="Installation failed";
-			pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_FAILED;
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 		}
 		else
 		{
-			pData.itemCurrentAction.at(install_list.get_package(i)->itemID)="Installed";
-			pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_FINISHED;
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installed");
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 		}
 	}
 	progressEnabled = false;
@@ -336,7 +335,7 @@ installProcess:
 int mpkgDatabase::install_package(PACKAGE* package)
 {
 
-	pData.itemCurrentAction.at(package->itemID)="installing";
+	pData.setItemCurrentAction(package->itemID, "installing");
 	printf("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
 	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
@@ -352,21 +351,23 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		no_purge=false;
 	}
 	currentStatus = statusHeader + "extracting installation scripts";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
 	//printf("%s\n", currentStatus.c_str());
 	lp.fill_scripts(package);
 	currentStatus = statusHeader + "extracting file list";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 	lp.fill_filelist(package);
 	currentStatus = statusHeader + "detecting configuration files";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
 
 	lp.fill_configfiles(package);
 	
 	if (fileConflictChecking==CHECKFILES_PREINSTALL) 
 	{
 		currentStatus = statusHeader + "checking file conflicts";
-		pData.itemProgress.at(package->itemID)++;
+		pData.increaseItemProgress(package->itemID);
+
 	}
 
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
@@ -378,14 +379,16 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 	currentStatus = statusHeader + "installing...";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 
 // Filtering file list...
 	FILE_LIST package_files;
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	debug("Preparing scripts");
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
@@ -399,7 +402,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	// Extracting package
 	currentStatus = statusHeader + "extracting...";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 
 	debug("calling extract");
 	string sys_cache=SYS_CACHE;
@@ -450,7 +454,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		currentStatus = "Failed to extract!";
 		return -10;
 	}
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 
 	
 	// Creating and running POST-INSTALL script
@@ -468,7 +473,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	set_action(package->get_id(), ST_NONE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	//currentStatus = statusHeader + "successfully installed!";
-	pData.itemProgress.at(package->itemID)++;
+	pData.increaseItemProgress(package->itemID);
+
 
 	return 0;
 }	//End of install_package

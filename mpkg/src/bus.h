@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.3 2007/05/10 02:39:08 i27249 Exp $
+ * $Id: bus.h,v 1.4 2007/05/10 14:28:13 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -14,28 +14,59 @@ using namespace std;
 #define ITEMSTATE_INPROGRESS 1
 #define ITEMSTATE_FINISHED 2
 #define ITEMSTATE_FAILED 3
+
+#define IDLE_MAX 500
+
 class ProgressData
 {
 	public:
 		//static void setProgress(unsigned int itemNum, double progress);
 		//static void setProgressMaximum(unsigned int itemNum, double progress);
+		void setItemName(int itemID, string name);
+		void setItemCurrentAction(int itemID, string action);
+		void setItemProgress(int itemID, double progress);
+		void increaseItemProgress(int itemID);
+		void setItemProgressMaximum(int itemID, double progress);
+		void setItemState(int itemID, int state);
+		void increaseIdleTime(int itemID);
+		void resetIdleTime(int itemID);
+		int getIdleTime(int itemID);
+		bool itemUpdated(int itemID);
+		void setItemChanged(int itemID);
+		void setItemUnchanged(int itemID);
+
+		int addItem(string iName, double maxProgress, int iState=ITEMSTATE_WAIT);
+
+
+		string getItemName(int itemID);
+		string getItemCurrentAction(int itemID);
+		double getItemProgress(int itemID);
+		double getItemProgressMaximum(int itemID);
+		int getItemState(int itemID);
+		double getTotalProgress();
+		double getTotalProgressMax();
+		unsigned int size();
+		void clear();
+
+		string getCurrentAction();
+		void setCurrentAction(string action);
+		ProgressData();
+		~ProgressData();
+
+		bool downloadAction;
+
+
+	private:
 		vector<string> itemName;
 		vector<string> itemCurrentAction;
 		vector<double> itemProgress;
 		vector<double> itemProgressMaximum;
 		vector<int>itemState;
-		vector<bool> itemActive;
-		string currentAction;
-		bool downloadAction;
-		int currentItem;
+		vector<unsigned int >itemChanged;
+		
 		vector<int> idleTime;
-		ProgressData();
-		~ProgressData();
-		int addItem(string iName, double maxProgress, int iState=ITEMSTATE_WAIT);
-		double getTotalProgress();
-		double getTotalProgressMax();
-		unsigned int size();
-		void clear();
+		
+		string currentAction;
 };
 
 struct ItemState

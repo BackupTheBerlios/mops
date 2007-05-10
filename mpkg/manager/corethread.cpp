@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.46 2007/05/10 02:39:08 i27249 Exp $
+ * $Id: corethread.cpp,v 1.47 2007/05/10 14:28:13 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -527,23 +527,23 @@ void statusThread::run()
 	double dtmp, dtmp2;
 	//int tmp_t, tmp_t2;
 	string dlStatus;
-	double lastMaxProgress=0;
 	forever 
 	{
-		if (pData.size()>0 && pData.currentItem<pData.size() && redrawReady)
+		if (pData.size()>0 && redrawReady)
 		{
-			if (pData.currentItem>=0)
-			{
-				if (pData.downloadAction)
+			//if (pData.currentItem>=0)
+			//{
+			/*	if (pData.downloadAction)
 				{
 					pData.itemProgressMaximum.at(pData.currentItem)=dlProgressMax;
 					pData.itemProgress.at(pData.currentItem)=dlProgress;
 				}
+				*/
 				emit showProgressWindow(true);
 				emit loadProgressData();
-			}
+			//}
 		}
-		else emit showProgressWindow(false);
+		if (pData.size()==0) emit showProgressWindow(false);
 	/*	if (!progressEnabled && !progressEnabled2)
 		{
 			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
