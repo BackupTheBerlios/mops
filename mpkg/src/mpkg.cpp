@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.58 2007/05/08 11:54:51 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.59 2007/05/10 02:39:08 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -234,7 +234,8 @@ int mpkgDatabase::commit_actions()
 		do_download = false;
 		progressEnabled = true;
 		progressEnabled2 = true;
-		if (CommonGetFileEx(downloadQueue, &currentProgress, &progressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
+		pData.downloadAction=true;
+		if (CommonGetFileEx(downloadQueue, &dlProgress, &dlProgressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
 		{
 			printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
 			errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
@@ -260,12 +261,12 @@ int mpkgDatabase::commit_actions()
 		}
 	
 	}
+	pData.downloadAction=false;
 installProcess:
 
-	pData.clear();
-	progressEnabled2 = false;
+	progressEnabled = true;
 	debug("Calling INSTALL");
-
+	bool hasErrors=false;
 	currentStatus = "Checking files (comparing MD5):";
 	for (int i=0; i<install_list.size(); i++)
 	{
@@ -296,14 +297,37 @@ installProcess:
 		}
 		currentProgress = i;
 	}
+	pData.currentAction="Installing...";
+	int installItemID;
+	for (int i=0; i<install_list.size(); i++)
+	{
 
+		installItemID=install_list.get_package(i)->itemID;
+		pData.itemState.at(installItemID)=ITEMSTATE_WAIT;
+		pData.itemCurrentAction.at(installItemID)="Waiting";
+		pData.itemActive.at(installItemID)=false;
+		pData.idleTime.at(installItemID)=0;
+		pData.itemProgress.at(installItemID)=0;
+		pData.itemProgressMaximum.at(installItemID)=9;
+	}
 	for (int i=0;i<install_list.size();i++)
 	{
+		pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_INPROGRESS;
 		currentStatus = "Installing package " + install_list.get_package(i)->get_name();
 		currentProgress = i;
-		if (install_package(install_list.get_package(i))!=0) return -7;
+		if (install_package(install_list.get_package(i))!=0)
+		{
+			pData.itemCurrentAction.at(install_list.get_package(i)->itemID)="Installation failed";
+			pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_FAILED;
+		}
+		else
+		{
+			pData.itemCurrentAction.at(install_list.get_package(i)->itemID)="Installed";
+			pData.itemState.at(install_list.get_package(i)->itemID)=ITEMSTATE_FINISHED;
+		}
 	}
 	progressEnabled = false;
+	progressEnabled2=false;
 	currentStatus = "Installation complete.";
 	return 0;
 }
@@ -311,6 +335,8 @@ installProcess:
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
+
+	pData.itemCurrentAction.at(package->itemID)="installing";
 	printf("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
 	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
@@ -326,14 +352,23 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		no_purge=false;
 	}
 	currentStatus = statusHeader + "extracting installation scripts";
+	pData.itemProgress.at(package->itemID)++;
 	//printf("%s\n", currentStatus.c_str());
 	lp.fill_scripts(package);
 	currentStatus = statusHeader + "extracting file list";
+	pData.itemProgress.at(package->itemID)++;
 	lp.fill_filelist(package);
 	currentStatus = statusHeader + "detecting configuration files";
+	pData.itemProgress.at(package->itemID)++;
+
 	lp.fill_configfiles(package);
-	currentStatus = statusHeader + "checking file conflicts";
 	
+	if (fileConflictChecking==CHECKFILES_PREINSTALL) 
+	{
+		currentStatus = statusHeader + "checking file conflicts";
+		pData.itemProgress.at(package->itemID)++;
+	}
+
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
 		currentStatus = "File conflict on package "+package->get_name();
@@ -343,12 +378,15 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	
 	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 	currentStatus = statusHeader + "installing...";
+	pData.itemProgress.at(package->itemID)++;
+
 // Filtering file list...
 	FILE_LIST package_files;
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	debug("Preparing scripts");
-	
+	pData.itemProgress.at(package->itemID)++;
+
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
 		currentStatus = statusHeader + "executing pre-install scripts";
@@ -361,6 +399,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	// Extracting package
 	currentStatus = statusHeader + "extracting...";
+	pData.itemProgress.at(package->itemID)++;
+
 	debug("calling extract");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
@@ -410,6 +450,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		currentStatus = "Failed to extract!";
 		return -10;
 	}
+	pData.itemProgress.at(package->itemID)++;
+
 	
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
@@ -425,7 +467,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	set_configexist(package->get_id(), ST_CONFIGEXIST);
 	set_action(package->get_id(), ST_NONE);
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
-	currentStatus = statusHeader + "successfully installed!";
+	//currentStatus = statusHeader + "successfully installed!";
+	pData.itemProgress.at(package->itemID)++;
+
 	return 0;
 }	//End of install_package
 
@@ -589,6 +633,39 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
 }	// End of remove_package
+
+int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
+{
+	printf("delete_packages call\n");
+	if (pkgList->IsEmpty())
+	{
+		printf("deleting empty list?\n");
+		return 0;
+	}
+	SQLRecord sqlSearch;
+	sqlSearch.setSearchMode(SEARCH_OR);
+	for (int i=0; i<pkgList->size(); i++)
+	{
+		sqlSearch.addField("package_id", IntToStr(pkgList->get_package(i)->get_id()));
+	}
+	printf("sqlSearch size = %d\n", sqlSearch.size());
+	db.sql_delete("packages", sqlSearch);
+	sqlSearch.clear();
+	for (int i=0; i<pkgList->size(); i++)
+	{
+		sqlSearch.addField("packages_package_id", IntToStr(pkgList->get_package(i)->get_id()));
+	}
+	db.sql_delete("tags_links", sqlSearch);
+	db.sql_delete("dependencies", sqlSearch);
+#ifdef ENABLE_INTERNATIONAL
+	db.sql_delete("descriptions", sqlSearch);
+	db.sql_delete("changelogs", sqlSearch);
+	db.sql_delete("ratings", sqlSearch);
+#endif
+	return 0;
+}
+
+
 
 int mpkgDatabase::cleanFileList(int package_id)
 {
@@ -774,6 +851,21 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 		if (pkgList->get_package(i)->newPackage) add_package_record(pkgList->get_package(i));
 		else add_locationlist_record(pkgList->get_package(i)->get_id(), pkgList->get_package(i)->get_locations());
 	}
+
+	// Дополнение от 10 мая 2007 года: сносим нафиг все недоступные пакеты, которые не установлены. Нечего им болтаться в базе.
+	PACKAGE_LIST allList;
+	SQLRecord sqlSearch;
+	get_packagelist(sqlSearch, &allList, false);
+	PACKAGE_LIST deleteQueue;
+	for (int i=0; i<allList.size(); i++)
+	{
+		if (!allList.get_package(i)->reachable(true))
+		{
+			deleteQueue.add(*allList.get_package(i));
+		}
+	}
+	if (!deleteQueue.IsEmpty()) delete_packages(&deleteQueue);
 	return 0;
+
 }
 

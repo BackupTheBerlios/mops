@@ -336,15 +336,18 @@ process:
 							item->status = DL_STATUS_FILE_ERROR;
 							is_have_error = true;
 						}
+						else
+						{
 
 
-						curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
-    						curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
- 	   					curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
-    						curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
-    						curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
-	    					result = curl_easy_perform(ch);
-    						fclose(out);
+							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
+    							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
+ 	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
+    							curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
+    							curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
+	    						result = curl_easy_perform(ch);
+    							fclose(out);
+						}
 	    					if ( result == CURLE_OK  ) 
 						{
 							item->status = DL_STATUS_OK;

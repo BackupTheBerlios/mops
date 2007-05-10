@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.26 2007/05/09 17:46:49 i27249 Exp $
+ * $Id: config.cpp,v 1.27 2007/05/10 02:39:08 i27249 Exp $
  *
  * ***************************************************/
 
@@ -12,14 +12,6 @@ mpkgErrorReturn errorReturn;
 bool consoleMode=true;
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
-string currentStatus;
-string currentItem;
-double currentProgress2;
-double progressMax2;
-bool progressEnabled2 = false;
-double currentProgress;
-double progressMax;
-bool progressEnabled = false;
 string SYS_ROOT;
 string SYS_CACHE;
 string SCRIPTS_DIR;
@@ -27,7 +19,6 @@ unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
 vector<string> DISABLED_REPOSITORY_LIST;
-ProgressData pData;
 #ifndef HTTP_LIB
 string CDROM_DEVICE;// = "/dev/hda";
 string CDROM_MOUNTPOINT;// = "/mnt/cdrom";
@@ -39,60 +30,6 @@ string CDROM_DEVICENAME;
 string DL_CDROM_DEVICE;
 string DL_CDROM_MOUNTPOINT;
 #endif
-
-
-ProgressData::ProgressData()
-{
-	currentItem=0;
-}
-
-ProgressData::~ProgressData(){}
-
-int ProgressData::addItem(string iName, double maxProgress, int iState)
-{
-	itemName.push_back(iName);
-	itemCurrentAction.push_back("waiting");
-	itemActive.push_back(false);
-	itemProgress.push_back(0);
-	idleTime.push_back(0);
-	itemProgressMaximum.push_back(maxProgress);
-	itemState.push_back(iState);
-	return itemName.size()-1;
-}
-void ProgressData::clear()
-{
-	itemName.resize(0);
-	itemCurrentAction.resize(0);
-	itemProgress.resize(0);
-	itemProgressMaximum.resize(0);
-	itemState.resize(0);
-	currentAction.clear();
-	itemActive.resize(0);
-	currentItem=-1;
-}
-unsigned int ProgressData::size()
-{
-	return itemName.size();
-}
-double ProgressData::getTotalProgressMax()
-{
-	double ret=0;
-	for (int i=0; i<itemProgressMaximum.size(); i++)
-	{
-		ret+=itemProgressMaximum.at(i);
-	}
-	return ret;
-}
-
-double ProgressData::getTotalProgress()
-{
-	double ret=0;
-	for (int i=0; i<itemProgress.size(); i++)
-	{
-		ret+=itemProgress.at(i);
-	}
-	return ret;
-}
 
 
 int loadGlobalConfig(string config_file)

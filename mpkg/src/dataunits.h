@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.26 2007/05/04 13:40:44 i27249 Exp $
+	$Id: dataunits.h,v 1.27 2007/05/10 02:39:08 i27249 Exp $
 */
 
 
@@ -455,7 +455,7 @@ class PACKAGE
 	bool installed();
 	bool configexist();
 	int action();
-	bool reachable();	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
+	bool reachable(bool includeConfigFiles=false);	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
 	string get_vstatus(bool color=false);
 	string get_md5(bool sql=true);
 	string get_filename(bool sql=true);
@@ -543,6 +543,10 @@ class PACKAGE_LIST
     private:
 	vector<PACKAGE> packages;
     public:
+	double totalCompressedSize();
+	double totalInstalledSize();
+	double totalInstalledSizeByAction(int select_action);
+	double totalCompressedSizeByAction(int select_action);
 	bool hasInstalledOnes();
 	PACKAGE getInstalledOne();
 	PACKAGE getMaxVersion();

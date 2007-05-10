@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.24 2007/05/09 17:46:49 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.25 2007/05/10 02:39:08 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -412,7 +412,7 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			sql_query+=search.getFieldName(i)+"='"+search.getValue(search.getFieldName(i))+"'";
+			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
 		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}
@@ -429,12 +429,13 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			sql_query+=search.getFieldName(i)+"='"+search.getValue(search.getFieldName(i))+"'";
+			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
 		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}
 	}
 	sql_query+=";";
+	if (table_name == "packages") printf("%s\n", sql_query.c_str());
 	return sql_exec(sql_query);
 }
 

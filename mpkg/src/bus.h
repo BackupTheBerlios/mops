@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.2 2007/05/09 17:46:49 i27249 Exp $
+ * $Id: bus.h,v 1.3 2007/05/10 02:39:08 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -17,6 +17,8 @@ using namespace std;
 class ProgressData
 {
 	public:
+		//static void setProgress(unsigned int itemNum, double progress);
+		//static void setProgressMaximum(unsigned int itemNum, double progress);
 		vector<string> itemName;
 		vector<string> itemCurrentAction;
 		vector<double> itemProgress;
@@ -24,6 +26,7 @@ class ProgressData
 		vector<int>itemState;
 		vector<bool> itemActive;
 		string currentAction;
+		bool downloadAction;
 		int currentItem;
 		vector<int> idleTime;
 		ProgressData();
@@ -80,7 +83,8 @@ extern double currentProgress2;
 extern double progressMax2;
 extern bool progressEnabled2;
 extern ProgressData pData;
-
+extern double dlProgress;
+extern double dlProgressMax;
 
 
 #endif // BUS_H_

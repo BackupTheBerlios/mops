@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.37 2007/05/04 19:05:55 i27249 Exp $
+ * $Id: mainwindow.h,v 1.38 2007/05/10 02:39:08 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -35,6 +35,8 @@ class MainWindow: public QMainWindow
 {
 	Q_OBJECT
 	public:
+		double installQueueSize;
+		bool initializeOk;
 		MainWindow (QMainWindow *parent = 0);
 		~MainWindow();
 		coreThread *thread;
@@ -43,6 +45,7 @@ class MainWindow: public QMainWindow
 		PreferencesBox *prefBox;
 
 	signals:
+		void redrawReady(bool flag);
 		void loadPackageDatabase();
 		void startThread();
 		void startStatusThread();
@@ -54,6 +57,8 @@ class MainWindow: public QMainWindow
 		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void resetProgressBar();
+		void setInitOk(bool flag);
 		void updateProgressData();
 		void showProgressWindow(bool flag);
 		void hideEntireTable();

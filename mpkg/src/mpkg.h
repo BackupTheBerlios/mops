@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.21 2007/05/09 17:46:49 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.22 2007/05/10 02:39:08 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -60,6 +60,7 @@ class mpkgDatabase
 		int get_purge(string package_name);
 	
 		// Cleanup functions
+		int delete_packages(PACKAGE_LIST *pkgList);
 		int cleanFileList(int package_id);
 		int clean_package_filelist (PACKAGE *package);
 

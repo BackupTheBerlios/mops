@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.45 2007/05/08 21:45:22 i27249 Exp $
+ * $Id: corethread.cpp,v 1.46 2007/05/10 02:39:08 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -498,7 +498,10 @@ void errorBus::Stop()
 
 
 
-
+void statusThread::recvRedrawReady(bool flag)
+{
+	redrawReady=flag;
+}
 
 void statusThread::setPDataActive(bool flag)
 {
@@ -507,13 +510,14 @@ void statusThread::setPDataActive(bool flag)
 
 statusThread::statusThread()
 {
-	TIMER_RES = 600;
+	TIMER_RES = 50;
 	idleTime=0;
 	idleThreshold=40;
 	enabledBar = false;
 	enabledBar2 = false;
 	show();
 	pDataActive=false;
+	redrawReady=true;
 }
 
 void statusThread::run()
@@ -526,12 +530,15 @@ void statusThread::run()
 	double lastMaxProgress=0;
 	forever 
 	{
-		if (pData.size()>0 && pData.currentItem<pData.size())
+		if (pData.size()>0 && pData.currentItem<pData.size() && redrawReady)
 		{
 			if (pData.currentItem>=0)
 			{
-				pData.itemProgressMaximum.at(pData.currentItem)=progressMax;
-				pData.itemProgress.at(pData.currentItem)=currentProgress;
+				if (pData.downloadAction)
+				{
+					pData.itemProgressMaximum.at(pData.currentItem)=dlProgressMax;
+					pData.itemProgress.at(pData.currentItem)=dlProgress;
+				}
 				emit showProgressWindow(true);
 				emit loadProgressData();
 			}
@@ -552,7 +559,7 @@ void statusThread::run()
 		{
 			case STT_Run:
 				
-				if (!progressEnabled2) emit setStatus((QString) currentStatus.c_str());
+				/*if (!progressEnabled2)*/ emit setStatus((QString) currentStatus.c_str());
 				
 				if (progressEnabled)
 				{
@@ -562,13 +569,19 @@ void statusThread::run()
 					
 					if (!enabledBar)
 					{
-						emit initProgressBar(100);
 						emit enableProgressBar();
-						enabledBar = true;
+						if (currentProgress<0)
+						{
+							emit initProgressBar(0);
+						}
+						else
+						{	emit initProgressBar(100);
+							enabledBar = true;
+						}
 					}
 					else
 					{
-						emit setBarValue(tmp_c);
+						if (currentProgress>=0) emit setBarValue(tmp_c);
 					}
 				}
 				else
@@ -584,10 +597,10 @@ void statusThread::run()
 				if (progressEnabled2)
 				{
 					//TIMER_RES = 50;
-					dtmp2 = 100 * (currentProgress2/progressMax2);
+					dtmp2 = 100 * (pData.getTotalProgress()/pData.getTotalProgressMax());
 					tmp_c2 = (int) dtmp2;
-					dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
-					emit setStatus ((QString) dlStatus.c_str());
+					//dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
+					//emit setStatus ((QString) dlStatus.c_str());
 					if (!enabledBar2)
 					{
 						emit initProgressBar2(100);
@@ -685,8 +698,10 @@ void coreThread::run()
 		switch(currentAction)
 		{
 			case CA_LoadDatabase:
+				emit initState(false);
 				_loadPackageDatabase();
 				sync();
+				emit initState(true);
 				break;
 
 			case CA_CommitQueue:
@@ -732,6 +747,10 @@ void coreThread::loadPackageDatabase()
 
 void coreThread::_loadPackageDatabase()
 {
+	pData.clear();
+	progressEnabled=true;
+	currentProgress=-1;
+	emit resetProgressBar();
 	currentStatus = "Loading package database";
 	emit loadingStarted();
 	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
@@ -745,6 +764,7 @@ void coreThread::_loadPackageDatabase()
 	}
 	delete packageList;
 	currentStatus = "Building version list";
+	progressMax = tmpPackageList->size()*2;
 	tmpPackageList->initVersioning();
 	currentStatus = "Initializing status vectors";
 	packageList = tmpPackageList;
@@ -757,7 +777,7 @@ void coreThread::_loadPackageDatabase()
 	sync();
 	unsigned int count = packageList->size();
 	currentStatus = "Setting up GUI elements";
-	progressMax = count;
+	//progressMax = count;
 	//emit enableProgressBar();
 	emit clearTable();
 	emit setTableSize(0);
@@ -778,7 +798,7 @@ void coreThread::_loadPackageDatabase()
 #endif
 
 		
-		currentProgress=i;
+		currentProgress=count+i;
 	}
 
 	emit disableProgressBar();
@@ -850,7 +870,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	
 	//string pName = "<table><tbody><tr><td></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
-			+_p->get_version()\
+			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
@@ -867,8 +887,8 @@ void coreThread::_updatePackageDatabase()
 	currentStatus = "Updating package database from repositories...";
 	emit loadingStarted();
 	database->update_repository_data();
-	emit loadData();
-	currentAction = CA_Idle;
+	//emit loadData();
+	currentAction = CA_LoadDatabase;
 }
 
 void coreThread::updatePackageDatabase()

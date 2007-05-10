@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.8 2007/04/22 17:47:37 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.9 2007/05/10 02:39:08 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -157,37 +157,45 @@ unsigned int fl2ul(float input)
 
 string humanizeSize(string size)
 {
-	return humanizeSize(atoi(size.c_str()));
+	return humanizeSize(strtod(size.c_str(), NULL));
 }
-string humanizeSize(unsigned int size)
+/*string humanizeSize(unsigned int size)
 {
-	int new_size;
+	return humanizeSize((double) size);
+}
+*/
+string humanizeSize(double size)
+{
+	long double new_size;
 	string ret;
+	string tmp;
 
 	if (size >= 1024 && size < 1048576)
 	{
-		new_size = fl2ul(size/1024);
-		ret = IntToStr(new_size) + " Kb";
+		new_size = size/1024;
+		tmp=IntToStr((int) (new_size*1000));
+		if (tmp.length()>=4) tmp=tmp.substr(1,2);
+		ret = IntToStr((int) new_size) + "."+ tmp + " Kb";
 		return ret;
 	}
-	if (size >= 1024*1024 && size < 1024*1024*1024)
+	if (size >= (1024*1024) && size < (1024*1024*1024))
 	{
-		new_size = fl2ul(size/(1024*1024));
-		ret = IntToStr(new_size) + " Mb";
+		new_size = size/(1024*1024);
+		tmp=IntToStr((int) (new_size*1000));
+		if (tmp.length()>=4) tmp=tmp.substr(1,2);
+		ret = IntToStr((int) new_size) + "." +tmp + " Mb";
 		return ret;
 	}
-	if (size >= 1024*1024*1024 && size < 1024 * 1024 * 1024 * 1024)
+	if (size >= (1024*1024*1024))
 	{
-		new_size = fl2ul(size/(1024*1024*1024));
-		ret = IntToStr(new_size) + " Gb";
+		new_size = size/(1024*1024*1024);
+		tmp=IntToStr((int) (new_size*1000));
+		if (tmp.length()>=4) tmp=tmp.substr(1,2);
+		ret = IntToStr((int) new_size) + "." + tmp + " Gb";
+
 		return ret;
 	}
-	if (size >= 1024 * 1024 * 1024 * 1024)
-	{
-		new_size = fl2ul(size/(1024*1024*1024*1024));
-		ret = IntToStr(new_size) + " Tb";
-		return ret;
-	}
+	return "0";
 }
 
 string adjustStringWide(string input, unsigned int char_width)

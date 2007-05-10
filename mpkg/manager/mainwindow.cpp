@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.75 2007/05/09 17:46:49 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.76 2007/05/10 02:39:08 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -93,7 +93,10 @@ void MainWindow::disableProgressBar()
 	ui.progressBar->hide();
 	ui.currentLabel->hide();
 }
-
+void MainWindow::resetProgressBar()
+{
+	ui.progressBar->reset();
+}
 void MainWindow::setProgressBarValue(unsigned int value)
 {
 	ui.progressBar->setValue(value);
@@ -118,6 +121,7 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
+	if (!initializeOk) return;
 	string pkgBoxLabel = "Packages";
 	QString nameMask;
 	bool nameOk = false;
@@ -212,7 +216,7 @@ void MainWindow::applyPackageFilter ()
 						{
 							categoryOk = true;
 						}
-					} // for (... tmpTagList ...)
+					} // for (... tmpTagList ...)	
 					if (tmpTagList.size() == 0 && tagvalue != "_misc_")
 					{
 						categoryOk = false;
@@ -253,7 +257,9 @@ void MainWindow::applyPackageFilter ()
 		}
 #endif
 	} // for (...)	
-	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+" packages)";
+	string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
+	
+	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+" packages), total: " + s_installQueueSize + " to install";
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
 }
 
@@ -324,6 +330,7 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	initializeOk=false;
 	consoleMode=false; // Setting event tracking to GUI mode
 	currentCategoryID=1;
 	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
@@ -382,10 +389,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 	// Building thread connections
 	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
 	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
-
+	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()), Qt::QueuedConnection);
@@ -394,6 +402,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()), Qt::QueuedConnection);
+	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
 	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()), Qt::QueuedConnection);
 	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)), Qt::QueuedConnection);
@@ -438,6 +447,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 	}
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
+
+void MainWindow::setInitOk(bool flag)
+{
+	initializeOk=flag;
+}
 void MainWindow::showProgressWindow(bool flag)
 {
 	if (flag)
@@ -454,6 +468,7 @@ void MainWindow::showProgressWindow(bool flag)
 
 void MainWindow::updateProgressData()
 {
+	emit redrawReady(false);
 	double dtmp;
 	int tmp_c;
 	ui.progressTable->clearContents();
@@ -461,36 +476,76 @@ void MainWindow::updateProgressData()
 //	int startPos=0;
 //	int endPos=0;
 //	int currentItem
-	for (int i=0; i<pData.size(); i++)
+	if (pData.size()<20) totalCount=pData.size();
+	else for (int i=0; i<pData.size(); i++)
 	{
-		if (pData.itemActive.at(i)) totalCount++;
+		if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<1000 ) totalCount++;
 	}
-	ui.progressTable->setRowCount(pData.size());
+	ui.progressTable->setRowCount(totalCount);
 
 	int tablePos = 0;
+	bool showIt;
 	if (pData.size()>0)
 	{
 		for (int i=0; i<pData.size(); i++)
 		{
-			if (pData.itemState.at(i)==ITEMSTATE_FINISHED) pData.idleTime.at(i)++; 
-			if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<100)
-			{
-				if (pData.size()>0) ui.progressTable->setItem(tablePos,0,new QTableWidgetItem(pData.itemName.at(i).c_str()));
-				if (pData.size()>0) ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
-				QProgressBar *pBar = new QProgressBar;
-				if (pData.size()>0) dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
-				tmp_c = (int) dtmp;
+			showIt=false;
+			if (pData.size()<20) showIt=true;
+			if (pData.itemState.at(i)!=ITEMSTATE_WAIT && pData.idleTime.at(i)<1000) showIt=true;
 
-				pBar->setMaximum(100);
-				pBar->setValue(tmp_c);
-				ui.progressTable->setCellWidget(tablePos,2,pBar);
+			if (pData.itemState.at(i)==ITEMSTATE_FINISHED) pData.idleTime.at(i)++; 
+			if (showIt)
+			{
+				QTableWidgetItem *__name = new QTableWidgetItem;
+				__name->setText(pData.itemName.at(i).c_str());
+				if (pData.size()>0)
+				switch (pData.itemState.at(i))
+				{
+					case ITEMSTATE_INPROGRESS:
+						__name->setIcon(QIcon(QString::fromUtf8("/opt/kde/share/icons/crystalsvg/32x32/apps/kget.png")));
+						break;
+					case ITEMSTATE_FINISHED:
+						__name->setIcon(QIcon(QString::fromUtf8("icons/installed.png")));
+						break;
+					case ITEMSTATE_FAILED:
+						__name->setIcon(QIcon(QString::fromUtf8("icons/remove.png")));
+						break;
+				}
+				
+				if (pData.size()>0) ui.progressTable->setItem(tablePos,0, __name);
+				if (pData.size()>0) ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.itemCurrentAction.at(i).c_str()));
+				/*if (pData.itemState.at(i)==ITEMSTATE_FINISHED)
+				{
+					QTableWidgetItem *__item = new QTableWidgetItem;
+			    		__item->setText("Complete");
+    					ui.progressTable->itemAt(tablePos, 0)->setIcon(QIcon(QString::fromUtf8("icons/installed.png")));
+
+					ui.progressTable->setItem(tablePos, 2, __item);
+
+				}
+				if (pData.itemState.at(i)==ITEMSTATE_FAILED)
+				{
+					ui.progressTable->setItem(tablePos, 2, new QTableWidgetItem("Failed"));
+				}*/
+				if (pData.itemState.at(i)==ITEMSTATE_INPROGRESS)
+				{
+					QProgressBar *pBar = new QProgressBar;
+					if (pData.size()>0) dtmp = 100 * (pData.itemProgress.at(i)/pData.itemProgressMaximum.at(i));
+					tmp_c = (int) dtmp;
+
+					pBar->setMaximum(100);
+					pBar->setValue(tmp_c);
+					ui.progressTable->setCellWidget(tablePos,2,pBar);
+				}
 				ui.progressTable->setRowHeight(tablePos,20);
 				tablePos++;
 			}
 		}
 	}
+	emit redrawReady(true);
 
 }
+
 void MainWindow::cleanCache()
 {
 	emit callCleanCache();
@@ -560,36 +615,6 @@ void MainWindow::filterCategory(int category_id)
 {
 	currentCategoryID = category_id;
 	applyPackageFilter();
-	/*TAG_LIST tmp;
-	bool showIt = false;
-	string tagvalue = (string) _categories.getChildNode("group", category_id).getAttribute("tag");
-	printf("tagvalue = %s\n", tagvalue.c_str());
-	for (int i=0; i<ui.packageTable->rowCount(); i++)
-	{
-		if (tagvalue == "_all_") showIt = true;
-		else
-		{
-			showIt = false;
-			tmp = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
-		
-			printf("tag size = %d\n", packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags()->size());
-			for (int t = 0; t < tmp.size(); t++)
-			{
-				printf("scan tag %d %s\n",t,tmp.get_tag(t)->get_name().c_str());
-				if (tmp.get_tag(t)->get_name() == tagvalue)
-				{
-					printf("all?\n");
-					showIt = true;
-					break;
-				}
-			}
-		}
-		if (!showIt) ui.packageTable->setRowHidden(i, true);
-		else ui.packageTable->setRowHidden(i, false);
-	}
-	// Apply filters
-	//setInstalledFilter();
-	*/
 }
 
 void MainWindow::setStatus(QString status)
@@ -600,7 +625,6 @@ void MainWindow::setStatus(QString status)
 
 MainWindow::~MainWindow()
 {
-	//printf("Closing threads...\n");
 	thread->callQuit();
 }
 
@@ -616,7 +640,6 @@ void MainWindow::quickPackageSearch()
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		tmp = tmp.fromStdString(packagelist->get_package(i)->get_name());
-		//tmp = tmp.fromStdString(packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_name());
 		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			ui.packageTable->setRowHidden(i, true);
@@ -878,7 +901,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 				case ST_PURGE:
 					if (state==Qt::Checked)
 					{
-						newStatus[i]=ST_INSTALL;
+						newStatus[i]=ST_NONE;
 						currentStatus="Package queued to install";
 					}
 					else
@@ -920,19 +943,11 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 
 		
 		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
-			+_p->get_version()\
+			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 
-		//string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+ \
-			_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+\
-			"</td></tr></tbody></table>";
-		setTableItem(x, state, pName);
-		//TableLabel *_z = new TableLabel(ui.packageTable);
-		//_z->setTextFormat(Qt::RichText);
-		//_z->setText(pName.c_str());
-		//_z->row = x;
-		//ui.packageTable->setCellWidget(x, PT_NAME, _z);
+			setTableItem(x, state, pName);
 		
 }
 

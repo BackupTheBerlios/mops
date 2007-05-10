@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.38 2007/05/03 12:20:46 i27249 Exp $
+	$Id: dataunits.cpp,v 1.39 2007/05/10 02:39:08 i27249 Exp $
 */
 
 
@@ -1365,9 +1365,18 @@ bool PACKAGE::available()
 	else return true;
 	//return package_available;
 }
-bool PACKAGE::reachable()
+bool PACKAGE::reachable(bool includeConfigFiles)
 {
-	if (available() || installed()) return true;
+	if (includeConfigFiles)
+	{
+		if (available() || installed() || configexist()) return true;
+		else return false;
+	}
+	else
+	{
+		if (available() || installed()) return true;
+		else return false;
+	}
 }
 bool PACKAGE::installed()
 {
@@ -1688,6 +1697,52 @@ void PACKAGE::clearVersioning()
 	installedVersion.clear();
 	alternateVersions.clear();
 }
+
+double PACKAGE_LIST::totalCompressedSize()
+{
+	double ret=0;
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		ret+=strtod(packages.at(i).get_compressed_size().c_str(), NULL);
+	}
+	return ret;
+}
+
+
+double PACKAGE_LIST::totalInstalledSize()
+{
+	double ret=0;
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		ret+=strtod(packages.at(i).get_installed_size().c_str(), NULL);
+	}
+	printf("OK\n");
+	return ret;
+}
+
+double PACKAGE_LIST::totalCompressedSizeByAction(int select_action)
+{
+	double ret=0;
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (packages.at(i).action()==select_action) ret+=strtod(packages.at(i).get_compressed_size().c_str(), NULL);
+	}
+	return ret;
+}
+double PACKAGE_LIST::totalInstalledSizeByAction(int select_action)
+{
+	double ret=0;
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (packages.at(i).action()==select_action)
+		{
+			//printf("ret=%f\n", ret);
+			ret+=strtod(packages.at(i).get_installed_size().c_str(), NULL);
+		}
+	}
+	return ret;
+}
+
 
 int PACKAGE_LIST::getPackageNumberByMD5(string md5)
 {
@@ -2113,8 +2168,6 @@ initialized = false;
 
 void PACKAGE_LIST::initVersioning()
 {
-	progressMax = packages.size();
-	progressEnabled = true;
 	// Что надо определить:
 	// Для каждого пакета - список номеров того же пакета других версий (НЕ ВКЛЮЧАЯ этот же пакет)
 	// Максимально доступную версию
@@ -2207,12 +2260,13 @@ void PACKAGE_LIST::initVersioning()
 		packages.at(i).installedVersion = installed_version;
 	}
 	versioningInitialized=true;
-}
 
-catch(...)
-{
-	printf("Range check error: max_version_id=%d\n", max_version_id);
-}
+	} //try
+
+	catch(...)
+	{
+		printf("Range check error: max_version_id=%d\n", max_version_id);
+	}
 
 }
 
