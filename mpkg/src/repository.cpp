@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.35 2007/05/09 01:30:44 i27249 Exp $
+ * $Id: repository.cpp,v 1.36 2007/05/11 12:03:33 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -12,6 +12,13 @@ XMLNode _root;
 
 int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist, string server_url)
 {
+	if (actionBus._abortActions)
+	{
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	if (packageslist.length()<20)
 	{
 		//printf("Empty package list!\n");
@@ -68,6 +75,13 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 
 	while (!endReached)
 	{
+		if (actionBus._abortActions)
+		{
+			actionBus._abortComplete=true;
+			actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+			return MPKGERROR_ABORTED;
+		}
+
 		currentProgress = tmp_max - tmpstr.length();
 		debug("Parsing "+IntToStr(num)+" package");
 		// Stage 1: retrieving dirty info
@@ -286,69 +300,6 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		pkg.set_installed_size(IntToStr(tmpSize*1024));
 		debug("package size (uncompressed): "+ pkg.get_installed_size());
 
-		// Dependencies
-		/*while (slackRequired.find_first_of(",")!=std::string::npos)
-		{
-			debug("Proceeding dep, slackRequired = "+ slackRequired);
-			tmpDep.clear();
-			tmpDep.set_type("DEPENDENCY");
-			pos = slackRequired.find_first_of("=><");
-
-			if (pos < slackRequired.find_first_of(",\n"))
-			{
-				tmpDep.set_package_name(cutSpaces(slackRequired.substr(0, pos)));
-				printf("{Dep name: %s }", tmpDep.get_package_name().c_str());
-				slackRequired = slackRequired.substr(pos);
-				pos = slackRequired.find_first_not_of("=><");
-				tmpDepStr = slackRequired.substr(0,pos);
-				tmpDep.set_condition(IntToStr(condition2int(hcondition2xml(tmpDepStr))));
-				printf("{Dep condition: %s}\n", tmpDep.get_condition().c_str());
-				slackRequired = slackRequired.substr(pos);
-				pos = slackRequired.find_first_of(" ,");
-				tmpDep.set_package_version(slackRequired.substr(0,pos));
-			}
-			else
-			{
-				pos = slackRequired.find_first_of(",")+1;
-				tmpDep.set_package_name(slackRequired.substr(0,pos));
-				printf("{Dep name: %s }", tmpDep.get_package_name().c_str());
-				tmpDep.set_condition(COND_ANY);
-				printf("{Dep condition: %s}\n", tmpDep.get_condition().c_str());
-				slackRequired = slackRequired.substr(pos);
-			}
-
-			pkg.get_dependencies()->add(tmpDep);
-		}
-*/
-		debug("reached suggestions");
-		/*// Suggestions
-		while (slackSuggests.find_first_of(",")!=std::string::npos)
-		{
-			tmpDep.clear();
-			tmpDep.set_type("SUGGEST");
-			pos = slackSuggests.find_first_of(" =><");
-			if (pos < slackSuggests.find_first_of(","))
-			{
-				tmpDep.set_package_name(slackSuggests.substr(0, pos));
-				slackSuggests = slackSuggests.substr(pos);
-				pos = slackSuggests.find_first_not_of(" =><");
-				tmpDepStr = slackSuggests.substr(0,pos);
-				tmpDep.set_condition(hcondition2xml(tmpDepStr));
-				slackSuggests = slackSuggests.substr(pos);
-				pos = slackSuggests.find_first_of(",");
-				tmpDep.set_package_version(slackSuggests.substr(0,pos));
-			}
-			else
-			{
-				pos = slackSuggests.find_first_of(",");
-				tmpDep.set_package_name(slackSuggests.substr(0,pos));
-				tmpDep.set_condition("any");
-				slackSuggests = slackSuggests.substr(pos);
-			}
-
-			pkg.get_dependencies()->add(tmpDep);
-		}
-		*/
 		debug("reached description");
 		// Description
 		tmpDescStr.clear();
@@ -476,9 +427,6 @@ int xml2package(XMLNode pkgnode, PACKAGE *data)
 		file_tmp.set_name(vec_tmp_names[i]);
 		data->get_files()->add(file_tmp);
 	}
-
-
-
 	return 0;
 }
 
@@ -553,6 +501,13 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
+	if (actionBus._abortActions)
+	{
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	currentStatus = "Updating data from "+ server_url+"...";
 	debug("get_index!");
 	// First: detecting repository type
@@ -586,7 +541,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			}
 		}
 	}
-	
+	if (actionBus._abortActions)
+	{
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	if (type == TYPE_SLACK || type == TYPE_AUTO)
 	{
 		
@@ -609,6 +570,12 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				}
 			}
 		}
+	}
+	if (actionBus._abortActions)
+	{
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
 	}
 
 	if (type == TYPE_DEBIAN || type == TYPE_AUTO)
@@ -636,6 +603,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	int pkg_count;
 	int ret=0;
 	currentStatus = "["+server_url+"] Importing data...";
+	if (actionBus._abortActions)
+	{
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	switch(type)
 	{
 		case TYPE_MPKG:
@@ -653,6 +627,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				progressEnabled = true;
 				for (int i=0; i<pkg_count; i++)
 				{
+					if (actionBus._abortActions)
+					{
+						actionBus._abortComplete=true;
+						actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+						return MPKGERROR_ABORTED;
+					}
+
 					currentProgress = i;
 					pkg.clear();
 					xml2package(repository_root.getChildNode("package", i), &pkg);

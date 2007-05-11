@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.6 2007/05/11 10:25:03 i27249 Exp $
+ * $Id: bus.h,v 1.7 2007/05/11 12:03:33 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -14,7 +14,7 @@ using namespace std;
 #define ITEMSTATE_INPROGRESS 1
 #define ITEMSTATE_FINISHED 2
 #define ITEMSTATE_FAILED 3
-
+#define ITEMSTATE_ABORTED 4
 #define IDLE_MAX 500
 
 class ProgressData
@@ -87,13 +87,15 @@ class ProcessState
 };
 
 typedef enum {
-	ACTIONID_DOWNLOAD = 0,
+	ACTIONID_NONE = 0,
+	ACTIONID_DOWNLOAD,
 	ACTIONID_INSTALL,
 	ACTIONID_REMOVE,
 	ACTIONID_PURGE,
 	ACTIONID_CACHECHECK,
 	ACTIONID_MD5CHECK,
-	ACTIONID_DBUPDATE
+	ACTIONID_DBUPDATE,
+	ACTIONID_QUEUEBUILD
 } ActionID;
 
 struct ActionState
@@ -120,10 +122,14 @@ class ActionBus
 	unsigned int size();
 	bool idle();
 	void clear();
+	bool skipped(ActionID actID);
+	ActionID currentProcessingID();
 	int currentProcessing(); // returns vector number of processing action in actions array (if exists), otherwise return -1
 	void skipAction(ActionID actID);
 	void abortActions();
 	bool abortComplete();
+	void setCurrentAction(ActionID actID);
+	void setActionState(ActionID actID, unsigned int state=ITEMSTATE_FINISHED);
 };
 
 

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.21 2007/05/03 12:20:46 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.22 2007/05/11 12:03:33 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -60,6 +60,8 @@ int mpkgSys::build_package()
 
 int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+
+	actionBus.setCurrentAction(ACTIONID_DBUPDATE);
 	// Функция, с которой начинается обновление данных.
 	
 	Repository rep;		// Объект репозиториев
@@ -90,6 +92,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Update complete.\n");
+	actionBus.setActionState(ACTIONID_DBUPDATE);
 	return ret;
 }
 

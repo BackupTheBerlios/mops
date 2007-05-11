@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.78 2007/05/11 01:19:35 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.79 2007/05/11 12:03:33 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -393,6 +393,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 	// Building thread connections
 	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
 	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
+	
+	QObject::connect(ui.abortButton, SIGNAL(clicked()), this, SLOT(abortActions()));
+	QObject::connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skipAction()));
 	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
@@ -450,6 +453,19 @@ MainWindow::MainWindow(QMainWindow *parent)
 		sleep(1);
 	}
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
+}
+
+void MainWindow::abortActions()
+{
+	if (QMessageBox::warning(this, "Please confirm abort", "Are you sure you want to abort current operations?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No)==QMessageBox::Yes)
+	{
+		actionBus.abortActions();
+	}
+}
+
+void MainWindow::skipAction()
+{
+	actionBus.skipAction(actionBus.currentProcessingID());
 }
 
 void MainWindow::setInitOk(bool flag)

@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.5 2007/05/11 10:25:03 i27249 Exp $
+ * $Id: bus.cpp,v 1.6 2007/05/11 12:03:33 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -13,6 +13,7 @@ double currentProgress;
 double progressMax;
 bool progressEnabled = false;
 ProgressData pData;
+ActionBus actionBus;
 //double dlProgress;
 //double dlProgressMax;
 /*static void ProgressData::setProgress(unsigned int itemNum, double progress)
@@ -263,6 +264,37 @@ int ActionBus::currentProcessing()
 	return -1;
 }
 
+ActionID ActionBus::currentProcessingID()
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state==ITEMSTATE_INPROGRESS) return actions.at(i).actionID;
+	}
+	return ACTIONID_NONE;
+}
+
+void ActionBus::setCurrentAction(ActionID actID)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state==ITEMSTATE_INPROGRESS)
+		{
+			printf("Incorrect use of ActionBus detected: multiple processing, autofix by setting flag ITEMSTATE_FINISHED\n");
+			actions.at(i).state=ITEMSTATE_FINISHED;
+		}
+		if (actions.at(i).actionID==actID) actions.at(i).state=ITEMSTATE_INPROGRESS;
+	}
+}
+
+void ActionBus::setActionState(ActionID actID, unsigned int state)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) actions.at(i).state=state;
+	}
+}
+
+
 void ActionBus::skipAction(ActionID actID)
 {
 	for (unsigned int i=0; i<actions.size(); i++)
@@ -288,3 +320,11 @@ void ActionBus::clear()
 	_abortComplete=false;
 }
 
+bool ActionBus::skipped(ActionID actID)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) return actions.at(i).skip;
+	}
+	return false;
+}

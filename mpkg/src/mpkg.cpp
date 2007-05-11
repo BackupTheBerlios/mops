@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.62 2007/05/11 10:25:03 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.63 2007/05/11 12:03:33 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -157,278 +157,352 @@ int mpkgDatabase::commit_actions()
 	{
 		install_list.get_package(i)->itemID = pData.addItem(install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size().c_str()));
 	}
-	currentStatus = "Looking for remove queue";
-		debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
-	currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
-	progressEnabled = true;
-	progressMax = remove_list.size();
-	currentProgress = 0;
-	pData.setCurrentAction("Removing packages");
-
-	printf("Building remove states\n");
-	int removeItemID=0;
-	for (int i=0; i<remove_list.size(); i++)
-	{
-
-		removeItemID=remove_list.get_package(i)->itemID;
-		pData.setItemState(removeItemID, ITEMSTATE_WAIT);
-		pData.setItemCurrentAction(removeItemID, "Waiting");
-		pData.resetIdleTime(removeItemID);
-		pData.setItemProgress(removeItemID, 0);
-		pData.setItemProgressMaximum(removeItemID,8);
-	}
-
-	printf("Performing remove\n");
-	for (int i=0;i<remove_list.size();i++)
-	{
-		pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-		currentStatus = "Removing package " + remove_list.get_package(i)->get_name();
-		if (remove_package(remove_list.get_package(i))!=0)
-		{
-			pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
-			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
-		}
-		else
-		{
-			pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Removed");
-			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
-		}
-
-		currentProgress = i;
-	}
-	printf("Building purge pData\n");
-	progressEnabled = false;
-	sqlSearch.clear();
 	
-	pData.setCurrentAction("Purging packages");
-
-	int purgeItemID=0;
-	for (int i=0; i<purge_list.size(); i++)
+	// Building action list
+	actionBus.clear();
+	if (remove_list.size()>0) actionBus.addAction(ACTIONID_REMOVE);
+	if (purge_list.size()>0) actionBus.addAction(ACTIONID_PURGE);
+	if (install_list.size()>0)
 	{
+		actionBus.addAction(ACTIONID_CACHECHECK);
+		actionBus.addAction(ACTIONID_DOWNLOAD);
+		actionBus.addAction(ACTIONID_MD5CHECK);
+		actionBus.addAction(ACTIONID_INSTALL);
+	}
+	// Done
 
-		removeItemID=purge_list.get_package(i)->itemID;
-		pData.setItemState(purgeItemID, ITEMSTATE_WAIT);
-		pData.setItemCurrentAction(purgeItemID, "Waiting");
-		pData.resetIdleTime(purgeItemID);
-		pData.setItemProgress(purgeItemID, 0);
-		pData.setItemProgressMaximum(purgeItemID,8);
+	if (remove_list.size()>0)
+	{
+		actionBus.setCurrentAction(ACTIONID_REMOVE);
+
+		currentStatus = "Looking for remove queue";
+			debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
+		currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
+		progressEnabled = true;
+		progressMax = remove_list.size();
+		currentProgress = 0;
+	
+		pData.setCurrentAction("Removing packages");
+	
+		int removeItemID=0;
+		for (int i=0; i<remove_list.size(); i++)
+		{
+			removeItemID=remove_list.get_package(i)->itemID;
+			pData.setItemState(removeItemID, ITEMSTATE_WAIT);
+			pData.setItemCurrentAction(removeItemID, "Waiting");
+			pData.resetIdleTime(removeItemID);
+			pData.setItemProgress(removeItemID, 0);
+			pData.setItemProgressMaximum(removeItemID,8);
+		}
+	
+		for (int i=0;i<remove_list.size();i++)
+		{
+			if (actionBus._abortActions)
+			{
+				sqlFlush();
+				actionBus._abortComplete=true;
+				actionBus.setActionState(ACTIONID_REMOVE, ITEMSTATE_ABORTED);
+				return MPKGERROR_ABORTED;
+			}
+			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			currentStatus = "Removing package " + remove_list.get_package(i)->get_name();
+			if (remove_package(remove_list.get_package(i))!=0)
+			{
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
+				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			}
+			else
+			{
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Removed");
+				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			}
+		
+			currentProgress = i;	
+		}
+		progressEnabled = false;
+		sqlSearch.clear();
+		actionBus.setActionState(ACTIONID_REMOVE);
 	}
 
-
-	currentStatus = "Looking for purge queue";
-	currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
-	currentProgress = 0;
-	progressEnabled = true;
-	progressMax = purge_list.size();
-	printf("Performing purge\n");
-	for (int i=0; i<purge_list.size(); i++)
+	if (purge_list.size()>0)
 	{
-		pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-		currentStatus = "Purging package " + purge_list.get_package(i)->get_name();
-		if (purge_package(purge_list.get_package(i))!=0)
+		actionBus.setCurrentAction(ACTIONID_PURGE);
+		pData.setCurrentAction("Purging packages");
+	
+		int purgeItemID=0;
+		for (int i=0; i<purge_list.size(); i++)
 		{
-			pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purge failed");
-			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			if (actionBus._abortActions)
+			{
+				sqlFlush();
+				actionBus._abortComplete=true;
+				actionBus.setActionState(ACTIONID_PURGE, ITEMSTATE_ABORTED);
+				return MPKGERROR_ABORTED;
+			}
+	
+			purgeItemID=purge_list.get_package(i)->itemID;
+			pData.setItemState(purgeItemID, ITEMSTATE_WAIT);
+			pData.setItemCurrentAction(purgeItemID, "Waiting");
+			pData.resetIdleTime(purgeItemID);
+			pData.setItemProgress(purgeItemID, 0);
+			pData.setItemProgressMaximum(purgeItemID,8);
 		}
-		else
+	
+	
+		currentStatus = "Looking for purge queue";
+		currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
+		currentProgress = 0;
+		progressEnabled = true;
+		progressMax = purge_list.size();
+		printf("Performing purge\n");
+		for (int i=0; i<purge_list.size(); i++)
 		{
-			pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purged");
-			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			currentStatus = "Purging package " + purge_list.get_package(i)->get_name();
+			if (purge_package(purge_list.get_package(i))!=0)
+			{
+				pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purge failed");
+				pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			}
+			else
+			{
+				pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purged");
+				pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			}
+	
+			currentProgress = i;
 		}
+		progressEnabled = false;
+		sqlSearch.clear();
+		actionBus.setActionState(ACTIONID_PURGE);
+	} // purge
 
-		currentProgress = i;
-	}
-	progressEnabled = false;
-	sqlSearch.clear();
 	printf("Done. proceeding to install\n");
 
+
 	currentStatus = "Looking for install queue";
-	// Second: installing required packages
-	debug("Calling FETCH");
-	debug("Preparing to fetch "+IntToStr(install_list.size())+" packages");
 
-	// Building download queue
-	currentStatus = "Looking for package locations...";
-	DownloadsList downloadQueue;
-	DownloadItem tmpDownloadItem;
-	vector<string> itemLocations;
-	progressEnabled = true;
-	progressMax = install_list.size();
-	currentProgress = 0;
-	double totalDownloadSize=0;
-	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-	pData.setCurrentAction("Checking cache");
-	for (int i=0; i<install_list.size(); i++)
+	if (install_list.size()>0)
 	{
-		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-		pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking cache");
-		pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
-		pData.setItemProgress(install_list.get_package(i)->itemID, 0);
-
-		currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
-
-
-		if (!check_cache(install_list.get_package(i), true))
-		{
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "not cached");
-			itemLocations.clear();
-			
-			tmpDownloadItem.expectedSize=strtod(install_list.get_package(i)->get_compressed_size().c_str(), NULL);
-			tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
-			tmpDownloadItem.name = install_list.get_package(i)->get_name();
-			tmpDownloadItem.priority = 0;
-			tmpDownloadItem.status = DL_STATUS_WAIT;
-			tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
-
-
-			for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
-			{
-			itemLocations.push_back(install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
-					     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
-					     + install_list.get_package(i)->get_filename());
-
-			}
-			tmpDownloadItem.url_list = itemLocations;
-			downloadQueue.push_back(tmpDownloadItem);
-		}
-		else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "cached");
-
-		pData.increaseItemProgress(install_list.get_package(i)->itemID);
-		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
-		currentProgress = i;
-	}
-	mpkgErrorReturn errRet;
-	bool do_download = true;
-
-	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-	double dlProgress;
-	double dlProgressMax;
-	while(do_download)
-	{
-		do_download = false;
+		actionBus.setCurrentAction(ACTIONID_CACHECHECK);
+		// Building download queue
+		currentStatus = "Looking for package locations...";
+		DownloadsList downloadQueue;
+		DownloadItem tmpDownloadItem;
+		vector<string> itemLocations;
 		progressEnabled = true;
-		progressEnabled2 = true;
-		pData.downloadAction=true;
-		
-		if (CommonGetFileEx(downloadQueue, &dlProgress, &dlProgressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
+		progressMax = install_list.size();
+		currentProgress = 0;
+		double totalDownloadSize=0;
+		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+		pData.setCurrentAction("Checking cache");
+		bool skip=false;
+		for (int i=0; i<install_list.size(); i++)
 		{
-			printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
-			errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
-			switch(errRet)
+			if (actionBus._abortActions)
 			{
-				case MPKG_RETURN_IGNORE:
-					printf("Download errors ignored, continue installing\n");
-					goto installProcess;
-					break;
-			
-				case MPKG_RETURN_RETRY:
-					printf("retrying...\n");
-					do_download = true;
-					break;
-				case MPKG_RETURN_ABORT:
-					printf("aborting...\n");
-					return -100;
-					break;
-				default:
-					printf("Unknown value, don't know what to do\n");
+				sqlFlush();
+				actionBus._abortComplete=true;
+				return MPKGERROR_ABORTED;
 			}
-				
-		}
+			if (actionBus.skipped(ACTIONID_CACHECHECK))
+			{
+				skip=true;
+			}
+
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking cache");
+			pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
+			pData.setItemProgress(install_list.get_package(i)->itemID, 0);
 	
-	}
-	pData.downloadAction=false;
-installProcess:
-
-	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-
-	progressEnabled = true;
-	debug("Calling INSTALL");
-	bool hasErrors=false;
-	currentStatus = "Checking files (comparing MD5):";
-	pData.setCurrentAction("Checking md5");
-	for (int i=0; i<install_list.size(); i++)
-	{
-		printf("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
-		currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
-
-		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-		pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking md5");
-		pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
-		pData.setItemProgress(install_list.get_package(i)->itemID, 0);
-
-		if (!check_cache(install_list.get_package(i), true))
-		{
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "md5 failed");
-			pData.increaseItemProgress(install_list.get_package(i)->itemID);
-			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
-
-
-			errRet = waitResponce(MPKG_DOWNLOAD_ERROR);
-			switch(errRet)
+			currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
+	
+	
+			if (skip || !check_cache(install_list.get_package(i), true))
 			{
-				case MPKG_RETURN_IGNORE:
-					printf("Wrong checksum ignored, continuing...\n");
-					break;
-				case MPKG_RETURN_RETRY:
-					printf("Re-downloading...\n");
-					break;
-				case MPKG_RETURN_ABORT:
-					printf("Aborting installation\n");
-					return -100;
-					break;
-				default:
-					printf("Unknown... aborting\n");
-					return -120;
-					break;
-			}
+				if (!skip) pData.setItemCurrentAction(install_list.get_package(i)->itemID, "not cached");
+				else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "check skipped");
 
-		}
-		else
-		{
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "MD5 OK");
+				itemLocations.clear();
+				
+				tmpDownloadItem.expectedSize=strtod(install_list.get_package(i)->get_compressed_size().c_str(), NULL);
+				tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
+				tmpDownloadItem.name = install_list.get_package(i)->get_name();
+				tmpDownloadItem.priority = 0;
+				tmpDownloadItem.status = DL_STATUS_WAIT;
+				tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
+	
+	
+				for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
+				{
+					itemLocations.push_back(install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
+						     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
+						     + install_list.get_package(i)->get_filename());
+	
+				}
+				tmpDownloadItem.url_list = itemLocations;
+				downloadQueue.push_back(tmpDownloadItem);
+			}
+			else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "cached");
+	
 			pData.increaseItemProgress(install_list.get_package(i)->itemID);
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			currentProgress = i;
 		}
-
-		currentProgress = i;
-	}
-
-	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-
-	pData.setCurrentAction("Installing packages");
-	int installItemID;
-	for (int i=0; i<install_list.size(); i++)
-	{
-
-		installItemID=install_list.get_package(i)->itemID;
-		pData.setItemState(installItemID, ITEMSTATE_WAIT);
-		pData.setItemCurrentAction(installItemID, "Waiting");
-		pData.resetIdleTime(installItemID);
-		pData.setItemProgress(installItemID, 0);
-		pData.setItemProgressMaximum(installItemID,8);
-	}
-	for (int i=0;i<install_list.size();i++)
-	{
-		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-		currentStatus = "Installing package " + install_list.get_package(i)->get_name();
-		currentProgress = i;
-		if (install_package(install_list.get_package(i))!=0)
+		actionBus.setActionState(ACTIONID_CACHECHECK);
+		actionBus.setCurrentAction(ACTIONID_DOWNLOAD);
+		mpkgErrorReturn errRet;
+		bool do_download = true;
+	
+		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+		double dlProgress;
+		double dlProgressMax;
+		while(do_download)
 		{
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
-			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			do_download = false;
+			progressEnabled = true;
+			progressEnabled2 = true;
+			pData.downloadAction=true;
+			//TODO: pass to CommonGetFileEx actionBus pointer, and remove deprecated dlProgress, etc.
+			if (CommonGetFileEx(downloadQueue, &dlProgress, &dlProgressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
+			{
+				printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
+				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
+				switch(errRet)
+				{
+					case MPKG_RETURN_IGNORE:
+						printf("Download errors ignored, continue installing\n");
+						goto installProcess;
+						break;
+				
+					case MPKG_RETURN_RETRY:
+						printf("retrying...\n");
+						do_download = true;
+						break;
+					case MPKG_RETURN_ABORT:
+						printf("aborting...\n");
+						return -100;
+						break;
+					default:
+						printf("Unknown value, don't know what to do\n");
+				}
+					
+			}
+		
 		}
-		else
+		actionBus.setActionState(ACTIONID_DOWNLOAD);
+		pData.downloadAction=false;
+installProcess:
+	
+		actionBus.setCurrentAction(ACTIONID_MD5CHECK);
+		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+	
+		progressEnabled = true;
+		bool hasErrors=false;
+		skip=false;
+		currentStatus = "Checking files (comparing MD5):";
+		pData.setCurrentAction("Checking md5");
+		for (int i=0; i<install_list.size(); i++)
 		{
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installed");
-			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			if (actionBus._abortActions)
+			{
+				sqlFlush();
+				actionBus._abortComplete=true;
+				actionBus.setActionState(ACTIONID_MD5CHECK, ITEMSTATE_ABORTED);
+				return MPKGERROR_ABORTED;
+			}
+			if (actionBus.skipped(ACTIONID_MD5CHECK)) break;
+
+			printf("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
+			currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
+	
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking md5");
+			pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
+			pData.setItemProgress(install_list.get_package(i)->itemID, 0);
+	
+			if (!check_cache(install_list.get_package(i), true))
+			{
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "md5 failed");
+				pData.increaseItemProgress(install_list.get_package(i)->itemID);
+				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+	
+	
+				errRet = waitResponce(MPKG_DOWNLOAD_ERROR);
+				switch(errRet)
+				{
+					case MPKG_RETURN_IGNORE:
+						printf("Wrong checksum ignored, continuing...\n");
+						break;
+					case MPKG_RETURN_RETRY:
+						printf("Re-downloading...\n");
+						break;
+					case MPKG_RETURN_ABORT:
+						printf("Aborting installation\n");
+						return -100;
+						break;
+					default:
+						printf("Unknown... aborting\n");
+						return -120;
+						break;
+				}
+	
+			}
+			else
+			{
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "MD5 OK");
+				pData.increaseItemProgress(install_list.get_package(i)->itemID);
+				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			}
+	
+			currentProgress = i;
 		}
+		actionBus.setActionState(ACTIONID_MD5CHECK);
+	
+		actionBus.setCurrentAction(ACTIONID_INSTALL);
+		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+	
+		pData.setCurrentAction("Installing packages");
+		int installItemID;
+		for (int i=0; i<install_list.size(); i++)
+		{
+			installItemID=install_list.get_package(i)->itemID;
+			pData.setItemState(installItemID, ITEMSTATE_WAIT);
+			pData.setItemCurrentAction(installItemID, "Waiting");
+			pData.resetIdleTime(installItemID);
+			pData.setItemProgress(installItemID, 0);
+			pData.setItemProgressMaximum(installItemID,8);
+		}
+		for (int i=0;i<install_list.size();i++)
+		{
+			if (actionBus._abortActions)
+			{
+				sqlFlush();
+				actionBus._abortComplete=true;
+				actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+				return MPKGERROR_ABORTED;
+			}
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			currentStatus = "Installing package " + install_list.get_package(i)->get_name();
+			currentProgress = i;
+			if (install_package(install_list.get_package(i))!=0)
+			{
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
+				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			}
+			else
+			{
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installed");
+				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			}
+		}
+		progressEnabled = false;
+		progressEnabled2=false;
+		currentStatus = "Installation complete.";
+		actionBus.setActionState(ACTIONID_INSTALL);
 	}
-	progressEnabled = false;
-	progressEnabled2=false;
-	currentStatus = "Installation complete.";
 	return 0;
 }
-
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
@@ -448,19 +522,48 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		no_purge=false;
 	}
+	if (actionBus._abortActions)
+	{
+		sqlFlush();
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	currentStatus = statusHeader + "extracting installation scripts";
 	pData.increaseItemProgress(package->itemID);
 	//printf("%s\n", currentStatus.c_str());
 	lp.fill_scripts(package);
 	currentStatus = statusHeader + "extracting file list";
 	pData.increaseItemProgress(package->itemID);
+	if (actionBus._abortActions)
+	{
+		sqlFlush();
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
 
 	lp.fill_filelist(package);
 	currentStatus = statusHeader + "detecting configuration files";
 	pData.increaseItemProgress(package->itemID);
+	if (actionBus._abortActions)
+	{
+		sqlFlush();
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
 
 	lp.fill_configfiles(package);
-	
+	if (actionBus._abortActions)
+	{
+		sqlFlush();
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
+
 	if (fileConflictChecking==CHECKFILES_PREINSTALL) 
 	{
 		currentStatus = statusHeader + "checking file conflicts";
@@ -486,6 +589,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	string sys;
 	debug("Preparing scripts");
 	pData.increaseItemProgress(package->itemID);
+	if (actionBus._abortActions)
+	{
+		sqlFlush();
+		actionBus._abortComplete=true;
+		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
+		return MPKGERROR_ABORTED;
+	}
 
 
 	if (!DO_NOT_RUN_SCRIPTS)
