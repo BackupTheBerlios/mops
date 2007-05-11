@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.47 2007/05/10 14:28:13 i27249 Exp $
+ * $Id: corethread.cpp,v 1.48 2007/05/11 01:19:35 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -510,7 +510,7 @@ void statusThread::setPDataActive(bool flag)
 
 statusThread::statusThread()
 {
-	TIMER_RES = 50;
+	TIMER_RES = 200;
 	idleTime=0;
 	idleThreshold=40;
 	enabledBar = false;

@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.3 2007/05/10 14:28:13 i27249 Exp $
+ * $Id: bus.cpp,v 1.4 2007/05/11 01:19:35 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -141,13 +141,22 @@ bool ProgressData::itemUpdated(int itemID)
 		return false;
 	}
 }
-
+void ProgressData::resetItems(string action, double __currentProgress, double __maxProgress, int state)
+{
+	for (int i=0; i<itemName.size(); i++)
+	{
+		setItemState(i, state);
+		setItemCurrentAction(i, action);
+		setItemProgressMaximum(i, __maxProgress);
+		setItemProgress(i,__currentProgress);
+		resetIdleTime(i);
+	}
+}
 void ProgressData::increaseItemProgress(int itemID)
 {
 	if (itemProgress.size()>itemID)
 	{
 		itemProgress.at(itemID) = itemProgress.at(itemID) + 1;
-		printf("itemProgress = %f\n", itemProgress.at(itemID));
 	}
 	else printf("NO ITEM!\n");
 }

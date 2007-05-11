@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.4 2007/05/10 14:28:13 i27249 Exp $
+ * $Id: bus.h,v 1.5 2007/05/11 01:19:35 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -34,6 +34,7 @@ class ProgressData
 		bool itemUpdated(int itemID);
 		void setItemChanged(int itemID);
 		void setItemUnchanged(int itemID);
+		void resetItems(string action="waiting", double __currentProgress=0, double __maxProgress=0, int state=ITEMSTATE_WAIT);
 
 		int addItem(string iName, double maxProgress, int iState=ITEMSTATE_WAIT);
 

@@ -32,7 +32,8 @@ static int downloadCallback(void *clientp,
                        double ulnow)
 {
 	ppData->setItemProgress(currentItemID, dlnow);
-	ppData->setItemProgressMaximum(currentItemID, dltotal);
+	//printf("dltotal = %f\n", dltotal);
+	//ppData->setItemProgressMaximum(currentItemID, dltotal);
 	//*extDlTotal = dltotal;
 	//*extDlNow = dlnow;
 	return 0;
@@ -273,6 +274,11 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	bool is_have_error = false;
 	*itemtotal = list.size();
 	string dir;
+	for (int i=0; i<list.size(); i++)
+	{
+		prData->setItemProgressMaximum(list.at(i).itemID, list.at(i).expectedSize);
+	}
+
 	for (int i = 0; i < list.size(); i++ ) {
 process:
 		item = &(list.at(i));
@@ -359,7 +365,7 @@ process:
 							item->status = DL_STATUS_OK;
 							if (prData->size()>0)
 							{
-								prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
+								//prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
 								prData->setItemCurrentAction(item->itemID, "Downloading finished");
 								prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
 							}

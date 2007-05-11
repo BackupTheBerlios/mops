@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.60 2007/05/10 14:28:13 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.61 2007/05/11 01:19:35 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -144,7 +144,6 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
 	if (get_packagelist(sqlSearch, &install_list,false)!=0) return -5;
-
 	for (int i=0; i<remove_list.size(); i++)
 	{
 		remove_list.get_package(i)->itemID = pData.addItem(remove_list.get_package(i)->get_name(), 10);
@@ -163,28 +162,84 @@ int mpkgDatabase::commit_actions()
 	progressEnabled = true;
 	progressMax = remove_list.size();
 	currentProgress = 0;
+	pData.setCurrentAction("Removing packages");
+
+	printf("Building remove states\n");
+	int removeItemID=0;
+	for (int i=0; i<remove_list.size(); i++)
+	{
+
+		removeItemID=remove_list.get_package(i)->itemID;
+		pData.setItemState(removeItemID, ITEMSTATE_WAIT);
+		pData.setItemCurrentAction(removeItemID, "Waiting");
+		pData.resetIdleTime(removeItemID);
+		pData.setItemProgress(removeItemID, 0);
+		pData.setItemProgressMaximum(removeItemID,8);
+	}
+
+	printf("Performing remove\n");
 	for (int i=0;i<remove_list.size();i++)
 	{
+		pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 		currentStatus = "Removing package " + remove_list.get_package(i)->get_name();
-		if (remove_package(remove_list.get_package(i))!=0) return -2;
+		if (remove_package(remove_list.get_package(i))!=0)
+		{
+			pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
+			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+		}
+		else
+		{
+			pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Removed");
+			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+		}
+
 		currentProgress = i;
 	}
+	printf("Building purge pData\n");
 	progressEnabled = false;
 	sqlSearch.clear();
+	
+	pData.setCurrentAction("Purging packages");
+
+	int purgeItemID=0;
+	for (int i=0; i<purge_list.size(); i++)
+	{
+
+		removeItemID=purge_list.get_package(i)->itemID;
+		pData.setItemState(purgeItemID, ITEMSTATE_WAIT);
+		pData.setItemCurrentAction(purgeItemID, "Waiting");
+		pData.resetIdleTime(purgeItemID);
+		pData.setItemProgress(purgeItemID, 0);
+		pData.setItemProgressMaximum(purgeItemID,8);
+	}
+
 
 	currentStatus = "Looking for purge queue";
 	currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
 	currentProgress = 0;
 	progressEnabled = true;
 	progressMax = purge_list.size();
+	printf("Performing purge\n");
 	for (int i=0; i<purge_list.size(); i++)
 	{
+		pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 		currentStatus = "Purging package " + purge_list.get_package(i)->get_name();
-		if (purge_package(purge_list.get_package(i))!=0) return -4;
+		if (purge_package(purge_list.get_package(i))!=0)
+		{
+			pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purge failed");
+			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+		}
+		else
+		{
+			pData.setItemCurrentAction(purge_list.get_package(i)->itemID, "Purged");
+			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+		}
+
 		currentProgress = i;
 	}
 	progressEnabled = false;
 	sqlSearch.clear();
+	printf("Done. proceeding to install\n");
 
 	currentStatus = "Looking for install queue";
 	// Second: installing required packages
@@ -199,15 +254,25 @@ int mpkgDatabase::commit_actions()
 	progressEnabled = true;
 	progressMax = install_list.size();
 	currentProgress = 0;
+	double totalDownloadSize=0;
+	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+	pData.setCurrentAction("Checking cache");
 	for (int i=0; i<install_list.size(); i++)
 	{
+		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+		pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking cache");
+		pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
+		pData.setItemProgress(install_list.get_package(i)->itemID, 0);
+
 		currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
 
 
 		if (!check_cache(install_list.get_package(i), true))
 		{
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "not cached");
 			itemLocations.clear();
-						
+			
+			tmpDownloadItem.expectedSize=strtod(install_list.get_package(i)->get_compressed_size().c_str(), NULL);
 			tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
 			tmpDownloadItem.name = install_list.get_package(i)->get_name();
 			tmpDownloadItem.priority = 0;
@@ -225,10 +290,17 @@ int mpkgDatabase::commit_actions()
 			tmpDownloadItem.url_list = itemLocations;
 			downloadQueue.push_back(tmpDownloadItem);
 		}
+		else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "cached");
+
+		pData.increaseItemProgress(install_list.get_package(i)->itemID);
+		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 		currentProgress = i;
 	}
 	mpkgErrorReturn errRet;
 	bool do_download = true;
+
+	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+
 	while(do_download)
 	{
 		do_download = false;
@@ -264,18 +336,30 @@ int mpkgDatabase::commit_actions()
 	pData.downloadAction=false;
 installProcess:
 
+	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+
 	progressEnabled = true;
 	debug("Calling INSTALL");
 	bool hasErrors=false;
 	currentStatus = "Checking files (comparing MD5):";
+	pData.setCurrentAction("Checking md5");
 	for (int i=0; i<install_list.size(); i++)
 	{
 		printf("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
 		currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
 
+		pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+		pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking md5");
+		pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
+		pData.setItemProgress(install_list.get_package(i)->itemID, 0);
 
 		if (!check_cache(install_list.get_package(i), true))
 		{
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "md5 failed");
+			pData.increaseItemProgress(install_list.get_package(i)->itemID);
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+
+
 			errRet = waitResponce(MPKG_DOWNLOAD_ERROR);
 			switch(errRet)
 			{
@@ -294,10 +378,21 @@ installProcess:
 					return -120;
 					break;
 			}
+
 		}
+		else
+		{
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "MD5 OK");
+			pData.increaseItemProgress(install_list.get_package(i)->itemID);
+			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+		}
+
 		currentProgress = i;
 	}
-	pData.setCurrentAction("Installing...");
+
+	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+
+	pData.setCurrentAction("Installing packages");
 	int installItemID;
 	for (int i=0; i<install_list.size(); i++)
 	{
@@ -553,11 +648,14 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
+	pData.setItemCurrentAction(package->itemID, "removing");
+
 	printf("Removing package %s %s...\n",package->get_name().c_str(), package->get_fullversion().c_str());
 
 	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Removing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
-
+	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
 		// Running pre-remove scripts
@@ -571,6 +669,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				system(prerem.c_str());
 			}
 		}
+		pData.increaseItemProgress(package->itemID);
 		// removing package
 		debug("calling remove");
 		string sys_cache=SYS_CACHE;
@@ -580,18 +679,19 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 		// purge will be implemented in mpkgDatabase::purge_package(PACKAGE *package); so we skip config files here
 		currentStatus = statusHeader + "building file list";
-		FILE_LIST remove_files=*package->get_files();
+		FILE_LIST *remove_files=package->get_files();
 		currentStatus = statusHeader + "removing files...";
-		for (int i=0; i<remove_files.size(); i++)
+		for (int i=0; i<remove_files->size(); i++)
 		{
-			fname=sys_root + remove_files.get_file(i)->get_name(false);
-			if (remove_files.get_file(i)->get_type()==FTYPE_PLAIN && fname[fname.length()-1]!='/')
+			fname=sys_root + remove_files->get_file(i)->get_name(false);
+			if (remove_files->get_file(i)->get_type()==FTYPE_PLAIN && fname[fname.length()-1]!='/')
 			{
-				if (unlink (fname.c_str())!=0)
-				{
+				pData.increaseItemProgress(package->itemID);
+				unlink (fname.c_str());
+				
 					//printf("Cannot delete file %s: ", fname.c_str());
 					//perror("Reason: ");
-				}
+				
 			}
 		}
 		currentStatus = statusHeader + "removing empty directories...";
@@ -599,9 +699,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		// Run 2: clearing empty directories
 		vector<string>empty_dirs;
 		string edir;
-		for (int i=0; i<remove_files.size(); i++)
+		pData.increaseItemProgress(package->itemID);
+		for (int i=0; i<remove_files->size(); i++)
 		{
-			fname=sys_root + remove_files.get_file(i)->get_name(false);
+			fname=sys_root + remove_files->get_file(i)->get_name(false);
 			for (unsigned int d=0; d<fname.length(); d++)
 			{
 				edir+=fname[d];
@@ -614,6 +715,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 			for (int x=empty_dirs.size()-1;x>=0; x--)
 			{
+				//pData.increaseItemProgress(package->itemID);
 				rmdir(empty_dirs[x].c_str());
 			}
 			edir.clear();
@@ -631,10 +733,13 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			}
 		}
 	}
+	pData.increaseItemProgress(package->itemID);
 	set_installed(package->get_id(), ST_NOTINSTALLED);
 	set_action(package->get_id(), ST_NONE);
 	currentStatus = statusHeader + "cleaning file list";
+	pData.increaseItemProgress(package->itemID);
 	cleanFileList(package->get_id());
+	pData.increaseItemProgress(package->itemID);
 	currentStatus = statusHeader + "remove complete";
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;

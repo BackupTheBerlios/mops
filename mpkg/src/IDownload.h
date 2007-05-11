@@ -31,6 +31,7 @@ public:
 	unsigned int priority;
 	int status;
 	int itemID;
+	double expectedSize;
 };
 
 typedef std::vector<DownloadItem> DownloadsList;

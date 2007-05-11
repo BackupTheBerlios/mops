@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.77 2007/05/10 14:28:13 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.78 2007/05/11 01:19:35 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -51,10 +51,8 @@ void MainWindow::loadingStarted()
 	ui.packageListBox->setEnabled(false);
 	ui.packageInfoBox->hide();
 	ui.packageTable->hide();
-#ifdef RELEASE
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
-#endif
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 	ui.splashFrame->show();
@@ -78,6 +76,9 @@ void MainWindow::loadingFinished()
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
 	ui.packageTable->show();
+	ui.selectAllButton->show();
+	ui.deselectAllButton->show();
+
 	setTableSize();
 	currentStatus = "Idle";
 }
@@ -368,6 +369,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 	movie = new QMovie("icons/indicator.mng");
 	ui.indicatorLabel->setMovie(movie);
 	movie->start();
+	ui.progressTable->setColumnWidth(0,190);
+	ui.progressTable->setColumnWidth(1,150);
+	ui.progressTable->setColumnWidth(2,350);
 
 	this->show();
 	clearForm();
@@ -457,17 +461,32 @@ void MainWindow::showProgressWindow(bool flag)
 	if (flag)
 	{
 		ui.progressTable->show();
-		if (ui.packageTable->isVisible()) ui.packageTable->hide();
+		if (ui.packageTable->isVisible())
+		{
+			ui.packageTable->hide();
+			ui.selectAllButton->hide();
+			ui.deselectAllButton->hide();
+			ui.quickPackageSearchEdit->hide();
+			ui.clearSearchButton->hide();
+		}
 	}
 	else
 	{
-		if (ui.progressTable->isVisible()) ui.packageTable->show();
+		if (ui.progressTable->isVisible())
+		{
+			ui.packageTable->show();
+			ui.selectAllButton->show();
+			ui.deselectAllButton->show();
+			ui.quickPackageSearchEdit->show();
+			ui.clearSearchButton->show();
+		}
 		ui.progressTable->hide();
 	}
 }
 
 void MainWindow::updateProgressData()
 {
+	ui.packagesBox->setTitle(pData.getCurrentAction().c_str());
 	emit redrawReady(false);
 	double dtmp;
 	int tmp_c;
@@ -478,11 +497,7 @@ void MainWindow::updateProgressData()
 	{
 		if (pData.getItemState(i)!=ITEMSTATE_WAIT ) totalVisible++;
 	}
-	printf("totalVisible=%d\n", totalVisible);
 	ui.progressTable->setRowCount(totalCount);
-	ui.progressTable->setColumnWidth(0,100);
-	ui.progressTable->setColumnWidth(1,100);
-	ui.progressTable->setColumnWidth(2,400);
 
 	int tablePos = 0;
 	bool showIt;
@@ -498,7 +513,11 @@ void MainWindow::updateProgressData()
 			showIt=false;
 			updateIt=false;
 			keepCount=false;
-			if (pData.getIdleTime(i)>10 && totalVisible>5) keepCount=true;
+			if (pData.getItemState(i)==ITEMSTATE_FINISHED && totalVisible>20)
+			{
+				keepCount=true;
+				totalVisible--;
+			}
 			if (pData.getItemState(i)!=ITEMSTATE_WAIT && !keepCount) showIt=true;
 
 			if (pData.getItemState(i)==ITEMSTATE_FINISHED) pData.increaseIdleTime(i); 
@@ -602,11 +621,6 @@ void MainWindow::initCategories()
 
 	}
 #endif
-
-		
-
-
-
 }
 
 void MainWindow::hideEntireTable()
@@ -632,6 +646,14 @@ void MainWindow::setStatus(QString status)
 MainWindow::~MainWindow()
 {
 	thread->callQuit();
+	StatusThread->halt();
+	ErrorBus->Stop();
+	while (StatusThread->isRunning() || thread->isRunning() || ErrorBus->isRunning())
+	{
+		printf("Waiting threads to exit...\n");
+		sleep(1);
+	}
+
 }
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
