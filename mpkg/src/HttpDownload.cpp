@@ -13,6 +13,10 @@
 string DL_CDROM_DEVICE="/dev/cdrom";
 string DL_CDROM_MOUNTPOINT="/mnt/cdrom";
 
+#define DOWNLOAD_TIMEOUT 10 // 10 seconds, and failing
+int downloadTimeout=0;
+double prevDlValue;
+
 HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
@@ -24,6 +28,7 @@ HttpDownload::HttpDownload()
 	double *extItemNow;
 
 	ProgressData *ppData;
+	ActionBus *ppActionBus;
 	int currentItemID;
 static int downloadCallback(void *clientp,
                        double dltotal,
@@ -32,10 +37,13 @@ static int downloadCallback(void *clientp,
                        double ulnow)
 {
 	ppData->setItemProgress(currentItemID, dlnow);
-	//printf("dltotal = %f\n", dltotal);
-	//ppData->setItemProgressMaximum(currentItemID, dltotal);
-	//*extDlTotal = dltotal;
-	//*extDlNow = dlnow;
+	if (prevDlValue==dlnow) downloadTimeout++;
+	else {
+		prevDlValue=dlnow;
+		downloadTimeout=0;
+	}
+
+	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
 	return 0;
 }
 
