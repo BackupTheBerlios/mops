@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.4 2007/05/11 01:19:35 i27249 Exp $
+ * $Id: bus.cpp,v 1.5 2007/05/11 10:25:03 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -13,8 +13,8 @@ double currentProgress;
 double progressMax;
 bool progressEnabled = false;
 ProgressData pData;
-double dlProgress;
-double dlProgressMax;
+//double dlProgress;
+//double dlProgressMax;
 /*static void ProgressData::setProgress(unsigned int itemNum, double progress)
 {
 	if (itemNum<itemProgress.size()) itemProgress.at(itemNum)=progress;
@@ -197,4 +197,94 @@ int ProgressData::getItemState(int itemID)
 	else return ITEMSTATE_WAIT;
 }
 
+ActionBus::ActionBus()
+{
+	_abortActions=false;
+	_abortComplete=false;
+}
+
+ActionBus::~ActionBus()
+{
+}
+
+unsigned int ActionBus::addAction(ActionID actionID, bool skip)
+{
+	struct ActionState aState;
+	aState.actionID=actionID;
+	aState.state=ITEMSTATE_WAIT;
+	aState.skip=skip;
+
+	actions.push_back(aState);
+	return actions.size()-1;
+}
+	
+unsigned int ActionBus::completed()
+{
+	unsigned int ret=0;
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state!=ITEMSTATE_WAIT && actions.at(i).state!=ITEMSTATE_INPROGRESS) ret++;
+	}
+	return ret;
+}
+
+	
+unsigned int ActionBus::pending()
+{
+	unsigned int ret=0;
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state==ITEMSTATE_WAIT || actions.at(i).state==ITEMSTATE_INPROGRESS) ret++;
+	}
+	return ret;
+}
+unsigned int ActionBus::size()
+{
+	return actions.size();
+}
+
+bool ActionBus::idle()
+{
+	bool is_idle=true;
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state==ITEMSTATE_INPROGRESS) is_idle=false;
+		break;
+	}
+	return is_idle;
+}
+
+int ActionBus::currentProcessing()
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).state==ITEMSTATE_INPROGRESS) return i;
+	}
+	return -1;
+}
+
+void ActionBus::skipAction(ActionID actID)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) actions.at(i).skip=true;
+	}
+}
+
+void ActionBus::abortActions()
+{
+	_abortActions=true;
+}
+
+bool ActionBus::abortComplete()
+{
+	return _abortComplete;
+}
+
+void ActionBus::clear()
+{
+	actions.resize(0);
+	_abortActions=false;
+	_abortComplete=false;
+}
 

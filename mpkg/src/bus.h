@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.5 2007/05/11 01:19:35 i27249 Exp $
+ * $Id: bus.h,v 1.6 2007/05/11 10:25:03 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -86,25 +86,47 @@ class ProcessState
 		unsigned short state;
 };
 
+typedef enum {
+	ACTIONID_DOWNLOAD = 0,
+	ACTIONID_INSTALL,
+	ACTIONID_REMOVE,
+	ACTIONID_PURGE,
+	ACTIONID_CACHECHECK,
+	ACTIONID_MD5CHECK,
+	ACTIONID_DBUPDATE
+} ActionID;
+
+struct ActionState
+{
+	ActionID actionID;
+	string actionName;
+	unsigned int state;
+	bool aborted;
+	bool skip;
+};
 
 
 class ActionBus
 {
 	public:
-	
-	string globalActionName;
-	vector<ProcessState> processes;
-	
+	vector<ActionState> actions;
+	bool _abortActions;
+	bool _abortComplete;
 	ActionBus();
 	~ActionBus();
-
-	int totalProgress();
-	int pending();
-	int completed();
-	int size();
+	unsigned int addAction(ActionID actionID, bool skip=false);
+	unsigned int pending();
+	unsigned int completed();
+	unsigned int size();
 	bool idle();
-	int currentProcessing();
+	void clear();
+	int currentProcessing(); // returns vector number of processing action in actions array (if exists), otherwise return -1
+	void skipAction(ActionID actID);
+	void abortActions();
+	bool abortComplete();
 };
+
+
 extern ActionBus actionBus;
 extern string currentStatus;
 extern string currentItem;
@@ -115,8 +137,8 @@ extern double currentProgress2;
 extern double progressMax2;
 extern bool progressEnabled2;
 extern ProgressData pData;
-extern double dlProgress;
-extern double dlProgressMax;
+//extern double dlProgress;
+//extern double dlProgressMax;
 
 
 #endif // BUS_H_

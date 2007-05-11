@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1096</width>
-    <height>700</height>
+    <width>1008</width>
+    <height>685</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -706,7 +706,7 @@
       <item>
        <widget class="QPushButton" name="applyButton" >
         <property name="text" >
-         <string>Apply</string>
+         <string>Apply changes</string>
         </property>
        </widget>
       </item>
@@ -732,6 +732,13 @@
          <number>6</number>
         </property>
         <item>
+         <widget class="QPushButton" name="skipButton" >
+          <property name="text" >
+           <string>Skip</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="AbortButton" >
           <property name="text" >
            <string>Abort</string>
@@ -756,8 +763,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1096</width>
-     <height>31</height>
+     <width>1008</width>
+     <height>28</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRepositories" >
@@ -765,22 +772,6 @@
      <string>Repositories</string>
     </property>
     <addaction name="actionAdd_remove_repositories" />
-   </widget>
-   <widget class="QMenu" name="menuFile" >
-    <property name="title" >
-     <string>File</string>
-    </property>
-    <addaction name="actionPreferences" />
-    <addaction name="actionCore_settings" />
-    <addaction name="separator" />
-    <addaction name="actionCommit_changes" />
-    <addaction name="actionReset_changes" />
-    <addaction name="actionReset_all_queue" />
-    <addaction name="separator" />
-    <addaction name="actionSave_queue" />
-    <addaction name="actionClean_cache" />
-    <addaction name="separator" />
-    <addaction name="actionQuit" />
    </widget>
    <widget class="QMenu" name="menuHelp" >
     <property name="title" >
@@ -803,6 +794,22 @@
     <addaction name="actionShow_install" />
     <addaction name="actionShow_purge" />
     <addaction name="actionShow_unavailable" />
+   </widget>
+   <widget class="QMenu" name="menuFile" >
+    <property name="title" >
+     <string>File</string>
+    </property>
+    <addaction name="actionPreferences" />
+    <addaction name="actionCore_settings" />
+    <addaction name="separator" />
+    <addaction name="actionCommit_changes" />
+    <addaction name="actionReset_changes" />
+    <addaction name="actionReset_all_queue" />
+    <addaction name="separator" />
+    <addaction name="actionSave_queue" />
+    <addaction name="actionClean_cache" />
+    <addaction name="separator" />
+    <addaction name="actionQuit" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />

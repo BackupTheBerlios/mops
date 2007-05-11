@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.61 2007/05/11 01:19:35 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.62 2007/05/11 10:25:03 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -124,6 +124,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 
 int mpkgDatabase::commit_actions()
 {
+	sqlFlush();
 	// Zero: purging required packages
 	// First: removing required packages
 
@@ -300,13 +301,15 @@ int mpkgDatabase::commit_actions()
 	bool do_download = true;
 
 	pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-
+	double dlProgress;
+	double dlProgressMax;
 	while(do_download)
 	{
 		do_download = false;
 		progressEnabled = true;
 		progressEnabled2 = true;
 		pData.downloadAction=true;
+		
 		if (CommonGetFileEx(downloadQueue, &dlProgress, &dlProgressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
 		{
 			printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
@@ -566,6 +569,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	set_installed(package->get_id(), ST_INSTALLED);
 	set_configexist(package->get_id(), ST_CONFIGEXIST);
 	set_action(package->get_id(), ST_NONE);
+	sqlFlush();
 	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	//currentStatus = statusHeader + "successfully installed!";
 	pData.increaseItemProgress(package->itemID);
@@ -639,7 +643,7 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	set_configexist(package->get_id(), ST_CONFIGNOTEXIST);
 	set_action(package->get_id(), ST_NONE);
 	cleanFileList(package->get_id());
-
+	sqlFlush();
 	debug("*********************************************\n*        Package purged sussessfully     *\n*********************************************");
 	return 0;
 }
@@ -740,6 +744,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.increaseItemProgress(package->itemID);
 	cleanFileList(package->get_id());
 	pData.increaseItemProgress(package->itemID);
+	sqlFlush();
 	currentStatus = statusHeader + "remove complete";
 	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
