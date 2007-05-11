@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.63 2007/05/11 12:03:33 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.64 2007/05/11 13:02:31 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -364,7 +364,7 @@ int mpkgDatabase::commit_actions()
 			progressEnabled2 = true;
 			pData.downloadAction=true;
 			//TODO: pass to CommonGetFileEx actionBus pointer, and remove deprecated dlProgress, etc.
-			if (CommonGetFileEx(downloadQueue, &dlProgress, &dlProgressMax, &currentProgress2, &progressMax2, &currentItem, &pData) == DOWNLOAD_ERROR)
+			if (CommonGetFileEx(downloadQueue, &currentProgress2, &progressMax2, &currentItem, &actionBus, &pData) == DOWNLOAD_ERROR)
 			{
 				printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
 				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);

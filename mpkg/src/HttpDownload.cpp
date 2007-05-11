@@ -42,6 +42,10 @@ static int downloadCallback(void *clientp,
 		prevDlValue=dlnow;
 		downloadTimeout=0;
 	}
+	if (ppActionBus->_abortActions)
+	{
+		return -2;
+	}
 
 	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
 	return 0;
@@ -179,16 +183,19 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlItem.priority = 0;
 	double dlnow, dltotal, itemnow, itemtotal;
 	ProgressData z;
+	ActionBus a;
+	a.addAction(ACTIONID_DBUPDATE);
 	string name;
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
 	int currentItem=0;
-	return this->getFile(dlList, &dlnow, &dltotal, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint, &z);
+	return this->getFile(dlList, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint, &a, &z);
 	
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double *dltotal, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint, ProgressData *prData)
+DownloadResults HttpDownload::getFile(DownloadsList &list, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint,  ActionBus *aaBus, ProgressData *prData)
 {
+	ppActionBus=aaBus;
 	ppData=prData;
 	if (list.empty()) 
 	{
@@ -208,6 +215,11 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	string tmp_volname;
 	for (int i=0; i<list.size(); i++)
 	{
+		if (ppActionBus->_abortActions)
+		{
+			ppActionBus->_abortComplete=true;
+			return DOWNLOAD_OK;
+		}
 		tmp_item = &(list.at(i));
 
 		isCdromSourced = false;
@@ -273,8 +285,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *dlnow, double
 	{
 		if (list[i].status != DL_STATUS_OK) list[i].status = DL_STATUS_WAIT;
 	}
-	extDlNow = dlnow;
-	extDlTotal = dltotal;
+	//extDlNow = dlnow;
+	//extDlTotal = dltotal;
 
 	CURLcode result;
 	DownloadItem *item;
@@ -370,6 +382,12 @@ process:
 						}
 	    					if ( result == CURLE_OK  ) 
 						{
+							if (ppActionBus->_abortActions)
+							{
+								ppActionBus->_abortComplete=true;
+								return DOWNLOAD_OK;
+							}
+
 							item->status = DL_STATUS_OK;
 							if (prData->size()>0)
 							{
@@ -381,6 +399,11 @@ process:
     						}
 						else 
 						{
+							if (ppActionBus->_abortActions)
+							{
+								ppActionBus->_abortComplete=true;
+								return DOWNLOAD_OK;
+							}
 							if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
 
 							printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());

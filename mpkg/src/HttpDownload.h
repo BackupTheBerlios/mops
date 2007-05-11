@@ -18,7 +18,7 @@ public:
 	
 	virtual ~HttpDownload() {};
 	DownloadResults getFile(string url, string file, string cdromDevice, string cdromMountPoint);
-	DownloadResults getFile(DownloadsList &list,  double *dlnow, double *dltotal, double *itemnow, double *itemtotal, string *itemname, string cdromDevice, string cdromMountPoint, ProgressData *prData);
+	DownloadResults getFile(DownloadsList &list, double *itemnow, double *itemtotal, string *itemname, string cdromDevice, string cdromMountPoint, ActionBus *aaBus, ProgressData *prData);
 
 private:
 	FILE* out_f;
