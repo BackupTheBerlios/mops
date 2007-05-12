@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.64 2007/05/11 13:02:31 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.65 2007/05/12 19:31:24 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -160,14 +160,28 @@ int mpkgDatabase::commit_actions()
 	
 	// Building action list
 	actionBus.clear();
-	if (remove_list.size()>0) actionBus.addAction(ACTIONID_REMOVE);
-	if (purge_list.size()>0) actionBus.addAction(ACTIONID_PURGE);
+	if (remove_list.size()>0)
+	{
+		actionBus.addAction(ACTIONID_REMOVE);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_REMOVE))._progressMaximum=remove_list.size();
+	}
+	if (purge_list.size()>0)
+	{
+		actionBus.addAction(ACTIONID_PURGE);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_PURGE))._progressMaximum=purge_list.size();
+	}
+
 	if (install_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_CACHECHECK);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_CACHECHECK))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_DOWNLOAD);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DOWNLOAD))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_MD5CHECK);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_MD5CHECK))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_INSTALL);
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_INSTALL))._progressMaximum=install_list.size();
+
 	}
 	// Done
 
@@ -178,9 +192,9 @@ int mpkgDatabase::commit_actions()
 		currentStatus = "Looking for remove queue";
 			debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 		currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
-		progressEnabled = true;
-		progressMax = remove_list.size();
-		currentProgress = 0;
+	//	progressEnabled = true;
+	//	progressMax = remove_list.size();
+	//	currentProgress = 0;
 	
 		pData.setCurrentAction("Removing packages");
 	
@@ -197,6 +211,7 @@ int mpkgDatabase::commit_actions()
 	
 		for (int i=0;i<remove_list.size();i++)
 		{
+			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -217,9 +232,9 @@ int mpkgDatabase::commit_actions()
 				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 		
-			currentProgress = i;	
+			//currentProgress = i;	
 		}
-		progressEnabled = false;
+		//progressEnabled = false;
 		sqlSearch.clear();
 		actionBus.setActionState(ACTIONID_REMOVE);
 	}
@@ -232,6 +247,7 @@ int mpkgDatabase::commit_actions()
 		int purgeItemID=0;
 		for (int i=0; i<purge_list.size(); i++)
 		{
+
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -251,12 +267,13 @@ int mpkgDatabase::commit_actions()
 	
 		currentStatus = "Looking for purge queue";
 		currentStatus = "Purging " + IntToStr(purge_list.size()) + " packages";
-		currentProgress = 0;
-		progressEnabled = true;
-		progressMax = purge_list.size();
+		//currentProgress = 0;
+		//progressEnabled = true;
+		//progressMax = purge_list.size();
 		printf("Performing purge\n");
 		for (int i=0; i<purge_list.size(); i++)
 		{
+			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 			pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 			currentStatus = "Purging package " + purge_list.get_package(i)->get_name();
 			if (purge_package(purge_list.get_package(i))!=0)
@@ -270,9 +287,9 @@ int mpkgDatabase::commit_actions()
 				pData.setItemState(purge_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 	
-			currentProgress = i;
+			//currentProgress = i;
 		}
-		progressEnabled = false;
+		//progressEnabled = false;
 		sqlSearch.clear();
 		actionBus.setActionState(ACTIONID_PURGE);
 	} // purge
@@ -290,15 +307,17 @@ int mpkgDatabase::commit_actions()
 		DownloadsList downloadQueue;
 		DownloadItem tmpDownloadItem;
 		vector<string> itemLocations;
-		progressEnabled = true;
-		progressMax = install_list.size();
-		currentProgress = 0;
+		//progressEnabled = true;
+		//progressMax = install_list.size();
+		//currentProgress = 0;
 		double totalDownloadSize=0;
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
 		pData.setCurrentAction("Checking cache");
 		bool skip=false;
 		for (int i=0; i<install_list.size(); i++)
 		{
+
+			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -347,7 +366,7 @@ int mpkgDatabase::commit_actions()
 	
 			pData.increaseItemProgress(install_list.get_package(i)->itemID);
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
-			currentProgress = i;
+			//currentProgress = i;
 		}
 		actionBus.setActionState(ACTIONID_CACHECHECK);
 		actionBus.setCurrentAction(ACTIONID_DOWNLOAD);
@@ -360,11 +379,11 @@ int mpkgDatabase::commit_actions()
 		while(do_download)
 		{
 			do_download = false;
-			progressEnabled = true;
-			progressEnabled2 = true;
+			//progressEnabled = true;
+			//progressEnabled2 = true;
 			pData.downloadAction=true;
 			//TODO: pass to CommonGetFileEx actionBus pointer, and remove deprecated dlProgress, etc.
-			if (CommonGetFileEx(downloadQueue, &currentProgress2, &progressMax2, &currentItem, &actionBus, &pData) == DOWNLOAD_ERROR)
+			if (CommonGetFileEx(downloadQueue, &currentItem, &actionBus, &pData) == DOWNLOAD_ERROR)
 			{
 				printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
 				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
@@ -397,13 +416,14 @@ installProcess:
 		actionBus.setCurrentAction(ACTIONID_MD5CHECK);
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
 	
-		progressEnabled = true;
+		//progressEnabled = true;
 		bool hasErrors=false;
 		skip=false;
 		currentStatus = "Checking files (comparing MD5):";
 		pData.setCurrentAction("Checking md5");
 		for (int i=0; i<install_list.size(); i++)
 		{
+			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -455,7 +475,7 @@ installProcess:
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 	
-			currentProgress = i;
+			//currentProgress = i;
 		}
 		actionBus.setActionState(ACTIONID_MD5CHECK);
 	
@@ -475,6 +495,8 @@ installProcess:
 		}
 		for (int i=0;i<install_list.size();i++)
 		{
+
+			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -484,7 +506,7 @@ installProcess:
 			}
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 			currentStatus = "Installing package " + install_list.get_package(i)->get_name();
-			currentProgress = i;
+			//currentProgress = i;
 			if (install_package(install_list.get_package(i))!=0)
 			{
 				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
@@ -496,11 +518,12 @@ installProcess:
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 		}
-		progressEnabled = false;
-		progressEnabled2=false;
+		//progressEnabled = false;
+		//progressEnabled2=false;
 		currentStatus = "Installation complete.";
 		actionBus.setActionState(ACTIONID_INSTALL);
 	}
+	actionBus.clear();
 	return 0;
 }
 
@@ -509,7 +532,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	pData.setItemCurrentAction(package->itemID, "installing");
 	printf("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
-	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Installing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 //#define IDEBUG
 	// First of all: EXTRACT file list and scripts!!!
@@ -690,7 +713,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::purge_package(PACKAGE* package)
 {
-	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Purging package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Purging package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 
 	// purging package config files.
@@ -767,7 +790,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 	printf("Removing package %s %s...\n",package->get_name().c_str(), package->get_fullversion().c_str());
 
-	string statusHeader = "["+IntToStr((int)currentProgress)+"/"+IntToStr((int)progressMax)+"] "+"Removing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)

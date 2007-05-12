@@ -1,17 +1,11 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.6 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: bus.cpp,v 1.7 2007/05/12 19:31:24 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
 string currentItem;
-double currentProgress2;
-double progressMax2;
-bool progressEnabled2 = false;
-double currentProgress;
-double progressMax;
-bool progressEnabled = false;
 ProgressData pData;
 ActionBus actionBus;
 //double dlProgress;
@@ -208,23 +202,67 @@ ActionBus::~ActionBus()
 {
 }
 
-unsigned int ActionBus::addAction(ActionID actionID, bool skip)
+int ActionBus::getActionPosition(ActionID actID)
 {
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) return i;
+	}
+	//printf("getActionPosition: actions size = %d, but no such action: %d! adding\n", actions.size(), (int) actID);
+	return -1;
+	/*//return this->addAction(actID, false, false);
+	unsigned int pos;
+	struct ActionState aState;
+	aState.actionID=actID;
+	aState.state=ITEMSTATE_WAIT;
+	aState.skip=false;
+	aState.hasProgressData=false;
+	aState._currentProgress=0;
+	aState._progressMaximum=0;
+	{
+		actions.push_back(aState);
+		pos = actions.size()-1;
+	}
+	return pos;*/
+
+}
+
+void ActionBus::setActionProgress(ActionID actID, double p)
+{
+	actions.at(currentProcessing())._currentProgress=p;
+}
+
+void ActionBus::setActionProgressMaximum(ActionID actID, double p)
+{
+	actions.at(getActionPosition(actID))._progressMaximum=p;
+}
+unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
+{
+	//printf("ADDING ACTION\n");
+	int pos = getActionPosition(actionID);
 	struct ActionState aState;
 	aState.actionID=actionID;
 	aState.state=ITEMSTATE_WAIT;
 	aState.skip=skip;
+	aState.hasProgressData=hasPData;
+	aState._currentProgress=0;
+	aState._progressMaximum=0;
+	if (pos < 0)
+	{
+		actions.push_back(aState);
+		pos = actions.size()-1;
+	}
+	else actions.at(pos)=aState;
 
-	actions.push_back(aState);
-	return actions.size()-1;
+	return pos;
 }
-	
+
 unsigned int ActionBus::completed()
 {
 	unsigned int ret=0;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state!=ITEMSTATE_WAIT && actions.at(i).state!=ITEMSTATE_INPROGRESS) ret++;
+		if (this->getActionState(i)!=ITEMSTATE_WAIT && this->getActionState(i)!=ITEMSTATE_INPROGRESS) ret++;
 	}
 	return ret;
 }
@@ -235,7 +273,7 @@ unsigned int ActionBus::pending()
 	unsigned int ret=0;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state==ITEMSTATE_WAIT || actions.at(i).state==ITEMSTATE_INPROGRESS) ret++;
+		if (getActionState(i)==ITEMSTATE_WAIT || getActionState(i)==ITEMSTATE_INPROGRESS) ret++;
 	}
 	return ret;
 }
@@ -244,23 +282,39 @@ unsigned int ActionBus::size()
 	return actions.size();
 }
 
+unsigned int ActionBus::getActionState(unsigned int pos)
+{
+	if (pos<actions.size())
+	{
+		//printf("%s: state = %d\n", __func__, actions.at(pos).state);
+		return actions.at(pos).state;
+	}
+	else
+	{
+		printf("%s: no such action\n", __func__);
+		return 100;
+	}
+}
 bool ActionBus::idle()
 {
 	bool is_idle=true;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state==ITEMSTATE_INPROGRESS) is_idle=false;
-		break;
+		if (getActionState(i)==ITEMSTATE_INPROGRESS) is_idle=false;
 	}
+	//if (is_idle) printf("ERROR in idle()! \n");
 	return is_idle;
 }
 
 int ActionBus::currentProcessing()
 {
+	int ret=0;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state==ITEMSTATE_INPROGRESS) return i;
+		if (getActionState(i)==ITEMSTATE_INPROGRESS) return i;
 	}
+	printf ("currentProcessing: no such action, all processes is idle! We sorry, but have to quit now. Go debugging!\n");
+	abort();
 	return -1;
 }
 
@@ -268,21 +322,40 @@ ActionID ActionBus::currentProcessingID()
 {
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state==ITEMSTATE_INPROGRESS) return actions.at(i).actionID;
+		//printf("ITEMSTATE_INPROGRESS = %d\n", ITEMSTATE_INPROGRESS);
+		//printf("%s: action %d: ID == %d, state == %d\n", __func__, i, actions.at(i).actionID, getActionState(i));
+		if (getActionState(i)==ITEMSTATE_INPROGRESS) return actions.at(i).actionID;
 	}
+	printf("%s: no action is processing, actions.size = %d\n", __func__, actions.size());
 	return ACTIONID_NONE;
 }
 
 void ActionBus::setCurrentAction(ActionID actID)
 {
+	bool found=false;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).state==ITEMSTATE_INPROGRESS)
+		if (getActionState(i)==ITEMSTATE_INPROGRESS)
 		{
 			printf("Incorrect use of ActionBus detected: multiple processing, autofix by setting flag ITEMSTATE_FINISHED\n");
-			actions.at(i).state=ITEMSTATE_FINISHED;
+			setActionState(i, ITEMSTATE_FINISHED);
 		}
-		if (actions.at(i).actionID==actID) actions.at(i).state=ITEMSTATE_INPROGRESS;
+	}
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID)
+		{
+			//printf("%s: Action %d at %d is set to current!\n", __func__, (int) actID, i);
+			setActionState(i,ITEMSTATE_INPROGRESS);
+			//if (getActionState(i)==ITEMSTATE_INPROGRESS) printf("status set ok: %d\n", getActionState(i));
+			//printf("Current processing = %d, id: %d\n", currentProcessing(), currentProcessingID());
+			found=true;
+		}
+	}
+	if (!found)
+	{
+		actions.at(addAction(actID)).state=ITEMSTATE_INPROGRESS;
+		printf("Seems to incorrect use of setCurrentAction: no such action found (added)\n");
 	}
 }
 
@@ -290,9 +363,24 @@ void ActionBus::setActionState(ActionID actID, unsigned int state)
 {
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		if (actions.at(i).actionID==actID) actions.at(i).state=state;
+		if (actions.at(i).actionID==actID){
+		       setActionState(i,state);
+		       //printf("%s: setting action state %d to %d (ID=%d)\n", __func__, state, i, (int) actID);
+		}
 	}
 }
+
+void ActionBus::setActionState(unsigned int pos, unsigned int state)
+{
+	if (pos<actions.size()){
+		       actions.at(pos).state=state;
+		       //printf("%s: setting state %d to action %d (ID=%d)\n", __func__, state, pos, (int) actions.at(pos).actionID);
+		}
+	//printf("CHECK: %d\n", getActionState(pos));
+	//if (state != getActionState(pos)) printf("ERRRRRRRRRRRRRROOOOOOOOOOOOOOOORRRRRRRRRRRRRRRRR!!!!!!!!!!!!!\n");
+	
+}
+
 
 
 void ActionBus::skipAction(ActionID actID)
@@ -327,4 +415,43 @@ bool ActionBus::skipped(ActionID actID)
 		if (actions.at(i).actionID==actID) return actions.at(i).skip;
 	}
 	return false;
+}
+
+double ActionBus::progress()
+{
+	double ret=0;
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		ret = ret + actions.at(i).currentProgress();
+	}
+	
+	return ret;
+}
+
+double ActionBus::progressMaximum()
+{
+	double ret = 0;
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		ret = ret + actions.at(i).progressMaximum();
+	}
+	return ret;
+}
+
+ActionState::ActionState()
+{
+}
+
+ActionState::~ActionState()
+{
+}
+
+double ActionState::currentProgress()
+{
+	return _currentProgress;
+}
+
+double ActionState::progressMaximum()
+{
+	return _progressMaximum;
 }

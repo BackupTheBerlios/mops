@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.22 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.23 2007/05/12 19:31:24 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -60,8 +60,9 @@ int mpkgSys::build_package()
 
 int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
 {
-
-	actionBus.setCurrentAction(ACTIONID_DBUPDATE);
+	actionBus.clear();
+	actionBus.addAction(ACTIONID_DBUPDATE);
+	actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, REPOSITORY_LIST.size());
 	// Функция, с которой начинается обновление данных.
 	
 	Repository rep;		// Объект репозиториев
@@ -72,21 +73,28 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
 
-	printf(_("Updating package data from %d repositories...\n"), REPOSITORY_LIST.size());
+	printf(_("Updating package data from %d repositories...\n"), REPOSITORY_LIST.size()*2);
 	
 	int total_packages=0; // Счетчик полученных пакетов.
 
+	actionBus.setCurrentAction(ACTIONID_DBUPDATE);
 	// Поехали! Запрашиваем каждый репозиторий через функцию get_index()
+	unsigned int cnt=1;
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
 		tmpPackages.clear();					//Очищаем временный список.
 		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);	// Получаем список пакетов.
-		
+		printf("Retrieved\n");
+		actionBus.setActionProgress(ACTIONID_DBUPDATE, cnt);
+		cnt++;
 		if (!tmpPackages.IsEmpty())				// Если мы таки получили что-то, добавляем это в список.
 		{
 			total_packages+=tmpPackages.size();		// Увеличим счетчик
 			availablePackages.add_list(&tmpPackages);	// Прибавляем данные к общему списку.
 		}
+		actionBus.setActionProgress(ACTIONID_DBUPDATE, cnt);
+		cnt++;
+
 	}
 	printf("Total %d packages received, filtering...\n", total_packages);
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.

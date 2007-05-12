@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.7 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: bus.h,v 1.8 2007/05/12 19:31:24 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -95,16 +95,27 @@ typedef enum {
 	ACTIONID_CACHECHECK,
 	ACTIONID_MD5CHECK,
 	ACTIONID_DBUPDATE,
-	ACTIONID_QUEUEBUILD
+	ACTIONID_QUEUEBUILD,
+	ACTIONID_VERSIONBUILD,
+	ACTIONID_DBLOADING
 } ActionID;
 
-struct ActionState
+class ActionState
 {
-	ActionID actionID;
-	string actionName;
-	unsigned int state;
-	bool aborted;
-	bool skip;
+	public:
+		double _currentProgress;
+		double _progressMaximum;
+		ActionID actionID;
+		string actionName;
+		unsigned int state;
+		bool aborted;
+		bool skip;
+		bool hasProgressData;
+		double currentProgress();
+		double progressMaximum();
+
+		ActionState();
+		~ActionState();
 };
 
 
@@ -112,11 +123,14 @@ class ActionBus
 {
 	public:
 	vector<ActionState> actions;
+	unsigned int getActionState(unsigned int pos);
+
 	bool _abortActions;
 	bool _abortComplete;
 	ActionBus();
 	~ActionBus();
-	unsigned int addAction(ActionID actionID, bool skip=false);
+	int getActionPosition(ActionID actID);
+	unsigned int addAction(ActionID actionID, bool hasPData=true, bool skip=false);
 	unsigned int pending();
 	unsigned int completed();
 	unsigned int size();
@@ -129,19 +143,19 @@ class ActionBus
 	void abortActions();
 	bool abortComplete();
 	void setCurrentAction(ActionID actID);
+	void setActionProgress(ActionID actID, double p);
+	void setActionProgressMaximum(ActionID actID, double p);
 	void setActionState(ActionID actID, unsigned int state=ITEMSTATE_FINISHED);
+	void setActionState(unsigned int pos, unsigned int state=ITEMSTATE_FINISHED);
+
+	double progress();
+	double progressMaximum();
 };
 
 
 extern ActionBus actionBus;
 extern string currentStatus;
 extern string currentItem;
-extern double currentProgress;
-extern double progressMax;
-extern bool progressEnabled;
-extern double currentProgress2;
-extern double progressMax2;
-extern bool progressEnabled2;
 extern ProgressData pData;
 //extern double dlProgress;
 //extern double dlProgressMax;

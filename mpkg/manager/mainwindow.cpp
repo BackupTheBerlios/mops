@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.79 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.80 2007/05/12 19:31:24 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -122,7 +122,11 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
-	if (!initializeOk) return;
+	if (!initializeOk)
+	{
+		printf("Attempt to run %s without initializing main window\n");
+		return;
+	}
 	string pkgBoxLabel = "Packages";
 	QString nameMask;
 	bool nameOk = false;
@@ -488,7 +492,7 @@ void MainWindow::showProgressWindow(bool flag)
 	}
 	else
 	{
-		if (ui.progressTable->isVisible())
+		if (ui.progressTable->isVisible() && !ui.splashFrame->isVisible())
 		{
 			ui.packageTable->show();
 			ui.selectAllButton->show();

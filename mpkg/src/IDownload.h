@@ -43,7 +43,7 @@ typedef std::vector<DownloadItem> DownloadsList;
 class IDownload {
 public:
 	virtual DownloadResults getFile(string url, string file, string cdromDevice = CDROM_DEVICE, string cdromMountPoint = CDROM_MOUNTPOINT) = 0;
-	virtual DownloadResults getFile(DownloadsList &list, double *itemnow, double *itemtotal, string *itemname, string cdromDevice = CDROM_DEVICE, string cdromMountPoint = CDROM_MOUNTPOINT, ActionBus *aaBus = &actionBus, ProgressData *prData = &pData) = 0;
+	virtual DownloadResults getFile(DownloadsList &list, string *itemname, string cdromDevice = CDROM_DEVICE, string cdromMountPoint = CDROM_MOUNTPOINT, ActionBus *aaBus = &actionBus, ProgressData *prData = &pData) = 0;
 	virtual ~IDownload() {};
 };
 

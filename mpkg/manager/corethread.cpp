@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.48 2007/05/11 01:19:35 i27249 Exp $
+ * $Id: corethread.cpp,v 1.49 2007/05/12 19:31:24 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -496,7 +496,7 @@ void errorBus::Stop()
 }
 
 
-
+//======================================================STATUS THREAD==================================================
 
 void statusThread::recvRedrawReady(bool flag)
 {
@@ -525,52 +525,36 @@ void statusThread::run()
 	setPriority(QThread::LowestPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
-	//int tmp_t, tmp_t2;
 	string dlStatus;
 	forever 
 	{
-		if (pData.size()>0 && redrawReady)
-		{
-			//if (pData.currentItem>=0)
-			//{
-			/*	if (pData.downloadAction)
-				{
-					pData.itemProgressMaximum.at(pData.currentItem)=dlProgressMax;
-					pData.itemProgress.at(pData.currentItem)=dlProgress;
-				}
-				*/
-				emit showProgressWindow(true);
-				emit loadProgressData();
-			//}
-		}
-		if (pData.size()==0) emit showProgressWindow(false);
-	/*	if (!progressEnabled && !progressEnabled2)
-		{
-			if (idleTime>idleThreshold) TIMER_RES = IDLE_RES;
-			else idleTime++;
-		}
-		else
-		{
-			idleTime=0;
-			TIMER_RES=RUNNING_RES;
-		}
-*/
 		switch(action)
 		{
 			case STT_Run:
-				
-				/*if (!progressEnabled2)*/ emit setStatus((QString) currentStatus.c_str());
-				
-				if (progressEnabled)
+				if (pData.size()>0 && redrawReady)
 				{
-					//TIMER_RES = 50;
-					dtmp = 100 * (currentProgress/progressMax);
+					emit showProgressWindow(true);
+					emit loadProgressData();
+				}
+				if (pData.size()==0) emit showProgressWindow(false);
+			
+				emit setStatus((QString) currentStatus.c_str());
+				/*if (currentStatus=="Building version list")
+				{
+					printf("progress = %f, total = %f, ", actionBus.progress(), actionBus.progressMaximum());
+					if (actionBus.idle()) printf("idle = true\n");
+					else printf("idle = false\n");
+				}*/
+				//if (progressEnabled)
+				if (!actionBus.idle())
+				{
+					dtmp = 100 * (actionBus.progress()/actionBus.progressMaximum());
 					tmp_c = (int) dtmp;
 					
 					if (!enabledBar)
 					{
 						emit enableProgressBar();
-						if (currentProgress<0)
+						if (actionBus.progressMaximum()==0)
 						{
 							emit initProgressBar(0);
 						}
@@ -581,12 +565,11 @@ void statusThread::run()
 					}
 					else
 					{
-						if (currentProgress>=0) emit setBarValue(tmp_c);
+						if (actionBus.progress()>=0) emit setBarValue(tmp_c);
 					}
 				}
 				else
 				{
-					//TIMER_RES = 50;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
@@ -594,13 +577,10 @@ void statusThread::run()
 					}
 				}
 				
-				if (progressEnabled2)
+				if (pData.size()>0)
 				{
-					//TIMER_RES = 50;
 					dtmp2 = 100 * (pData.getTotalProgress()/pData.getTotalProgressMax());
 					tmp_c2 = (int) dtmp2;
-					//dlStatus = "[" + IntToStr((int)currentProgress2) +"/" + IntToStr((int)progressMax2)+"] " + "Downloading "+currentItem+"... (" + IntToStr((int)currentProgress) + "/" + IntToStr((int)progressMax) + ")" ;
-					//emit setStatus ((QString) dlStatus.c_str());
 					if (!enabledBar2)
 					{
 						emit initProgressBar2(100);
@@ -614,7 +594,6 @@ void statusThread::run()
 				}
 				else
 				{
-					//TIMER_RES=50;
 					if (enabledBar)
 					{
 						emit disableProgressBar2();
@@ -656,7 +635,6 @@ coreThread::coreThread()
 	TIMER_RES=50;
 	idleTime=0;
 	idleThreshold=40;
-	//printf("Core thread created\n");
 	database = new mpkg;
 	currentAction = CA_Idle;
 }
@@ -665,7 +643,6 @@ coreThread::~coreThread()
 {
 	delete database;
 	delete packageList;
-	//printf("Thread destroyed correctly\n");
 }
 
 void coreThread::callQuit()
@@ -682,7 +659,6 @@ void coreThread::run()
 {
 
 	setPriority(QThread::LowPriority);
-	//printf("Running...\n");
 	forever 
 	{
 		if (currentAction == CA_Idle)
@@ -701,7 +677,6 @@ void coreThread::run()
 				emit initState(false);
 				_loadPackageDatabase();
 				sync();
-				emit initState(true);
 				break;
 
 			case CA_CommitQueue:
@@ -724,10 +699,8 @@ void coreThread::run()
 				break;
 			case CA_Quit:
 				delete database;
-				//printf("Called quit!\n");
 				return; // Exiting!
 			default:
-				//printf("Out of loop! WARNING!!!\n");
 				msleep(100);
 		}
 	}
@@ -747,9 +720,16 @@ void coreThread::loadPackageDatabase()
 
 void coreThread::_loadPackageDatabase()
 {
+	printf("%s: Adding actions\n", __func__);
+	actionBus.clear();
+	actionBus.addAction(ACTIONID_DBLOADING);
+	actionBus.addAction(ACTIONID_VERSIONBUILD);
+	printf("%s: Actions added\n", __func__);
 	pData.clear();
-	progressEnabled=true;
-	currentProgress=-1;
+	//progressEnabled=true;
+	//currentProgress=-1;
+	//actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = 0;
+
 	emit resetProgressBar();
 	currentStatus = "Loading package database";
 	emit loadingStarted();
@@ -757,15 +737,22 @@ void coreThread::_loadPackageDatabase()
 	SQLRecord sqlSearch;
 	if (database->get_packagelist(sqlSearch, tmpPackageList, false)!=0)
 	{
+		printf("error returned from get_packagelist\n");
 		emit errorLoadingDatabase();
 		emit sqlQueryEnd();
 		delete tmpPackageList;
 		return;
 	}
 	delete packageList;
+	//actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
 	currentStatus = "Building version list";
-	progressMax = tmpPackageList->size()*2;
+	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = tmpPackageList->size();
+	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DBLOADING))._progressMaximum = tmpPackageList->size();
+
+	//printf("init versioning...\n");
 	tmpPackageList->initVersioning();
+	actionBus.setActionState(ACTIONID_VERSIONBUILD);
+	actionBus.setCurrentAction(ACTIONID_DBLOADING);
 	currentStatus = "Initializing status vectors";
 	packageList = tmpPackageList;
 	newStatus.clear();
@@ -777,8 +764,6 @@ void coreThread::_loadPackageDatabase()
 	sync();
 	unsigned int count = packageList->size();
 	currentStatus = "Setting up GUI elements";
-	//progressMax = count;
-	//emit enableProgressBar();
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
@@ -798,15 +783,18 @@ void coreThread::_loadPackageDatabase()
 #endif
 
 		
-		currentProgress=count+i;
+		actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
 	}
 
 	emit disableProgressBar();
 	emit loadingFinished();
 	currentStatus = "Applying package filters";
+	emit initState(true);
 	emit applyFilters();
 	currentStatus = "Loading finished";
 	currentAction=CA_Idle;
+	actionBus.clear();
+	pData.clear();
 }
 
 void coreThread::getCdromName()
@@ -866,9 +854,6 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 			break;
 	}
 	
-	//string pName;
-	
-	//string pName = "<table><tbody><tr><td></td><td><b>"+_p->get_name()+"</b> "+_p->get_version() + "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
@@ -887,7 +872,6 @@ void coreThread::_updatePackageDatabase()
 	currentStatus = "Updating package database from repositories...";
 	emit loadingStarted();
 	database->update_repository_data();
-	//emit loadData();
 	currentAction = CA_LoadDatabase;
 }
 
@@ -907,7 +891,6 @@ void coreThread::_commitQueue()
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
-	//vector<string> upgrade_queue;
 	vector<int> reset_queue;
 	for (unsigned int i = 0; i< newStatus.size(); i++)
 	{
@@ -919,9 +902,6 @@ void coreThread::_commitQueue()
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
 				case ST_INSTALL:
-		//			if (packageList->get_package(i)->isUpdate())
-	//					upgrade_queue.push_back(packageList->get_package(i)->get_name());
-		//			else
 					install_queue.push_back(packageList->get_package(i)->get_name());
 					break;
 				case ST_REMOVE:
@@ -935,7 +915,6 @@ void coreThread::_commitQueue()
 			}
 		}
 	}
-	//database->upgrade(upgrade_queue);
 	database->uninstall(remove_queue);
 	database->install(install_queue);
 	database->purge(purge_queue);
@@ -949,6 +928,9 @@ void coreThread::_commitQueue()
 	delete database;
 	database = new mpkg;
 	currentAction = CA_LoadDatabase;
+	actionBus.clear();
+	pData.clear();
+
 }
 
 void coreThread::syncData()

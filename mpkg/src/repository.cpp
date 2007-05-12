@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.36 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: repository.cpp,v 1.37 2007/05/12 19:31:24 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -68,10 +68,10 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 	tmpstr = packageslist;
 
 	// Visualization
-	currentProgress = 0;
+	actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
 	unsigned int tmp_max = tmpstr.length();
-	progressMax = tmpstr.length();
-	progressEnabled = true;
+	actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, (double) tmpstr.length());
+	//progressEnabled = true;
 
 	while (!endReached)
 	{
@@ -82,7 +82,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			return MPKGERROR_ABORTED;
 		}
 
-		currentProgress = tmp_max - tmpstr.length();
+		actionBus.setActionProgress (ACTIONID_DBUPDATE, (double) tmp_max - tmpstr.length());
 		debug("Parsing "+IntToStr(num)+" package");
 		// Stage 1: retrieving dirty info
 		pos = tmpstr.find(pkgNameKeyword);
@@ -343,7 +343,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		//if (num == 1) return 0;
 		debug("done");
 	}
-	progressEnabled = false;
+	//progressEnabled = false;
 
 	return 0;
 }	// End slackpackages2list()
@@ -501,6 +501,7 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 // Add other such functions for other repository types.
 int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned int type)
 {
+	printf("%s\n",__func__);
 	if (actionBus._abortActions)
 	{
 		actionBus._abortComplete=true;
@@ -522,10 +523,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{
-
+		printf("TEST:\n");
+		actionBus.getActionState(0);
 		debug("trying MPKG, type = "+ IntToStr(type));
 	       if (CommonGetFile(server_url + "packages.xml.gz", index_filename+".gz")==DOWNLOAD_OK)
 		{
+			printf("---------------------------------GetFile ok, checking\n");
+			actionBus.getActionState(0);
 
 			
 			debug("download ok, validating contents...");
@@ -597,6 +601,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	{
 		//printf("Repository type detected successfully, proceeding next...\n");
 	}
+	printf("%s: Retr ok\n", __func__);
 	PACKAGE pkg;
 	string xml_name=index_filename;
 	XMLNode repository_root;
@@ -622,9 +627,10 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					return 0;
 				}
 				
-				currentProgress = 0;
-				progressMax = pkg_count;
-				progressEnabled = true;
+				actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
+				//progressMax = pkg_count;
+				//progressEnabled = true;
+				actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
 				for (int i=0; i<pkg_count; i++)
 				{
 					if (actionBus._abortActions)
@@ -634,7 +640,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 						return MPKGERROR_ABORTED;
 					}
 
-					currentProgress = i;
+					actionBus.setActionProgress(ACTIONID_DBUPDATE, i);
 					pkg.clear();
 					xml2package(repository_root.getChildNode("package", i), &pkg);
 					// Adding location data
@@ -647,7 +653,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					pkg.get_locations()->get_location(0)->get_server()->set_url(server_url);
 					packages->add(pkg);
 				}
-				progressEnabled = false;
+				//progressEnabled = false;
 			break;
 		case TYPE_SLACK:
 			//printf("Parsing slackware repository\n");
@@ -657,6 +663,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		default:
 			break;
 	}
+	printf("get_index exit\n");
 	return ret;
 }
 

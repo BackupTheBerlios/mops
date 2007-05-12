@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.39 2007/05/10 02:39:08 i27249 Exp $
+	$Id: dataunits.cpp,v 1.40 2007/05/12 19:31:24 i27249 Exp $
 */
 
 
@@ -2177,9 +2177,12 @@ void PACKAGE_LIST::initVersioning()
 	// Делаем пока не оптимально но надежно
 	// Шаг первый. Список альтернативных версий
 	//printf("initVersioning: step 1\n");
+	
+	actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
 	for (int i=0; i<packages.size(); i++)
 	{
-		currentProgress=i;
+
+		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._currentProgress=i;
 		packages.at(i).clearVersioning();
 		for (int j=0; j<packages.size(); j++)
 		{
@@ -2259,6 +2262,7 @@ void PACKAGE_LIST::initVersioning()
 		packages.at(i).maxVersion=max_version;
 		packages.at(i).installedVersion = installed_version;
 	}
+	actionBus.setActionState(ACTIONID_VERSIONBUILD);
 	versioningInitialized=true;
 
 	} //try

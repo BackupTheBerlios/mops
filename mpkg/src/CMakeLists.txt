@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.24 2007/05/09 17:46:49 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.25 2007/05/12 19:31:24 i27249 Exp $
 #
 
 # Project name
@@ -13,7 +13,7 @@ SET(BUILD_SHARED_LIBS ON)
 IF(APPLE)
 	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O5 -funroll-loops -minline-all-stringops -pipe -fomit-frame-pointer -march=prescott -DAPPLE_DEFINED -DUSE_INTERNAL_SED -DDEP_NORMALIZE -DCONFIG_FILE='"/Users/aix/mpkg.xml"')
 ELSE(APPLE)
-	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O3 -pipe  -funroll-loops -minline-all-stringops -finline-functions -fomit-frame-pointer -march=prescott -DCONFIG_FILE='"/etc/mpkg.xml"' -DUSE_SYSTEM_SED -DDEP_NORMALIZE -DLINUX_DEFINED)
+	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O2 -pipe  -funroll-loops -minline-all-stringops -finline-functions -fomit-frame-pointer -march=prescott -DCONFIG_FILE='"/etc/mpkg.xml"' -DUSE_SYSTEM_SED -DDEP_NORMALIZE -DLINUX_DEFINED)
 ENDIF(APPLE)
 
 # Include directories: some diffs between linux and OSX, but doesn't require changes.

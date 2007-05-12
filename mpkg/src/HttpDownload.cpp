@@ -181,20 +181,19 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlItem.name = url;
 	dlItem.status = DL_STATUS_WAIT;
 	dlItem.priority = 0;
-	double dlnow, dltotal, itemnow, itemtotal;
 	ProgressData z;
-	ActionBus a;
-	a.addAction(ACTIONID_DBUPDATE);
+	//a.addAction(ACTIONID_DBUPDATE);
 	string name;
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
 	int currentItem=0;
-	return this->getFile(dlList, &itemnow, &itemtotal, &name, cdromDevice, cdromMountPoint, &a, &z);
+	return this->getFile(dlList, &name, cdromDevice, cdromMountPoint, &actionBus, &z);
 	
 }
 
-DownloadResults HttpDownload::getFile(DownloadsList &list, double *itemnow, double *itemtotal, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint,  ActionBus *aaBus, ProgressData *prData)
+DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint,  ActionBus *aaBus, ProgressData *prData)
 {
+	printf("getFile STARTED, checking state------------\n");
 	ppActionBus=aaBus;
 	ppData=prData;
 	if (list.empty()) 
@@ -292,7 +291,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *itemnow, doub
 	DownloadItem *item;
 	FILE* out;
 	bool is_have_error = false;
-	*itemtotal = list.size();
 	string dir;
 	for (int i=0; i<list.size(); i++)
 	{
@@ -301,6 +299,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, double *itemnow, doub
 
 	for (int i = 0; i < list.size(); i++ ) {
 process:
+
 		item = &(list.at(i));
 		*itemname = item->name;
 		currentItemID=item->itemID;
@@ -415,7 +414,8 @@ process:
     			}
         	}
 
-		*itemnow = i;
+		if (ppActionBus->currentProcessingID()==ACTIONID_DOWNLOAD) ppActionBus->setActionProgress(ACTIONID_DOWNLOAD, i);
+
     	}
 	if (!is_have_error) return DOWNLOAD_OK;
 	else return DOWNLOAD_ERROR;
