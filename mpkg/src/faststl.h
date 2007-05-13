@@ -1,6 +1,6 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.h,v 1.3 2007/05/13 21:09:23 i27249 Exp $
+ * $Id: faststl.h,v 1.4 2007/05/13 21:41:12 i27249 Exp $
  * ******************************************************/
 
 
@@ -15,6 +15,7 @@ class FastString
 		char *data;
 	public:
 		FastString();
+		FastString(const char *c);
 		~FastString();
 		char operator [] (unsigned int i);
 		bool operator = (char c);
@@ -37,7 +38,7 @@ class FastString
 		//void push_back(char c);
 		void clear();
 		bool empty();
-		char * c_str();
+		const char * c_str();
 };
 
 

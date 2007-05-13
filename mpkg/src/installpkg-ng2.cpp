@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.12 2007/05/10 02:39:08 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.13 2007/05/13 21:41:12 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -151,10 +151,25 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		SQLRecord sqlSearch;
+		/*SQLRecord sqlSearch;
 		PACKAGE_LIST pkgList;
 		core.get_packagelist(sqlSearch, &pkgList,false);
-		printf("Total installed: %s\n", humanizeSize(pkgList.totalInstalledSize()).c_str());
+		*/
+		FastString str;
+		str = "void!";
+		printf("%s\n", str.c_str());
+		str += "multi";
+		str += "multi";
+		printf("%s\n", str.c_str());
+		str = "";
+		printf("[%s]\n", str.c_str());
+		printf("sizeof = %d\n", str.length());
+		string z;
+		z = "1";
+		printf("STL = %d\n", z.size());
+		str = "I am the dog";
+		printf("am found: [%s]\n", str.substr(str.find("am"), 2).c_str());
+
 		return 0;
 	}
 	if (action == ACT_REMOVE)

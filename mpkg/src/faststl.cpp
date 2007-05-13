@@ -1,6 +1,6 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.cpp,v 1.2 2007/05/13 21:09:23 i27249 Exp $
+ * $Id: faststl.cpp,v 1.3 2007/05/13 21:41:12 i27249 Exp $
  * ******************************************************/
 
 
@@ -8,15 +8,23 @@
 
 FastString::FastString()
 {
+	data = (char *) malloc(1);
 }
 
 FastString::~FastString()
 {
 }
 
+FastString::FastString ( const char *c)
+{
+	printf("%s: str = %s\n", __func__, c);
+	data = (char *) malloc(sizeof(c));
+	strcpy(data,c);
+}
+
 char FastString::operator [] (unsigned int i)
 {
-	if (this->length()<i) return data[i];
+	if (this->length()>i) return data[i];
 	else
 	{
 		fprintf(stderr, "%s: out of range (length = %d, requested %d)\n", __func__, length(), i);
@@ -26,28 +34,31 @@ char FastString::operator [] (unsigned int i)
 
 bool FastString::operator = (const char *c)
 {
-	realloc(data, sizeof(c));
+	//free(&data);
+	realloc(&data, sizeof(c));
+	//realloc(&data, sizeof(c));
 	strcpy(data, c);
 	return true;
 }
 
 bool FastString::operator = (char c)
 {
-	realloc(data,sizeof(c));
+	if (data!=NULL) free(&data);
+	realloc(&data,sizeof(c));
 	strcpy(data, &c);
 	return true;
 }
 
 bool FastString::operator += (const char *c)
 {
-	realloc(data, sizeof(data)+sizeof(c)-1);
+	realloc(&data, sizeof(data)+sizeof(c)-1);
 	strcat(data,c);
 	return true;
 }
 
 bool FastString::operator += (FastString str)
 {
-	realloc(data, sizeof(data)+sizeof(str.c_str())-1);
+	realloc(&data, sizeof(data)+sizeof(str.c_str())-1);
 	strcat(data,str.c_str());
 	return true;
 }
@@ -66,14 +77,14 @@ bool FastString::operator == (const char *c)
 
 FastString FastString::operator + (FastString str)
 {
-	realloc(data, sizeof(data)+sizeof(str.c_str())-1);
+	realloc(&data, sizeof(data)+sizeof(str.c_str())-1);
 	strcat(data,str.c_str());
 	return *this;
 }
 
 FastString FastString::operator + (const char *c)
 {
-	realloc(data, sizeof(data)+sizeof(c)-1);
+	realloc(&data, sizeof(data)+sizeof(c)-1);
 	strcat(data,c);
 	return *this;
 }
@@ -91,14 +102,15 @@ unsigned int FastString::size()
 FastString FastString::substr(unsigned int start, int length)
 {
 	if (length<0) length = strlen(data) - start;
-	char *tmp;
-	realloc(tmp, length);
+	char tmp[length];
+	//tmp = (char *) malloc(length+1);
 	for (unsigned int i=start; i<=start+length; i++)
 	{
 		tmp[i-start]=data[i];
 	}
 	FastString _tmp;
-       _tmp	= tmp;
+        _tmp	= tmp;
+        free(&tmp);
 	return _tmp;
 }
 
@@ -118,6 +130,7 @@ int FastString::find_first_of(FastString str)
 
 int FastString::find(FastString str)
 {
+	printf("%s: str = %s\n", __func__, str.c_str());
 	int z = strlen(data);
 	int y = str.length();
 	if (str.length()>z) return std::string::npos;
@@ -164,7 +177,7 @@ bool FastString::empty()
 	if (strlen(data)==0) return true;
 	else return false;
 }
-char * FastString::c_str()
+const char * FastString::c_str()
 {
 	return data;
 }
