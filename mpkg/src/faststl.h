@@ -1,35 +1,44 @@
+/********************************************************
+ * A try to reimplement slow STL string to make it faster
+ * $Id: faststl.h,v 1.3 2007/05/13 21:09:23 i27249 Exp $
+ * ******************************************************/
+
 
 #ifndef FASTSTL_H_
 #define FASTSTL_H_
 #include <stdio.h>
 #include <string>
 using namespace std;
-/*class string
+class FastString
 {
 	private:
 		char *data;
 	public:
-		string();
-		~string();
-		bool operator [] (int i);
+		FastString();
+		~FastString();
+		char operator [] (unsigned int i);
 		bool operator = (char c);
-		bool operator = (char *c);
+		bool operator = (const char *c);
 		bool operator += (char c);
-		bool operator += (char *c);
-		tring operator == (char *c);
-		string operator = (string str);
-		string operator + (string str);
+		bool operator += (const char *c);
+		bool operator += (FastString str);
+		bool operator == (const char *c);
+		bool operator == (FastString str);
+		FastString operator + (FastString str);
+		FastString operator + (const char *c);
 		unsigned int length();
 		unsigned int size();
-		int find_first_of(string str);
-		int find(string str);
-		int find_last_of(string str);
-		void push_back(string str);
-		void push_back(char *c);
-		void push_back(char c);
+		FastString substr(unsigned int start, int end=-1);
+		int find_first_of(FastString str);
+		int find(FastString str);
+		int find_last_of(FastString str);
+		//void push_back(FastString str);
+		//void push_back(char *c);
+		//void push_back(char c);
 		void clear();
 		bool empty();
-};*/
+		char * c_str();
+};
 
 
 

@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.25 2007/05/12 19:31:24 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.26 2007/05/13 21:09:23 i27249 Exp $
 #
 
 # Project name
@@ -13,7 +13,7 @@ SET(BUILD_SHARED_LIBS ON)
 IF(APPLE)
 	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O5 -funroll-loops -minline-all-stringops -pipe -fomit-frame-pointer -march=prescott -DAPPLE_DEFINED -DUSE_INTERNAL_SED -DDEP_NORMALIZE -DCONFIG_FILE='"/Users/aix/mpkg.xml"')
 ELSE(APPLE)
-	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O2 -pipe  -funroll-loops -minline-all-stringops -finline-functions -fomit-frame-pointer -march=prescott -DCONFIG_FILE='"/etc/mpkg.xml"' -DUSE_SYSTEM_SED -DDEP_NORMALIZE -DLINUX_DEFINED)
+	ADD_DEFINITIONS(-DNEW_INSTALL_SYSTEM -O0 -pipe  -funroll-loops -minline-all-stringops -finline-functions -fomit-frame-pointer -march=prescott -DCONFIG_FILE='"/etc/mpkg.xml"' -DUSE_SYSTEM_SED -DDEP_NORMALIZE -DLINUX_DEFINED)
 ENDIF(APPLE)
 
 # Include directories: some diffs between linux and OSX, but doesn't require changes.
@@ -33,7 +33,7 @@ ADD_LIBRARY(mpkg-http libmpkg-http HttpDownload)
 TARGET_LINK_LIBRARIES(mpkg-http dl curl)
 
 # TARGET: building core library (libmpkg.so)
-ADD_LIBRARY(mpkg bus DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
+ADD_LIBRARY(mpkg bus faststl DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 
 # TARGET: building static executable (installpkg-ng-static)
 #ADD_EXECUTABLE(installpkg-ng-static DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines installpkg-ng libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
