@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.29 2007/05/13 22:04:52 i27249 Exp $
+	$Id: dataunits.h,v 1.30 2007/05/13 23:05:26 i27249 Exp $
 */
 
 
@@ -191,6 +191,7 @@ class DEPENDENCY
 	versionData version_data;
     public:
 	int get_id();
+	string getDepInfo();
 	string get_condition(bool sql=false);
 	string get_vcondition();
 	string get_type(bool sql=false);
@@ -401,7 +402,6 @@ class PACKAGE
     private:
 	// INTERNAL DATA //
 	int package_id;
-
 	string package_name;
 	string package_version;
 	string package_arch;
@@ -430,6 +430,7 @@ class PACKAGE
 
     public:
 
+	int priority;
 	int itemID;	// For status purposes only, means the number in PackageData vector
 	bool isBroken;
 	bool isRequirement;
@@ -548,6 +549,9 @@ class PACKAGE_LIST
     private:
 	vector<PACKAGE> packages;
     public:
+
+	void buildDependencyOrder();
+	int getPackageNumberByName(string name);
 	double totalCompressedSize();
 	double totalInstalledSize();
 	double totalInstalledSizeByAction(int select_action);
@@ -594,3 +598,4 @@ bool meetVersion(versionData condition, string packageVersion);
 
 #endif //DATAUNITS_H_
 
+int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id);

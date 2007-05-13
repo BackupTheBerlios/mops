@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.42 2007/05/13 22:04:52 i27249 Exp $
+	$Id: dataunits.cpp,v 1.43 2007/05/13 23:05:26 i27249 Exp $
 */
 
 
@@ -550,6 +550,14 @@ bool DEPENDENCY::operator == (DEPENDENCY ndep)
 	if (dependency_broken!=ndep.get_broken()) return false;
 	return true;
 }
+
+string DEPENDENCY::getDepInfo()
+{
+	string ret;
+	ret = dependency_package_name + " " + get_vcondition() + " " +get_package_version();
+	return ret;
+};
+
 
 versionData DEPENDENCY::get_version_data()
 {
@@ -2313,4 +2321,51 @@ bool meetVersion(versionData condition, string packageVersion)
 	}
 	return true;
 }
+
+
+vector<unsigned int> checkedPackages;
+bool notTested(int num)
+{
+	for (unsigned int i=0; i<checkedPackages.size(); i++)
+	{
+		if (checkedPackages.at(i)==num) return false;
+	}
+	return true;
+}
+int PACKAGE_LIST::getPackageNumberByName(string name)
+{
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (packages.at(i).get_name()==name) return i;
+	}
+	return -1;
+}
+void PACKAGE_LIST::buildDependencyOrder()
+{
+	int pkgSize = this->size();
+	for (int i=0; i<pkgSize; i++)
+	{
+		get_max_dtree_length(this, i);
+	}
+}
+
+int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
+{
+	PACKAGE *_p = pkgList->get_package(package_id);
+	int ret=0;
+	int max_ret=-1;
+	//if (dependencies.size()>0) ret = 1;
+	for (int i=0; i<_p->get_dependencies()->size(); i++)
+	{
+		ret = 1 + get_max_dtree_length(pkgList, pkgList->getPackageNumberByName(_p->get_dependencies()->get_dependency(i)->get_package_name()));
+		if (max_ret < ret) max_ret = ret;
+	}
+	_p->priority=ret;
+	return ret;
+}
+
+
+
+
+
 

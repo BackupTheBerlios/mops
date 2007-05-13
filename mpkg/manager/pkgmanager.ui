@@ -697,13 +697,6 @@
        <number>6</number>
       </property>
       <item>
-       <widget class="QPushButton" name="updateButton" >
-        <property name="text" >
-         <string>Update package data</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="applyButton" >
         <property name="text" >
          <string>Apply changes</string>
@@ -767,12 +760,6 @@
      <height>31</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuRepositories" >
-    <property name="title" >
-     <string>Repositories</string>
-    </property>
-    <addaction name="actionAdd_remove_repositories" />
-   </widget>
    <widget class="QMenu" name="menuHelp" >
     <property name="title" >
      <string>Help</string>
@@ -810,6 +797,13 @@
     <addaction name="actionClean_cache" />
     <addaction name="separator" />
     <addaction name="actionQuit" />
+   </widget>
+   <widget class="QMenu" name="menuRepositories" >
+    <property name="title" >
+     <string>Repositories</string>
+    </property>
+    <addaction name="actionAdd_remove_repositories" />
+    <addaction name="actionUpdate_data" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />
@@ -1022,6 +1016,11 @@
    </property>
    <property name="text" >
     <string>Show unavailable</string>
+   </property>
+  </action>
+  <action name="actionUpdate_data" >
+   <property name="text" >
+    <string>Update data</string>
    </property>
   </action>
  </widget>

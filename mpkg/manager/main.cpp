@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.20 2007/05/13 19:56:33 i27249 Exp $
+ *     $Id: main.cpp,v 1.21 2007/05/13 23:05:26 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.actionShow_configexist, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 	QObject::connect(mw.ui.actionShow_unavailable, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 	QObject::connect(mw.ui.actionCore_settings, SIGNAL(triggered()), &mw, SLOT(showCoreSettings()));
-	QObject::connect(mw.ui.updateButton, SIGNAL(clicked()), &mw, SLOT(updateData()));
+	QObject::connect(mw.ui.actionUpdate_data, SIGNAL(triggered()), &mw, SLOT(updateData()));
 	QObject::connect(mw.ui.packageTable, SIGNAL(itemSelectionChanged()), &mw, SLOT(showPackageInfo()));
 	QObject::connect(mw.ui.quickPackageSearchEdit, SIGNAL(textEdited(const QString &)), &mw, SLOT(applyPackageFilter()));
 

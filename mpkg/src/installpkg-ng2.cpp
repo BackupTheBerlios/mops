@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.14 2007/05/13 21:52:50 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.15 2007/05/13 23:05:27 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -156,6 +156,11 @@ int main (int argc, char **argv)
 		core.get_packagelist(sqlSearch, &pkgList,false);
 		printf("total %d packages\n", pkgList.size());
 		pkgList.initVersioning();
+		pkgList.buildDependencyOrder();
+		for (int i=0; i<pkgList.size(); i++)
+		{
+			printf("%s: %d\n", pkgList.get_package(i)->get_name().c_str(), pkgList.get_package(i)->priority);
+		}
 		
 		
 		/*
