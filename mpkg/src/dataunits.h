@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.28 2007/05/13 21:52:50 i27249 Exp $
+	$Id: dataunits.h,v 1.29 2007/05/13 22:04:52 i27249 Exp $
 */
 
 
@@ -24,7 +24,7 @@ class SERVER_TAG
     public:
 	// Methods
 	int get_id();
-	string get_name(bool sql=true);
+	string get_name(bool sql=false);
 
 	bool operator != (SERVER_TAG stag);
 	bool operator == (SERVER_TAG stag);
@@ -82,9 +82,9 @@ class SERVER
 
     public:
 	int get_id();
-	string get_url(bool sql=true);
+	string get_url(bool sql=false);
 	int get_type();
-	string get_priority(bool sql=true);
+	string get_priority(bool sql=false);
 	SERVER_TAG_LIST* get_tags();
 
 	int set_id(int id);
@@ -136,7 +136,7 @@ class LOCATION
 	bool operator == (LOCATION location);
 
 	long get_id();
-	string get_path(bool sql=true);
+	string get_path(bool sql=false);
 	void set_local();
 	bool get_local();
 	void unset_local();
@@ -191,11 +191,11 @@ class DEPENDENCY
 	versionData version_data;
     public:
 	int get_id();
-	string get_condition(bool sql=true);
+	string get_condition(bool sql=false);
 	string get_vcondition();
-	string get_type(bool sql=true);
-	string get_package_name(bool sql=true);
-	string get_package_version(bool sql=true);
+	string get_type(bool sql=false);
+	string get_package_name(bool sql=false);
+	string get_package_version(bool sql=false);
 	string get_vbroken();
 	int get_broken();
 	versionData get_version_data();
@@ -225,7 +225,7 @@ class TAG
 
     public:
 	int get_id();
-	string get_name(bool sql=true);
+	string get_name(bool sql=false);
 	int set_id(int id);
 	int set_name(string name);
 	
@@ -252,7 +252,7 @@ class FILES
 	bool operator != (FILES nfile);
 	bool operator == (FILES nfile);
 	int get_id();
-	string get_name(bool sql=true);
+	string get_name(bool sql=false);
 	int get_type();
 	bool config();
 
@@ -342,10 +342,10 @@ class SCRIPTS
 	bool operator == (SCRIPTS scr);
 	int get_id();
 	string get_vid();
-	string get_preinstall(bool sql=true);
-	string get_postinstall(bool sql=true);
-	string get_preremove(bool sql=true);
-	string get_postremove(bool sql=true);
+	string get_preinstall(bool sql=false);
+	string get_postinstall(bool sql=false);
+	string get_preremove(bool sql=false);
+	string get_postremove(bool sql=false);
 
 	void set_preinstall(string preinst);
 	void set_postinstall(string postinst);
@@ -376,8 +376,8 @@ class DESCRIPTION
 		int set_shorttext(string short_text);
 		int get_id();
 		string get_language();
-		string get_text(bool sql=true);
-		string get_shorttext(bool sql=true);
+		string get_text(bool sql=false);
+		string get_shorttext(bool sql=false);
 		void clear();
 };
 
@@ -451,19 +451,19 @@ class PACKAGE
 	string get_build(bool sql=false);
 	string get_compressed_size(bool sql=false);
 	string get_installed_size(bool sql=false);
-	string get_short_description(bool sql=true);
-	string get_description(bool sql=true);
-	string get_changelog(bool sql=true);
-	string get_packager(bool sql=true);
-	string get_packager_email(bool sql=true);
+	string get_short_description(bool sql=false);
+	string get_description(bool sql=false);
+	string get_changelog(bool sql=false);
+	string get_packager(bool sql=false);
+	string get_packager_email(bool sql=false);
 	bool available();
 	bool installed();
 	bool configexist();
 	int action();
 	bool reachable(bool includeConfigFiles=false);	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
 	string get_vstatus(bool color=false);
-	string get_md5(bool sql=true);
-	string get_filename(bool sql=true);
+	string get_md5(bool sql=false);
+	string get_filename(bool sql=false);
 	int get_err_type();
 
 	int set_id(int id);

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.38 2007/05/09 17:46:49 i27249 Exp $
+ *	$Id: core.cpp,v 1.39 2007/05/13 22:04:52 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -1124,7 +1124,7 @@ string SQLRecord::getFieldName(unsigned int num)
 {
 	if (num<field.size() && num >=0)
 	{
-		return field[num].fieldname;
+		return PrepareSql(field[num].fieldname);
 	}
 	else return "__OVERFLOW__";
 }
@@ -1133,7 +1133,7 @@ string SQLRecord::getValue(string fieldname)
 {
 	for (unsigned int i=0;i<field.size();i++)
 	{
-		if (field[i].fieldname==fieldname) return field[i].value;
+		if (field[i].fieldname==fieldname) return PrepareSql(field[i].value);
 	}
 	//printf("field %s not found\n", fieldname.c_str());
 	return ""; // Means error
@@ -1167,7 +1167,7 @@ string SQLRecord::getValueI(unsigned int num)
 {
 	if (num<field.size() && num>=0)
 	{
-		return field[num].value;
+		return PrepareSql(field[num].value);
 	}
 	else return "__OVERFLOW__";
 }

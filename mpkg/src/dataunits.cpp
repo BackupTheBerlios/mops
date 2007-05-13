@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.41 2007/05/13 21:52:50 i27249 Exp $
+	$Id: dataunits.cpp,v 1.42 2007/05/13 22:04:52 i27249 Exp $
 */
 
 
@@ -14,14 +14,15 @@
 
 string PrepareSql(string str)
 {
-	string ret;
+	// Need optimizations, if possible
+	mstring ret;
 	if (str.empty()) return "0";
 	for (unsigned int i=0;i<str.length();i++)
 	{
 		if (str[i]=='\'') ret+="\'";
 		ret+=str[i];
 	}
-	return ret;
+	return ret.s_str();
 }
 
 bool SERVER_TAG::operator != (SERVER_TAG stag)
