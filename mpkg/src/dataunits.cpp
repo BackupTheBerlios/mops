@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.40 2007/05/12 19:31:24 i27249 Exp $
+	$Id: dataunits.cpp,v 1.41 2007/05/13 21:52:50 i27249 Exp $
 */
 
 
@@ -2179,12 +2179,13 @@ void PACKAGE_LIST::initVersioning()
 	//printf("initVersioning: step 1\n");
 	
 	actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
-	for (int i=0; i<packages.size(); i++)
+	int pkgSize = packages.size();
+	for (int i=0; i<pkgSize; i++)
 	{
 
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._currentProgress=i;
 		packages.at(i).clearVersioning();
-		for (int j=0; j<packages.size(); j++)
+		for (int j=0; j<pkgSize; j++)
 		{
 			// Если это не тот же пакет и имена совпадают - добавляем номер в список
 			if (i!=j && strcmp(packages.at(i).get_name().c_str(), packages.at(j).get_name().c_str())==0)

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.27 2007/05/10 02:39:08 i27249 Exp $
+	$Id: dataunits.h,v 1.28 2007/05/13 21:52:50 i27249 Exp $
 */
 
 
@@ -401,10 +401,15 @@ class PACKAGE
     private:
 	// INTERNAL DATA //
 	int package_id;
+
 	string package_name;
 	string package_version;
 	string package_arch;
 	string package_build;
+/*	char *c_package_name;
+	char *c_package_version;
+	char *c_package_arch;
+	char *c_package_build;*/
 	string package_compressed_size;
 	string package_installed_size;
 	string package_short_description;
@@ -440,12 +445,12 @@ class PACKAGE
 	bool isUpdate();
 	string get_fullversion();
 	int get_id();
-	string get_name(bool sql=true);
-	string get_version(bool sql=true);
-	string get_arch(bool sql=true);
-	string get_build(bool sql=true);
-	string get_compressed_size(bool sql=true);
-	string get_installed_size(bool sql=true);
+	string get_name(bool sql=false);
+	string get_version(bool sql=false);
+	string get_arch(bool sql=false);
+	string get_build(bool sql=false);
+	string get_compressed_size(bool sql=false);
+	string get_installed_size(bool sql=false);
 	string get_short_description(bool sql=true);
 	string get_description(bool sql=true);
 	string get_changelog(bool sql=true);
