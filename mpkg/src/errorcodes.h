@@ -1,6 +1,6 @@
 /*
  * MOPSLinux package system - error codes
- * $Id: errorcodes.h,v 1.2 2007/05/09 17:46:49 i27249 Exp $
+ * $Id: errorcodes.h,v 1.3 2007/05/14 13:45:54 i27249 Exp $
  */
 
 #ifndef ERRORCODES_H_
@@ -90,9 +90,9 @@ extern mpkgErrorReturn errorReturn;
 #define MPKGERROR_CRITICAL	-6
 #define MPKGERROR_AMBIGUITY	-7
 #define MPKGERROR_INCORRECTDATA -8
-/*
-#define MPKGERROR_
-#define MPKGERROR_
+#define MPKGERROR_FILEOPERATIONS -9
+
+/*#define MPKGERROR_
 #define MPKGERROR_
 #define MPKGERROR_
 #define MPKGERROR_

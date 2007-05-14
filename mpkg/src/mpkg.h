@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.22 2007/05/10 02:39:08 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.23 2007/05/14 13:45:55 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "config.h"
 #include "sql_pool.h"
+#include <ftw.h>
 class mpkgDatabase
 {
 	public:
@@ -38,7 +39,14 @@ class mpkgDatabase
 		
 		// Checking functions
 		int check_file_conflicts (PACKAGE *package);
+		int backupFile(string filename, int overwritten_package_id, int conflicted_package_id);
+		void mpkgDatabase::clean_backup_directory();
 		int check_install_package(PACKAGE *package); 
+		int add_conflict_record(int conflicted_id, int overwritten_id, string file_name);
+		int delete_conflict_record(int conflicted_id, string file_name);
+		FILE_LIST get_conflict_records(int conflicted_id);
+
+
 
 		// Action functions
 		string _install_package(PACKAGE *package);

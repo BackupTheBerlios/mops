@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.67 2007/05/14 10:18:33 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.68 2007/05/14 13:45:54 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -211,6 +211,8 @@ int mpkgDatabase::commit_actions()
 		
 		}
 		sqlSearch.clear();
+
+		clean_backup_directory();
 		actionBus.setActionState(ACTIONID_REMOVE);
 	}
 
@@ -703,6 +705,25 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			}
 		}
 	}
+	// Restoring backups
+	FILE_LIST restore = get_conflict_records(package->get_id());
+	if (!restore.IsEmpty())
+	{
+		string cmd;
+
+		for (int i=0; i<restore.size(); i++)
+		{
+			cmd = "mkdir -p ";
+		       	cmd += SYS_ROOT + restore.get_file(i)->backup_file.substr(0, restore.get_file(i)->backup_file.find_last_of("/"));
+			system(cmd.c_str());
+			cmd = "mv ";
+		        cmd += SYS_BACKUP + restore.get_file(i)->backup_file + " ";
+		        cmd += SYS_ROOT	+ restore.get_file(i)->backup_file;
+			system(cmd.c_str());
+			delete_conflict_record(package->get_id(), restore.get_file(i)->backup_file);
+		}
+	}
+
 	pData.increaseItemProgress(package->itemID);
 	set_installed(package->get_id(), ST_NOTINSTALLED);
 	set_action(package->get_id(), ST_NONE);

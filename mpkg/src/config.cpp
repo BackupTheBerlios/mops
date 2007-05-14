@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.27 2007/05/10 02:39:08 i27249 Exp $
+ * $Id: config.cpp,v 1.28 2007/05/14 13:45:54 i27249 Exp $
  *
  * ***************************************************/
 
@@ -89,7 +89,7 @@ int loadGlobalConfig(string config_file)
 				}
 				for (int i=0; i<config.getChildNode("repository_list").nChildNode("disabled_repository"); i++)
 				{
-					disabled_repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("disabled_repository").getText());
+					disabled_repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("disabled_repository",i).getText());
 				}
 			}
 			if (config.nChildNode("scripts_dir")!=0)
@@ -248,6 +248,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 
 	if (config.nChildNode("cdrom_device")==0)
 	{
+		printf("CD not detected\n");
 		config.addChild("cdrom_device");
 		config.getChildNode("cdrom_device").addText(get_cdromdevice().c_str());
 	}
@@ -314,6 +315,7 @@ vector<string> mpkgconfig::get_disabled_repositorylist()
 
 string mpkgconfig::get_dburl()
 {
+	printf("filename = %s\n", DB_FILENAME.c_str());
 	return "sqlite://"+DB_FILENAME;
 }
 
@@ -433,6 +435,7 @@ int mpkgconfig::set_cdromdevice(string cdromDevice)
 	tmp.addChild("cdrom_device");
 	printf("setting cd device to %s\n", cdromDevice.c_str());
 	tmp.getChildNode("cdrom_device").addText(cdromDevice.c_str());
+	return setXMLConfig(tmp);
 }
 
 int mpkgconfig::set_cdrommountpoint(string cdromMountPoint)
@@ -442,6 +445,7 @@ int mpkgconfig::set_cdrommountpoint(string cdromMountPoint)
 	tmp.getChildNode("cdrom_mountpoint").deleteNodeContent(1);
 	tmp.addChild("cdrom_mountpoint");
 	tmp.getChildNode("cdrom_mountpoint").addText(cdromMountPoint.c_str());
+	return setXMLConfig(tmp);
 }
 
 

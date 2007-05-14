@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.39 2007/05/13 22:04:52 i27249 Exp $
+ *	$Id: core.cpp,v 1.40 2007/05/14 13:45:54 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -89,7 +89,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_IN);
-	if (package->get_files()->size()==0) return 0; // If package has no files, it cannot conflict =)
+	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
@@ -119,12 +119,95 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
 					printf("File %s conflicts with package ID %d\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
-					return package_id;
+					
+					return backupFile(sqlTable.getValue(k, "file_name"), package_id, package->get_id());
 				}
 			}
 		}
 	}
 	return 0; // End of check_file_conflicts
+}
+
+int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, string file_name)
+{
+	PACKAGE pkg;
+	get_package(overwritten_id, &pkg);
+
+	SQLRecord sqlFill;
+	sqlFill.addField("conflicted_package_id", IntToStr(conflicted_id));
+	sqlFill.addField("conflicted_file_name", file_name);
+	sqlFill.addField("backup_file", pkg.get_name() + "_" + pkg.get_md5() + "/" + file_name);
+	return db.sql_insert("conflicts", sqlFill);
+}
+
+int mpkgDatabase::delete_conflict_record(int conflicted_id, string file_name)
+{
+	SQLRecord sqlFill;
+	sqlFill.addField("conflicted_package_id", IntToStr(conflicted_id));
+	sqlFill.addField("backup_file", file_name);
+	return db.sql_delete("conflicts", sqlFill);
+}
+
+FILE_LIST mpkgDatabase::get_conflict_records(int conflicted_id)
+{
+	FILE_LIST ret;
+	SQLRecord sqlSearch;
+	sqlSearch.addField("conflicted_package_id", IntToStr(conflicted_id));
+	SQLRecord sqlFields;
+	sqlFields.addField("backup_file");
+	sqlFields.addField("conflict_file_name");
+	SQLTable fTable;
+	db.get_sql_vtable(&fTable, sqlFields, "conflicts", sqlSearch);
+	FILES tmp;
+	for (int i=0; i<fTable.getRecordCount(); i++)
+	{
+		tmp.set_name(fTable.getValue(i, "conflict_file_name"));
+		
+		tmp.backup_file = SYS_BACKUP + fTable.getValue(i, "backup_file");
+		ret.add(tmp);
+	}
+	return ret;
+}
+
+int mpkgDatabase::backupFile(string filename, int overwritten_package_id, int conflicted_package_id)
+{
+	if (FileExists(SYS_ROOT+filename))
+	{
+		PACKAGE pkg;
+		get_package(conflicted_package_id, &pkg);
+		string bkpDir = SYS_BACKUP + pkg.get_name() + "_" + pkg.get_md5();
+		printf("bkpDir = %s\n", bkpDir.c_str());
+		string bkpDir2 = bkpDir + filename.substr(0, filename.find_last_of("/"));
+		printf("bkpDir2 = %s\n", bkpDir2.c_str());
+		string mkd = "mkdir -p " + bkpDir2;
+		
+		string mv = "mv ";
+	        mv += SYS_ROOT + filename + " " + bkpDir + "/";
+		if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
+		{
+			printf("Error while moving file %s\n", filename.c_str());
+			return MPKGERROR_FILEOPERATIONS;
+		}
+		else printf("%s: Error creating directories\n", __func__);
+		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
+	}
+	else
+	{
+		string t = SYS_ROOT+filename;
+		printf("Attempted to backup %s but it doesn't exist\n", t.c_str());
+	}
+	return 0;
+}
+
+int _cleanBackupCallback(const char *filename, const struct stat *file_status, int filetype)
+{
+	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP)!=0 ) rmdir(filename);
+	return 0;
+}
+
+void mpkgDatabase::clean_backup_directory()
+{
+	ftw(SYS_BACKUP, _cleanBackupCallback, 20);
 }
 
 int mpkgDatabase::clean_package_filelist (PACKAGE *package)

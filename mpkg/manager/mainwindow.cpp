@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.82 2007/05/13 21:52:50 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.83 2007/05/14 13:45:54 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -446,7 +446,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	emit startStatusThread();
 	prefBox = new PreferencesBox(mDb);
 		//ui.statusbar->addWidget(indicator);
-
+	QObject::connect(prefBox, SIGNAL(updatePackageData()), thread, SLOT(updatePackageDatabase()));
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
 

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.45 2007/05/14 10:18:33 i27249 Exp $
+	$Id: dataunits.cpp,v 1.46 2007/05/14 13:45:54 i27249 Exp $
 */
 
 
@@ -1366,7 +1366,6 @@ bool PACKAGE::available()
 		{
 			if (package_locations.get_location(i)->get_server()->get_type()!=SRV_LOCAL)
 			{
-				printf("%s: locations size = %d, url = %s\n",package_name.c_str(), package_locations.size(), package_locations.get_location(i)->get_server()->get_url().c_str());
 				return true;
 			}
 		}

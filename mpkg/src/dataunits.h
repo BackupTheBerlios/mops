@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.32 2007/05/14 10:18:33 i27249 Exp $
+	$Id: dataunits.h,v 1.33 2007/05/14 13:45:54 i27249 Exp $
 */
 
 
@@ -242,10 +242,11 @@ class FILES
 	int file_id;
 	string file_name;
 	int file_type;
-
 	// EXTERNAL DATA //
 	//PACKAGE_LIST *file_packages;
     public:
+
+	string backup_file;
 	bool operator != (FILES nfile);
 	bool operator == (FILES nfile);
 	int get_id();

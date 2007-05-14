@@ -1,11 +1,12 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.10 2007/05/04 13:40:44 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.11 2007/05/14 13:45:54 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
 
 #include "ui_preferencesbox.h"
+#include <QtGui>
 #include <mpkg/libmpkg.h>
 #define REP_ADDMODE 0
 #define REP_EDITMODE 1
@@ -17,7 +18,9 @@ class PreferencesBox: public QWidget
 		Ui::preferencesBox ui;
 
 		vector<bool>repStatus;
+		vector<bool>oldRepStatus;
 	public slots:
+		void repTableChanged();
 		void openAccounts();
 		void openCore();
 		void openUpdates();
@@ -45,11 +48,13 @@ class PreferencesBox: public QWidget
 
 	signals:
 		void getCdromName();
+		void updatePackageData();
 		
 	private:
 		mpkg *mDb;
 		unsigned int editMode;
 		unsigned int editingRepository;
+		bool repositoryChangesMade;
 };
 
 class RCheckBox: public QCheckBox

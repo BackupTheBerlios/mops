@@ -37,6 +37,15 @@ create table files (
 );
 create index pname on files (file_name);
 
+create table conflicts (
+	conflict_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+	conflict_file_name TEXT NOT NULL,
+	backup_file TEXT NOT NULL,
+	conflicted_package_id INTEGER NOT NULL
+);
+
+
+
 create table locations (
 	location_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	packages_package_id INTEGER NOT NULL,

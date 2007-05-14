@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.15 2007/05/04 13:40:44 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.16 2007/05/14 13:45:54 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -8,6 +8,7 @@
 //#include "mainwindow.h"
 PreferencesBox::PreferencesBox(mpkg *mDB)
 {
+	repositoryChangesMade=false;
 	mDb=mDB;
 	ui.setupUi(this);
 	ui.addModifyRepositoryFrame->hide();
@@ -147,6 +148,12 @@ void PreferencesBox::detectCdromVolnameCall()
 	ui.volNameDetectButton->setEnabled(false);
 	ui.volNameDetectButton->setText("Detecting...");
 	emit getCdromName();
+}
+
+void PreferencesBox::repTableChanged()
+{
+	printf("Changes detected\n");
+	repositoryChangesMade=true;
 }
 
 void PreferencesBox::recvCdromVolname(string volname)
@@ -337,8 +344,14 @@ void PreferencesBox::loadData()
 	printf("Filling repository table\n");
 	ui.repositoryTable->clearContents();
 	ui.repositoryTable->setRowCount(rList.size()+drList.size());
+	oldRepStatus.clear();
+	oldRepStatus.resize(rList.size()+drList.size());
+	repStatus.clear();
+	repStatus.resize(drList.size()+rList.size());
 	for (unsigned int i=0; i < rList.size(); i++)
 	{
+		repStatus.push_back(true);
+		oldRepStatus.push_back(true);
 		RCheckBox *rCheckBox = new RCheckBox(this);
 		rCheckBox->setCheckState(Qt::Checked);
 		rCheckBox->setRow(i);
@@ -348,6 +361,9 @@ void PreferencesBox::loadData()
 	printf("Filling disabled repository table\n");
 	for (unsigned int i=0; i < drList.size(); i++)
 	{
+		repStatus.push_back(true);
+		oldRepStatus.push_back(true);
+
 		RCheckBox *rCheckBox = new RCheckBox(this);
 		rCheckBox->setCheckState(Qt::Unchecked);
 		rCheckBox->setRow(i+rList.size());
@@ -358,6 +374,7 @@ void PreferencesBox::loadData()
 	ui.repositoryTable->setColumnWidth(0, 32);
  	ui.repositoryTable->setColumnWidth(1, 900);
 	printf("Data loaded\n");
+	repositoryChangesMade = false;
 }
 
 void PreferencesBox::applyRepositoryChanges()
@@ -437,7 +454,7 @@ void PreferencesBox::applyRepositoryChanges()
 	ui.addRepositoryButton->setEnabled(true);
 	ui.editRepositoryButton->setEnabled(true);
 	ui.delRepositoryButton->setEnabled(true);
-
+	repTableChanged();
 }
 
 void PreferencesBox::cancelRepositoryEdit()
@@ -494,6 +511,12 @@ void PreferencesBox::applyConfig()
 		}
 	}
 	mDb->set_repositorylist(rList, drList);
+	if (repositoryChangesMade)
+	{
+		if (QMessageBox::warning(this, "Repository list changed", "You have modified repository list. Update package data?", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)==QMessageBox::Yes) emit updatePackageData();
+	}
+	repositoryChangesMade = false;
+
 	// TODO: Apply config
 }
 
@@ -503,6 +526,7 @@ RCheckBox::RCheckBox(PreferencesBox *parent)
 	if (mw->repStatus.size()<(unsigned int) row+1) mw->repStatus.resize(row+1);
 
 	QObject::connect(this, SIGNAL(stateChanged(int)), this, SLOT(markChanges()));
+	QObject::connect(this, SIGNAL(stateChanged(int)), mw, SLOT(repTableChanged()));
 
 }
 

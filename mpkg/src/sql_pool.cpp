@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.26 2007/05/10 14:28:13 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.27 2007/05/14 13:45:55 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -14,6 +14,7 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 	if (\
 			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies;")!=0 || \
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files;")!=0 || \
+			sql_exec("select conflict_id, conflict_file_name, backup_file, conflicted_package_id from conflicts;")!=0 || \
 			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations;")!=0 || \
 			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_available, package_installed, package_configexist, package_action, package_md5, package_filename from packages;")!=0 || \
 			sql_exec("select server_tag_id, server_tag_name from server_tags;")!=0 || \
@@ -269,6 +270,15 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("preremove");//  TEXT NOT NULL DEFAULT '#!/bin/sh',
 		fieldNames.push_back("postremove");//  TEXT NOT NULL DEFAULT '#!/bin/sh'
 	}
+	
+	if (table_name == "conflicts")
+	{
+		fieldNames.push_back("conflict_id");
+		fieldNames.push_back("conflict_file_name");
+		fieldNames.push_back("backup_file");
+		fieldNames.push_back("conflicted_package_id");
+	}
+
 	if(table_name=="files")
 	{
 		fieldNames.push_back("file_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
