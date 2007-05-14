@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.43 2007/05/13 23:05:26 i27249 Exp $
+	$Id: dataunits.cpp,v 1.44 2007/05/14 00:08:25 i27249 Exp $
 */
 
 
@@ -1707,6 +1707,60 @@ void PACKAGE::clearVersioning()
 	alternateVersions.clear();
 }
 
+void PACKAGE_LIST::sortByPriority(bool reverse_order)
+{
+	printf("%s\n", __func__);
+	
+	if (!priorityInitialized) buildDependencyOrder();
+	printf("done depOrder\n");
+	int min_priority = 0;
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages.at(i).priority>min_priority) min_priority = packages.at(i).priority;
+	}
+
+	vector<PACKAGE> sorted;
+	if (!reverse_order)
+	{	
+		for (int p=0; p<=min_priority; p++)
+		{
+			for (int i=0; i<packages.size(); i++)
+			{
+				if (packages.at(i).priority==p) sorted.push_back(packages.at(i));
+			}
+		}
+	}
+	else
+	{
+		for (int p=min_priority; p>=0; p--)
+		{
+			for (int i=0; i<packages.size(); i++)
+			{
+				if (packages.at(i).priority==p) sorted.push_back(packages.at(i));
+			}
+		}
+	}
+
+
+	// -- temp for debug
+	if (sorted.size() < packages.size())
+	{
+		printf("Error in sort algoritm: lost %d packages\n", packages.size()-sorted.size());
+		abort();
+	}
+	if (packages.size() < sorted.size())
+	{
+		printf("Error in sort algoritm: dupped %d packages\n", sorted.size() - packages.size());
+		abort();
+	}
+	// end of debug code
+	packages = sorted;
+	printf("Done sorting\n");
+}
+
+
+
+
 double PACKAGE_LIST::totalCompressedSize()
 {
 	double ret=0;
@@ -2058,6 +2112,7 @@ void PACKAGE_LIST::destroy()
 PACKAGE_LIST::PACKAGE_LIST()
 {
 	versioningInitialized=false;
+	priorityInitialized=false;
 }
 PACKAGE_LIST::~PACKAGE_LIST()
 {
@@ -2338,6 +2393,8 @@ int PACKAGE_LIST::getPackageNumberByName(string name)
 	{
 		if (packages.at(i).get_name()==name) return i;
 	}
+	printf("%s: No such package %s\n", __func__, name.c_str());
+//	abort();
 	return -1;
 }
 void PACKAGE_LIST::buildDependencyOrder()
@@ -2347,6 +2404,7 @@ void PACKAGE_LIST::buildDependencyOrder()
 	{
 		get_max_dtree_length(this, i);
 	}
+	priorityInitialized=true;
 }
 
 int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
@@ -2354,11 +2412,16 @@ int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
 	PACKAGE *_p = pkgList->get_package(package_id);
 	int ret=0;
 	int max_ret=-1;
+	int pkgNum;
 	//if (dependencies.size()>0) ret = 1;
 	for (int i=0; i<_p->get_dependencies()->size(); i++)
 	{
-		ret = 1 + get_max_dtree_length(pkgList, pkgList->getPackageNumberByName(_p->get_dependencies()->get_dependency(i)->get_package_name()));
-		if (max_ret < ret) max_ret = ret;
+		pkgNum = pkgList->getPackageNumberByName(_p->get_dependencies()->get_dependency(i)->get_package_name());
+		if (pkgNum>=0)
+		{
+			ret = 1 + get_max_dtree_length(pkgList, pkgNum);
+			if (max_ret < ret) max_ret = ret;
+		}
 	}
 	_p->priority=ret;
 	return ret;

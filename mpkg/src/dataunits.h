@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.30 2007/05/13 23:05:26 i27249 Exp $
+	$Id: dataunits.h,v 1.31 2007/05/14 00:08:25 i27249 Exp $
 */
 
 
@@ -549,7 +549,8 @@ class PACKAGE_LIST
     private:
 	vector<PACKAGE> packages;
     public:
-
+	bool priorityInitialized;
+	void sortByPriority(bool reverse_order=false);
 	void buildDependencyOrder();
 	int getPackageNumberByName(string name);
 	double totalCompressedSize();

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.65 2007/05/12 19:31:24 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.66 2007/05/14 00:08:25 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -132,27 +132,32 @@ int mpkgDatabase::commit_actions()
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
+	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
 	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
-
+	remove_list.sortByPriority(true);
+/*
 	PACKAGE_LIST purge_list;
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
 	if (get_packagelist(sqlSearch, &purge_list)!=0) return -3;
-
+	purge_list.sortByPriority(true);
+*/
 	PACKAGE_LIST install_list;
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
 	if (get_packagelist(sqlSearch, &install_list,false)!=0) return -5;
+	install_list.sortByPriority();
+
 	for (int i=0; i<remove_list.size(); i++)
 	{
 		remove_list.get_package(i)->itemID = pData.addItem(remove_list.get_package(i)->get_name(), 10);
 	}
-	for (int i=0; i<purge_list.size(); i++)
+/*	for (int i=0; i<purge_list.size(); i++)
 	{
 		purge_list.get_package(i)->itemID = pData.addItem(purge_list.get_package(i)->get_name(), 20);
 	}
+*/
 	for (int i=0; i<install_list.size(); i++)
 	{
 		install_list.get_package(i)->itemID = pData.addItem(install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size().c_str()));
@@ -165,12 +170,12 @@ int mpkgDatabase::commit_actions()
 		actionBus.addAction(ACTIONID_REMOVE);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_REMOVE))._progressMaximum=remove_list.size();
 	}
-	if (purge_list.size()>0)
+/*	if (purge_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_PURGE);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_PURGE))._progressMaximum=purge_list.size();
 	}
-
+*/
 	if (install_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_CACHECHECK);
@@ -239,7 +244,7 @@ int mpkgDatabase::commit_actions()
 		actionBus.setActionState(ACTIONID_REMOVE);
 	}
 
-	if (purge_list.size()>0)
+/*	if (purge_list.size()>0)
 	{
 		actionBus.setCurrentAction(ACTIONID_PURGE);
 		pData.setCurrentAction("Purging packages");
@@ -295,7 +300,7 @@ int mpkgDatabase::commit_actions()
 	} // purge
 
 	printf("Done. proceeding to install\n");
-
+*/
 
 	currentStatus = "Looking for install queue";
 
@@ -713,6 +718,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::purge_package(PACKAGE* package)
 {
+	printf("%s is deprecated, use remove_package instead\n", __func__);
+	return remove_package(package);
+}
+// OLD DEPRECATED CODE of purge_package - see below
+	/*
 	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Purging package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 
@@ -779,7 +789,8 @@ int mpkgDatabase::purge_package(PACKAGE* package)
 	sqlFlush();
 	debug("*********************************************\n*        Package purged sussessfully     *\n*********************************************");
 	return 0;
-}
+	
+}*/ // DEPRECATED - purge_package
 
 
 
@@ -814,23 +825,23 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		string fname;
 		debug("Package has "+IntToStr(package->get_files()->size())+" files");
 
-		// purge will be implemented in mpkgDatabase::purge_package(PACKAGE *package); so we skip config files here
+		// Purge is now implemented here; checking all
 		currentStatus = statusHeader + "building file list";
 		FILE_LIST *remove_files=package->get_files();
 		currentStatus = statusHeader + "removing files...";
+		bool removeThis;
 		for (int i=0; i<remove_files->size(); i++)
 		{
+			removeThis = false;
+			if (package->action()==ST_PURGE || remove_files->get_file(i)->get_type()==FTYPE_PLAIN) removeThis = true;
 			fname=sys_root + remove_files->get_file(i)->get_name(false);
-			if (remove_files->get_file(i)->get_type()==FTYPE_PLAIN && fname[fname.length()-1]!='/')
+			if (removeThis && fname[fname.length()-1]!='/')
 			{
 				pData.increaseItemProgress(package->itemID);
 				unlink (fname.c_str());
-				
-					//printf("Cannot delete file %s: ", fname.c_str());
-					//perror("Reason: ");
-				
 			}
 		}
+
 		currentStatus = statusHeader + "removing empty directories...";
 	
 		// Run 2: clearing empty directories
@@ -852,7 +863,6 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 			for (int x=empty_dirs.size()-1;x>=0; x--)
 			{
-				//pData.increaseItemProgress(package->itemID);
 				rmdir(empty_dirs[x].c_str());
 			}
 			edir.clear();
