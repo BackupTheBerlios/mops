@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.68 2007/05/14 13:45:54 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.69 2007/05/14 15:47:49 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -710,15 +710,18 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	if (!restore.IsEmpty())
 	{
 		string cmd;
-
+		string tmpName;
 		for (int i=0; i<restore.size(); i++)
 		{
 			cmd = "mkdir -p ";
 		       	cmd += SYS_ROOT + restore.get_file(i)->backup_file.substr(0, restore.get_file(i)->backup_file.find_last_of("/"));
 			system(cmd.c_str());
 			cmd = "mv ";
-		        cmd += SYS_BACKUP + restore.get_file(i)->backup_file + " ";
-		        cmd += SYS_ROOT	+ restore.get_file(i)->backup_file;
+		        cmd += restore.get_file(i)->backup_file + " ";
+			tmpName = restore.get_file(i)->backup_file.substr(strlen(SYS_BACKUP));
+			tmpName = tmpName.substr(tmpName.find("/"));
+		        cmd += SYS_ROOT	+ tmpName;
+			printf("%s: cmd = %s\n", __func__, cmd.c_str());
 			system(cmd.c_str());
 			delete_conflict_record(package->get_id(), restore.get_file(i)->backup_file);
 		}

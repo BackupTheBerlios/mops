@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.40 2007/05/14 13:45:54 i27249 Exp $
+ *	$Id: core.cpp,v 1.41 2007/05/14 15:47:49 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -174,21 +174,21 @@ int mpkgDatabase::backupFile(string filename, int overwritten_package_id, int co
 	if (FileExists(SYS_ROOT+filename))
 	{
 		PACKAGE pkg;
-		get_package(conflicted_package_id, &pkg);
+		get_package(overwritten_package_id, &pkg);
 		string bkpDir = SYS_BACKUP + pkg.get_name() + "_" + pkg.get_md5();
 		printf("bkpDir = %s\n", bkpDir.c_str());
-		string bkpDir2 = bkpDir + filename.substr(0, filename.find_last_of("/"));
+		string bkpDir2 = bkpDir + "/" + filename.substr(0, filename.find_last_of("/"));
 		printf("bkpDir2 = %s\n", bkpDir2.c_str());
 		string mkd = "mkdir -p " + bkpDir2;
 		
 		string mv = "mv ";
-	        mv += SYS_ROOT + filename + " " + bkpDir + "/";
+	        mv += SYS_ROOT + filename + " " + bkpDir2 + "/";
+		printf("mv = %s\n", mv.c_str());
 		if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
 		{
 			printf("Error while moving file %s\n", filename.c_str());
 			return MPKGERROR_FILEOPERATIONS;
 		}
-		else printf("%s: Error creating directories\n", __func__);
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
 	}
 	else
