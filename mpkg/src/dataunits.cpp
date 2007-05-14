@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.44 2007/05/14 00:08:25 i27249 Exp $
+	$Id: dataunits.cpp,v 1.45 2007/05/14 10:18:33 i27249 Exp $
 */
 
 
@@ -180,44 +180,10 @@ string SERVER::get_url(bool sql)
 
 int SERVER::get_type()
 {
-	string tmp;
-	unsigned int i;
-	i=0;
-	debug("get_type()");
-
-	if (server_url.find("file")!=std::string::npos) return SRV_FILE;
-	if (server_url.find("cache://")!=std::string::npos) return SRV_CACHE;
+	if (server_url.find("file://")!=std::string::npos) return SRV_FILE;
+	if (server_url.find("local://")!=std::string::npos) return SRV_LOCAL;
 	if (server_url.find("cdrom://")!=std::string::npos) return SRV_CDROM;
-	if (server_url.find("http://")!=std::string::npos) return SRV_HTTP;
-	if (server_url.find("ftp://")!=std::string::npos) return SRV_FTP;
-	return SRV_BADURL;
-
-
-	while (i<server_url.length() && \
-			(tmp!="file://" || \
-			tmp!="cache://" || \
-			tmp!="cdrom://" || \
-			tmp!="http://" || \
-			tmp!="ftp://" || \
-			tmp!="smb://" || \
-			tmp!="https://") \
-	      )
-	{
-		tmp+=server_url[i];
-		debug(tmp);
-		i++;
-	}
-	debug("Server type: "+tmp);
-
-	if (tmp=="file://") return SRV_FILE;
-	if (tmp=="cache://") return SRV_CACHE;
-	if (tmp=="cdrom://") return SRV_CDROM;
-	if (tmp=="http://") return SRV_HTTP;
-	if (tmp=="ftp://") return SRV_FTP;
-	if (tmp=="smb://") return SRV_SMB;
-	if (tmp=="https://") return SRV_HTTPS;
-
-	return SRV_BADURL;
+	return SRV_NETWORK;
 }
 
 string SERVER::get_priority(bool sql)
@@ -1143,9 +1109,35 @@ SCRIPTS::~SCRIPTS()
 {
 }
 
+void LOCATION_LIST::sortLocations()
+{
+	// Sorting order:
+	// 0: local://
+	// 1: file://
+	// 2: <all network>
+	// 3: cdrom://
+	vector<LOCATION> sorted;
+	for (int t=0; t<=3; t++)
+	{
+		for (int i=0; i<locations.size(); i++)
+		{
+			if (locations.at(i).get_server()->get_type()==t)
+			{
+				sorted.push_back(locations.at(i));
+			}
+		}
+	}
+	locations=sorted;
+}
+				
+
+void PACKAGE::sortLocations()
+{
+	package_locations.sortLocations();
+}
+
 bool PACKAGE::operator != (PACKAGE npkg)
 {
-//	if (package_id!=npkg.get_id()) return true;
 printf("Using operator != \n");
 	if (package_name!=npkg.get_name(false)) return true;
 	if (package_version!=npkg.get_version(false)) return true;
@@ -1158,7 +1150,6 @@ printf("Using operator != \n");
 	if (package_changelog!=npkg.get_changelog(false)) return true;
 	if (package_packager!=npkg.get_packager(false)) return true;
 	if (package_packager_email!=npkg.get_packager_email(false)) return true;
-	//if (package_available!=npkg.available()) return true;
 	if (package_installed!=npkg.installed()) return true;
 	if (package_configexist!=npkg.configexist()) return true;
 	if (package_action!=npkg.action()) return true;
@@ -1175,7 +1166,6 @@ printf("Using operator != \n");
 bool PACKAGE::operator == (PACKAGE npkg)
 {
 	printf("Using operator == \n");
-//	if (package_id!=npkg.get_id()) return false;
 	if (package_name!=npkg.get_name(false)) return false;
 	if (package_version!=npkg.get_version(false)) return false;
 	if (package_arch!=npkg.get_arch(false)) return false;
@@ -1187,7 +1177,6 @@ bool PACKAGE::operator == (PACKAGE npkg)
 	if (package_changelog!=npkg.get_changelog(false)) return false;
 	if (package_packager!=npkg.get_packager(false)) return false;
 	if (package_packager_email!=npkg.get_packager_email(false)) return false;
-	//if (package_available!=npkg.available()) return false;
 	if (package_installed!=npkg.installed()) return false;
 	if (package_configexist!=npkg.configexist()) return false;
 	if (package_action!=npkg.action()) return false;
@@ -1371,8 +1360,18 @@ string PACKAGE::get_packager_email(bool sql)
 bool PACKAGE::available()
 {
 	if (package_locations.IsEmpty()) return false;
-	else return true;
-	//return package_available;
+	else
+	{
+		for (int i=0; i<package_locations.size(); i++)
+		{
+			if (package_locations.get_location(i)->get_server()->get_type()!=SRV_LOCAL)
+			{
+				printf("%s: locations size = %d, url = %s\n",package_name.c_str(), package_locations.size(), package_locations.get_location(i)->get_server()->get_url().c_str());
+				return true;
+			}
+		}
+	}
+	return false;
 }
 bool PACKAGE::reachable(bool includeConfigFiles)
 {

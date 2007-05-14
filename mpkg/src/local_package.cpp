@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.39 2007/05/09 01:30:44 i27249 Exp $
+$Id: local_package.cpp,v 1.40 2007/05/14 10:18:33 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -595,7 +595,7 @@ int LocalPackage::set_additional_data()
 	else ffname=fpath;
 	debug("file path: "+ffname);
 	data.set_filename(fname);
-	server.set_url("file://");
+	server.set_url("local://");
 	location.set_server(server);
 	location.set_path(ffname);
 	data.get_locations()->add(location);

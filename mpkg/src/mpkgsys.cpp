@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.23 2007/05/12 19:31:24 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.24 2007/05/14 10:18:33 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -150,6 +150,8 @@ int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracke
 
 int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
+	// Exclusion for here: package_name could be a filename of local placed package.
+	bool tryLocalInstall=false;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", package_name);
 	PACKAGE_LIST candidates;
@@ -162,9 +164,20 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 		{
 			return requestInstall(id, db, DepTracker);
 		}
-		else return MPKGERROR_NOPACKAGE;
+		else tryLocalInstall=true;
 	}
 	else return ret;
+
+	if (!tryLocalInstall && !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
+	else
+	{
+		// Attempting to install locally
+		LocalPackage _p(package_name);
+		_p.injectFile();
+		_p.data.set_action(ST_INSTALL);
+		db->emerge_to_db(&_p.data);
+		return 0;
+	}
 }	
 // Удаление
 int mpkgSys::requestUninstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)

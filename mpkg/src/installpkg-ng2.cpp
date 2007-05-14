@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.15 2007/05/13 23:05:27 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.16 2007/05/14 10:18:33 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -138,14 +138,11 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALL)
 	{
-		//printf("install\n");
 		for (int i = optind; i < argc; i++)
 		{
 			fname.push_back((string) argv[i]);
 		}
-		//printf("fname size = %d\n", fname.size());
 		core.install(fname);
-		//printf("core committing\n");
 		core.commit();
 		return 0;
 	}

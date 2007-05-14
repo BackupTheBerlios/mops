@@ -53,11 +53,8 @@ static int downloadCallback(void *clientp,
 
 int fileLinker(std::string source, std::string output)
 {
-	//if(access(source.c_str(), R_OK)!=0) return -1;
 	unlink(output.c_str());
 	int ret = symlink(source.c_str(), output.c_str());
-	//std::string execLine = "ln -sf "+source+" "+output;
-	//int ret = system(execLine.c_str());
 	return ret;
 }
 
@@ -65,7 +62,6 @@ int fileLinker(std::string source, std::string output)
 
 int cdromFetch(std::string source, std::string output) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
-	//printf("fetching from CDROM %s\n", DL_CDROM_DEVICE.c_str());
 	// input format:
 	// source:
 	// 	CDROM_VOLNAME/dir/fname.tgz
@@ -77,8 +73,10 @@ int cdromFetch(std::string source, std::string output) // Caching of files from 
 	// 3. Copy requested packages from CD-ROM media to cache.
 	// 4. If required next media, eject current and require next disk, next go to 1
 	// 5. If all required media is processed, eject the last and return.
+	
 	int mount_ret;
 	int umount_ret;
+	
 	// First, check if device mounted in proper directory. 
 	struct mntent *mountList;
 	FILE *mtab = fopen("/proc/mounts", "r");
@@ -182,7 +180,6 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlItem.status = DL_STATUS_WAIT;
 	dlItem.priority = 0;
 	ProgressData z;
-	//a.addAction(ACTIONID_DBUPDATE);
 	string name;
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
@@ -203,7 +200,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
 	// Sorting (for CD-ROM download optimization)
 	// Step 1. Retrieving list of cd-roms.
-	//printf("Sorting...\n");
 	vector<string> cdromVolumeLabels;
 	struct cdromItem cdItem;
 	vector<struct cdromItem>cdromSourcedPackages;
@@ -272,20 +268,14 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		fprintf(stderr, "Error! Source and sorted lists doesn't equal in size!!!!\n");
 	}
 
-
-	//printf("Sorting complete\n");
-
-
-
 	DL_CDROM_DEVICE = cdromDevice;
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
+
 	// reset status for retry
 	for (int i = 0; i<list.size(); i++)
 	{
 		if (list[i].status != DL_STATUS_OK) list[i].status = DL_STATUS_WAIT;
 	}
-	//extDlNow = dlnow;
-	//extDlTotal = dltotal;
 
 	CURLcode result;
 	DownloadItem *item;
@@ -303,17 +293,8 @@ process:
 		item = &(list.at(i));
 		*itemname = item->name;
 		currentItemID=item->itemID;
-		/*if (prData->size()>0)
-		{
-			prData->currentItem=item->itemID;
-		}*/
-
 
 		if ( item->status == DL_STATUS_WAIT ) {
-//			dir = "mkdir -p " + item->file.substr(0,item->file.find_last_of("/"));
-//			system(dir.c_str());
-
-			//TODO else 
 			{
 		        	if (item->url_list.size()==0)
 				{
@@ -324,18 +305,18 @@ process:
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-				/*	printf("Downloading %s\n", item->url_list.at(j).c_str());
-					if (prData->size()>0)
+					if (item->url_list.at(j).find("local://")==0)
 					{
-						prData->itemCurrentAction.at(item->itemID)="Downloading";
-						prData->itemActive.at(item->itemID)=true;
+						if (fileLinker(item->url_list.at(j).substr(strlen("local://")), item->file)==0)
+						{
+							result=CURLE_OK;
+						}
+						else result=CURLE_READ_ERROR;
 					}
-*/
-
-    				
+					else
 					if (item->url_list.at(j).find("file://")==0)
 					{
-						//fclose(out);
+						
 						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0)
 						{
 							result=CURLE_OK;
@@ -345,7 +326,6 @@ process:
 					else
 					if (item->url_list.at(j).find("cdrom://")==0)
 					{
-						//fclose(out);
 						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) result=CURLE_OK;
 						else result=CURLE_READ_ERROR;
 					}
@@ -356,7 +336,6 @@ process:
 						if (prData->size()>0)
 						{
 							prData->setItemCurrentAction(item->itemID, "Downloading");
-							//prData->setItemActive.at(item->itemID)=true;
 							prData->setItemState(item->itemID,ITEMSTATE_INPROGRESS);
 
 						}
@@ -390,7 +369,6 @@ process:
 							item->status = DL_STATUS_OK;
 							if (prData->size()>0)
 							{
-								//prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
 								prData->setItemCurrentAction(item->itemID, "Downloading finished");
 								prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
 							}

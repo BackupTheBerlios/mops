@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.31 2007/05/14 00:08:25 i27249 Exp $
+	$Id: dataunits.h,v 1.32 2007/05/14 10:18:33 i27249 Exp $
 */
 
 
@@ -62,14 +62,10 @@ class SERVER_TAG_LIST
 class SERVER
 {
 
+#define SRV_LOCAL 0
 #define SRV_FILE 1
-#define SRV_CACHE 2
+#define SRV_NETWORK 2
 #define SRV_CDROM 3
-#define SRV_HTTP 4
-#define SRV_FTP 5
-#define SRV_SMB 6
-#define SRV_HTTPS 7
-#define SRV_BADURL 8
 
     private:
 	// INTERNAL DATA //
@@ -164,7 +160,7 @@ class LOCATION_LIST
 	LOCATION* get_location(int num);
 	vector<LOCATION> get_locations();
 	int set_location(int num, LOCATION location);
-
+	void sortLocations();
 	int add(LOCATION location);
 	void clear();
 	bool IsEmpty();
@@ -429,7 +425,7 @@ class PACKAGE
 	versionData requiredVersion;
 
     public:
-
+	void sortLocations();
 	int priority;
 	int itemID;	// For status purposes only, means the number in PackageData vector
 	bool isBroken;
