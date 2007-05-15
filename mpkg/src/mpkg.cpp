@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.70 2007/05/15 07:08:46 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.71 2007/05/15 22:09:21 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -110,7 +110,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 		return true;
 	else
 	{
-		unlink(fname.c_str());
+		if (clear_wrong)unlink(fname.c_str());
 		return false;
 	}
 }
@@ -254,7 +254,7 @@ int mpkgDatabase::commit_actions()
 			currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
 	
 	
-			if (skip || !check_cache(install_list.get_package(i), true))
+			if (skip || !check_cache(install_list.get_package(i), false))
 			{
 				if (!skip) pData.setItemCurrentAction(install_list.get_package(i)->itemID, "not cached");
 				else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "check skipped");

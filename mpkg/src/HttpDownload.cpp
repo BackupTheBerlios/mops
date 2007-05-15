@@ -3,6 +3,8 @@
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #ifndef INTERNAL_MOUNT
@@ -184,6 +186,7 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
 	int currentItem=0;
+	unlink(file.c_str()); // Let's download from scratch
 	return this->getFile(dlList, &name, cdromDevice, cdromMountPoint, &actionBus, &z);
 	
 }
@@ -338,7 +341,16 @@ process:
 							prData->setItemState(item->itemID,ITEMSTATE_INPROGRESS);
 
 						}
-						out = fopen (item->file.c_str(), "wb");
+						long size;
+						struct stat fStat;
+						if (stat(item->file.c_str(), &fStat)==0) size = fStat.st_size;
+						else size=0;
+					
+						printf("size = %d\n", size);					
+						out = fopen (item->file.c_str(), "ab");
+						fseek(out,0,SEEK_END);
+						prData->setItemProgress(item->itemID, (double) size);
+						printf("File opened\n");
 						if ( out == NULL )
 						{
 							fprintf(stderr, "open target file failed");
@@ -347,8 +359,10 @@ process:
 						}
 						else
 						{
+							printf("Resuming from %d\n", size);
 
-
+							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);
+							
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);

@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.7 2007/05/12 19:31:24 i27249 Exp $
+ * $Id: bus.cpp,v 1.8 2007/05/15 22:09:21 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -202,28 +202,17 @@ ActionBus::~ActionBus()
 {
 }
 
-int ActionBus::getActionPosition(ActionID actID)
+int ActionBus::getActionPosition(ActionID actID, bool addIfNone)
 {
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
 		if (actions.at(i).actionID==actID) return i;
 	}
-	//printf("getActionPosition: actions size = %d, but no such action: %d! adding\n", actions.size(), (int) actID);
-	return -1;
-	/*//return this->addAction(actID, false, false);
-	unsigned int pos;
-	struct ActionState aState;
-	aState.actionID=actID;
-	aState.state=ITEMSTATE_WAIT;
-	aState.skip=false;
-	aState.hasProgressData=false;
-	aState._currentProgress=0;
-	aState._progressMaximum=0;
+	if (!addIfNone)	return -1;
+	else
 	{
-		actions.push_back(aState);
-		pos = actions.size()-1;
+		return addAction(actID);
 	}
-	return pos;*/
 
 }
 
@@ -239,7 +228,7 @@ void ActionBus::setActionProgressMaximum(ActionID actID, double p)
 unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
 {
 	//printf("ADDING ACTION\n");
-	int pos = getActionPosition(actionID);
+	int pos = getActionPosition(actionID, false);
 	struct ActionState aState;
 	aState.actionID=actionID;
 	aState.state=ITEMSTATE_WAIT;

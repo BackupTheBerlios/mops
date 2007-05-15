@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.16 2007/05/14 10:18:33 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.17 2007/05/15 22:09:21 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -19,7 +19,7 @@ extern int optind, opterr, optopt;
 int setup_action(char* act);
 int check_action(char* act);
 void print_usage(FILE* stream, int exit_code);
-int list(mpkg *core, vector<string> search);
+int list(mpkg *core, vector<string> search, bool onlyQueue=false);
 void ShowBanner();
 int list_rep(mpkg *core);
 
@@ -135,6 +135,40 @@ int main (int argc, char **argv)
 	
 	vector<string> fname;
 	vector<string> pname;
+	if (action == ACT_COMMIT)
+	{
+		core.commit();
+		return 0;
+	}
+
+	if (action == ACT_SHOWQUEUE)
+	{
+		vector<string> list_empty;
+		list(&core, list_empty,true);
+		delete_tmp_files();
+		return 0;
+	}
+
+	if (action == ACT_RESETQUEUE)
+	{
+		PACKAGE_LIST tmp;
+		SQLRecord sqlSearch;
+		sqlSearch.setSearchMode(SEARCH_OR);
+		sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
+		sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
+		sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+
+		core.get_packagelist(sqlSearch, &tmp, false, true);
+		for (int i=0; i<tmp.size(); i++)
+		{
+			core.unqueue(tmp.get_package(i)->get_id());
+		}
+		//core.commit();
+		delete_tmp_files();
+		return 0;
+	}
+
+
 
 	if (action == ACT_INSTALL)
 	{
@@ -144,6 +178,7 @@ int main (int argc, char **argv)
 		}
 		core.install(fname);
 		core.commit();
+		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_TEST)
@@ -176,6 +211,7 @@ int main (int argc, char **argv)
 		str = "I am the dog";
 		printf("am found: [%s]\n", str.substr(str.find("am"), 2).c_str());
 		*/
+		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_REMOVE)
@@ -187,6 +223,7 @@ int main (int argc, char **argv)
 		if (do_purge==0) core.uninstall(pname);
 		else core.purge(pname);
 		core.commit();
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -197,6 +234,7 @@ int main (int argc, char **argv)
 			list_search.push_back((string) argv[i]);
 		}
 		list(&core, list_search);
+		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_UPGRADE ) {
@@ -205,6 +243,7 @@ int main (int argc, char **argv)
 			pname.push_back((string) argv[i]);
 		}
 		core.install(pname);
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -214,6 +253,7 @@ int main (int argc, char **argv)
 			printf("temporarily unimplemented\n");
 			//core.convert_package((string) argv[i], "/root/development/converted/");
 		}
+		delete_tmp_files();
 		return 0;
 	
 	}
@@ -226,6 +266,7 @@ int main (int argc, char **argv)
 			printf("tagging...\n");
 			tag_package(argv[3], argv[2]);
 		}
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -239,6 +280,8 @@ int main (int argc, char **argv)
 		{
 			printf("Please define output directory\n");
 		}
+		delete_tmp_files();
+
 		return 0;
 	}
 
@@ -251,6 +294,7 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_UPDATE ) {
 		core.update_repository_data();
+		delete_tmp_files();
 		return 0;
 		
 	}
@@ -277,6 +321,7 @@ int main (int argc, char **argv)
 			printf("To few arguments to index\n");
 			print_usage(stderr, 1);
 		}
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -287,11 +332,13 @@ int main (int argc, char **argv)
 		}
 		core.purge(pname);
 		core.commit();
+		delete_tmp_files();
 		return 0;
 	}
 
 	if ( action == ACT_LIST_REP ) {
 		list_rep(&core);
+		delete_tmp_files();
 		return 0;
 	}
 
@@ -332,12 +379,12 @@ int main (int argc, char **argv)
 
 void print_usage(FILE* stream, int exit_code)
 {
-	fprintf(stream, _("Usage: %s [options] action package [package ...]\n"), program_name);
+	fprintf(stream, _("\nUsage: %s [options] action package [package ...]\n"), program_name);
 	fprintf(stream,_("Options:\n"));
 	fprintf(stream,_("\t-h    --help       show this help\n"));
 	fprintf(stream,_("\t-v    --verbose    be verbose\n"));
-	fprintf(stream,_("\t-p    --purge      purge package\n\n"));
-	fprintf(stream,_("Actions:\n"));
+	//fprintf(stream,_("\t-p    --purge      purge package\n\n"));
+	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall    install packages\n"));
 	fprintf(stream,_("\tupgrade    upgrade selected package or full system if no package selected\n"));
 	fprintf(stream,_("\tremove     remove selected package\n"));
@@ -345,13 +392,16 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tupdate     update packages info\n"));
 	fprintf(stream,_("\tlist       list installed packages\n"));
 	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
-
-	fprintf(stream,_("\tsearch     search package\n"));
+	fprintf(stream,_("\treset      reset queue\n"));
+	fprintf(stream,_("\tshow_queue show queue\n"));
+	fprintf(stream,_("\tcommit     commit queued actions\n"));
+	fprintf(stream,_("\tsearch     search package by name\n"));
 	fprintf(stream,_("\tclean      remove all packages from cache\n"));
-	fprintf(stream,_("Repository maintaining functions:\n"));
+	fprintf(stream,_("\nRepository maintaining functions:\n"));
 	fprintf(stream,_("\tindex <server_url> <file_url>     create a repository index file \"packages.xml.gz\"\n"));
 	fprintf(stream,_("\tconvert <package>      convert specified packages from Slackware to MPKG format\n"));
 	fprintf(stream,_("\tconvert_dir <outp_dir> convert whole directory (including sub-dirs) to MPKG format\n"));
+	fprintf(stream, "\n");
 
 
 	exit(exit_code);
@@ -368,7 +418,7 @@ int list_rep(mpkg *core)
 	return 0;
 }
 
-int list(mpkg *core, vector<string> search)
+int list(mpkg *core, vector<string> search, bool onlyQueue)
 {
 	PACKAGE_LIST pkglist;
 	SQLRecord sqlSearch;
@@ -380,6 +430,14 @@ int list(mpkg *core, vector<string> search)
 			sqlSearch.addField("package_name", search[i]);
 		}
 	}
+	if (onlyQueue)
+	{
+		sqlSearch.setSearchMode(SEARCH_OR);
+		sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
+		sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
+		sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+	}
+
 	core->get_packagelist(sqlSearch, &pkglist, false, true);
 	if (pkglist.IsEmpty())
 	{
@@ -388,13 +446,16 @@ int list(mpkg *core, vector<string> search)
 	}
 	for (int i=0; i<pkglist.size(); i++)
 	{
-		printf("[ %s ]\t", pkglist.get_package(i)->get_vstatus().c_str());
-		printf("%s-%s-%s-%s\t(%s)\n", \
+		if (!onlyQueue || pkglist.get_package(i)->action()!=ST_NONE)
+		{
+			printf("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
+			printf("%s-%s-%s-%s\t(%s)\n", \
 				pkglist.get_package(i)->get_name().c_str(), \
 				pkglist.get_package(i)->get_version().c_str(), \
 				pkglist.get_package(i)->get_arch().c_str(), \
 				pkglist.get_package(i)->get_build().c_str(), \
 				pkglist.get_package(i)->get_short_description().c_str());
+		}
 	}
 	return 0;
 }
@@ -421,6 +482,9 @@ int check_action(char* act)
 		&& _act != "list_rep"
 		&& _act != "tag"
 	  	&& _act != "clean"
+		&& _act != "reset"
+		&& _act != "commit"
+		&& _act != "show_queue"
 	  	&& _act != "test" ) {
 		res = -1;
 	}
@@ -471,6 +535,7 @@ int setup_action(char* act)
 
 	if (_act == "convert")
 		return ACT_CONVERT;
+
 	if (_act == "tag")
 		return ACT_TAG;
 
@@ -479,6 +544,15 @@ int setup_action(char* act)
 
 	if (_act == "list_rep")
 		return ACT_LIST_REP;
+
+	if (_act == "reset")
+		return ACT_RESETQUEUE;
+
+	if (_act == "show_queue")
+		return ACT_SHOWQUEUE;
+
+	if (_act == "commit")
+		return ACT_COMMIT;
 
 	return ACT_NONE;
 }

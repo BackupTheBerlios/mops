@@ -16,5 +16,8 @@
 #define ACT_LIST_REP	0x0e
 #define ACT_TAG		0x0f
 #define ACT_TEST	0x10
+#define ACT_COMMIT	0x11
+#define ACT_SHOWQUEUE	0x12
+#define ACT_RESETQUEUE	0x13
 #endif
 
