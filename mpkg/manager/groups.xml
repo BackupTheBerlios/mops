@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <groups>
-	<group tag="_all_" name = "All packages" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png"/>
-	<group tag="_updates_" name = "Latest updates" icon = "icons/icons/default.kde/32x32/apps/superkaramba.png"/>
-	<group tag="base" name = "Base system" icon = "icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
-	<group tag="utilities" name = "Utilities" icon = "icons/icons/default.kde/32x32/apps/xconsole.png"/>
-	<group tag="development" name="Development" icon="icons/icons/default.kde/32x32/apps/alevt.png"/>
+	<group tag="_all_" name = "All packages" icon="/usr/share/mpkg/icons/penguin.png"/>
+	<group tag="_updates_" name = "Latest updates" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/superkaramba.png"/>
+	<group tag="base" name = "Base system" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="utilities" name = "Utilities" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/xconsole.png"/>
+	<group tag="development" name="Development" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/alevt.png"/>
 	<group tag="emacs" name="Emacs" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/plan.png"/>
-	<group tag="kernel-source" name="Kernel source" icon="icons/icons/default.kde/32x32/apps/kcmpci.png"/>
+	<group tag="kernel-source" name="Kernel source" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmpci.png"/>
 	<group tag="kde" name="KDE" icon="/opt/kde/share/icons/MOPSIcons/128x128/apps/go.png"/>
 	<group tag="kde-i18n" name="KDE i18n" icon="/opt/kde/share/icons/crystalsvg/128x128/apps/kmenu.png"/>
 	<group tag="koffice" name="KOffice" icon="/opt/kde/share/icons/crystalsvg/128x128/apps/wp.png"/>
-	<group tag="libraries" name="Libraries" icon="icons/icons/default.kde/32x32/apps/kcmsystem.png"/>
-	<group tag="network" name="Network tools" icon="icons/icons/default.kde/32x32/apps/ktalkd.png"/>
+	<group tag="libraries" name="Libraries" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmsystem.png"/>
+	<group tag="network" name="Network tools" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/ktalkd.png"/>
 	<group tag="openoffice" name="OpenOffice.org" icon="/opt/kde/share/icons/MOPSIcons/128x128/apps/ooo-base.png"/>
-	<group tag="server" name="Server software" icon="icons/icons/default.kde/32x32/apps/gnomemeeting.png"/>
+	<group tag="server" name="Server software" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/gnomemeeting.png"/>
 	<group tag="tex" name="TeX" icon="/opt/kde/share/icons/crystalsvg/128x128/apps/fonts.png"/>
 	<group tag="tcl" name="Tk/TCL" icon="/opt/kde/share/icons/crystalsvg/128x128/apps/kcmdevices.png"/>
-	<group tag="wine" name="WINE" icon="icons/icons/default.kde/32x32/apps/wine.png"/>
+	<group tag="wine" name="WINE" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/wine.png"/>
 	<group tag="x11" name="X Window system" icon="/opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png"/>
 	<group tag="xapps" name="X11 applications" icon="/opt/kde/share/icons/crystalsvg/64x64/apps/style.png"/>
-	<group tag="_misc_" name="Miscellaneous" icon="icons/icons/default.kde/32x32/apps/fifteenpieces.png"/>
+	<group tag="_misc_" name="Miscellaneous" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/fifteenpieces.png"/>
 </groups>
 

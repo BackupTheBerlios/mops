@@ -13,7 +13,7 @@
    <string>MOPSLinux package manager</string>
   </property>
   <property name="windowIcon" >
-   <iconset>icons/removed_available.png</iconset>
+  <iconset>/usr/share/mpkg/icons/removed_available.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QVBoxLayout" >
@@ -81,166 +81,6 @@
               <height>32</height>
              </size>
             </property>
-            <item>
-             <property name="text" >
-              <string>Everything</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/penguin.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Latest updates</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/superkaramba.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Base system</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Utilities</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/xconsole.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Development tools</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/alevt.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Emacs</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/plan.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Kernel source</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/kcmpci.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>KDE</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/go.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>KDE Internationalization</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kmenu.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>KOffice</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/wp.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Libraries</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/kcmsystem.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Network</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/ktalkd.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>OpenOffice</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/MOPSIcons/128x128/apps/ooo-base.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Server software</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/gnomemeeting.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>TeX</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/fonts.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Tk/TCL</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/128x128/apps/kcmdevices.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Wine</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/wine.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>X Window system</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/apps/kcmx.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>X Applications</string>
-             </property>
-             <property name="icon" >
-              <iconset>../../../opt/kde/share/icons/crystalsvg/64x64/apps/style.png</iconset>
-             </property>
-            </item>
-            <item>
-             <property name="text" >
-              <string>Miscellaneous</string>
-             </property>
-             <property name="icon" >
-              <iconset>icons/icons/default.kde/32x32/apps/fifteenpieces.png</iconset>
-             </property>
-            </item>
            </widget>
           </widget>
          </item>
@@ -622,7 +462,7 @@
              <string>...</string>
             </property>
             <property name="icon" >
-             <iconset>../../../opt/kde/share/icons/crystalsvg/32x32/actions/clear_left.png</iconset>
+		    <iconset>/usr/share/mpkg/icons/clear_left.png</iconset>
             </property>
            </widget>
           </item>
@@ -839,7 +679,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/installed.png</iconset>
+    <iconset>/usr/share/mpkg/icons/installed.png</iconset>
    </property>
    <property name="text" >
     <string>Show installed</string>
@@ -853,7 +693,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/available.png</iconset>
+    <iconset>/usr/share/mpkg/icons/available.png</iconset>
    </property>
    <property name="text" >
     <string>Show available</string>
@@ -867,7 +707,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/warning.png</iconset>
+    <iconset>/usr/share/mpkg/icons/warning.png</iconset>
    </property>
    <property name="text" >
     <string>Show broken</string>
@@ -884,7 +724,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/remove.png</iconset>
+    <iconset>/usr/share/mpkg/icons/remove.png</iconset>
    </property>
    <property name="text" >
     <string>Show not purged</string>
@@ -904,7 +744,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/install.png</iconset>
+    <iconset>/usr/share/mpkg/icons/install.png</iconset>
    </property>
    <property name="text" >
     <string>Show queued</string>
@@ -1012,7 +852,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>icons/unknown.png</iconset>
+    <iconset>/usr/share/mpkg/icons/unknown.png</iconset>
    </property>
    <property name="text" >
     <string>Show unavailable</string>
