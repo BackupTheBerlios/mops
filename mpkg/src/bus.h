@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.8 2007/05/12 19:31:24 i27249 Exp $
+ * $Id: bus.h,v 1.9 2007/05/15 13:36:26 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -96,7 +96,7 @@ typedef enum {
 	ACTIONID_MD5CHECK,
 	ACTIONID_DBUPDATE,
 	ACTIONID_QUEUEBUILD,
-	ACTIONID_VERSIONBUILD,
+	ACTIONID_GETPKGLIST,
 	ACTIONID_DBLOADING
 } ActionID;
 

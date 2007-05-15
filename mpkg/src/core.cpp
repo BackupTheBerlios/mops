@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.42 2007/05/15 07:08:46 i27249 Exp $
+ *	$Id: core.cpp,v 1.43 2007/05/15 13:36:26 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -550,9 +550,18 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	{
 		return MPKGERROR_SQLQUERYERROR;
 	}
+	if (!consoleMode)
+	{
+	actionBus.setCurrentAction(ACTIONID_GETPKGLIST);
+	actionBus.setActionProgressMaximum(ACTIONID_DBLOADING, sqlTable.getRecordCount());
+
+	actionBus.setActionProgressMaximum(ACTIONID_GETPKGLIST, sqlTable.getRecordCount());
+	actionBus.setActionProgress(ACTIONID_GETPKGLIST, 0);
+	}
 	packagelist->clear(sqlTable.getRecordCount());
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
+		if (!consoleMode) actionBus.setActionProgress(ACTIONID_GETPKGLIST, i);
 		debug("retrieving package "+IntToStr(i));
 		package.clear();
 		package.set_id(atoi(sqlTable.getValue(i, "package_id").c_str()));

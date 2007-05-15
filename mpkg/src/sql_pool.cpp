@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.27 2007/05/14 13:45:55 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.28 2007/05/15 13:36:26 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -198,7 +198,6 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	}
 
 	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str()+";";
-
 	
 	lastSQLQuery=sql_query;
 

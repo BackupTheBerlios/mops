@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.52 2007/05/15 12:07:01 i27249 Exp $
+ * $Id: corethread.cpp,v 1.53 2007/05/15 13:36:26 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -726,6 +726,7 @@ void coreThread::_loadPackageDatabase()
 	printf("%s: Adding actions\n", __func__);
 	actionBus.clear();
 	actionBus.addAction(ACTIONID_DBLOADING);
+	actionBus.addAction(ACTIONID_GETPKGLIST);
 	//actionBus.addAction(ACTIONID_VERSIONBUILD);
 	printf("%s: Actions added\n", __func__);
 	pData.clear();
@@ -755,6 +756,7 @@ void coreThread::_loadPackageDatabase()
 	//printf("init versioning...\n");
 	tmpPackageList->initVersioning();
 	//actionBus.setActionState(ACTIONID_VERSIONBUILD);
+	actionBus.setActionState(ACTIONID_GETPKGLIST);
 	actionBus.setCurrentAction(ACTIONID_DBLOADING);
 	currentStatus = "Initializing status vectors";
 	packageList = tmpPackageList;
