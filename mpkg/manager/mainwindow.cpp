@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.84 2007/05/15 07:08:46 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.85 2007/05/15 07:59:35 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -809,7 +809,8 @@ void MainWindow::updateData()
 	
 void MainWindow::quitApp()
 {
-	currentStatus="exiting...";
+	this->hide();
+	//currentStatus="exiting...";
 	thread->callQuit();
 	qApp->quit();
 

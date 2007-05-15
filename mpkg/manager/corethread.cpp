@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.50 2007/05/13 23:05:26 i27249 Exp $
+ * $Id: corethread.cpp,v 1.51 2007/05/15 07:59:35 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -510,7 +510,7 @@ void statusThread::setPDataActive(bool flag)
 
 statusThread::statusThread()
 {
-	TIMER_RES = 200;
+	TIMER_RES = 400;
 	idleTime=0;
 	idleThreshold=40;
 	enabledBar = false;
@@ -548,6 +548,8 @@ void statusThread::run()
 				//if (progressEnabled)
 				if (!actionBus.idle())
 				{
+					if (pData.size()>0) TIMER_RES = 200;
+					else TIMER_RES=50;
 					dtmp = 100 * (actionBus.progress()/actionBus.progressMaximum());
 					tmp_c = (int) dtmp;
 					
@@ -570,6 +572,7 @@ void statusThread::run()
 				}
 				else
 				{
+					TIMER_RES=400;
 					if (enabledBar)
 					{
 						emit disableProgressBar();
