@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.83 2007/05/14 13:45:54 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.84 2007/05/15 07:08:46 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -380,16 +380,17 @@ MainWindow::MainWindow(QMainWindow *parent)
 	this->show();
 	clearForm();
 	disableProgressBar(); disableProgressBar2();
+	
 	tableMenu = new QMenu;
 	installPackageAction = tableMenu->addAction(tr("Install"));
 	removePackageAction = tableMenu->addAction(tr("Remove"));
 	purgePackageAction = tableMenu->addAction(tr("Purge"));
-	upgradePackageAction = tableMenu->addAction(tr("Upgrade"));
+
 	qRegisterMetaType<string>("string");
 	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
 	qRegisterMetaType< vector<int> >("vector<int>");
-	QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
-	QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
+	//QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
+	//QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
@@ -878,7 +879,8 @@ void MainWindow::setInstalledFilter()
 	}
 }
 
-void MainWindow::markChanges(int x, Qt::CheckState state)
+
+void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
 		//unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();
 		unsigned long i = x;
@@ -888,8 +890,31 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			return;
 		}
 		PACKAGE *_p = packagelist->get_package(i);
-		if (_p->installed())
+		if (force_state>=0)
 		{
+			if (_p->installed() && force_state == ST_REMOVE)
+			{
+				newStatus[i]=force_state;
+				currentStatus="Package queued to remove";
+				state = Qt::Unchecked;
+			}
+			if (_p->configexist() && force_state == ST_PURGE)
+			{
+				newStatus[i] = force_state;
+				currentStatus = "Package queued to purge";
+				state = Qt::Unchecked;
+			}
+			if (!_p->installed() && force_state == ST_INSTALL)
+			{
+				newStatus[i] = force_state;
+				currentStatus = "Package queued to install";
+				state = Qt::Checked;
+			}
+		}
+		else
+		{
+		if (_p->installed())
+			{
 			switch(_p->action())
 			{
 			case ST_NONE:
@@ -965,6 +990,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 					currentStatus="Unknown condition";
 			}
 		} // else
+		} // else (force_state)
 		string package_icon;
 		switch (newStatus[i])
 		{
@@ -998,7 +1024,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state)
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
 
-			setTableItem(x, state, pName);
+		setTableItem(x, state, pName);
 		
 }
 
@@ -1029,7 +1055,7 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 
 void MainWindow::markToInstall()
 {
-
+	
 }
 
 void CheckBox::markChanges()

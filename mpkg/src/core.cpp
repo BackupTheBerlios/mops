@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.41 2007/05/14 15:47:49 i27249 Exp $
+ *	$Id: core.cpp,v 1.42 2007/05/15 07:08:46 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -118,8 +118,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
-					printf("File %s conflicts with package ID %d\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
-					
+					printf("File %s conflicts with package ID %d, backing up\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
 					return backupFile(sqlTable.getValue(k, "file_name"), package_id, package->get_id());
 				}
 			}
@@ -176,17 +175,13 @@ int mpkgDatabase::backupFile(string filename, int overwritten_package_id, int co
 		PACKAGE pkg;
 		get_package(overwritten_package_id, &pkg);
 		string bkpDir = SYS_BACKUP + pkg.get_name() + "_" + pkg.get_md5();
-		printf("bkpDir = %s\n", bkpDir.c_str());
 		string bkpDir2 = bkpDir + "/" + filename.substr(0, filename.find_last_of("/"));
-		printf("bkpDir2 = %s\n", bkpDir2.c_str());
 		string mkd = "mkdir -p " + bkpDir2;
 		
 		string mv = "mv ";
 	        mv += SYS_ROOT + filename + " " + bkpDir2 + "/";
-		printf("mv = %s\n", mv.c_str());
 		if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
 		{
-			printf("Error while moving file %s\n", filename.c_str());
 			return MPKGERROR_FILEOPERATIONS;
 		}
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
@@ -194,7 +189,6 @@ int mpkgDatabase::backupFile(string filename, int overwritten_package_id, int co
 	else
 	{
 		string t = SYS_ROOT+filename;
-		printf("Attempted to backup %s but it doesn't exist\n", t.c_str());
 	}
 	return 0;
 }
@@ -430,10 +424,6 @@ int mpkgDatabase::add_tag_link(int package_id, int tag_id)
 	sqlInsert.addField("packages_package_id", IntToStr(package_id));
 	sqlInsert.addField("tags_tag_id", IntToStr(tag_id));
 	int ret = db.sql_insert("tags_links", sqlInsert);
-	if (ret != 0)
-	{
-		printf("LINK ERROR!\n");
-	}
 	return ret;
 }
 
@@ -468,6 +458,7 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	
 	// Retrieving package ID
 	int package_id=get_last_id("packages", "package_id");
+	package->set_id(package_id);
 	if (package_id==0) exit(-100);
 	
 	// INSERT INTO FILES
@@ -917,27 +908,16 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 	}
 	if (sqlTable.getRecordCount()==1)
 	{
-		//printf("get_package_id: %s\n", sqlTable.getValue(0, "package_id").c_str());
 		return atoi(sqlTable.getValue(0, "package_id").c_str());
 	}
 	if (sqlTable.getRecordCount()>1)
 	{
-		//printf("get_package_id: multiple id found\n");
 		return -1;
 	}
 
 	return -1;
 }
 
-
-/*int mpkgDatabase::set_available(int package_id, int status)
-{
-       	SQLRecord sqlUpdate;
-	sqlUpdate.addField("package_available", IntToStr(status));
-	SQLRecord sqlSearch;
-	sqlSearch.addField("package_id", IntToStr(package_id));
-	return db.sql_update("packages", sqlUpdate, sqlSearch);
-}*/
 int mpkgDatabase::set_installed(int package_id, int status)
 {
        	SQLRecord sqlUpdate;
@@ -1218,7 +1198,6 @@ string SQLRecord::getValue(string fieldname)
 	{
 		if (field[i].fieldname==fieldname) return PrepareSql(field[i].value);
 	}
-	//printf("field %s not found\n", fieldname.c_str());
 	return ""; // Means error
 }
 

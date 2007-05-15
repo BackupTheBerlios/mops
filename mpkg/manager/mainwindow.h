@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.39 2007/05/11 12:03:33 i27249 Exp $
+ * $Id: mainwindow.h,v 1.40 2007/05/15 07:08:46 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -129,7 +129,7 @@ class MainWindow: public QMainWindow
 		void execMenu();
 		void showPackageInfo();
 		//void fitTable();
-		void markChanges(int x, Qt::CheckState state);
+		void markChanges(int x, Qt::CheckState state, int force_state=-1);
 		void quickPackageSearch();
 		void showAllPackages();
 
@@ -144,7 +144,7 @@ class MainWindow: public QMainWindow
 		QAction *installPackageAction;
 		QAction *removePackageAction;
 		QAction *purgePackageAction;
-		QAction *upgradePackageAction;
+
 		XMLNode _categories;
 		
 		//Ui::loadingBox loadBox;

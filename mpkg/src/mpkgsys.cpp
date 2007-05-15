@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.24 2007/05/14 10:18:33 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.25 2007/05/15 07:08:46 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -73,7 +73,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
 
-	printf(_("Updating package data from %d repositories...\n"), REPOSITORY_LIST.size()*2);
+	printf(_("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size());
 	
 	int total_packages=0; // Счетчик полученных пакетов.
 
@@ -84,7 +84,6 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	{
 		tmpPackages.clear();					//Очищаем временный список.
 		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);	// Получаем список пакетов.
-		printf("Retrieved\n");
 		actionBus.setActionProgress(ACTIONID_DBUPDATE, cnt);
 		cnt++;
 		if (!tmpPackages.IsEmpty())				// Если мы таки получили что-то, добавляем это в список.
@@ -96,7 +95,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 		cnt++;
 
 	}
-	printf("Total %d packages received, filtering...\n", total_packages);
+	//printf("Total %d packages received, filtering...\n", total_packages);
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(&availablePackages);
 	printf("Update complete.\n");
@@ -110,7 +109,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 // 2) Проверяется его доступность
 // Если все ок, направляем в DepTracker
 	
-int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker)
+int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool localInstall)
 {
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
@@ -120,11 +119,11 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		{
 			printf("Package %s %s cannot be installed, because it is already installed.\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
 		}
-		if (!tmpPackage.available())
+		if (!tmpPackage.available(localInstall))
 		{
 			printf("Package %s %s cannot be installed, because it is unavailable\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
 		}
-		if (tmpPackage.available() && !tmpPackage.installed())
+		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
 			tmpPackage.set_action(ST_INSTALL);
 			DepTracker->addToInstallQuery(&tmpPackage);
@@ -168,14 +167,14 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	}
 	else return ret;
 
-	if (!tryLocalInstall && !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
+	if (!tryLocalInstall || !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
 	else
 	{
 		// Attempting to install locally
 		LocalPackage _p(package_name);
 		_p.injectFile();
-		_p.data.set_action(ST_INSTALL);
 		db->emerge_to_db(&_p.data);
+		requestInstall(_p.data.get_id(), db, DepTracker, true);
 		return 0;
 	}
 }	
@@ -207,7 +206,6 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		if (process)
 		{
-			//printf("Processing...\n");
 			DepTracker->addToRemoveQuery(&tmpPackage);
 			return tmpPackage.get_id();
 		}
@@ -220,7 +218,6 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 	}
 	else
 	{
-		printf("get_package returned %d\n", ret);
 		return ret;
 	}
 }

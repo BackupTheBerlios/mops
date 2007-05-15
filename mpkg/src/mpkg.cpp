@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.69 2007/05/14 15:47:49 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.70 2007/05/15 07:08:46 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -499,8 +499,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
-		currentStatus = "File conflict on package "+package->get_name();
-		printf("File conflict on package %s, it will be skipped!\n", package->get_name().c_str());
+		currentStatus = "Error: Unresolved file conflict on package "+package->get_name();
+		printf("Unresolved file conflict on package %s, it will be skipped!\n", package->get_name().c_str());
 		return -5;
 	}
 	
@@ -721,7 +721,6 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			tmpName = restore.get_file(i)->backup_file.substr(strlen(SYS_BACKUP));
 			tmpName = tmpName.substr(tmpName.find("/"));
 		        cmd += SYS_ROOT	+ tmpName;
-			printf("%s: cmd = %s\n", __func__, cmd.c_str());
 			system(cmd.c_str());
 			delete_conflict_record(package->get_id(), restore.get_file(i)->backup_file);
 		}
@@ -742,10 +741,8 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 {
-	printf("delete_packages call\n");
 	if (pkgList->IsEmpty())
 	{
-		printf("deleting empty list?\n");
 		return 0;
 	}
 	SQLRecord sqlSearch;
@@ -754,7 +751,6 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	{
 		sqlSearch.addField("package_id", IntToStr(pkgList->get_package(i)->get_id()));
 	}
-	printf("sqlSearch size = %d\n", sqlSearch.size());
 	db.sql_delete("packages", sqlSearch);
 	sqlSearch.clear();
 	for (int i=0; i<pkgList->size(); i++)
@@ -849,7 +845,6 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 		}
 		if (package->get_locations()->IsEmpty())
 		{
-			printf("empty locations...\n");
 			sqlUpdate.addField("package_available", IntToStr(ST_NOTAVAILABLE));
 		}
 	}

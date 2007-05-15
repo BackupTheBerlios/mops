@@ -190,7 +190,6 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint,  ActionBus *aaBus, ProgressData *prData)
 {
-	printf("getFile STARTED, checking state------------\n");
 	ppActionBus=aaBus;
 	ppData=prData;
 	if (list.empty()) 

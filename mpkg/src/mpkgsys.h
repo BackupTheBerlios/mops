@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.6 2007/04/27 23:50:15 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.7 2007/05/15 07:08:46 i27249 Exp $
  * ******************************************************/
 
 
@@ -25,14 +25,6 @@
 
 namespace mpkgSys {
 
-#ifdef OLD_INSTALL_SYSTEM
-	int install(string fname, mpkgDatabase *db, DependencyTracker *DepTracker, bool do_upgrade=false);
-	int install(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker);
-	int uninstall(string pkg_name, mpkgDatabase *db, DependencyTracker *DepTracker, int do_purge, bool do_upgrade=false);
-	int upgrade (string pkgname, mpkgDatabase *db, DependencyTracker *DepTracker);
-	int upgrade(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker);
-#endif
-
 #ifdef	NEW_INSTALL_SYSTEM
 	// Данные функции однозначно выделяют пакет для действия, и проводят первичную проверку исполнимости действия.
 	// Возвращаемые значения:
@@ -44,7 +36,7 @@ namespace mpkgSys {
 	//
 	// Установка (обновление)
 	int requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker);
-	int requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker);
+	int requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool localInstall=false);
 	int requestInstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker);
 	
 	// Удаление

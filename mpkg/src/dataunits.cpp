@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.46 2007/05/14 13:45:54 i27249 Exp $
+	$Id: dataunits.cpp,v 1.47 2007/05/15 07:08:46 i27249 Exp $
 */
 
 
@@ -379,19 +379,12 @@ bool LOCATION::operator != (LOCATION location)
 
 bool LOCATION::operator == (LOCATION location)
 {
-/*	if (location_id!=location.get_id())
-	{
-		printf("dataunits.cpp: LOCATION::operator !=(): id mismatch\n");
-		return false;
-	}*/
 	if (location_path!=location.get_path())
 	{
-		//printf("dataunits.cpp: LOCATION::operator !=(): path mismatch\n");
 	       	return false;
 	}
 	if (server!=*location.get_server())
 	{
-		//printf("dataunits.cpp: LOCATION::operator !=(): server mismatch\n");
 		return false;
 	}
 	return true;
@@ -400,38 +393,25 @@ bool LOCATION::operator == (LOCATION location)
 
 bool LOCATION_LIST::operator != (LOCATION_LIST nloc)
 {
-#ifdef DEBUG
-	printf("dataunits.cpp: LOCATION_LIST::operator !=(): size()=%d, nloc.size()=%d\n",size(), nloc.size());
-#endif
 	if (size()!=nloc.size())
 	{
-#ifdef DEBUG
-		printf("returned true due to size mismatch");
-#endif
 		return true;
 	}
 	bool r;
 
 	for (int i=0; i<size(); i++)
 	{
-#ifdef DEBUG
-		printf("dataunits.cpp: LOCATION_LIST::operator !=(): cycle, i=%d\n", i);
-#endif
 		r=false;
 		for (int k=0; k<size(); k++)
 		{
 			if (*nloc.get_location(i)==locations[k]) 
 			{
 				r=true;
-				debug("dataunits.cpp: LOCATION_LIST::operator !=(): location match, r=true\n");
 				break;
 			}
 		}
 		if (!r) 
 		{
-#ifdef DEBUG
-			printf("dataunits.cpp: LOCATION_LIST::operator !=(): returned true due to location missing or new\n");
-#endif
 			return true;
 		}
 	}
@@ -1138,7 +1118,6 @@ void PACKAGE::sortLocations()
 
 bool PACKAGE::operator != (PACKAGE npkg)
 {
-printf("Using operator != \n");
 	if (package_name!=npkg.get_name(false)) return true;
 	if (package_version!=npkg.get_version(false)) return true;
 	if (package_arch!=npkg.get_arch(false)) return true;
@@ -1165,7 +1144,6 @@ printf("Using operator != \n");
 
 bool PACKAGE::operator == (PACKAGE npkg)
 {
-	printf("Using operator == \n");
 	if (package_name!=npkg.get_name(false)) return false;
 	if (package_version!=npkg.get_version(false)) return false;
 	if (package_arch!=npkg.get_arch(false)) return false;
@@ -1357,11 +1335,12 @@ string PACKAGE::get_packager_email(bool sql)
 	return package_packager_email;
 }
 
-bool PACKAGE::available()
+bool PACKAGE::available(bool includeLocal)
 {
 	if (package_locations.IsEmpty()) return false;
 	else
 	{
+		if (includeLocal) return true;
 		for (int i=0; i<package_locations.size(); i++)
 		{
 			if (package_locations.get_location(i)->get_server()->get_type()!=SRV_LOCAL)
@@ -1537,7 +1516,7 @@ int PACKAGE::set_packager_email(string packager_email)
 
 void PACKAGE::set_available(bool flag)
 {
-	printf("set_available is deprecated. Please do not use this\n");
+	fprintf(stderr, "set_available is deprecated. Please do not use this\n");
 	package_available = flag;
 }
 
@@ -1624,15 +1603,12 @@ int PACKAGE::set_config_files(FILE_LIST conf_files)
 
 void PACKAGE::sync()
 {
-	//printf("sync start: %d config files, %d package files\n", config_files.size(), package_files.size());
 	for (int i=0; i< config_files.size(); i++)
 	{
-		//printf("Searching file %s\n", config_files.get_file(i)->get_name().c_str());
 		for (int t=0; t<package_files.size(); t++)
 		{
 			if (config_files.get_file(i)->get_name()=='/' + package_files.get_file(t)->get_name())
 			{
-				//printf("config file %s\n", config_files.get_file(i)->get_name().c_str());
 				package_files.get_file(t)->set_type(FTYPE_CONFIG);
 				break;
 			}
@@ -1649,7 +1625,6 @@ void PACKAGE::sync()
 			}
 		}
 	}
-	//printf("sync end\n");
 }
 
 int PACKAGE::set_dependencies(DEPENDENCY_LIST dependencies)
@@ -1707,10 +1682,8 @@ void PACKAGE::clearVersioning()
 
 void PACKAGE_LIST::sortByPriority(bool reverse_order)
 {
-	printf("%s\n", __func__);
 	
 	if (!priorityInitialized) buildDependencyOrder();
-	printf("done depOrder\n");
 	int min_priority = 0;
 	for (int i=0; i<packages.size(); i++)
 	{
@@ -1740,20 +1713,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	}
 
 
-	// -- temp for debug
-	if (sorted.size() < packages.size())
-	{
-		printf("Error in sort algoritm: lost %d packages\n", packages.size()-sorted.size());
-		abort();
-	}
-	if (packages.size() < sorted.size())
-	{
-		printf("Error in sort algoritm: dupped %d packages\n", sorted.size() - packages.size());
-		abort();
-	}
-	// end of debug code
 	packages = sorted;
-	printf("Done sorting\n");
 }
 
 
@@ -1777,7 +1737,6 @@ double PACKAGE_LIST::totalInstalledSize()
 	{
 		ret+=strtod(packages.at(i).get_installed_size().c_str(), NULL);
 	}
-	printf("OK\n");
 	return ret;
 }
 
@@ -1797,7 +1756,6 @@ double PACKAGE_LIST::totalInstalledSizeByAction(int select_action)
 	{
 		if (packages.at(i).action()==select_action)
 		{
-			//printf("ret=%f\n", ret);
 			ret+=strtod(packages.at(i).get_installed_size().c_str(), NULL);
 		}
 	}
@@ -1837,7 +1795,7 @@ string IntToStr(int num)
   	}
   	else 
   	{
-		printf("Error: malloc() failed!!!\n");
+		perror("Error while allocating memory");
 	  	abort();
   	}
   	return ss;
@@ -1890,7 +1848,6 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 	}
 	fprintf(stderr, "getInstalledOne: no installed ones\n");
 	PACKAGE p;
-	//p.set_name("VOID!!!\n");
 	return p;
 }
 
@@ -1964,16 +1921,11 @@ bool PACKAGE_LIST::operator += (PACKAGE_LIST pkgList)
 }
 int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 {
-//	printf("dataunits.cpp:add_list() started\n");
-//	printf("add_list: adding %d packages\n", pkgList->size());
 	// IMPORTANT NOTE!
 	// If skip_identical is true, the locations will be MERGED together!
 	int ret;
-//	int old_size=packages.size();
 	ret=packages.size()+pkgList->size();
-	//packages.resize(ret);
 	bool identical_found=false;
-	//int identical_id;
 	bool location_found=false;
 	for (int i=0; i<pkgList->size();i++)
 	{
@@ -1983,15 +1935,7 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 			// Checking if lists have identical items, remove it
 			for (unsigned int s=0; s<packages.size(); s++)
 			{
-#ifndef NO_MD5_COMPARE
 				if (packages[s].get_md5()==pkgList->get_package(i)->get_md5())
-#endif
-#ifdef NO_MD5_COMPARE
-				if (packages[s].get_name()==pkgList->get_package(i)->get_name() \
-					&& packages[s].get_version()==pkgList->get_package(i)->get_version() \
-					&& packages[s].get_arch()==pkgList->get_package(i)->get_arch() \
-					&& packages[s].get_build()==pkgList->get_package(i)->get_build())
-#endif
 				{
 					identical_found=true;
 					// Comparing locations and merging
@@ -2021,7 +1965,6 @@ int PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 			this->add(*pkgList->get_package(i));
 		}
 	}
-//	printf("dataunits.cpp:add_list() end\n");
 	return 0;
 }
 
@@ -2053,7 +1996,6 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 	string max_version="";
 	int id=0;
 	string tmp_ver;
-	printf("FindMaxVersion: packagelist size = %d\n",packages.size());
 	for (unsigned int i=0;i<packages.size();i++)
 	{
 		tmp_ver = packages[i].get_fullversion();// + packages[i].get_build();
@@ -2069,32 +2011,26 @@ PACKAGE PACKAGE_LIST::findMaxVersion()
 int PACKAGE_LIST::getMaxVersionID(string package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	//printf("getMaxVersionID: packages.size = %d\n", packages.size());
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
-	//		printf("getMaxVersionID: returning %d\n", packages.at(i).get_id());//i);
 			return packages.at(i).get_id();//i;
 		}
 	}
-	//printf("Nothing found...\n");
 	return MPKGERROR_NOPACKAGE;
 }
 
 int PACKAGE_LIST::getMaxVersionNumber(string package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	//printf("getMaxVersionID: packages.size = %d\n", packages.size());
 	for (int i=0; i<packages.size(); i++)
 	{
 		if (packages.at(i).get_name() == package_name && packages.at(i).hasMaxVersion)
 		{
-	//		printf("getMaxVersionID: returning %d\n", i);//packages.at(i).get_id());//i);
 			return i;//packages.at(i).get_id();//i;
 		}
 	}
-	//printf("Nothing found...\n");
 	return MPKGERROR_NOPACKAGE;
 }
 
@@ -2238,7 +2174,6 @@ void PACKAGE_LIST::initVersioning()
 	//
 	// Делаем пока не оптимально но надежно
 	// Шаг первый. Список альтернативных версий
-	//printf("initVersioning: step 1\n");
 	
 	actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
 	int pkgSize = packages.size();
@@ -2258,7 +2193,6 @@ void PACKAGE_LIST::initVersioning()
 	}
 
 	// Шаг второй. Для каждого пакета ищем максимальную версию
-	//printf("initVersioning: step 2\n");
 	string max_version; // Переменная содержащая максимальную версию
 	int max_version_id; // номер пакета содержавшего максимальную версию
 	string this_version;
@@ -2288,10 +2222,6 @@ void PACKAGE_LIST::initVersioning()
 		{
 			for (int j=0; j<packages.at(i).alternateVersions.size(); j++)
 			{
-				if (packages.at(i).alternateVersions.at(j)<0 || packages.at(i).alternateVersions.at(j)>=packages.size())
-				{
-					printf("WARNING!!! packages[%d].alternateVersions[%d] == %d\n",i,j,packages.at(i).alternateVersions.at(j));
-				}
 				this_version = packages.at(packages.at(i).alternateVersions.at(j)).get_fullversion();
 				if (packages.at(packages.at(i).alternateVersions.at(j)).installed())
 				{
@@ -2369,7 +2299,7 @@ bool meetVersion(versionData condition, string packageVersion)
 			else return false;
 			break;
 		default:
-			printf("unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n", iCondition);
+			printf("%s: unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n",__func__, iCondition);
 			return true;
 	}
 	return true;
