@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>237</height>
+    <width>644</width>
+    <height>231</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -17,16 +17,16 @@
     <rect>
      <x>10</x>
      <y>20</y>
-     <width>369</width>
-     <height>136</height>
+     <width>604</width>
+     <height>152</height>
     </rect>
    </property>
    <property name="text" >
-    <string>MOPSLinux package manager 0.1 (codename "Warp")
-Development preview - mega-alpha-not-even-prerelease!
-
+    <string>MOPSLinux package manager 0.2_beta5 (codename "warp")
+Внимание! Это совсем не релиз. Исключительно для тестирования на свой страх и риск;)
 Enjoy testing!
 
+Баги шлите на мыло разработчикам либо оставляйте на форуме.
 Developed in RPUNet (www.rpunet.ru) by:
  Bogdan "AiX" Kokorev (i27249@gmail.com)
  Andrew Diakin (adiakin@gmail.com)</string>
@@ -35,14 +35,14 @@ Developed in RPUNet (www.rpunet.ru) by:
   <widget class="QPushButton" name="closeButton" >
    <property name="geometry" >
     <rect>
-     <x>130</x>
+     <x>230</x>
      <y>190</y>
-     <width>109</width>
+     <width>161</width>
      <height>32</height>
     </rect>
    </property>
    <property name="text" >
-    <string>Kewl! =)</string>
+    <string>Activate warp drive</string>
    </property>
   </widget>
  </widget>

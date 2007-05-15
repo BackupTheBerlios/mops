@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.51 2007/05/15 07:59:35 i27249 Exp $
+ * $Id: corethread.cpp,v 1.52 2007/05/15 12:07:01 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -726,7 +726,7 @@ void coreThread::_loadPackageDatabase()
 	printf("%s: Adding actions\n", __func__);
 	actionBus.clear();
 	actionBus.addAction(ACTIONID_DBLOADING);
-	actionBus.addAction(ACTIONID_VERSIONBUILD);
+	//actionBus.addAction(ACTIONID_VERSIONBUILD);
 	printf("%s: Actions added\n", __func__);
 	pData.clear();
 	//progressEnabled=true;
@@ -749,12 +749,12 @@ void coreThread::_loadPackageDatabase()
 	delete packageList;
 	//actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
 	currentStatus = "Building version list";
-	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = tmpPackageList->size();
+	//actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = tmpPackageList->size();
 	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DBLOADING))._progressMaximum = tmpPackageList->size();
 
 	//printf("init versioning...\n");
 	tmpPackageList->initVersioning();
-	actionBus.setActionState(ACTIONID_VERSIONBUILD);
+	//actionBus.setActionState(ACTIONID_VERSIONBUILD);
 	actionBus.setCurrentAction(ACTIONID_DBLOADING);
 	currentStatus = "Initializing status vectors";
 	packageList = tmpPackageList;
@@ -866,7 +866,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 		}
 		depData+="<br>";
 	}
-	string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+ "<br>" + depData + "</td></tr></tbody></table>";

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.85 2007/05/15 07:59:35 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.86 2007/05/15 12:07:01 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -47,7 +47,7 @@ void MainWindow::sqlQueryEnd()
 
 void MainWindow::loadingStarted()
 {
-	ui.loadingLabel->setText("<html><img src=\"splash.png\"></img></html>");
+	ui.loadingLabel->setText("<html><img src=\"/usr/share/mpkg/splash.png\"></img></html>");
 	ui.packageListBox->setEnabled(false);
 	ui.packageInfoBox->hide();
 	ui.packageTable->hide();
@@ -370,7 +370,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.quickPackageSearchEdit->hide();
 	ui.clearSearchButton->hide();
 	ui.packageTable->hide();
-	movie = new QMovie("icons/indicator.mng");
+	movie = new QMovie("/usr/share/mpkg/icons/indicator.mng");
 	ui.indicatorLabel->setMovie(movie);
 	movie->start();
 	ui.progressTable->setColumnWidth(0,190);
@@ -557,10 +557,10 @@ void MainWindow::updateProgressData()
 						__name->setIcon(QIcon(QString::fromUtf8("/opt/kde/share/icons/crystalsvg/32x32/apps/kget.png")));
 						break;
 					case ITEMSTATE_FINISHED:
-						__name->setIcon(QIcon(QString::fromUtf8("icons/installed.png")));
+						__name->setIcon(QIcon(QString::fromUtf8("/usr/share/mpkg/icons/installed.png")));
 						break;
 					case ITEMSTATE_FAILED:
-						__name->setIcon(QIcon(QString::fromUtf8("icons/remove.png")));
+						__name->setIcon(QIcon(QString::fromUtf8("/usr/share/mpkg/icons/remove.png")));
 						break;
 				}
 				
@@ -1020,7 +1020,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
 
 		
-		string pName = "<table><tbody><tr><td><img src = \"icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
