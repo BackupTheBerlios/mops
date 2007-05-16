@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.12 2007/05/16 12:45:52 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.13 2007/05/16 16:49:22 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -29,7 +29,7 @@ retry:
 	}
 	
 	if (parseOk) debug("XML file opened");
-	if (parseOk) debug("XML file parse error");
+	if (!parseOk) debug("XML file parse error");
 }
 
 PackageConfig::PackageConfig(XMLNode rootnode)

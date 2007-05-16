@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.40 2007/05/14 10:18:33 i27249 Exp $
+$Id: local_package.cpp,v 1.41 2007/05/16 16:49:22 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -407,6 +407,7 @@ int LocalPackage::get_xml()
 
 int LocalPackage::fill_filelist(PACKAGE *package)
 {
+	debug("fill_filelist start");
 //#define OLD_FILELIST
 #ifndef OLD_FILELIST
 	FILES file_tmp;
@@ -644,7 +645,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	//vec_tmp_conditions.clear();
 	//vec_tmp_versions.clear();
 	package->sync();
-	debug("get_xml end");
+	debug("PMFG...fill_configfiles end");
 	return 0;
 
 }
@@ -654,25 +655,26 @@ int LocalPackage::injectFile(bool index)
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
 	//int ret=0;
 	debug("local_package.cpp: injectFile(): start");
-	//printf("get_xml..\n");
+	printf("get_xml..\n");
 	if (get_xml()!=0)
 	{
 		debug("local_package.cpp: injectFile(): get_xml FAILED");
 		return -3;
 	}
-	//printf("get_size()\n");
+	sleep(1000);
+	printf("get_size()\n");
 	if (get_size()!=0)
 	{
 		debug("local_package.cpp: injectFile(): get_size() FAILED");
 		return -1;
 	}
-	//printf("create_md5\n");
+	printf("create_md5\n");
 	if (create_md5()!=0)
 	{
 		debug("local_package.cpp: injectFile(): create_md5 FAILED");
 		return -2;
 	}
-	//printf("set_additional_data\n");
+	printf("set_additional_data\n");
 	debug("local_packaige.cpp: injectFile(): filename is "+ filename);
 	data.set_filename(filename);
 	

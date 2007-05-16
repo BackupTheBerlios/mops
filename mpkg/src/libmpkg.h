@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.18 2007/05/16 01:15:58 i27249 Exp $
+ * $Id: libmpkg.h,v 1.19 2007/05/16 16:49:22 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -25,7 +25,7 @@
 #include <getopt.h>
 
 // Package working tool =)
-int xml2package(XMLNode pkgnode, PACKAGE *data);
+int xml2package(XMLNode *pkgnode, PACKAGE *data);
 
 // Main class - use only this one while using the library
 class mpkg

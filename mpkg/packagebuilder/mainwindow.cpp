@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.16 2007/04/24 04:26:23 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.17 2007/05/16 16:49:22 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -42,7 +42,7 @@ void Form::loadData()
 	if (xmlReader->parse(xmlsrc))
 	{
 		PackageConfig p(xmlFilename.toStdString().c_str());
-		xml2package(p.getXMLNode(), &pkg);
+		xml2package(&p.getXMLNode(), &pkg);
 	
 
 		// Filling data 

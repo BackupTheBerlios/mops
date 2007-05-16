@@ -60,9 +60,9 @@ int fileLinker(std::string source, std::string output)
 	return ret;
 }
 
+#define CACHE_CDROM_CONTENTS true;
 
-
-int cdromFetch(std::string source, std::string output) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
+int cdromFetch(std::string source, std::string output, bool do_cache) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
 	// input format:
 	// source:
@@ -157,7 +157,9 @@ check_volname:
 	}
 
 copy_file:
-	string cp_cmd = "cp "+sourceFileName + " " + output + " 2>/dev/null";
+	string cp_cmd;
+       	if (do_cache) cp_cmd = "cp -f "; else cp_cmd = "ln -sf ";
+	cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
 	if (system(cp_cmd.c_str())!=0 && sourceFileName.find("packages")!=std::string::npos && sourceFileName.find("PACKAGES")!=std::string::npos)
 	{
 		errRet = waitResponce(MPKG_SUBSYS_FILE_READ_ERROR);
@@ -291,7 +293,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
 	for (int i = 0; i < list.size(); i++ ) {
 process:
-
+		
 		item = &(list.at(i));
 		*itemname = item->name;
 		currentItemID=item->itemID;
@@ -307,6 +309,12 @@ process:
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
+					printf("Downloading %s\n", item->url_list.at(j).c_str());
+					if (prData->size()>0)
+					{
+						prData->setItemCurrentAction(item->itemID, "Downloading");
+						prData->setItemState(item->itemID,ITEMSTATE_INPROGRESS);
+					}
 					if (item->url_list.at(j).find("local://")==0)
 					{
 						if (fileLinker(item->url_list.at(j).substr(strlen("local://")), item->file)==0)
@@ -328,19 +336,17 @@ process:
 					else
 					if (item->url_list.at(j).find("cdrom://")==0)
 					{
-						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file)==0) result=CURLE_OK;
+						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file, false)==0)
+						{
+							result=CURLE_OK;
+							prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
+							prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
+						}
 						else result=CURLE_READ_ERROR;
 					}
 
 					else if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
 					{	
-						printf("Downloading %s\n", item->url_list.at(j).c_str());
-						if (prData->size()>0)
-						{
-							prData->setItemCurrentAction(item->itemID, "Downloading");
-							prData->setItemState(item->itemID,ITEMSTATE_INPROGRESS);
-
-						}
 						long size;
 						struct stat fStat;
 						if (stat(item->file.c_str(), &fStat)==0) size = fStat.st_size;
@@ -367,36 +373,35 @@ process:
 	    						result = curl_easy_perform(ch);
     							fclose(out);
 						}
-	    					if ( result == CURLE_OK  ) 
-						{
-							if (ppActionBus->_abortActions)
-							{
-								ppActionBus->_abortComplete=true;
-								return DOWNLOAD_OK;
-							}
-
-							item->status = DL_STATUS_OK;
-							if (prData->size()>0)
-							{
-								prData->setItemCurrentAction(item->itemID, "Downloading finished");
-								prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
-							}
-	    						break;
-    						}
-						else 
-						{
-							if (ppActionBus->_abortActions)
-							{
-								ppActionBus->_abortComplete=true;
-								return DOWNLOAD_OK;
-							}
-							if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
-
-							printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
-    				    			is_have_error = true;
-    							item->status = DL_STATUS_FAILED;
-    						}
 					}
+	    				if ( result == CURLE_OK  ) 
+					{
+						if (ppActionBus->_abortActions)
+						{
+							ppActionBus->_abortComplete=true;
+							return DOWNLOAD_OK;
+						}
+						item->status = DL_STATUS_OK;
+						if (prData->size()>0)
+						{
+							prData->setItemCurrentAction(item->itemID, "Downloading finished");
+							prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
+						}
+    						break;
+					}
+					else 
+					{
+						if (ppActionBus->_abortActions)
+						{
+							ppActionBus->_abortComplete=true;
+								return DOWNLOAD_ERROR;
+						}
+						if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
+
+						printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
+    			    			is_have_error = true;
+    						item->status = DL_STATUS_FAILED;
+    					}
     				}
     			}
         	}

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.20 2007/05/16 11:18:41 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.21 2007/05/16 16:49:22 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -128,6 +128,7 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count, bool ignore_failure)
 {
+	debug("readfile start");
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
 	{
@@ -149,9 +150,9 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 		ret = (string) memblock;
 		if (max_count > 0) ret = ret.substr(0, max_count);
 		//printf("%s\n", ret.c_str());
+		delete memblock;
 		return ret;
 	}
-	delete memblock;
 }
 
 vector<string>ReadFileStrings(string filename)

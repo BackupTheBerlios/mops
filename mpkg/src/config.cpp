@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.28 2007/05/14 13:45:54 i27249 Exp $
+ * $Id: config.cpp,v 1.29 2007/05/16 16:49:22 i27249 Exp $
  *
  * ***************************************************/
 
@@ -31,6 +31,16 @@ string DL_CDROM_DEVICE;
 string DL_CDROM_MOUNTPOINT;
 #endif
 
+void initDirectoryStructure()
+{
+	string cmd;
+	cmd = "mkdir -p " + SYS_ROOT;
+	system(cmd.c_str());
+	cmd = "mkdir -p " + SYS_CACHE;
+	system(cmd.c_str());
+	cmd = "mkdir -p " + SCRIPTS_DIR;
+	system(cmd.c_str());
+}
 
 int loadGlobalConfig(string config_file)
 {
@@ -181,6 +191,7 @@ int loadGlobalConfig(string config_file)
 	if (conf_init) mpkgconfig::initConfig();
 
 	currentStatus = "Settings loaded";
+	initDirectoryStructure();
 	return 0;
 }
 

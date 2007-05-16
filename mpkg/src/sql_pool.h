@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.12 2007/05/16 11:18:41 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.13 2007/05/16 16:49:22 i27249 Exp $
  ************************************************************************************/
 
 
@@ -23,7 +23,8 @@ class SQLiteDB
 		bool initOk;
 		string sqlErrMsg;
 		string lastSQLQuery;
-		RESULT sql_exec (string sql_query);
+		RESULT sql_exec (string *sql_query);
+		RESULT sql_exec (string query);
 		int initDatabaseStructure();
 		bool CheckDatabaseIntegrity(); // Checks database integrity
 		RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table
@@ -40,7 +41,7 @@ class SQLiteDB
 		long long int getLastID();
 		int clear_table(string table_name);
 		int sql_insert(string table_name, SQLRecord values);
-		int sql_insert(string table_name, SQLTable values);
+		int sql_insert(string table_name, SQLTable *values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);
 		int sql_delete(string table_name, SQLRecord search);
 		
@@ -59,7 +60,7 @@ class SQLProxy
 		int clear_table(string table_name);
 		RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
 		int sql_insert(string table_name, SQLRecord values);
-		int sql_insert(string table_name, SQLTable values);
+		int sql_insert(string table_name, SQLTable *values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);
 		int sql_delete(string table_name, SQLRecord search);
 		int sqlCommit();

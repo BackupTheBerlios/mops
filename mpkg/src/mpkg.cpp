@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.75 2007/05/16 12:45:52 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.76 2007/05/16 16:49:22 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -449,7 +449,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
 		return MPKGERROR_ABORTED;
 	}
-
 	lp.fill_filelist(package);
 	currentStatus = statusHeader + "detecting configuration files";
 	pData.increaseItemProgress(package->itemID);
@@ -462,6 +461,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	lp.fill_configfiles(package);
+	printf("fill ended\n");
 	if (actionBus._abortActions)
 	{
 		sqlFlush();
@@ -476,7 +476,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		pData.increaseItemProgress(package->itemID);
 
 	}
-
+	debug("Checking file conflicts\n");
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
 		currentStatus = "Error: Unresolved file conflict on package "+package->get_name();
@@ -938,21 +938,22 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 	}
 	delete pkgList;
 	printf("Cleanup (pause here)\n");
-	sleep(1000);
 
 	// Дополнение от 10 мая 2007 года: сносим нафиг все недоступные пакеты, которые не установлены. Нечего им болтаться в базе.
-	PACKAGE_LIST allList;
+	PACKAGE_LIST *allList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	get_packagelist(sqlSearch, &allList, false);
+	get_packagelist(sqlSearch, allList, false);
 	PACKAGE_LIST deleteQueue;
-	for (int i=0; i<allList.size(); i++)
+	for (int i=0; i<allList->size(); i++)
 	{
-		if (!allList.get_package(i)->reachable(true))
+		if (!allList->get_package(i)->reachable(true))
 		{
-			deleteQueue.add(*allList.get_package(i));
+			deleteQueue.add(*allList->get_package(i));
 		}
 	}
+	delete allList;
 	if (!deleteQueue.IsEmpty()) delete_packages(&deleteQueue);
+
 	return 0;
 
 }

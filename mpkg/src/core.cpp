@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.45 2007/05/16 11:18:41 i27249 Exp $
+ *	$Id: core.cpp,v 1.46 2007/05/16 16:49:22 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -85,16 +85,17 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	int package_id;
 	int prev_package_id=package->get_id();
 	string fname;
-	SQLTable sqlTable;
+	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	SQLRecord sqlSearch;
-	sqlSearch.setSearchMode(SEARCH_IN);
+	sqlSearch.setSearchMode(SEARCH_OR);
+	sqlFields.addField("packages_package_id");
+	sqlFields.addField("file_name");
+
 	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
 	for (int i=0;i<package->get_files()->size();i++)
 	{
 
-		sqlFields.addField("packages_package_id");
-		sqlFields.addField("file_name");
 		fname=package->get_files()->get_file(i)->get_name();
 		if (fname[fname.length()-1]!='/') 
 		{
@@ -106,24 +107,28 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 		}
 	}
-	db.get_sql_vtable(&sqlTable, sqlFields, "files", sqlSearch);
-	if (!sqlTable.empty())
+	debug("Requesting data from sql");
+	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
+	debug("Request complete");
+	if (!sqlTable->empty())
 	{
-		for (int k=0;k<sqlTable.getRecordCount() ;k++) // Excluding from check packages who are already installed
+		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
 		{
-			package_id=atoi(sqlTable.getValue(k, "packages_package_id").c_str());
+			package_id=atoi(sqlTable->getValue(k, "packages_package_id").c_str());
 
 			if (package_id!=prev_package_id)
 			{
 
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
-					printf("File %s conflicts with package ID %d, backing up\n", sqlTable.getValue(k, "file_name").c_str(), package_id);
-					return backupFile(sqlTable.getValue(k, "file_name"), package_id, package->get_id());
+					delete sqlTable;
+					printf("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name").c_str(), package_id);
+					return backupFile(sqlTable->getValue(k, "file_name"), package_id, package->get_id());
 				}
 			}
 		}
 	}
+	delete sqlTable;
 	return 0; // End of check_file_conflicts
 }
 
@@ -238,7 +243,7 @@ int mpkgDatabase::add_descriptionlist_record(int package_id, DESCRIPTION_LIST *d
 // Adds file list linked to package_id (usually for package adding)
 int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 {
-	SQLTable sqlTable;
+	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlValues;
 	for (int i=0;i<filelist->size();i++)
 	{
@@ -246,13 +251,19 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 		sqlValues.addField("file_name", filelist->get_file(i)->get_name());
 		sqlValues.addField("packages_package_id", IntToStr(package_id));
 		sqlValues.addField("file_type", IntToStr(filelist->get_file(i)->get_type()));
-		sqlTable.addRecord(sqlValues);
+		sqlTable->addRecord(sqlValues);
 	}
-	if (!sqlTable.empty())
+	if (!sqlTable->empty())
 	{
-		return db.sql_insert("files", sqlTable);
+		int ret = db.sql_insert("files", sqlTable);
+		delete sqlTable;
+		return ret;
 	}
-	else return 0;
+	else
+	{
+		delete sqlTable;
+		return 0;
+	}
 }
 
 // Adds location list linked to package_id
@@ -260,7 +271,7 @@ int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locatio
 {
 	debug("core.cpp: add_locationlist_record(): begin");
 	int serv_id;
-	SQLTable sqlLocations;
+	SQLTable *sqlLocations = new SQLTable;
 	SQLRecord sqlLocation;
 	for (int i=0;i<locationlist->size();i++)
 	{
@@ -279,15 +290,16 @@ int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locatio
 			sqlLocation.addField("servers_server_id", IntToStr(serv_id));
 			sqlLocation.addField("packages_package_id", IntToStr(package_id));
 			sqlLocation.addField("location_path", locationlist->get_location(i)->get_path());
-			sqlLocations.addRecord(sqlLocation);
+			sqlLocations->addRecord(sqlLocation);
 		}
 		else debug("core.cpp: add_locationlist_record(): location "+IntToStr(i)+" incomplete (has no server), cannot add this");
 	}
 	int ret=1;
-	if (sqlLocations.empty()) debug ("core.cpp: add_locationlist_record(): No valid locations found for package (Package_ID="+IntToStr(package_id)+")");
+	if (sqlLocations->empty()) debug ("core.cpp: add_locationlist_record(): No valid locations found for package (Package_ID="+IntToStr(package_id)+")");
 	else ret=db.sql_insert("locations", sqlLocations);
 	if (ret!=0) debug("core.cpp: add_locationlist_record(): db.sql_insert(locations) failed, code="+IntToStr(ret));
 	else debug("core.cpp: add_locationlist_record(): successful end");
+	delete sqlLocations;
 	return ret;
 }
 
@@ -366,7 +378,7 @@ int mpkgDatabase::add_dependencylist_record(int package_id, DEPENDENCY_LIST *dep
 {
 	string dep_condition;
 	string dep_type;
-	SQLTable sqlTable;
+	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlInsert;
 	for (int i=0;i<deplist->size();i++)
 	{
@@ -378,9 +390,11 @@ int mpkgDatabase::add_dependencylist_record(int package_id, DEPENDENCY_LIST *dep
 		sqlInsert.addField("dependency_type", dep_type);
 		sqlInsert.addField("dependency_package_name", deplist->get_dependency(i)->get_package_name());
 		sqlInsert.addField("dependency_package_version", deplist->get_dependency(i)->get_package_version());
-		sqlTable.addRecord(sqlInsert);
+		sqlTable->addRecord(sqlInsert);
 	}
-	return db.sql_insert("dependencies", sqlTable);
+	int ret = db.sql_insert("dependencies", sqlTable);
+	delete sqlTable;
+	return ret;
 }
 
 // Adds tag list linked to package_id. It checks existance of tag in tags table, and creates if not. Next, it calls add_tag_link() to link package and tags
@@ -960,27 +974,36 @@ int mpkgDatabase::set_action(int package_id, int status)
 
 int mpkgDatabase::get_installed(int package_id)
 {
-	SQLTable sqlTable;
+	debug("start");
+	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("package_installed");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", IntToStr(package_id));
-	int sql_ret=db.get_sql_vtable(&sqlTable, sqlFields, "packages", sqlSearch);
+	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
 	if (sql_ret!=0)
 	{
+		delete sqlTable;
 		return -2;
 	}
 
-	if (sqlTable.empty())
+	if (sqlTable->empty())
 	{
+		delete sqlTable;
 		return -1;
 	}
-	if (sqlTable.getRecordCount()==1)
+	if (sqlTable->getRecordCount()==1)
 	{
-		return atoi(sqlTable.getValue(0, "package_installed").c_str());
+		debug("retrieving");
+		int ret = atoi(sqlTable->getValue(0, "package_installed").c_str());
+		delete sqlTable;
+		return ret;
 	}
-	if (sqlTable.getRecordCount()>1)
+	if (sqlTable->getRecordCount()>1)
+	{
+		delete sqlTable;
 		return -3;
+	}
 	
 	return -100;
 }
@@ -1201,16 +1224,17 @@ string SQLRecord::getFieldName(unsigned int num)
 {
 	if (num<field.size() && num >=0)
 	{
-		return PrepareSql(field[num].fieldname);
+		return PrepareSql(field.at(num).fieldname);
 	}
 	else return "__OVERFLOW__";
 }
 
 string SQLRecord::getValue(string fieldname)
 {
+	printf("fieldname = %s\n", fieldname.c_str());
 	for (unsigned int i=0;i<field.size();i++)
 	{
-		if (field[i].fieldname==fieldname) return PrepareSql(field[i].value);
+		if (field.at(i).fieldname==fieldname) return PrepareSql(field.at(i).value);
 	}
 	return ""; // Means error
 }
@@ -1243,7 +1267,7 @@ string SQLRecord::getValueI(unsigned int num)
 {
 	if (num<field.size() && num>=0)
 	{
-		return PrepareSql(field[num].value);
+		return PrepareSql(field.at(num).value);
 	}
 	else return "__OVERFLOW__";
 }
@@ -1300,16 +1324,23 @@ void SQLTable::clear()
 
 string SQLTable::getValue(unsigned int num, string fieldname)
 {
+	printf("VOID OBJECT\n");
 	if (num<table.size())
 	{
-		return table[num].getValue(fieldname);
+		return table.at(num).getValue(fieldname);
 	}
-	else return "__OVERFLOW__";
+	else 
+	{
+		printf("no such ID\n");
+		abort();
+		return "";
+	}
 }
 
 SQLRecord SQLTable::getRecord(unsigned int num)
 {
-	if (num<table.size() && num>=0) return table[num];
+	printf("NULL OBJECT\n");
+	if (num<table.size() && num>=0) return table.at(num);
 	else
 	{
 		// returning empty...
@@ -1321,9 +1352,9 @@ SQLRecord SQLTable::getRecord(unsigned int num)
 
 void SQLTable::addRecord(SQLRecord record)
 {
-	int pos=table.size();
-	table.resize(pos+1);
-	table[pos]=record;
+	printf("adding record\n");
+	printf("table size = %d\n",table.size());
+	table.push_back(record);
 }
 
 
