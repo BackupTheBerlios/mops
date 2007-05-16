@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.25 2007/05/16 06:43:20 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.26 2007/05/16 11:18:41 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -26,7 +26,7 @@ class mpkgDatabase
 		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);
 		int get_server(int server_id, SERVER *server);
 		int get_locationlist(int package_id, LOCATION_LIST *location_list);
-		int get_last_id(string table_name, string id_field="");
+		int get_last_id(/*string table_name, string id_field=""*/);
 		int get_package_id(PACKAGE *package);
 		int get_installed(int package_id);
 		int get_available(int package_id);

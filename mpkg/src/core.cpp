@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.44 2007/05/16 06:43:20 i27249 Exp $
+ *	$Id: core.cpp,v 1.45 2007/05/16 11:18:41 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -307,7 +307,7 @@ int mpkgDatabase::add_server_record(SERVER *server)	// Returns server id if succ
 		sqlSearch.addField("server_priority", server->get_priority());
 		
 		db.sql_insert("servers", sqlSearch);
-		server_id=get_last_id("servers","server_id");
+		server_id=db.getLastID();//get_last_id("servers","server_id");
 		if (!server->get_tags()->IsEmpty() && server_id!=0) add_server_taglist_record(server_id, server->get_tags());
 	}
 	else
@@ -457,7 +457,7 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	db.sql_insert("packages", sqlInsert);
 	
 	// Retrieving package ID
-	int package_id=get_last_id("packages", "package_id");
+	int package_id=db.getLastID();//get_last_id("packages", "package_id");
 	package->set_id(package_id);
 	if (package_id==0) exit(-100);
 	
@@ -869,8 +869,10 @@ int mpkgDatabase::get_locationlist(int package_id, LOCATION_LIST *location_list)
 	return 0;
 }
 
-int mpkgDatabase::get_last_id(string table_name, string field)
+int mpkgDatabase::get_last_id()//string table_name, string field)
 {
+	return db.getLastID();
+	/*
 	if (field.empty()) field=table_name+"_id";
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
@@ -889,7 +891,7 @@ int mpkgDatabase::get_last_id(string table_name, string field)
 	else
 	{
 		return 0;
-	}
+	}*/
 }
 
 

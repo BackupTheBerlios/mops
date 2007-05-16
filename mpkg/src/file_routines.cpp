@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.19 2007/05/16 01:15:58 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.20 2007/05/16 11:18:41 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -128,82 +128,30 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count, bool ignore_failure)
 {
-	string ret;
-	string line;
-	ifstream test(filename.c_str(), ios::in);
-	ifstream::pos_type nullsize;
-	if (test.is_open())
+	struct stat fStat;
+	if (stat(filename.c_str(), &fStat)!=0)
 	{
-		nullsize = test.tellg();
-		test.close();
-	}
-	else return "";
-
-	ifstream inputFile(filename.c_str(), ios::in|ios::ate);
-	char * memblock;
-	ifstream::pos_type size;
-
-	if (inputFile.is_open())
-	{
-		size=inputFile.tellg();
-		memblock = new char [size];
-		//memset(memblock, 0, sizeof(memblock));
-		inputFile.seekg(0,ios::beg);
-		if (size == nullsize)
-		{
-			//printf("zero length file detected\n");
-			inputFile.close();
-			return "";
-		}
-		//else printf("not a null file\n");
-
-		inputFile.read(memblock, size);
-		inputFile.close();
-		ret = memblock;
-		delete[] memblock;
-	}
-	if (max_count > 0) ret = ret.substr(0, max_count);
-	return ret;
-/*
-#ifndef EXPERIMENTAL
-	FILE *src;
-	mstring ret;
-	char buf;
-	mpkgErrorReturn errRet;
-read_file:
-
-	src=fopen(filename.c_str(),"r");
-	buf='a';
-	ret.clear();
-	if (src)
-	{
-		//printf("[%s]\n",ret.c_str());
-		
-		for (int i=0;buf!=EOF;i++)
-		{
-			buf=fgetc(src);
-			if (buf!=EOF) ret+=buf;
-			if (i==max_count-1) break; // This will stop reading if we reach max_count of bytes read. Also, it will continue until end if max_count==0.
-		}
-		fclose(src);
-		return ret.s_str();
-	}
-	else
-	{
-		perror("file_routines.cpp: ReadFile()");
-		printf("Cannot open file %s\n", filename.c_str());
-		if (!ignore_failure)
-		{
-			errRet = waitResponce ( MPKG_SUBSYS_FILE_READ_ERROR);
-			if (errRet == MPKG_RETURN_RETRY)
-			{
-				goto read_file;
-			}
-		}
-
+		//perror("ReadFile");
 		return "";
 	}
-#endif*/
+	long size=fStat.st_size;
+	printf("size = %d\n", size);
+	char *memblock = new char [size];
+
+	string ret;
+	ifstream inputFile(filename.c_str(), ios::in|ios::ate);
+	if (!inputFile.is_open()) return "";
+	else
+	{
+		inputFile.seekg(0, ios::beg);
+		inputFile.read(memblock, size);
+		inputFile.close();
+		ret = (string) memblock;
+		if (max_count > 0) ret = ret.substr(0, max_count);
+		//printf("%s\n", ret.c_str());
+		return ret;
+	}
+	delete memblock;
 }
 
 vector<string>ReadFileStrings(string filename)

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.73 2007/05/16 02:37:04 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.74 2007/05/16 11:18:41 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -884,7 +884,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	// 4. Вызывается синхронизация рабочего списка и данных в базе (это уже отдельная тема).
 	//
 	// ////////////////////////////////////////////////
-	
+	printf("Processing\n");	
 	// Стираем locations и servers
 	db.clear_table("locations");
 	db.clear_table("servers");
@@ -894,6 +894,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	SQLRecord sqlSearch;
 	get_packagelist(sqlSearch, &pkgList, false);
 	
+	printf("Comparing\n");
 	// Ищем соответствия
 	int pkgNumber;
 	for (int i=0; i<newPackages->size(); i++)
@@ -911,9 +912,11 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		}
 	}
 
+	printf("Syncing\n");
 	// Вызываем синхронизацию данных.
 	// Вообще говоря, ее можно было бы делать прямо здесь, но пусть таки будет универсальность.
 	syncronize_data(&pkgList);
+	printf("Done\n");
 	return 0;
 }
 int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)

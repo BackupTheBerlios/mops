@@ -1,13 +1,13 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.39 2007/05/16 01:15:58 i27249 Exp $
+ * $Id: repository.cpp,v 1.40 2007/05/16 11:18:41 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
 Repository::Repository(){}
 Repository::~Repository(){}
 
-XMLNode _root;
+XMLNode _root; 
 
 int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist, string server_url)
 {
@@ -160,6 +160,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		
 		// Filename
 		pkg.set_filename(slackPackageName);
+		
 		if (md5list.find(slackPackageName) == std::string::npos)
 		{
 			printf("MD5 checksum not found for package %s, it will prevent from installing this\n", slackPackageName.c_str());
@@ -174,6 +175,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		md5tmp = cutSpaces(md5tmp);
 		pkg.set_md5(md5tmp);
 		debug("MD5 = " + md5tmp);
+		
 		filename = slackPackageName;
 
 		// Name, version, arch, build
