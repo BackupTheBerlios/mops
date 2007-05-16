@@ -1,7 +1,7 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.7 2007/05/16 09:01:15 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.8 2007/05/16 09:40:20 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
@@ -31,17 +31,37 @@ TrayApp::TrayApp()
 	QObject::connect(this, SIGNAL(shutdownThread()), mThread, SLOT(shutdown()));
 	QObject::connect(mThread, SIGNAL(updatesDetected(bool)), this, SLOT(showUpdateMessage(bool)));
 	QObject::connect(mThread, SIGNAL(showStateMessage(QString)), this, SLOT(showStateMessage(QString)));
-	QObject::connect(this, SIGNAL(forceCheck()), mThread, SLOT(forceCheck()));
+	QObject::connect(this, SIGNAL(forceCheckSig()), mThread, SLOT(forceCheck()));
 	QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(quitApp()));
-	QObject::connect(launchManagerAction, SIGNAL(triggered()), mThread, SLOT(launchManager()));
-	QObject::connect(mergeUpdatesAction, SIGNAL(triggered()), mThread, SLOT(mergeUpdates()));
-	QObject::connect(forceUpdateAction, SIGNAL(triggered()), mThread, SLOT(forceCheck()));
+	QObject::connect(launchManagerAction, SIGNAL(triggered()), this, SLOT(launchManager()));
+	QObject::connect(mergeUpdatesAction, SIGNAL(triggered()), this, SLOT(mergeUpdates()));
+	QObject::connect(forceUpdateAction, SIGNAL(triggered()), this, SLOT(forceCheck()));
+	QObject::connect(this, SIGNAL(launchManagerSig()), mThread, SLOT(launchManager()));
+	QObject::connect(this, SIGNAL(mergeUpdatesSig()), mThread, SLOT(mergeUpdates()));
+	QObject::connect(this, SIGNAL(forceCheckSig()), mThread, SLOT(forceCheck()));
+
 	emit execThread();
-	emit forceCheck();
+	emit forceCheckSig();
 	setToolTip("Updates monitor");
 	setIcon(QIcon("/usr/share/mpkg/icons/available.png"));
 	show();
 }
+
+void TrayApp::forceCheck()
+{
+	emit forceCheckSig();
+}
+
+void TrayApp::launchManager()
+{
+	emit launchManagerSig();
+}
+
+void TrayApp::mergeUpdates()
+{
+	emit mergeUpdatesSig();
+}
+
 void TrayApp::quitApp()
 {
 	hide();

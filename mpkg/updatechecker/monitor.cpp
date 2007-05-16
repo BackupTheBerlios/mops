@@ -1,15 +1,16 @@
 /******************************************
  * MOPSLinux package system
  * Update monitor - processing thread
- * $Id: monitor.cpp,v 1.4 2007/05/16 09:01:15 i27249 Exp $
+ * $Id: monitor.cpp,v 1.5 2007/05/16 09:40:20 i27249 Exp $
  */
 
 #include "monitor.h"
 unsigned int TIMER_RES=200;
 monitorThread::monitorThread()
-{
+{	setPriority(QThread::LowestPriority);
 	setUpdateInterval(60);
 	action=MST_DISABLE;
+	launchAction=LAC_NONE;
 }
 
 void monitorThread::forceCheck()
@@ -25,7 +26,23 @@ void monitorThread::run()
 		switch(action)
 		{
 			case MST_ENABLE:
-				if (idleTime<updateThreshold && !_forceCheck) idleTime++;
+				if (idleTime<updateThreshold && !_forceCheck)
+				{
+					idleTime++;
+					switch(launchAction)
+					{
+						case LAC_MANAGER:
+							_launchManager();
+							launchAction=LAC_NONE;
+							break;
+						case LAC_MERGE:
+							_mergeUpdates();
+							launchAction=LAC_NONE;
+							break;
+						default:
+							break;
+					}
+				}
 				else
 				{
 					_forceCheck=false;
@@ -45,6 +62,7 @@ void monitorThread::run()
 void monitorThread::enable()
 {
 	action=MST_ENABLE;
+	start();
 }
 
 void monitorThread::disable()
@@ -55,18 +73,29 @@ void monitorThread::disable()
 void monitorThread::shutdown()
 {
 	action=MST_SHUTDOWN;
+	exit();
 }
 
 void monitorThread::setUpdateInterval(unsigned int sec)
 {
 	updateThreshold=sec*5;
 }
+
 void monitorThread::launchManager()
+{
+	launchAction=LAC_MANAGER;
+}
+void monitorThread::_launchManager()
 {
 	system("manager");
 }
 
 void monitorThread::mergeUpdates()
+{
+	launchAction=LAC_MERGE;
+}
+
+void monitorThread::_mergeUpdates()
 {
 	system("mpkg update");
 	emit showStateMessage("Database updated");
@@ -75,6 +104,7 @@ void monitorThread::mergeUpdates()
 
 void monitorThread::checkUpdates()
 {
+	hDatabase.setControlPoint();
 	loadGlobalConfig();
 	vector<string>filename;
 	string cmd = "gunzip -f ";

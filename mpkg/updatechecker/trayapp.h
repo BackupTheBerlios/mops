@@ -1,7 +1,7 @@
 /************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.h,v 1.5 2007/05/16 09:01:15 i27249 Exp $
+ * $Id: trayapp.h,v 1.6 2007/05/16 09:40:20 i27249 Exp $
  */
 
 #ifndef TRAYAPP_H_
@@ -20,8 +20,14 @@ class TrayApp: public QSystemTrayIcon
 		void showUpdateMessage(bool hasUpdates);
 		void showStateMessage(QString text);
 		void quitApp();
-	signals:
 		void forceCheck();
+		void launchManager();
+		void mergeUpdates();
+	signals:
+		void forceCheckSig();
+		void launchManagerSig();
+		void mergeUpdatesSig();
+
 		void execThread();
 		void shutdownThread();
 		void pauseThread();

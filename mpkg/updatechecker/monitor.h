@@ -1,7 +1,7 @@
 /******************************************
  * MOPSLinux package system
  * Update monitor - processing thread header
- * $Id: monitor.h,v 1.2 2007/05/16 01:15:59 i27249 Exp $
+ * $Id: monitor.h,v 1.3 2007/05/16 09:40:20 i27249 Exp $
  */
 
 #ifndef MONITOR_H__
@@ -16,6 +16,12 @@ typedef enum
 	MST_SHUTDOWN
 } ThreadAction;
 
+typedef enum
+{
+	LAC_NONE=0,
+	LAC_MANAGER,
+	LAC_MERGE
+} LaunchAction;
 
 class HashDatabase
 {
@@ -58,9 +64,12 @@ class monitorThread: public QThread
 
 	private:
 		bool _forceCheck;
+		void _launchManager();
+		void _mergeUpdates();
 		int updateThreshold;
 		int idleTime;
 		ThreadAction action;
+		LaunchAction launchAction;
 		void checkUpdates();
 		HashDatabase hDatabase;
 
