@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.9 2007/05/16 02:05:53 i27249 Exp $
+ * $Id: bus.cpp,v 1.10 2007/05/16 02:37:04 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -231,6 +231,7 @@ unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
 	aState.actionID=actionID;
 	aState.state=ITEMSTATE_WAIT;
 	aState.skip=skip;
+	aState.skippable=false;
 	aState.hasProgressData=hasPData;
 	aState._currentProgress=0;
 	aState._progressMaximum=0;
@@ -242,6 +243,23 @@ unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
 	else actions.at(pos)=aState;
 
 	return pos;
+}
+
+void ActionBus::setSkippable(ActionID actID, bool flag)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) actions.at(i).skippable=flag;
+	}
+}
+
+bool ActionBus::skippable(ActionID actID)
+{
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+		if (actions.at(i).actionID==actID) return actions.at(i).skippable;
+	}
+	return false;
 }
 
 unsigned int ActionBus::completed()
@@ -420,6 +438,7 @@ double ActionBus::progressMaximum()
 
 ActionState::ActionState()
 {
+	skippable=false;
 }
 
 ActionState::~ActionState()

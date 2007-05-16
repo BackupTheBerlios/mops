@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.86 2007/05/15 12:07:01 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.87 2007/05/16 02:37:04 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -23,6 +23,19 @@
 #include "tablelabel.h"
 #include <unistd.h>
 //#include "packageitem.h"
+void MainWindow::setSkipButton(bool flag)
+{
+	ui.skipButton->setVisible(flag);
+}
+
+void MainWindow::setIdleButtons(bool flag)
+{
+	ui.applyButton->setVisible(flag);
+	ui.quitButton->setVisible(flag);
+	ui.abortButton->setVisible(!flag);
+	//ui.listWidget->setVisible(flag);
+}
+
 void MainWindow::errorLoadingDatabase()
 {
 	QMessageBox::critical(this, tr("MOPSLinux package manager"),
@@ -398,7 +411,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	// Building thread connections
 	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
 	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
-	
+	QObject::connect(StatusThread, SIGNAL(setSkipButton(bool)), this, SLOT(setSkipButton(bool)));
+	QObject::connect(StatusThread, SIGNAL(setIdleButtons(bool)), this, SLOT(setIdleButtons(bool)));
 	QObject::connect(ui.abortButton, SIGNAL(clicked()), this, SLOT(abortActions()));
 	QObject::connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skipAction()));
 	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));

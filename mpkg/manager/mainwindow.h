@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.40 2007/05/15 07:08:46 i27249 Exp $
+ * $Id: mainwindow.h,v 1.41 2007/05/16 02:37:04 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -57,6 +57,9 @@ class MainWindow: public QMainWindow
 		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void setSkipButton(bool flag);
+		void setIdleButtons(bool flag);
+		
 		void abortActions();
 		void skipAction();
 		void resetProgressBar();

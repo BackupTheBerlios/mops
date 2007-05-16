@@ -13,7 +13,7 @@
    <string>MOPSLinux package manager</string>
   </property>
   <property name="windowIcon" >
-  <iconset>/usr/share/mpkg/icons/removed_available.png</iconset>
+   <iconset>/usr/share/mpkg/icons/removed_available.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QVBoxLayout" >
@@ -462,7 +462,7 @@
              <string>...</string>
             </property>
             <property name="icon" >
-		    <iconset>/usr/share/mpkg/icons/clear_left.png</iconset>
+             <iconset>/usr/share/mpkg/icons/clear_left.png</iconset>
             </property>
            </widget>
           </item>
@@ -537,13 +537,6 @@
        <number>6</number>
       </property>
       <item>
-       <widget class="QPushButton" name="applyButton" >
-        <property name="text" >
-         <string>Apply changes</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer>
         <property name="orientation" >
          <enum>Qt::Horizontal</enum>
@@ -555,6 +548,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="applyButton" >
+        <property name="text" >
+         <string>Apply changes</string>
+        </property>
+       </widget>
       </item>
       <item>
        <layout class="QHBoxLayout" >

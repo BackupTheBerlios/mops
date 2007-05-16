@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.10 2007/05/15 22:09:21 i27249 Exp $
+ * $Id: bus.h,v 1.11 2007/05/16 02:37:04 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
@@ -110,6 +110,7 @@ class ActionState
 		unsigned int state;
 		bool aborted;
 		bool skip;
+		bool skippable;
 		bool hasProgressData;
 		double currentProgress();
 		double progressMaximum();
@@ -129,6 +130,8 @@ class ActionBus
 	bool _abortComplete;
 	ActionBus();
 	~ActionBus();
+	void setSkippable(ActionID actID, bool flag);
+	bool skippable(ActionID actID);
 	int getActionPosition(ActionID actID, bool addIfNone=true);
 	unsigned int addAction(ActionID actionID, bool hasPData=true, bool skip=false);
 	unsigned int pending();

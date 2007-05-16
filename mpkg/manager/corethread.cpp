@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.53 2007/05/15 13:36:26 i27249 Exp $
+ * $Id: corethread.cpp,v 1.54 2007/05/16 02:37:04 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -539,15 +539,10 @@ void statusThread::run()
 				if (pData.size()==0) emit showProgressWindow(false);
 			
 				emit setStatus((QString) currentStatus.c_str());
-				/*if (currentStatus=="Building version list")
-				{
-					printf("progress = %f, total = %f, ", actionBus.progress(), actionBus.progressMaximum());
-					if (actionBus.idle()) printf("idle = true\n");
-					else printf("idle = false\n");
-				}*/
-				//if (progressEnabled)
 				if (!actionBus.idle())
 				{
+					emit setIdleButtons(false);
+					emit setSkipButton(actionBus.skippable(actionBus.currentProcessingID()));
 					if (pData.size()>0) TIMER_RES = 200;
 					else TIMER_RES=50;
 					dtmp = 100 * (actionBus.progress()/actionBus.progressMaximum());
@@ -572,6 +567,8 @@ void statusThread::run()
 				}
 				else
 				{
+					emit setSkipButton(false);
+					emit setIdleButtons(true);
 					TIMER_RES=400;
 					if (enabledBar)
 					{

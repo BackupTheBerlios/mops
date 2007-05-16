@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.72 2007/05/16 01:15:58 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.73 2007/05/16 02:37:04 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -133,10 +133,12 @@ int mpkgDatabase::commit_actions()
 	if (install_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_CACHECHECK);
+		actionBus.setSkippable(ACTIONID_CACHECHECK, true);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_CACHECHECK))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_DOWNLOAD);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DOWNLOAD))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_MD5CHECK);
+		actionBus.setSkippable(ACTIONID_MD5CHECK, true);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_MD5CHECK))._progressMaximum=install_list.size();
 		actionBus.addAction(ACTIONID_INSTALL);
 		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_INSTALL))._progressMaximum=install_list.size();
