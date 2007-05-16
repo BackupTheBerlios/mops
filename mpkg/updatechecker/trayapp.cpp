@@ -1,7 +1,7 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.4 2007/05/16 01:38:32 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.5 2007/05/16 02:05:53 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
@@ -38,10 +38,9 @@ TrayApp::TrayApp()
 	QObject::connect(forceUpdateAction, SIGNAL(triggered()), mThread, SLOT(forceCheck()));
 	emit execThread();
 	emit forceCheck();
-	setIcon(QIcon("/usr/share/mpkg/icons/available.png"));
 	setToolTip("Updates monitor");
+	setIcon(QIcon("/usr/share/mpkg/icons/available.png"));
 	show();
-
 }
 void TrayApp::quitApp()
 {
@@ -67,7 +66,11 @@ void TrayApp::showUpdateMessage(bool hasUpdates)
 		setIcon(QIcon("/usr/share/mpkg/icons/update.png"));
 		showMessage("System update monitor", "New updates available");
 	}
-	else setIcon(QIcon("/usr/share/mpkg/icons/installed.png"));
+	else 
+	{
+		setIcon(QIcon("/usr/share/mpkg/icons/installed.png"));
+		//setIcon(QIcon("/opt/kde/share/icons/crystalsvg/22x22/actions/domtreeviewer.png"));
+	}
 
 }
 

@@ -1,7 +1,7 @@
 /******************************************
  * MOPSLinux package system
  * Update monitor - processing thread
- * $Id: monitor.cpp,v 1.2 2007/05/16 01:15:59 i27249 Exp $
+ * $Id: monitor.cpp,v 1.3 2007/05/16 02:05:53 i27249 Exp $
  */
 
 #include "monitor.h"
@@ -25,7 +25,6 @@ void monitorThread::run()
 		switch(action)
 		{
 			case MST_ENABLE:
-				
 				if (idleTime<updateThreshold && !_forceCheck) idleTime++;
 				else
 				{

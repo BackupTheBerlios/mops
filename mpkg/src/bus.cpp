@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.8 2007/05/15 22:09:21 i27249 Exp $
+ * $Id: bus.cpp,v 1.9 2007/05/16 02:05:53 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -132,7 +132,6 @@ bool ProgressData::itemUpdated(int itemID)
 	if (itemChanged.size()>itemID && itemChanged.at(itemID)<499) return true;
 	else
 	{
-		//printf("Call of unexistent item\n");
 		return false;
 	}
 }
@@ -227,7 +226,6 @@ void ActionBus::setActionProgressMaximum(ActionID actID, double p)
 }
 unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
 {
-	//printf("ADDING ACTION\n");
 	int pos = getActionPosition(actionID, false);
 	struct ActionState aState;
 	aState.actionID=actionID;
@@ -275,7 +273,6 @@ unsigned int ActionBus::getActionState(unsigned int pos)
 {
 	if (pos<actions.size())
 	{
-		//printf("%s: state = %d\n", __func__, actions.at(pos).state);
 		return actions.at(pos).state;
 	}
 	else
@@ -291,7 +288,6 @@ bool ActionBus::idle()
 	{
 		if (getActionState(i)==ITEMSTATE_INPROGRESS) is_idle=false;
 	}
-	//if (is_idle) printf("ERROR in idle()! \n");
 	return is_idle;
 }
 
@@ -311,11 +307,9 @@ ActionID ActionBus::currentProcessingID()
 {
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
-		//printf("ITEMSTATE_INPROGRESS = %d\n", ITEMSTATE_INPROGRESS);
-		//printf("%s: action %d: ID == %d, state == %d\n", __func__, i, actions.at(i).actionID, getActionState(i));
 		if (getActionState(i)==ITEMSTATE_INPROGRESS) return actions.at(i).actionID;
 	}
-	printf("%s: no action is processing, actions.size = %d\n", __func__, actions.size());
+	//printf("%s: no action is processing, actions.size = %d\n", __func__, actions.size());
 	return ACTIONID_NONE;
 }
 
@@ -334,10 +328,7 @@ void ActionBus::setCurrentAction(ActionID actID)
 	{
 		if (actions.at(i).actionID==actID)
 		{
-			//printf("%s: Action %d at %d is set to current!\n", __func__, (int) actID, i);
 			setActionState(i,ITEMSTATE_INPROGRESS);
-			//if (getActionState(i)==ITEMSTATE_INPROGRESS) printf("status set ok: %d\n", getActionState(i));
-			//printf("Current processing = %d, id: %d\n", currentProcessing(), currentProcessingID());
 			found=true;
 		}
 	}
