@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.18 2007/04/24 04:26:23 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.19 2007/05/16 01:15:58 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -9,6 +9,28 @@
 #include <fstream>
 vector<string> temp_files;
 extern int errno;
+string get_file_md5(string filename)
+{
+	debug("get_file_md5 start");
+	string tmp_md5=get_tmp_file();
+
+	string sys="md5sum "+filename+" > "+tmp_md5 + " 2>/dev/null";
+	system(sys.c_str());
+	FILE* md5=fopen(tmp_md5.c_str(), "r");
+	if (!md5)
+	{
+		fprintf(stderr, "Unable to open md5 temp file\n");
+		return "";
+	}
+	char _c_md5[1000];
+	memset(&_c_md5, 0, sizeof(_c_md5));
+	fscanf(md5, "%s", &_c_md5);
+	string md5str;
+	md5str=_c_md5;
+	fclose(md5);
+	return md5str;
+}
+
 
 string get_tmp_file()
 {

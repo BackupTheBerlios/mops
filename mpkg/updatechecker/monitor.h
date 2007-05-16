@@ -1,3 +1,9 @@
+/******************************************
+ * MOPSLinux package system
+ * Update monitor - processing thread header
+ * $Id: monitor.h,v 1.2 2007/05/16 01:15:59 i27249 Exp $
+ */
+
 #ifndef MONITOR_H__
 #define MONITOR_H__
 #include <QThread>
@@ -38,16 +44,22 @@ class monitorThread: public QThread
 		void run();
 
 	signals:
-		void updatesDetected();
+		void updatesDetected(bool hasUpdates);
+		void showStateMessage(QString text);
 
 	public slots:
+		void launchManager();
+		void mergeUpdates();
 		void enable();
 		void disable();
 		void shutdown();
 		void setUpdateInterval(unsigned int sec);
+		void forceCheck();
 
 	private:
-		unsigned int TIMER_RES;
+		bool _forceCheck;
+		int updateThreshold;
+		int idleTime;
 		ThreadAction action;
 		void checkUpdates();
 		HashDatabase hDatabase;

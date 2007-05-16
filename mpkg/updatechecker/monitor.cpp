@@ -1,9 +1,21 @@
-#include "monitor.h"
+/******************************************
+ * MOPSLinux package system
+ * Update monitor - processing thread
+ * $Id: monitor.cpp,v 1.2 2007/05/16 01:15:59 i27249 Exp $
+ */
 
+#include "monitor.h"
+unsigned int TIMER_RES=200;
 monitorThread::monitorThread()
 {
-	TIMER_RES=60;
+	setUpdateInterval(60);
 	action=MST_DISABLE;
+}
+
+void monitorThread::forceCheck()
+{
+	_forceCheck=true;
+	enable();
 }
 
 void monitorThread::run()
@@ -13,9 +25,17 @@ void monitorThread::run()
 		switch(action)
 		{
 			case MST_ENABLE:
-				checkUpdates();
+				
+				if (idleTime<updateThreshold && !_forceCheck) idleTime++;
+				else
+				{
+					_forceCheck=false;
+					printf("Checking.........\n");
+					idleTime=0;
+					checkUpdates();
+				}
 			case MST_DISABLE:
-				sleep(TIMER_RES);
+				msleep(TIMER_RES);
 				break;
 			case MST_SHUTDOWN:
 				return;
@@ -40,8 +60,19 @@ void monitorThread::shutdown()
 
 void monitorThread::setUpdateInterval(unsigned int sec)
 {
-	TIMER_RES=sec;
+	updateThreshold=sec*5;
 }
+void monitorThread::launchManager()
+{
+	system("manager");
+}
+
+void monitorThread::mergeUpdates()
+{
+	system("mpkg update");
+	emit showStateMessage("Database updated");
+}
+
 
 void monitorThread::checkUpdates()
 {
@@ -72,8 +103,10 @@ void monitorThread::checkUpdates()
 	if (hDatabase.changed())
 	{
 		hDatabase.setControlPoint();
-		emit updatesDetected();
+		emit updatesDetected(true);
 	}
+	else emit updatesDetected(false);
+	printf("Check complete\n");
 }
 
 HashDatabase::HashDatabase()

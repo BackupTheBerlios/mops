@@ -7,11 +7,12 @@
  * 	Debian (planned)
  * 	RPM (planned)
  *
- * $Id: repository.h,v 1.9 2007/05/14 13:45:55 i27249 Exp $
+ * $Id: repository.h,v 1.10 2007/05/16 01:15:58 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
 
+#include "DownloadManager.h"
 #include "local_package.h"
 #include <ftw.h>
 

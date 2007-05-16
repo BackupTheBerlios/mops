@@ -1,12 +1,14 @@
 /************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.h,v 1.2 2007/05/16 00:07:29 i27249 Exp $
+ * $Id: trayapp.h,v 1.3 2007/05/16 01:15:59 i27249 Exp $
  */
 
 #ifndef TRAYAPP_H_
 #define TRAYAPP_H_
+#include <QApplication>
 #include <QSystemTrayIcon>
+#include <QMenu>
 #include "monitor.h"
 class TrayApp: public QSystemTrayIcon
 {
@@ -15,12 +17,19 @@ class TrayApp: public QSystemTrayIcon
 		TrayApp();
 		~TrayApp();
 	public slots:
-		void showUpdateMessage();
+		void showUpdateMessage(bool hasUpdates);
+		void showStateMessage(QString text);
+		void quitApp();
 	signals:
+		void forceCheck();
 		void execThread();
 		void shutdownThread();
 		void pauseThread();
 	private:
+		QMenu *appMenu;
+		QAction *quitAction;
+		QAction *mergeUpdatesAction;
+		QAction *launchManagerAction;
 		mpkg *core;
 		monitorThread *mThread;
 };

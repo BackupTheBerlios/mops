@@ -1,10 +1,9 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.38 2007/05/15 07:08:46 i27249 Exp $
+ * $Id: repository.cpp,v 1.39 2007/05/16 01:15:58 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
-#include "DownloadManager.h"
 Repository::Repository(){}
 Repository::~Repository(){}
 

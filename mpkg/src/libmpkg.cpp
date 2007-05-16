@@ -1,11 +1,11 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.26 2007/05/09 17:46:49 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.27 2007/05/16 01:15:58 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
 
-mpkg::mpkg()
+mpkg::mpkg(bool _loadDatabase)
 {
 #ifdef APPLE_DEFINED
 	//printf("Running MacOS X, welcome!\n");
@@ -16,16 +16,19 @@ mpkg::mpkg()
 	debug("creating core");
 	currentStatus="Loading database...";
 	loadGlobalConfig();
-	db = new mpkgDatabase();
-	DepTracker = new DependencyTracker(db);
+	if (_loadDatabase)
+	{
+		db = new mpkgDatabase();
+		DepTracker = new DependencyTracker(db);
+	}
 	init_ok=true;
 	currentStatus = "Database loaded (mpkg constructor)";
 }
 
 mpkg::~mpkg()
 {
-	delete DepTracker;
-	delete db;
+	if (DepTracker!=NULL) delete DepTracker;
+	if (db!=NULL) delete db;
 	//printf("closing database...\n");
 	delete_tmp_files();
 }

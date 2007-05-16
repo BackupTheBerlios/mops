@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.23 2007/05/14 13:45:55 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.24 2007/05/16 01:15:58 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -91,7 +91,6 @@ class mpkgDatabase
 		int syncronize_data(PACKAGE_LIST *pkgList);
 		PACKAGE get_installed_package(string pkg_name); // Returns installed package
 
-		string get_file_md5(string filename);
 		SQLProxy *getSqlDb();
 		mpkgDatabase();
 		~mpkgDatabase();
