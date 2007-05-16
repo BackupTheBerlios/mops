@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.28 2007/05/16 06:43:20 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.29 2007/05/16 09:01:15 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -16,6 +16,8 @@ mpkg::mpkg(bool _loadDatabase)
 	debug("creating core");
 	currentStatus="Loading database...";
 	loadGlobalConfig();
+	db=NULL;
+	DepTracker=NULL;
 	if (_loadDatabase)
 	{
 		printf("Loading database\n");

@@ -1,14 +1,14 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.6 2007/05/16 06:43:20 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.7 2007/05/16 09:01:15 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
 
 TrayApp::TrayApp()
 {
-	core = new mpkg(false);
+	//core = new mpkg(false);
 	mThread = new monitorThread;
 	mThread->start();
 
@@ -51,7 +51,7 @@ void TrayApp::quitApp()
 		printf("TrayApp: waiting threads to exit\n");
 		sleep(1);
 	}
-	delete core;
+	//delete core;
 	delete mThread;
 	qApp->quit();
 }

@@ -1,7 +1,7 @@
 /************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.h,v 1.4 2007/05/16 01:38:32 i27249 Exp $
+ * $Id: trayapp.h,v 1.5 2007/05/16 09:01:15 i27249 Exp $
  */
 
 #ifndef TRAYAPP_H_
@@ -31,7 +31,7 @@ class TrayApp: public QSystemTrayIcon
 		QAction *mergeUpdatesAction;
 		QAction *launchManagerAction;
 		QAction *forceUpdateAction;
-		mpkg *core;
+		//mpkg *core;
 		monitorThread *mThread;
 };
 

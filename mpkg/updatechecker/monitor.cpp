@@ -1,7 +1,7 @@
 /******************************************
  * MOPSLinux package system
  * Update monitor - processing thread
- * $Id: monitor.cpp,v 1.3 2007/05/16 02:05:53 i27249 Exp $
+ * $Id: monitor.cpp,v 1.4 2007/05/16 09:01:15 i27249 Exp $
  */
 
 #include "monitor.h"
@@ -75,17 +75,19 @@ void monitorThread::mergeUpdates()
 
 void monitorThread::checkUpdates()
 {
+	loadGlobalConfig();
 	vector<string>filename;
-	string cmd = "gunzip ";
+	string cmd = "gunzip -f ";
 	bool proceed=false;
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
+		printf("Checking %s\n",REPOSITORY_LIST.at(i).c_str());
 		proceed=false;
 		filename.push_back(get_tmp_file());
 		if (CommonGetFile(REPOSITORY_LIST.at(i)+"packages.xml.gz", filename.at(i)+".gz")==DOWNLOAD_OK)
 		{
-			cmd = "gunzip "+ filename.at(i)+".gz";
-			if (system(cmd.c_str()) && \
+			cmd = "gunzip -f "+ filename.at(i)+".gz";
+			if (FileNotEmpty(filename.at(i)+".gz") && system(cmd.c_str()) && \
 					ReadFile(filename.at(i)).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
 			{
 				proceed=true;
@@ -106,6 +108,7 @@ void monitorThread::checkUpdates()
 	}
 	else emit updatesDetected(false);
 	printf("Check complete\n");
+	delete_tmp_files();
 }
 
 HashDatabase::HashDatabase()
