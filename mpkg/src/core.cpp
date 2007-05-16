@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.43 2007/05/15 13:36:26 i27249 Exp $
+ *	$Id: core.cpp,v 1.44 2007/05/16 06:43:20 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -210,7 +210,7 @@ int mpkgDatabase::clean_package_filelist (PACKAGE *package)
 	sqlSearch.addField("packages_package_id", IntToStr(package->get_id()));
 	return db.sql_delete("files", sqlSearch);
 }
-
+#ifdef ENABLE_INTERNATIONAL
 int mpkgDatabase::add_descriptionlist_record(int package_id, DESCRIPTION_LIST *desclist)
 {
 	SQLTable sqlTable;
@@ -234,7 +234,7 @@ int mpkgDatabase::add_descriptionlist_record(int package_id, DESCRIPTION_LIST *d
 	}
 
 }
-
+#endif
 // Adds file list linked to package_id (usually for package adding)
 int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 {
@@ -475,10 +475,10 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	
 	// INSERT INTO SCRIPTS
 	add_scripts_record(package_id, package->get_scripts());
-
+#ifdef ENABLE_INTERNATIONAL
 	// INSERT INTO DESCRIPTIONS
 	add_descriptionlist_record(package_id, package->get_descriptions());
-
+#endif
 	return package_id;
 }	
 
@@ -535,7 +535,9 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	get_locationlist(package_id, package->get_locations());
 	get_dependencylist(package_id, package->get_dependencies());
 	get_taglist(package_id, package->get_tags());
+#ifdef ENABLE_INTERNATIONAL
 	get_descriptionlist(package_id, package->get_descriptions());
+#endif
 	return 0;
 }
 
@@ -610,7 +612,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	return 0;
 
 }
-
+#ifdef ENABLE_INTERNATIONAL
 int mpkgDatabase::get_descriptionlist(int package_id, DESCRIPTION_LIST *desclist, string language)
 {
 	SQLTable sqlTable;
@@ -640,6 +642,7 @@ int mpkgDatabase::get_descriptionlist(int package_id, DESCRIPTION_LIST *desclist
 	}
 	return 0;
 }
+#endif
 
 int mpkgDatabase::get_filelist(int package_id, FILE_LIST *filelist, bool config_only)
 {

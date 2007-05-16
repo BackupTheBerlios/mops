@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.21 2007/05/13 23:05:26 i27249 Exp $
+ *     $Id: main.cpp,v 1.22 2007/05/16 06:43:19 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &mw, SLOT(quitApp()));
 	QObject::connect(mw.ui.applyButton, SIGNAL(clicked()), &mw, SLOT(commitChanges()));
 	QObject::connect(mw.ui.actionAbout, SIGNAL(triggered()), &mw, SLOT(showAbout()));
+	QObject::connect(mw.ui.actionReset_changes, SIGNAL(triggered()), &mw, SLOT(resetChanges()));
 	QObject::connect(mw.ui.actionReset_all_queue, SIGNAL(triggered()), &mw, SLOT(resetQueue()));
 	QObject::connect(mw.ui.actionPreferences, SIGNAL(triggered()), &mw, SLOT(showPreferences()));
 	QObject::connect(mw.ui.actionAdd_remove_repositories, SIGNAL(triggered()), &mw, SLOT(showAddRemoveRepositories()));

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.24 2007/05/16 01:15:58 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.25 2007/05/16 06:43:20 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -17,7 +17,9 @@ class mpkgDatabase
 		// Functions to get data
 		int get_package(int package_id, PACKAGE *package, bool GetExtraInfo=true);
 		int get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=true, bool ultraFast=false);
+#ifdef ENABLE_INTERNATIONAL
 		int get_descriptionlist(int package_id, DESCRIPTION_LIST *desclist, string language="");
+#endif
 		int get_filelist (int package_id, FILE_LIST *filelist, bool config_only=false);
 		int get_dependencylist(int package_id, DEPENDENCY_LIST *deplist);
 		int get_taglist(int package_id, TAG_LIST *taglist);
@@ -52,7 +54,9 @@ class mpkgDatabase
 		string _install_package(PACKAGE *package);
 		int _remove_package(PACKAGE *package);
 		int add_filelist_record(int package_id, FILE_LIST *filelist);
+#ifdef ENABLE_INTERNATIONAL
 		int add_descriptionlist_record(int package_id, DESCRIPTION_LIST *desclist);
+#endif
 		int add_locationlist_record(int package_id, LOCATION_LIST *locationlist);
 		int add_server_record(SERVER *server);
 		int add_server_taglist_record(int server_id, SERVER_TAG_LIST *server_tag_list);

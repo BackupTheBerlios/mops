@@ -1,14 +1,14 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.5 2007/05/16 02:05:53 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.6 2007/05/16 06:43:20 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
 
 TrayApp::TrayApp()
 {
-	core = new mpkg;
+	core = new mpkg(false);
 	mThread = new monitorThread;
 	mThread->start();
 

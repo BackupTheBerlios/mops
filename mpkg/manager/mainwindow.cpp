@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.87 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.88 2007/05/16 06:43:19 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -723,7 +723,11 @@ void MainWindow::showAllPackages()
 }
 void MainWindow::resetQueue()
 {
-	loadData();
+	for (unsigned int i=0; i<newStatus.size(); i++)
+	{
+		newStatus.at(i)=ST_NONE;
+	}
+	commitChanges();
 }
 
 void MainWindow::showPackageInfo()
@@ -837,10 +841,10 @@ void MainWindow::commitChanges()
 {
 	emit commit(newStatus);
 }
-/*void MainWindow::resetChanges()
+void MainWindow::resetChanges()
 {
 	emit loadData();
-}*/
+}
 //void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){
 	prefBox->openRepositories();

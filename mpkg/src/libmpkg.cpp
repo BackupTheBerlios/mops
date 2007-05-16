@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.27 2007/05/16 01:15:58 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.28 2007/05/16 06:43:20 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -18,6 +18,7 @@ mpkg::mpkg(bool _loadDatabase)
 	loadGlobalConfig();
 	if (_loadDatabase)
 	{
+		printf("Loading database\n");
 		db = new mpkgDatabase();
 		DepTracker = new DependencyTracker(db);
 	}

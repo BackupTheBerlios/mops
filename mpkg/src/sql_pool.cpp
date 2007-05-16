@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.28 2007/05/15 13:36:26 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.29 2007/05/16 06:43:20 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -12,20 +12,20 @@
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
 	if (\
-			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies;")!=0 || \
-			sql_exec("select file_id, file_name, file_type, packages_package_id from files;")!=0 || \
-			sql_exec("select conflict_id, conflict_file_name, backup_file, conflicted_package_id from conflicts;")!=0 || \
-			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations;")!=0 || \
-			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_available, package_installed, package_configexist, package_action, package_md5, package_filename from packages;")!=0 || \
-			sql_exec("select server_tag_id, server_tag_name from server_tags;")!=0 || \
-			sql_exec("select server_tags_link_id, servers_server_id, server_tags_server_tag_id from server_tags_links;")!=0 || \
-			sql_exec("select server_id, server_url, server_priority from servers;")!=0 || \
-			sql_exec("select tags_id, tags_name from tags;")!=0 || \
-			sql_exec("select script_id, packages_package_id, preinstall, postinstall, preremove, postremove from scripts;")!=0 || \
-			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links;")!=0 || \
-			sql_exec("select description_id, packages_package_id, description_language, description_text, short_description_text from descriptions;")!=0 || \
-			sql_exec("select changelog_id, packages_package_id, changelog_language, changelog_text from changelogs;")!=0 || \
-			sql_exec("select rating_id, rating_value, packages_package_name from ratings;")!=0 \
+			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies limit 1;")!=0 || \
+			sql_exec("select file_id, file_name, file_type, packages_package_id from files limit 1;")!=0 || \
+			sql_exec("select conflict_id, conflict_file_name, backup_file, conflicted_package_id from conflicts limit 1;")!=0 || \
+			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations limit 1;")!=0 || \
+			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_available, package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
+			sql_exec("select server_tag_id, server_tag_name from server_tags limit 1;")!=0 || \
+			sql_exec("select server_tags_link_id, servers_server_id, server_tags_server_tag_id from server_tags_links limit 1;")!=0 || \
+			sql_exec("select server_id, server_url, server_priority from servers limit 1;")!=0 || \
+			sql_exec("select tags_id, tags_name from tags limit 1;")!=0 || \
+			sql_exec("select script_id, packages_package_id, preinstall, postinstall, preremove, postremove from scripts limit 1;")!=0 || \
+			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links limit 1;")!=0)// || \
+			sql_exec("select description_id, packages_package_id, description_language, description_text, short_description_text from descriptions limit 1;")!=0 || \
+			sql_exec("select changelog_id, packages_package_id, changelog_language, changelog_text from changelogs limit 1;")!=0 || \
+			sql_exec("select rating_id, rating_value, packages_package_name from ratings limit 1;")!=0 \
 			)
 	{
 		return false;

@@ -19,6 +19,7 @@ create table packages (
 	package_filename NOT NULL
 );
 create index ppname on packages (package_name);
+create index ppaction on packages(package_action);
 
 create table scripts (
 	script_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -36,6 +37,7 @@ create table files (
 	packages_package_id INTEGER NOT NULL
 );
 create index pname on files (file_name);
+create index fpid on files(packages_package_id);
 
 create table conflicts (
 	conflict_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
@@ -52,7 +54,7 @@ create table locations (
 	servers_server_id INTEGER NOT NULL,
 	location_path TEXT NOT NULL
 );
-
+create index locpid on locations(packages_package_id);
 create table servers (
 	server_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	server_url TEXT NOT NULL,
@@ -91,24 +93,24 @@ create table dependencies (
 );
 -- INTERNATIONAL SUPPORT
 
-create table descriptions (
-	description_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	packages_package_id INTEGER NOT NULL,
-	description_language TEXT NOT NULL,
-	description_text TEXT NOT NULL,
-	short_description_text TEXT NOT NULL
-);
+--create table descriptions (
+--	description_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+--	packages_package_id INTEGER NOT NULL,
+--	description_language TEXT NOT NULL,
+--	description_text TEXT NOT NULL,
+--	short_description_text TEXT NOT NULL
+--);
 
-create table changelogs (
-	changelog_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	packages_package_id INTEGER NOT NULL,
-	changelog_language TEXT NOT NULL,
-	changelog_text TEXT NOT NULL
-);
+--create table changelogs (
+--	changelog_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+--	packages_package_id INTEGER NOT NULL,
+--	changelog_language TEXT NOT NULL,
+--	changelog_text TEXT NOT NULL
+--);
 
 -- RATING SYSTEM - SUPPORT FOR FUTURE
-create table ratings (
-	rating_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	rating_value INTEGER NOT NULL,
-	packages_package_name TEXT NOT NULL
-);
+--create table ratings (
+--	rating_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+--	rating_value INTEGER NOT NULL,
+--	packages_package_name TEXT NOT NULL
+--);

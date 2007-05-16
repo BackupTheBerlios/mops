@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.41 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: mainwindow.h,v 1.42 2007/05/16 06:43:19 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -113,7 +113,7 @@ class MainWindow: public QMainWindow
 		void quitApp();
 		void showCoreSettings();
 		void commitChanges();
-		//void resetChanges();
+		void resetChanges();
 		void resetQueue();
 		void cleanCache();
 		//void saveQueue();
