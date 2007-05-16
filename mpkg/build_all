@@ -1,5 +1,13 @@
 #!/bin/sh
-(cd src/build; make clean && ./build)
-(cd manager; make clean && make -j2)
-(cd packagebuilder; make clean && make -j2)
 
+###################################################
+# Build script over entire project
+# Performs clean build of all items
+# $Id: build_all,v 1.2 2007/05/16 01:38:32 i27249 Exp $
+###################################################
+
+(cd src/build; ./clean; ./build)
+(cd manager; make clean; ./build)
+(cd packagebuilder; make clean; ./build)
+(cd updatechecker; make clean; ./build)
+echo "Build finished."

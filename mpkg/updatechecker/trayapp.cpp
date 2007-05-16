@@ -1,9 +1,11 @@
-/************************************
+/*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.3 2007/05/16 01:15:59 i27249 Exp $
- */
+ * $Id: trayapp.cpp,v 1.4 2007/05/16 01:38:32 i27249 Exp $
+ ************************************************************/
+
 #include "trayapp.h"
+
 TrayApp::TrayApp()
 {
 	core = new mpkg;
@@ -11,10 +13,13 @@ TrayApp::TrayApp()
 	mThread->start();
 
 	appMenu = new QMenu;
-	appMenu->setTitle("Update monitor");
+	appMenu->setTitle("Updates monitor");
 
+	forceUpdateAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/reload.png"),\
+			"Check now");
+	appMenu->addSeparator();
 	mergeUpdatesAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/vcs_update.png"),\
-		       "Update database");
+		       "Import changes into database");
 	launchManagerAction = appMenu->addAction(QIcon("/usr/share/mpkg/icons/icons/crystalsvg/128x128/apps/package_applications.png"),\
 		       "Launch package manager");
 	appMenu->addSeparator();
@@ -30,11 +35,11 @@ TrayApp::TrayApp()
 	QObject::connect(quitAction, SIGNAL(triggered()), this, SLOT(quitApp()));
 	QObject::connect(launchManagerAction, SIGNAL(triggered()), mThread, SLOT(launchManager()));
 	QObject::connect(mergeUpdatesAction, SIGNAL(triggered()), mThread, SLOT(mergeUpdates()));
+	QObject::connect(forceUpdateAction, SIGNAL(triggered()), mThread, SLOT(forceCheck()));
 	emit execThread();
 	emit forceCheck();
 	setIcon(QIcon("/usr/share/mpkg/icons/available.png"));
-	setToolTip("Update monitor");
-	//QMenu menu = new QMenu;
+	setToolTip("Updates monitor");
 	show();
 
 }

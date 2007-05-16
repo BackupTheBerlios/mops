@@ -346,11 +346,8 @@ process:
 						if (stat(item->file.c_str(), &fStat)==0) size = fStat.st_size;
 						else size=0;
 					
-						printf("size = %d\n", size);					
 						out = fopen (item->file.c_str(), "ab");
-						fseek(out,0,SEEK_END);
 						prData->setItemProgress(item->itemID, (double) size);
-						printf("File opened\n");
 						if ( out == NULL )
 						{
 							fprintf(stderr, "open target file failed");
@@ -359,10 +356,9 @@ process:
 						}
 						else
 						{
-							printf("Resuming from %d\n", size);
-
-							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);
-							
+							fseek(out,0,SEEK_END);
+							if (size!=0) printf("Resuming download from %d\n", size);
+							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);

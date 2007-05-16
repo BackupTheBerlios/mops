@@ -1,8 +1,15 @@
 #!/bin/sh
+
+#######################################################
+# Build script for manager
+# Just to simplify =)
+# $Id: build,v 1.3 2007/05/16 01:38:32 i27249 Exp $
+#######################################################
 make -j2
 strip manager
-cp manager /usr/local/bin
+cp manager /usr/local/bin/
 mkdir -p /usr/share/mpkg/
 cp -R icons /usr/share/mpkg/
 cp splash.png /usr/share/mpkg/
+echo "Manager: build complete"
 
