@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.74 2007/05/16 11:18:41 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.75 2007/05/16 12:45:52 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -890,32 +890,33 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	db.clear_table("servers");
 
 	// Забираем текущий список пакетов
-	PACKAGE_LIST pkgList;
+	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	get_packagelist(sqlSearch, &pkgList, false);
+	get_packagelist(sqlSearch, pkgList, false);
 	
 	printf("Comparing\n");
 	// Ищем соответствия
 	int pkgNumber;
 	for (int i=0; i<newPackages->size(); i++)
 	{
-		pkgNumber = pkgList.getPackageNumberByMD5(newPackages->get_package(i)->get_md5());
+		pkgNumber = pkgList->getPackageNumberByMD5(newPackages->get_package(i)->get_md5());
 		
 		if (pkgNumber!=-1)	// Если соответствие найдено...
 		{
-			pkgList.get_package(pkgNumber)->set_locations(*newPackages->get_package(i)->get_locations());	// Записываем locations
+			pkgList->get_package(pkgNumber)->set_locations(*newPackages->get_package(i)->get_locations());	// Записываем locations
 		}
 		else			// Если соответствие НЕ найдено...
 		{
 			newPackages->get_package(i)->newPackage=true;
-			pkgList.add(*newPackages->get_package(i));
+			pkgList->add(*newPackages->get_package(i));
 		}
 	}
 
 	printf("Syncing\n");
 	// Вызываем синхронизацию данных.
 	// Вообще говоря, ее можно было бы делать прямо здесь, но пусть таки будет универсальность.
-	syncronize_data(&pkgList);
+	delete newPackages;//->clear();
+	syncronize_data(pkgList);
 	printf("Done\n");
 	return 0;
 }
@@ -935,6 +936,9 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 		if (pkgList->get_package(i)->newPackage) add_package_record(pkgList->get_package(i));
 		else add_locationlist_record(pkgList->get_package(i)->get_id(), pkgList->get_package(i)->get_locations());
 	}
+	delete pkgList;
+	printf("Cleanup (pause here)\n");
+	sleep(1000);
 
 	// Дополнение от 10 мая 2007 года: сносим нафиг все недоступные пакеты, которые не установлены. Нечего им болтаться в базе.
 	PACKAGE_LIST allList;

@@ -7,7 +7,7 @@
  * 	Debian (planned)
  * 	RPM (planned)
  *
- * $Id: repository.h,v 1.10 2007/05/16 01:15:58 i27249 Exp $
+ * $Id: repository.h,v 1.11 2007/05/16 12:45:52 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
@@ -36,6 +36,7 @@ class Repository
 };
 
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype);
+int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url);
 
 // TODO: Make modules arch, add modules for slackware packages and repositories
 // TODO: Add support for retrieving repository list

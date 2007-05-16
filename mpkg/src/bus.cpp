@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.10 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: bus.cpp,v 1.11 2007/05/16 12:45:52 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -217,7 +217,8 @@ int ActionBus::getActionPosition(ActionID actID, bool addIfNone)
 
 void ActionBus::setActionProgress(ActionID actID, double p)
 {
-	actions.at(currentProcessing())._currentProgress=p;
+	if (currentProcessing()>=0)
+		actions.at(currentProcessing())._currentProgress=p;
 }
 
 void ActionBus::setActionProgressMaximum(ActionID actID, double p)
@@ -316,8 +317,6 @@ int ActionBus::currentProcessing()
 	{
 		if (getActionState(i)==ITEMSTATE_INPROGRESS) return i;
 	}
-	printf ("currentProcessing: no such action, all processes is idle! We sorry, but have to quit now. Go debugging!\n");
-	abort();
 	return -1;
 }
 

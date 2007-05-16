@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.25 2007/05/15 07:08:46 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.26 2007/05/16 12:45:52 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -65,9 +65,9 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, REPOSITORY_LIST.size());
 	// Функция, с которой начинается обновление данных.
 	
-	Repository rep;		// Объект репозиториев
-	PACKAGE_LIST availablePackages;		// Список пакетов, полученных из всех репозиториев...
-	PACKAGE_LIST tmpPackages;		// Список пакетов, полученных из текущего репозитория (временное хранилище)
+	Repository *rep = new Repository;		// Объект репозиториев
+	PACKAGE_LIST *availablePackages = new PACKAGE_LIST;		// Список пакетов, полученных из всех репозиториев...
+	PACKAGE_LIST *tmpPackages = new PACKAGE_LIST;		// Список пакетов, полученных из текущего репозитория (временное хранилище)
 
 	// А есть ли у нас вообще репозитории? Может нам и ловить-то нечего?...
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
@@ -82,22 +82,25 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	unsigned int cnt=1;
 	for (unsigned int i=0; i<REPOSITORY_LIST.size(); i++)
 	{
-		tmpPackages.clear();					//Очищаем временный список.
-		rep.get_index(REPOSITORY_LIST[i], &tmpPackages);	// Получаем список пакетов.
+		delete tmpPackages;
+		tmpPackages = new PACKAGE_LIST;					//Очищаем временный список.
+		rep->get_index(REPOSITORY_LIST[i], tmpPackages);	// Получаем список пакетов.
 		actionBus.setActionProgress(ACTIONID_DBUPDATE, cnt);
 		cnt++;
-		if (!tmpPackages.IsEmpty())				// Если мы таки получили что-то, добавляем это в список.
+		if (!tmpPackages->IsEmpty())				// Если мы таки получили что-то, добавляем это в список.
 		{
-			total_packages+=tmpPackages.size();		// Увеличим счетчик
-			availablePackages.add_list(&tmpPackages);	// Прибавляем данные к общему списку.
+			total_packages+=tmpPackages->size();		// Увеличим счетчик
+			availablePackages->add_list(tmpPackages);	// Прибавляем данные к общему списку.
 		}
 		actionBus.setActionProgress(ACTIONID_DBUPDATE, cnt);
 		cnt++;
 
 	}
+	delete rep;
+	delete tmpPackages;
 	//printf("Total %d packages received, filtering...\n", total_packages);
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
-	int ret=db->updateRepositoryData(&availablePackages);
+	int ret=db->updateRepositoryData(availablePackages);
 	printf("Update complete.\n");
 	actionBus.setActionState(ACTIONID_DBUPDATE);
 	return ret;

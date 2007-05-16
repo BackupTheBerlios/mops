@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.40 2007/05/16 11:18:41 i27249 Exp $
+ * $Id: repository.cpp,v 1.41 2007/05/16 12:45:52 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -9,17 +9,19 @@ Repository::~Repository(){}
 
 XMLNode _root; 
 
-int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkglist, string server_url)
+int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url)
 {
 	if (actionBus._abortActions)
 	{
 		actionBus._abortComplete=true;
 		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		printf("aborted\n");
 		return MPKGERROR_ABORTED;
 	}
 
-	if (packageslist.length()<20)
+	if (packageslist->length()<20)
 	{
+		printf("aborted\n");
 		return -1; // It's impossible if it has less size...
 	}
 	// Parsing slackware PACKAGES.TXT file
@@ -31,14 +33,12 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 	// [PACKAGE REQUIRED:  ]
 	// [PACKAGE SUGGESTS:  ]
 	// [PACKAGE DESCRIPTION:\n]	Package description (max 11 lines starting with [package_name:]) 
-	PACKAGE pkg;
-	LOCATION tmplocation;
-	DEPENDENCY tmpDep;
-	DESCRIPTION tmpDesc;
-	string tmpDescStr;
-	string tmpDepStr;
-	tmpDesc.set_language("en");
-	string tmpstr;
+	PACKAGE *pkg = new PACKAGE;
+	LOCATION *tmplocation = new LOCATION;
+	DESCRIPTION *tmpDesc = new DESCRIPTION;
+	string *tmpDescStr = new string;
+	tmpDesc->set_language("en");
+	string *tmpstr = packageslist;
 	int tmpSize;
 	int lines = 0;
 	int name_start = 0;
@@ -63,12 +63,12 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 	string pkgDescriptionKeyword = "PACKAGE DESCRIPTION:";
 	unsigned int pos;
 	unsigned int num=0;
-	tmpstr = packageslist;
+	//tmpstr = packageslist;
 
 	// Visualization
 	actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
-	unsigned int tmp_max = tmpstr.length();
-	actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, (double) tmpstr.length());
+	unsigned int tmp_max = tmpstr->length();
+	actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, (double) tmpstr->length());
 	//progressEnabled = true;
 
 	while (!endReached)
@@ -77,43 +77,44 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		{
 			actionBus._abortComplete=true;
 			actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+		printf("aborted\n");
 			return MPKGERROR_ABORTED;
 		}
 
-		actionBus.setActionProgress (ACTIONID_DBUPDATE, (double) tmp_max - tmpstr.length());
+		actionBus.setActionProgress (ACTIONID_DBUPDATE, (double) tmp_max - tmpstr->length());
 		debug("Parsing "+IntToStr(num)+" package");
 		// Stage 1: retrieving dirty info
-		pos = tmpstr.find(pkgNameKeyword);
-		tmpstr=tmpstr.substr(pos+pkgNameKeyword.length()); // Cuts off a header and keyword
-		pos = tmpstr.find("\n"); // Searching end of line
-		slackPackageName = tmpstr.substr(0,pos); // Filling package name (in full form)
+		pos = tmpstr->find(pkgNameKeyword);
+		*tmpstr=tmpstr->substr(pos+pkgNameKeyword.length()); // Cuts off a header and keyword
+		pos = tmpstr->find("\n"); // Searching end of line
+		slackPackageName = tmpstr->substr(0,pos); // Filling package name (in full form)
 		debug("slackPackageName = "+slackPackageName);
 		
-		pos = tmpstr.find(pkgLocationKeyword);
-		tmpstr = tmpstr.substr(pkgLocationKeyword.length()+pos);
-		pos = tmpstr.find("\n");
-		slackPackageLocation = tmpstr.substr(0,pos);
+		pos = tmpstr->find(pkgLocationKeyword);
+		*tmpstr = tmpstr->substr(pkgLocationKeyword.length()+pos);
+		pos = tmpstr->find("\n");
+		slackPackageLocation = tmpstr->substr(0,pos);
 		debug("slackPackageLocation = "+ slackPackageLocation);
 	
-		pos = tmpstr.find(pkgCompressedKeyword);
-		tmpstr = tmpstr.substr(pos + pkgCompressedKeyword.length());
-		pos = tmpstr.find("\n");
-		slackCompressedSize = tmpstr.substr(0,pos);
+		pos = tmpstr->find(pkgCompressedKeyword);
+		*tmpstr = tmpstr->substr(pos + pkgCompressedKeyword.length());
+		pos = tmpstr->find("\n");
+		slackCompressedSize = tmpstr->substr(0,pos);
 		debug("slackCompressedSize = " + slackCompressedSize);
 
-		pos = tmpstr.find(pkgUncompressedKeyword);
-		tmpstr = tmpstr.substr(pos + pkgUncompressedKeyword.length());
-		pos = tmpstr.find("\n");
-		slackUncompressedSize = tmpstr.substr(0,pos);
+		pos = tmpstr->find(pkgUncompressedKeyword);
+		*tmpstr = tmpstr->substr(pos + pkgUncompressedKeyword.length());
+		pos = tmpstr->find("\n");
+		slackUncompressedSize = tmpstr->substr(0,pos);
 		debug("slackUncompressedSize = " + slackUncompressedSize);
 	
-		pos = tmpstr.find(pkgRequiredKeyword);
-		if (pos < tmpstr.find(pkgNameKeyword))
+		pos = tmpstr->find(pkgRequiredKeyword);
+		if (pos < tmpstr->find(pkgNameKeyword))
 		{
 			debug("required list present!");
-			tmpstr = tmpstr.substr(pos + pkgRequiredKeyword.length());
-			pos = tmpstr.find("\n");
-			slackRequired = tmpstr.substr(0,pos);
+			*tmpstr = tmpstr->substr(pos + pkgRequiredKeyword.length());
+			pos = tmpstr->find("\n");
+			slackRequired = tmpstr->substr(0,pos);
 			debug("slackRequired = " + slackRequired);
 		}
 		else
@@ -122,13 +123,13 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			slackRequired.clear();
 		}
 
-		pos = tmpstr.find(pkgSuggestsKeyword);
-		if (pos < tmpstr.find(pkgNameKeyword))
+		pos = tmpstr->find(pkgSuggestsKeyword);
+		if (pos < tmpstr->find(pkgNameKeyword))
 		{
 			debug("suggest list present!");
-			tmpstr = tmpstr.substr(pos + pkgSuggestsKeyword.length());
-			pos = tmpstr.find("\n");
-			slackSuggests = tmpstr.substr(0,pos);
+			*tmpstr = tmpstr->substr(pos + pkgSuggestsKeyword.length());
+			pos = tmpstr->find("\n");
+			slackSuggests = tmpstr->substr(0,pos);
 			debug("slackSuggests = " + slackSuggests);
 		}
 		else
@@ -137,21 +138,21 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			debug("no suggest list");
 		}
 
-		pos = tmpstr.find(pkgDescriptionKeyword);
-		tmpstr = tmpstr.substr(pos + pkgSuggestsKeyword.length()+1); // +1 because there are newline
-		pos = tmpstr.find(pkgNameKeyword);
+		pos = tmpstr->find(pkgDescriptionKeyword);
+		*tmpstr = tmpstr->substr(pos + pkgSuggestsKeyword.length()+1); // +1 because there are newline
+		pos = tmpstr->find(pkgNameKeyword);
 		debug("searched end");
 		if (pos == std::string::npos)
 		{
 			debug("description end reached");
-			slackDescription = tmpstr;
+			slackDescription = *tmpstr;
 			
 			debug("slackDescription = " + slackDescription);
 			endReached = true;
 		}
 		else
 		{
-			slackDescription = tmpstr.substr(0,pos-1);
+			slackDescription = tmpstr->substr(0,pos-1);
 
 			debug("slackDescription = "+ slackDescription);
 		}
@@ -159,21 +160,21 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 		// Stage 2: info cleanup
 		
 		// Filename
-		pkg.set_filename(slackPackageName);
+		pkg->set_filename(slackPackageName);
 		
-		if (md5list.find(slackPackageName) == std::string::npos)
+		if (md5list->find(slackPackageName) == std::string::npos)
 		{
 			printf("MD5 checksum not found for package %s, it will prevent from installing this\n", slackPackageName.c_str());
 		}
 		else
 		{
 			debug("md5 found");
-			md5tmp = md5list.substr(0,md5list.find(slackPackageName));
+			md5tmp = md5list->substr(0,md5list->find(slackPackageName));
 		}
 		md5tmp = md5tmp.substr(0, md5tmp.find_last_of(" \t"));
 		md5tmp = md5tmp.substr(md5tmp.rfind("\n")+1);
 		md5tmp = cutSpaces(md5tmp);
-		pkg.set_md5(md5tmp);
+		pkg->set_md5(md5tmp);
 		debug("MD5 = " + md5tmp);
 		
 		filename = slackPackageName;
@@ -204,7 +205,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 						filename[i+1] == '8' || \
 						filename[i+1] == '9')
 					{
-						pkg.set_name(tmp);
+						pkg->set_name(tmp);
 						pos=i+2;
 						break;
 					}
@@ -217,7 +218,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			{
 				if (filename[i]=='-')
 				{
-					pkg.set_version(tmp);
+					pkg->set_version(tmp);
 					pos=i+2;
 					break;
 				}
@@ -229,7 +230,7 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			{
 				if (filename[i]=='-')
 				{
-					pkg.set_arch(tmp);
+					pkg->set_arch(tmp);
 					pos=i+2;
 					break;
 				}
@@ -241,83 +242,88 @@ int slackpackages2list (string packageslist, string md5list, PACKAGE_LIST *pkgli
 			{
 				tmp+=filename[i];
 			}
-			pkg.set_build(tmp);
+			pkg->set_build(tmp);
 
 			tmp.clear();
 		}
 		
-		debug("package name: "+ pkg.get_name());
-		debug("package version: "+ pkg.get_version());
-		debug("package arch: "+ pkg.get_arch());
-		debug("package build: "+ pkg.get_build());
+		debug("package name: "+ pkg->get_name());
+		debug("package version: "+ pkg->get_version());
+		debug("package arch: "+ pkg->get_arch());
+		debug("package build: "+ pkg->get_build());
 		// Location
 		if (slackPackageLocation.find("./") == 0)
 		{
 			debug("DOTCUT:");
 			slackPackageLocation = slackPackageLocation.substr(2);
 		}
-		tmplocation.set_path(slackPackageLocation);
-		tmplocation.get_server()->set_url(server_url);
-		pkg.get_locations()->add(tmplocation);
-		debug("LOC_SET: "+pkg.get_locations()->get_location(0)->get_path());
+		tmplocation->set_path(slackPackageLocation);
+		tmplocation->get_server()->set_url(server_url);
+		pkg->get_locations()->add(*tmplocation);
+		debug("LOC_SET: "+pkg->get_locations()->get_location(0)->get_path());
 
 		// Size
 		tmpSize = atoi(slackCompressedSize.substr(0, slackCompressedSize.length()-2).c_str());
-		pkg.set_compressed_size(IntToStr(tmpSize*1024));
-		debug("package size (compressed): "+ pkg.get_compressed_size());
+		pkg->set_compressed_size(IntToStr(tmpSize*1024));
+		debug("package size (compressed): "+ pkg->get_compressed_size());
 		tmpSize = atoi(slackUncompressedSize.substr(0, slackUncompressedSize.length()-2).c_str());
-		pkg.set_installed_size(IntToStr(tmpSize*1024));
-		debug("package size (uncompressed): "+ pkg.get_installed_size());
+		pkg->set_installed_size(IntToStr(tmpSize*1024));
+		debug("package size (uncompressed): "+ pkg->get_installed_size());
 
 		debug("reached description");
 		// Description
-		tmpDescStr.clear();
+		tmpDescStr->clear();
 		
 		if (slackDescription.length()>0)
 		{
 			slackDescription = slackDescription.substr(1);
-			if (slackDescription.length()>=slackDescription.find(pkg.get_name()+": ")+pkg.get_name().length()+2)
+			if (slackDescription.length()>=slackDescription.find(pkg->get_name()+": ")+pkg->get_name().length()+2)
 			{
-				slackDescription = slackDescription.substr(slackDescription.find(pkg.get_name()+": ")+pkg.get_name().length()+2);
-				tmpDesc.set_shorttext(slackDescription.substr(0, slackDescription.find_first_of("\n")));
-				pkg.set_short_description(tmpDesc.get_shorttext());
-				debug("short description: "+tmpDesc.get_shorttext());
+				slackDescription = slackDescription.substr(slackDescription.find(pkg->get_name()+": ")+pkg->get_name().length()+2);
+				tmpDesc->set_shorttext(slackDescription.substr(0, slackDescription.find_first_of("\n")));
+				pkg->set_short_description(tmpDesc->get_shorttext());
+				debug("short description: "+tmpDesc->get_shorttext());
 			}
 			pos = slackDescription.find("\n");
 			lines = 0;
 			while (pos != std::string::npos && lines < 11)
 			{
-				pos = slackDescription.find(pkg.get_name()+": ");
+				pos = slackDescription.find(pkg->get_name()+": ");
 				if (pos == std::string::npos)
 				{
 					debug("Description end");
 				}
 				else
 				{
-					slackDescription = slackDescription.substr(pos+pkg.get_name().length()+2);
-					tmpDescStr+=slackDescription.substr(0,slackDescription.find("\n"))+"\n";
+					slackDescription = slackDescription.substr(pos+pkg->get_name().length()+2);
+					*tmpDescStr = *tmpDescStr + slackDescription.substr(0,slackDescription.find("\n"))+"\n";
 					lines++;
 				}
 			}
-			debug("Description: "+ tmpDescStr);
-			tmpDesc.set_text(tmpDescStr);
-			pkg.set_description(tmpDesc.get_text());
-//#ifdef ENABLE_INTERNATIONAL			
-			pkg.get_descriptions()->add(tmpDesc);
-//#endif
+			debug("Description: "+ *tmpDescStr);
+			tmpDesc->set_text(*tmpDescStr);
+			pkg->set_description(tmpDesc->get_text());
+#ifdef ENABLE_INTERNATIONAL			
+			pkg->get_descriptions()->add(tmpDesc);
+#endif
 		}
 		pkglist->add(pkg);
-		pkg.clear();
+		pkg->clear();
 		num++;
 		debug("done");
 	}
+	delete pkg;
+	delete tmplocation;
+	delete tmpDesc;
+	delete tmpDescStr;
+	//delete tmpstr;
 
 	return 0;
 }	// End slackpackages2list()
 
-int xml2package(XMLNode pkgnode, PACKAGE *data)
+int xml2package(XMLNode *pkgnode, PACKAGE *data)
 {
-	PackageConfig p(pkgnode);
+	PackageConfig p(*pkgnode);
 	if (!p.parseOk) return -100;
 	
 	data->set_name(p.getName());
@@ -550,9 +556,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		return -1;
 	}
 	
-	PACKAGE pkg;
+	PACKAGE *pkg = new PACKAGE;
 	string xml_name=index_filename;
-	XMLNode repository_root;
+	XMLNode *repository_root = new XMLNode;
 	int pkg_count;
 	int ret=0;
 	currentStatus = "["+server_url+"] Importing data...";
@@ -566,11 +572,12 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	switch(type)
 	{
 		case TYPE_MPKG:
-				repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
-				pkg_count=repository_root.nChildNode("package");
+				*repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
+				pkg_count=repository_root->nChildNode("package");
 				if (pkg_count==0)
 				{
 					printf(_("Repository has no packages\n"));
+					delete pkg;
 					return 0;
 				}
 				
@@ -586,15 +593,22 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					}
 
 					actionBus.setActionProgress(ACTIONID_DBUPDATE, i);
-					pkg.clear();
-					xml2package(repository_root.getChildNode("package", i), &pkg);
+					pkg->clear();
+					xml2package(&repository_root->getChildNode("package", i), pkg);
 					// Adding location data
-					pkg.get_locations()->get_location(0)->get_server()->set_url(server_url);
+					pkg->get_locations()->get_location(0)->get_server()->set_url(server_url);
 					packages->add(pkg);
 				}
 			break;
 		case TYPE_SLACK:
-			ret = slackpackages2list(ReadFile(index_filename), ReadFile(md5sums_filename), packages, server_url);
+			string *pList = new string;
+			string *mList = new string;
+			*pList = ReadFile(index_filename);
+			*mList = ReadFile(md5sums_filename);
+
+			ret = slackpackages2list(pList, mList, packages, server_url);
+			if (pList!=NULL) delete pList;
+			if (mList!=NULL) delete mList;
 			break;
 
 		case TYPE_DEBIAN:
@@ -602,6 +616,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		default:
 			break;
 	}
+	delete pkg;
 	return ret;
 }
 

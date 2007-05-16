@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.11 2007/04/19 01:38:57 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.12 2007/05/16 12:45:52 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -37,7 +37,6 @@ PackageConfig::PackageConfig(XMLNode rootnode)
 	parseOk = true;
 	_node = rootnode;
 }
-
 
 PackageConfig::~PackageConfig()
 {
