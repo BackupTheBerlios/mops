@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.46 2007/05/16 16:49:22 i27249 Exp $
+ *	$Id: core.cpp,v 1.47 2007/05/17 13:17:34 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -16,7 +16,7 @@
 #define ENABLE_CONFLICT_CHECK
 bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
 {
-	debug("checkVersion "+version1 + " vs " + version2);
+	//debug("checkVersion "+version1 + " vs " + version2);
 	switch (condition)
 	{
 		case VER_MORE:
@@ -44,7 +44,7 @@ bool mpkgDatabase::checkVersion(string version1, int condition, string version2)
 			else return false;
 			break;
 		default:
-			printf("unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n", condition);
+			mError("unknown condition " + IntToStr(condition));
 			return true;
 	}
 	return true;
@@ -107,9 +107,9 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 		}
 	}
-	debug("Requesting data from sql");
+	//debug("Requesting data from sql");
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
-	debug("Request complete");
+	//debug("Request complete");
 	if (!sqlTable->empty())
 	{
 		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
@@ -255,7 +255,7 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 	}
 	if (!sqlTable->empty())
 	{
-		int ret = db.sql_insert("files", sqlTable);
+		int ret = db.sql_insert("files", *sqlTable);
 		delete sqlTable;
 		return ret;
 	}
@@ -269,36 +269,39 @@ int mpkgDatabase::add_filelist_record(int package_id, FILE_LIST *filelist)
 // Adds location list linked to package_id
 int mpkgDatabase::add_locationlist_record(int package_id, LOCATION_LIST *locationlist) // returns 0 if ok, anything else if failed.
 {
-	debug("core.cpp: add_locationlist_record(): begin");
+	//debug("core.cpp: add_locationlist_record(): begin");
 	int serv_id;
 	SQLTable *sqlLocations = new SQLTable;
 	SQLRecord sqlLocation;
 	for (int i=0;i<locationlist->size();i++)
 	{
-		debug("core.cpp: add_locationlist_record(): adding location "+IntToStr(i));
+		//debug("core.cpp: add_locationlist_record(): adding location "+IntToStr(i));
 		if (!locationlist->get_location(i)->get_server()->IsEmpty())
 		{
-			debug("core.cpp: add_locationlist_record(): adding server");
+			//debug("core.cpp: add_locationlist_record(): adding server");
 			serv_id=add_server_record(locationlist->get_location(i)->get_server());
 			if (serv_id<=0)
 			{
-				debug("core.cpp: add_locationlist_record(): add_server_record() error, returned "+IntToStr(serv_id));
+				//debug("core.cpp: add_locationlist_record(): add_server_record() error, returned "+IntToStr(serv_id));
 				return -1;
 			}
-			debug("core.cpp: add_locationlist_record(): serv_id="+IntToStr(serv_id)+", adding location to sqlLocations");
+			//debug("core.cpp: add_locationlist_record(): serv_id="+IntToStr(serv_id)+", adding location to sqlLocations");
 			sqlLocation.clear();
 			sqlLocation.addField("servers_server_id", IntToStr(serv_id));
 			sqlLocation.addField("packages_package_id", IntToStr(package_id));
 			sqlLocation.addField("location_path", locationlist->get_location(i)->get_path());
 			sqlLocations->addRecord(sqlLocation);
 		}
-		else debug("core.cpp: add_locationlist_record(): location "+IntToStr(i)+" incomplete (has no server), cannot add this");
+		else{
+
+		       	//debug("core.cpp: add_locationlist_record(): location "+IntToStr(i)+" incomplete (has no server), cannot add this");
+		}
 	}
 	int ret=1;
-	if (sqlLocations->empty()) debug ("core.cpp: add_locationlist_record(): No valid locations found for package (Package_ID="+IntToStr(package_id)+")");
-	else ret=db.sql_insert("locations", sqlLocations);
-	if (ret!=0) debug("core.cpp: add_locationlist_record(): db.sql_insert(locations) failed, code="+IntToStr(ret));
-	else debug("core.cpp: add_locationlist_record(): successful end");
+	//if (sqlLocations->empty()) //debug ("core.cpp: add_locationlist_record(): No valid locations found for package (Package_ID="+IntToStr(package_id)+")");
+	if (!sqlLocations->empty()) ret=db.sql_insert("locations", *sqlLocations);
+	/*if (ret!=0) //debug("core.cpp: add_locationlist_record(): db.sql_insert(locations) failed, code="+IntToStr(ret));
+	else //debug("core.cpp: add_locationlist_record(): successful end");*/
 	delete sqlLocations;
 	return ret;
 }
@@ -392,7 +395,7 @@ int mpkgDatabase::add_dependencylist_record(int package_id, DEPENDENCY_LIST *dep
 		sqlInsert.addField("dependency_package_version", deplist->get_dependency(i)->get_package_version());
 		sqlTable->addRecord(sqlInsert);
 	}
-	int ret = db.sql_insert("dependencies", sqlTable);
+	int ret = db.sql_insert("dependencies", *sqlTable);
 	delete sqlTable;
 	return ret;
 }
@@ -504,7 +507,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 {
 	if (package_id<0)
 	{
-		printf("Requested to find a package without ID\n");
+		mError("Requested to find a package without ID");
 		return MPKGERROR_INCORRECTDATA;
 	}
 	SQLTable sqlTable;
@@ -557,7 +560,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 
 int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
-	debug("get_packagelist start");
+	//debug("get_packagelist start");
 	SQLTable sqlTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -578,7 +581,7 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
 		if (!consoleMode) actionBus.setActionProgress(ACTIONID_GETPKGLIST, i);
-		debug("retrieving package "+IntToStr(i));
+		//debug("retrieving package "+IntToStr(i));
 		package.clear();
 		package.set_id(atoi(sqlTable.getValue(i, "package_id").c_str()));
 		package.set_name(sqlTable.getValue(i, "package_name"));
@@ -614,15 +617,15 @@ int mpkgDatabase::get_packagelist (SQLRecord sqlSearch, PACKAGE_LIST *packagelis
 		}
 #ifdef ENABLE_INTERNATIONAL
 		
-		debug("description list...");
+		//debug("description list...");
 		get_descriptionlist(package.get_id(), package.get_descriptions());
 #endif
 		
-		debug("setting package...");
+		//debug("setting package...");
 		packagelist->set_package(i, package);
-		debug("done.");
+		//debug("done.");
 	}
-	debug("get_packagelist end");
+	//debug("get_packagelist end");
 	return 0;
 
 }
@@ -974,7 +977,7 @@ int mpkgDatabase::set_action(int package_id, int status)
 
 int mpkgDatabase::get_installed(int package_id)
 {
-	debug("start");
+	//debug("start");
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("package_installed");
@@ -994,7 +997,7 @@ int mpkgDatabase::get_installed(int package_id)
 	}
 	if (sqlTable->getRecordCount()==1)
 	{
-		debug("retrieving");
+		//debug("retrieving");
 		int ret = atoi(sqlTable->getValue(0, "package_installed").c_str());
 		delete sqlTable;
 		return ret;
@@ -1141,7 +1144,7 @@ int mpkgDatabase::get_scripts(int package_id, SCRIPTS *scripts)
 
 int mpkgDatabase::get_purge(string package_name)
 {
-	debug("get_purge start");
+	//debug("get_purge start");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", package_name);
 	SQLTable sqlTable;
@@ -1157,17 +1160,17 @@ int mpkgDatabase::get_purge(string package_name)
 	}
 	if (sqlTable.empty())
 	{
-		debug("Nothing found");
+		//debug("Nothing found");
 		return 0;
 	}
 	int id=0;
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
-		debug("searching..."); // HERE IS AN ERROR: IF IT WAS SAME PACKAGE, THEN AT THIS MOMENT, PACKAGE HAS ALREADY STATUS "INSTALL". NEED FIX
+		//debug("searching..."); // HERE IS AN ERROR: IF IT WAS SAME PACKAGE, THEN AT THIS MOMENT, PACKAGE HAS ALREADY STATUS "INSTALL". NEED FIX
 		if (sqlTable.getValue(i, "package_configexist")==IntToStr(ST_CONFIGEXIST))
 		{
 			id=atoi(sqlTable.getValue(i, "package_id").c_str());
-			debug("id set to "+IntToStr(id));
+			//debug("id set to "+IntToStr(id));
 			break;
 		}
 		/*if (sqlTable.getValue(i, "package_action")==IntToStr(ST_INSTALL))	//TEMP DISABLE - I don't remember why this code needed.
@@ -1231,7 +1234,7 @@ string SQLRecord::getFieldName(unsigned int num)
 
 string SQLRecord::getValue(string fieldname)
 {
-	printf("fieldname = %s\n", fieldname.c_str());
+	//debug("fieldname = " + fieldname);
 	for (unsigned int i=0;i<field.size();i++)
 	{
 		if (field.at(i).fieldname==fieldname) return PrepareSql(field.at(i).value);
@@ -1324,14 +1327,13 @@ void SQLTable::clear()
 
 string SQLTable::getValue(unsigned int num, string fieldname)
 {
-	printf("VOID OBJECT\n");
 	if (num<table.size())
 	{
 		return table.at(num).getValue(fieldname);
 	}
 	else 
 	{
-		printf("no such ID\n");
+		mError("no such ID, aborting");
 		abort();
 		return "";
 	}
@@ -1339,12 +1341,10 @@ string SQLTable::getValue(unsigned int num, string fieldname)
 
 SQLRecord SQLTable::getRecord(unsigned int num)
 {
-	printf("NULL OBJECT\n");
 	if (num<table.size() && num>=0) return table.at(num);
 	else
 	{
-		// returning empty...
-		debug("core.cpp: SQLTable::getRecord(): incorrect num");
+		mError("core.cpp: SQLTable::getRecord():  record number " + IntToStr(num) + "is out of range");
 		SQLRecord ret;
 		return ret;
 	}
@@ -1352,8 +1352,8 @@ SQLRecord SQLTable::getRecord(unsigned int num)
 
 void SQLTable::addRecord(SQLRecord record)
 {
-	printf("adding record\n");
-	printf("table size = %d\n",table.size());
+	//debug("adding record");
+	//debug("table size = " + IntToStr(table.size()));
 	table.push_back(record);
 }
 

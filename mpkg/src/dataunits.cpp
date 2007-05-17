@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.49 2007/05/15 22:09:21 i27249 Exp $
+	$Id: dataunits.cpp,v 1.50 2007/05/17 13:17:34 i27249 Exp $
 */
 
 
@@ -1380,11 +1380,6 @@ int PACKAGE::action()
 }
 string PACKAGE::get_vstatus(bool color)
 {
-	char *CL_WHITE=	"\033[22;39m";
-	char *CL_RED =	"\033[22;31m";
-	char *CL_GREEN ="\033[22;32m";
-	char *CL_YELLOW ="\033[22;33m";
-	char *CL_BLUE =	"\033[22;34m";
 
 	string stat;
 	if (available()) stat +="A";

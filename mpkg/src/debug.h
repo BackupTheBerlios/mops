@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.6 2007/02/22 12:51:19 adiakin Exp $
+$Id: debug.h,v 1.7 2007/05/17 13:17:35 i27249 Exp $
 */
 
 
@@ -9,17 +9,19 @@ $Id: debug.h,v 1.6 2007/02/22 12:51:19 adiakin Exp $
 #include <string>
 #include <stdlib.h>
 #include "config.h"
+#include "colors.h"
 typedef int DEBUG_LEVEL;
 
-#define debug(m) DbgPrint(__FILE__, __LINE__, m)
-
+#define debug(m) DbgPrint(__FILE__, __LINE__, __func__, m)
+#define mError(m) _mError(__FILE__, __LINE__, __func__, m)
 #ifdef DEBUG
 #define ASSERT(m) (assert(m))
 #else
 #define ASSERT(m)
 #endif
+void _mError(char* file, int line, const char *func, std::string message);
 
-void DbgPrint(char* file, int line, std::string message);
+void DbgPrint(char* file, int line, const char *func, std::string message);
 
 //void debug(std::string str);
 

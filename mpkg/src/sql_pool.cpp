@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.31 2007/05/16 16:49:22 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.32 2007/05/17 13:17:35 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -37,11 +37,6 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 	}
 }
 
-RESULT SQLiteDB::sql_exec(string query)
-{
-	return sql_exec(&query);
-}
-
 int SQLiteDB::clear_table(string table_name)
 {
 	// Функция стирает всю информацию из указанной таблицы
@@ -51,18 +46,20 @@ int SQLiteDB::clear_table(string table_name)
 int get_sql_table_counter=0;
 RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
-#ifdef DEBUG
+#ifdef _SQL_DEBUG_
 	debug("get_sql_table:");
-	//printf("%s\n", sql_query->c_str());
+	printf("%s\n", sql_query->c_str());
 #endif
 	get_sql_table_counter++;
 	char *errmsg=0;
 	mpkgErrorReturn errRet;
 	int query_return;
-	printf("Execution, query length=%d\n", sql_query->length());
-	WriteFile("/root/query", *sql_query);
-	query_return=sqlite3_get_table(db, sql_query->c_str(), table, rows, cols, &errmsg);
-	printf("SQL query executed ok\n");
+	//printf("CONVERSION\n");
+	const char *qqq = sql_query->c_str();
+	//printf("COUNT=%d\n",get_sql_table_counter);
+	//printf("CALL to GET_TABLE, length=%d\n", sql_query->size());
+	query_return=sqlite3_get_table(db, qqq, table, rows, cols, &errmsg);
+	//printf("END\n");
 	if (query_return!=SQLITE_OK) // Means error
 	{
 		perror("SQLite INTERNAL ERROR");
@@ -117,22 +114,22 @@ int SQLiteDB::init()
 	return ret;
 
 }
-RESULT SQLiteDB::sql_exec (string *sql_query)
+RESULT SQLiteDB::sql_exec (string sql_query)
 {
 #ifdef _SQL_DEBUG_
-	debug("sql_exec: "+*sql_query);
+	debug("sql_exec: "+sql_query);
 #endif
 	char *sql_errmsg=0;
 	int query_return;
 	
-	query_return=sqlite3_exec(db,sql_query->c_str(),NULL, NULL, &sql_errmsg);
+	query_return=sqlite3_exec(db,sql_query.c_str(),NULL, NULL, &sql_errmsg);
 	mpkgErrorReturn errRet;
 	if (query_return!=SQLITE_OK) // Means error
 	{
 		if (initOk)
 		{
 			printf("sql_pool.cpp: sql_exec(): SQL error while querying database: %s\n", sql_errmsg);
-			printf("The query was: %s\n", sql_query->c_str());
+			printf("The query was: %s\n", sql_query.c_str());
 			sqlError=query_return;
 			sqlErrMsg=sql_errmsg;
 			free(sql_errmsg);
@@ -146,98 +143,88 @@ RESULT SQLiteDB::sql_exec (string *sql_query)
 	sqlErrMsg.clear();
 	return 0;
 }
-
 long long int SQLiteDB::getLastID()
 {
 	return sqlite3_last_insert_rowid(db);
-}	
+}
+long long int SQLProxy::getLastID()
+{
+	return sqliteDB.getLastID();
+}
 
 RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
-	printf("Field count = %d\n", fields.size());
-
-	string *sql_query = new string;
-	string *sql_action = new string;
-	mstring *sql_fields = new mstring;
-	string *sql_from = new string;
-	mstring *sql_where = new mstring;
+	string sql_query;
+	string sql_action;
+	mstring sql_fields;
+	string sql_from;
+	mstring sql_where;
 
 	char **table;
 	int cols;
 	int rows;
 	// Do what?
-	*sql_action="select";
+	sql_action="select";
 
 	// Get what?
 	if (fields.empty()) // If fields is empty, just get all fields
 	{
-		printf("empty fields\n");
 		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
 		for (unsigned int i=0;i<fieldnames.size();i++)
-			fields.addField(fieldnames.at(i));
+			fields.addField(fieldnames[i]);
 	}
-	printf("Field count = %d\n", fields.size());
 	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
 	{
-		*sql_fields+=fields.getFieldName(i);
-		if (i!=fields.size()-1) *sql_fields+=", ";
+		sql_fields+=fields.getFieldName(i);
+		if (i!=fields.size()-1) sql_fields+=", ";
 	}
 
-	*sql_from = "from "+table_name;
+	sql_from = "from "+table_name;
 	if (!search.empty())
 	{
-		*sql_where="where ";
+		sql_where="where ";
 		if (search.getSearchMode()==SEARCH_IN)
 		{
-			*sql_where += search.getFieldName(0) + " in (";
+			sql_where += search.getFieldName(0) + " in (";
 			for (int i=0; i<search.size(); i++)
 			{
-				*sql_where += "'"+search.getValueI(i)+"'";
-				if (i!=search.size()-1) *sql_where+=", ";
+				sql_where += "'"+search.getValueI(i)+"'";
+				if (i!=search.size()-1) sql_where+=", ";
 			}
-			*sql_where += ")";
+			sql_where += ")";
 		}
 		else
 		{
 			for (int i=0;i<search.size();i++)
 			{
-				if (search.getEqMode()!=EQ_LIKE) *sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
-				if (search.getEqMode()==EQ_LIKE) *sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
-				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) *sql_where+=" and ";
-				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) *sql_where+=" or ";
+				if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
+				if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
+				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
+				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
 			}
 		}
 	}
 
-	*sql_query=*sql_action+" "+sql_fields->s_str()+" "+*sql_from+" "+sql_where->s_str()+";";
-	delete sql_action;
-	delete sql_fields;
-	delete sql_from;
-	delete sql_where;
-	debug("Performing query");
-	int sql_ret=get_sql_table(sql_query, &table, &rows, &cols);
-	debug("Query complete");
-	delete sql_query;
-	debug ("query deleted\n");
+	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str()+";";
+	
+	lastSQLQuery=sql_query;
+
+	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
 	if (sql_ret==0)
 	{
 		output->clear(); // Ensure that output is clean and empty
-		SQLRecord *row; 	// One row of data
+		SQLRecord row; 	// One row of data
 		int field_num=0;
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
-			row = new SQLRecord;
 			field_num=0;
-			//row=fields;
+			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
 			{
-				printf("setting values, field_num = %d\n", field_num);
-				row->addField(fields.getFieldName(field_num), (string) table[value_pos]);
+				row.setValue(fields.getFieldName(field_num), (string) table[value_pos]);
 				field_num++;
 			}
-			printf("adding output\n");
-			output->addRecord(*row);
-			delete row;
+			output->addRecord(row);
 		}
 		sqlite3_free_table(table);
 		return 0;
@@ -396,47 +383,41 @@ int SQLiteDB::sql_insert(string table_name, SQLRecord values)
 {
 	
 	vector<string> fieldNames=getFieldNames(table_name);
-	string *sql_query = new string;
-	*sql_query = "insert into " + table_name + " values( NULL, ";
+	string sql_query="insert into "+table_name+" values( NULL, ";
 	for (unsigned int i=1; i<fieldNames.size();i++)
 	{
-		*sql_query+="'"+values.getValue(fieldNames[i])+"'";
-		if (i!=fieldNames.size()-1) *sql_query+=", ";
+		sql_query+="'"+values.getValue(fieldNames[i])+"'";
+		if (i!=fieldNames.size()-1) sql_query+=", ";
 	}
-	*sql_query+=");";
-	int ret = sql_exec(sql_query);
-	delete sql_query;
-	return ret;
+	sql_query+=");";
+	return sql_exec(sql_query);
 }
 
-int SQLiteDB::sql_insert(string table_name, SQLTable *values)
+int SQLiteDB::sql_insert(string table_name, SQLTable values)
 {
 	vector<string> fieldNames=getFieldNames(table_name);
-	string *sql_query = new string;
-	for (int k=0; k<values->getRecordCount(); k++)
+	string sql_query;
+	for (int k=0; k<values.getRecordCount(); k++)
 	{
-		*sql_query+="insert into "+table_name+" values(NULL, ";
+		sql_query+="insert into "+table_name+" values(NULL, ";
 		for (unsigned int i=1; i<fieldNames.size();i++)
 		{
-			*sql_query+="'"+values->getValue(k, fieldNames[i])+"'";
-			if (i!=fieldNames.size()-1) *sql_query+=", ";
+			sql_query+="'"+values.getValue(k, fieldNames[i])+"'";
+			if (i!=fieldNames.size()-1) sql_query+=", ";
 		}
-		*sql_query+=");";
+		sql_query+=");";
 	}
-	int ret = sql_exec(sql_query);
-	delete sql_query;
-	return ret;
+	return sql_exec(sql_query);
 }
 
 
 int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 {
-	string *sql_query=new string;
-	*sql_query = "update "+table_name+" set ";
+	string sql_query="update "+table_name+" set ";
 	for (int i=0;i<fields.size(); i++)
 	{
-		*sql_query+=fields.getFieldName(i)+"='"+fields.getValue(fields.getFieldName(i))+"'";
-		if (i!=fields.size()-1) *sql_query+=", ";
+		sql_query+=fields.getFieldName(i)+"='"+fields.getValue(fields.getFieldName(i))+"'";
+		if (i!=fields.size()-1) sql_query+=", ";
 	}
 	if (fields.empty()) 
 	{
@@ -445,38 +426,34 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 	}
 	if (!search.empty())
 	{
-		*sql_query+=" where ";
+		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			*sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
-		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) *sql_query+=" and ";
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) *sql_query+=" or ";
+			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
+		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
+			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}
 	}
-	*sql_query+=";";
-	int ret = sql_exec(sql_query);
-	delete sql_query;
-	return ret;
+	sql_query+=";";
+	return sql_exec(sql_query);
 }
 
 int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 {
-	string *sql_query=new string;
-	*sql_query = "delete from "+table_name;
+	string sql_query="delete from "+table_name;
 	if (!search.empty())
 	{
-		*sql_query+=" where ";
+		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			*sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
-		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) *sql_query+=" and ";
-			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) *sql_query+=" or ";
+			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
+		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
+			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}
 	}
-	*sql_query+=";";
-	int ret = sql_exec(sql_query);
-	delete sql_query;
-	return ret;
+	sql_query+=";";
+	//if (table_name == "packages") printf("%s\n", sql_query.c_str());
+	return sql_exec(sql_query);
 }
 
 SQLiteDB::SQLiteDB(string filename)
@@ -535,7 +512,7 @@ int SQLiteDB::initDatabaseStructure()
 		printf("Error opening database, cannot continue\n");
 		return 1;
 	}
-	sql_exec(ReadFile("/root/mpkg/sql/create_database.sql"));
+	sql_exec(ReadFile("/root/mpkg/sql/create_database.sql").c_str());
 	sqlBegin();
 	return ret;
 }
@@ -546,10 +523,7 @@ SQLiteDB::~SQLiteDB(){
 	sqlCommit();
 	sqlite3_close(db);
 }
-long long int SQLProxy::getLastID()
-{
-	return sqliteDB.getLastID();
-}
+
 int SQLProxy::sqlCommit()
 {
 	return sqliteDB.sqlCommit();
@@ -589,7 +563,7 @@ int SQLProxy::sql_insert(string table_name, SQLRecord values)
 	return sqliteDB.sql_insert(table_name, values);
 }
 
-int SQLProxy::sql_insert(string table_name, SQLTable *values)
+int SQLProxy::sql_insert(string table_name, SQLTable values)
 {
 	return sqliteDB.sql_insert(table_name, values);
 }
