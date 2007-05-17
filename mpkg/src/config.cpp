@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.29 2007/05/16 16:49:22 i27249 Exp $
+ * $Id: config.cpp,v 1.30 2007/05/17 15:12:36 i27249 Exp $
  *
  * ***************************************************/
 
@@ -45,7 +45,7 @@ void initDirectoryStructure()
 int loadGlobalConfig(string config_file)
 {
 #ifdef HTTP_LIB
-	printf("error: core running non-core code\n");
+	mError("error: core running non-core code\n");
 #endif
 	currentStatus = "Loading configuration...";
 	string run_scripts="yes";
@@ -67,7 +67,7 @@ int loadGlobalConfig(string config_file)
 		
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
-			printf("config parse error!\n");
+			mError("config parse error!\n");
 			mpkgErrorReturn errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
 			if (errRet == MPKG_RETURN_REINIT)
 			{
@@ -112,7 +112,7 @@ int loadGlobalConfig(string config_file)
 	else
 	{
 		conf_init=true;
-		printf("Configuration file /etc/mpkg.xml not found, using defaults and creating config\n");
+		mError("Configuration file /etc/mpkg.xml not found, using defaults and creating config\n");
 	}
 	// parsing results
 	
@@ -123,7 +123,7 @@ int loadGlobalConfig(string config_file)
 		DO_NOT_RUN_SCRIPTS=true;
 	if (run_scripts!="yes" && run_scripts!="no")
 	{
-		fprintf(stderr, "Error in config file, option <run_scripts> should be \"yes\" or \"no\", without quotes\n");
+		mError("Error in config file, option <run_scripts> should be \"yes\" or \"no\", without quotes");
 		return -1; // CONFIG ERROR in scripts
 	}
 	if (check_files == "preinstall")
@@ -135,7 +135,7 @@ int loadGlobalConfig(string config_file)
 	// sys_root
 	if (cdrom_device.empty())
 	{
-		printf("empty cd-rom, using default\n");
+		mError("empty cd-rom, using default\n");
 #ifndef HTTP_LIB
 		CDROM_DEVICE="/dev/cdrom";
 #else
@@ -144,7 +144,6 @@ int loadGlobalConfig(string config_file)
 	}
 	else
 	{
-		//printf("using cd-rom drive %s\n", cdrom_device.c_str());
 #ifndef HTTP_LIB
 		CDROM_DEVICE=cdrom_device;
 #else
@@ -185,7 +184,7 @@ int loadGlobalConfig(string config_file)
 	REPOSITORY_LIST=repository_list;
 	DISABLED_REPOSITORY_LIST = disabled_repository_list;
 #ifdef DEBUG
-	printf("System configuration:\n\trun_scripts: %s\n\tsys_root: %s\n\tsys_cache: %s\n\tSQL type: %s\n\tSQL filename: %s\n", \
+	say("System configuration:\n\trun_scripts: %s\n\tsys_root: %s\n\tsys_cache: %s\n\tSQL type: %s\n\tSQL filename: %s\n", \
 			run_scripts.c_str(), sys_root.c_str(), sys_cache.c_str(), sql_type.c_str(), db_url.c_str());
 #endif
 	if (conf_init) mpkgconfig::initConfig();
@@ -197,8 +196,7 @@ int loadGlobalConfig(string config_file)
 
 XMLNode mpkgconfig::getXMLConfig(string conf_file)
 {
-	//printf("getXMLConfig\n");
-	debug("getXMLConfig");
+	mDebug("getXMLConfig");
 	XMLNode config;
 	XMLResults xmlErrCode;
 	bool conf_init = false;
@@ -207,7 +205,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		config=XMLNode::parseFile(conf_file.c_str(), "mpkgconfig", &xmlErrCode);
 		if (xmlErrCode.error != eXMLErrorNone)
 		{
-			printf("config parse error!\n");
+			mError("config parse error!\n");
 			mpkgErrorReturn errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_READ_ERROR);
 			if (errRet == MPKG_RETURN_REINIT)
 			{
@@ -259,7 +257,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 
 	if (config.nChildNode("cdrom_device")==0)
 	{
-		printf("CD not detected\n");
+		mError("CD not detected\n");
 		config.addChild("cdrom_device");
 		config.getChildNode("cdrom_device").addText(get_cdromdevice().c_str());
 	}
@@ -276,7 +274,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 		config.addChild("scripts_dir");
 		config.getChildNode("scripts_dir").addText(get_scriptsdir().c_str());
 	}
-	debug("getXMLConfig end");
+	mDebug("getXMLConfig end");
 	return config;
 }
 
@@ -293,7 +291,7 @@ int mpkgconfig::setXMLConfig(XMLNode xmlConfig, string conf_file)
 write_config:
 	if (xmlConfig.writeToFile(conf_file.c_str())!=eXMLErrorNone) 
 	{
-		printf("error writing config file");
+		mError("error writing config file");
 		errRet = waitResponce(MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
@@ -326,7 +324,7 @@ vector<string> mpkgconfig::get_disabled_repositorylist()
 
 string mpkgconfig::get_dburl()
 {
-	printf("filename = %s\n", DB_FILENAME.c_str());
+	mDebug("filename = " + DB_FILENAME);
 	return "sqlite://"+DB_FILENAME;
 }
 
@@ -383,7 +381,7 @@ int mpkgconfig::set_repositorylist(vector<string> newrepositorylist, vector<stri
 
 int mpkgconfig::set_disabled_repositorylist(vector <string> newrepositorylist)
 {
-	printf("WARNING! You should NOT use set_disabled_repositorylist!\n");
+	mError("WARNING! You should NOT use set_disabled_repositorylist!");
 	return -1;
 	XMLNode tmp;
 	tmp=getXMLConfig();
@@ -444,7 +442,7 @@ int mpkgconfig::set_cdromdevice(string cdromDevice)
 	tmp=getXMLConfig();
 	tmp.getChildNode("cdrom_device").deleteNodeContent(1);
 	tmp.addChild("cdrom_device");
-	printf("setting cd device to %s\n", cdromDevice.c_str());
+	mDebug("setting cd device to " + cdromDevice);
 	tmp.getChildNode("cdrom_device").addText(cdromDevice.c_str());
 	return setXMLConfig(tmp);
 }
@@ -526,9 +524,9 @@ mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 
 int consoleSendErrorMessage(string header, string text, string actionList, string defaultAction)
 {
-	printf("[%s]\n%s\n",header.c_str(), text.c_str());
-	printf("DEBUG actionList: %s\n", actionList.c_str());
-	printf("Action:\n");
+	say("[%s]\n%s\n",header.c_str(), text.c_str());
+	mDebug("actionList: " + actionList);
+	say("Action:\n");
 	vector<string> actList;
 	while(true)//actionList.find_first_of(" ")!=string::npos)
 	{
@@ -538,14 +536,14 @@ int consoleSendErrorMessage(string header, string text, string actionList, strin
 	}
 	for (unsigned int i=0; i<actList.size(); i++)
 	{
-		printf("[%d] %s\n", i+1, actList[i].c_str());
+		say("[%d] %s\n", i+1, actList[i].c_str());
 	}
 	char ret[200];
 	
        	scanf("%s", &ret);
 	string t=ret;
 	int ret_num = atoi(t.c_str());
-	printf("return value = [%s] [%d]\n", t.c_str(), ret_num);
+	mDebug("return value = [" + t + "] [" + IntToStr(ret_num) + "]");
 	return ret_num;
 }
 
@@ -583,7 +581,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 						// BREAKAGE DUE TO DEBUG
@@ -626,7 +624,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -640,7 +638,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_SKIP);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -664,7 +662,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_SKIP);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -683,7 +681,7 @@ void consoleEventResolver()
 							case 2:
 								setErrorReturn(MPKG_RETURN_ABORT);
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -718,7 +716,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -763,7 +761,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						break;
 
@@ -789,7 +787,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 					case MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR:
@@ -806,7 +804,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 
@@ -820,7 +818,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 
@@ -835,7 +833,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 
@@ -853,7 +851,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 
@@ -872,7 +870,7 @@ void consoleEventResolver()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply\n");
 						}
 						break;
 					default:

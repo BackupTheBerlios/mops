@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: cddebug.cpp,v 1.1 2007/04/13 13:52:27 i27249 Exp $
+ $Id: cddebug.cpp,v 1.2 2007/05/17 15:12:36 i27249 Exp $
  */
  
 
@@ -10,7 +10,7 @@
 
 void DbgPrint(char* file, int line, std::string message) {
 #ifdef DEBUG
-	fprintf(stdout, "[DEBUG] %s:%i %s\n", file, line, message.c_str());
+	say("[DEBUG] %s:%i %s\n", file, line, message.c_str());
 #endif
 }
 

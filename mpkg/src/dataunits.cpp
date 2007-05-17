@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.50 2007/05/17 13:17:34 i27249 Exp $
+	$Id: dataunits.cpp,v 1.51 2007/05/17 15:12:36 i27249 Exp $
 */
 
 
@@ -1517,7 +1517,7 @@ int PACKAGE::set_packager_email(string packager_email)
 
 void PACKAGE::set_available(bool flag)
 {
-	fprintf(stderr, "set_available is deprecated. Please do not use this\n");
+	mError("set_available is deprecated. Please do not use this");
 	package_available = flag;
 }
 
@@ -1783,25 +1783,6 @@ void PACKAGE_LIST::clearVersioning()
 void PACKAGE::destroy()
 {
 }
-// Helpful function ))
-string IntToStr(int num)
-{
-  	char *s = (char *) malloc(2000);
-  	string ss;
-  	if (s)
-  	{
-		sprintf(s,"%d",num);
-	  	ss=s;
-	  	free(s);
-  	}
-  	else 
-  	{
-		perror("Error while allocating memory");
-	  	abort();
-  	}
-  	return ss;
-}
-
 
 bool PACKAGE_LIST::operator != (PACKAGE_LIST nlist)
 {
@@ -1847,7 +1828,7 @@ PACKAGE PACKAGE_LIST::getInstalledOne()
 	{
 		if (packages.at(i).installed()) return packages.at(i);
 	}
-	fprintf(stderr, "getInstalledOne: no installed ones\n");
+	mError("getInstalledOne: no installed ones");
 	PACKAGE p;
 	return p;
 }
@@ -1857,7 +1838,7 @@ PACKAGE PACKAGE_LIST::getMaxVersion()
 	if (packages.size()>0)	return packages.at(getMaxVersionNumber(packages.at(0).get_name()));
 	else
 	{
-		printf("Error in getMaxVersion: list empty\n");
+		mError("Error in getMaxVersion: list empty");
 		PACKAGE p;
 		return p;
 	}
@@ -2122,7 +2103,7 @@ DESCRIPTION * DESCRIPTION_LIST::get_description(unsigned int num)
 	}
 	else
 	{
-		printf("DESCRIPTION_LIST: Error in range!\n");
+		mError("DESCRIPTION_LIST: Error in range!");
 		abort();
 	}
 }
@@ -2201,7 +2182,7 @@ void PACKAGE_LIST::initVersioning()
 	try {
 	for (int i=0; i<packages.size();i++)
 	{
-		debug("initVersioning [stage 2]: step "+IntToStr(i));
+		mDebug("initVersioning [stage 2]: step "+IntToStr(i));
 		max_version.clear();
 		max_version_id=-1;
 		this_version.clear();
@@ -2263,7 +2244,7 @@ void PACKAGE_LIST::initVersioning()
 
 	catch(...)
 	{
-		printf("Range check error: max_version_id=%d\n", max_version_id);
+		mError("Range check error: max_version_id=" + IntToStr(max_version_id));
 	}
 
 }
@@ -2300,7 +2281,7 @@ bool meetVersion(versionData condition, string packageVersion)
 			else return false;
 			break;
 		default:
-			printf("%s: unknown condition %d!!!!!!!!!!!!!!!!!!!!!!!!!\n",__func__, iCondition);
+			mError((string) __func__ + ": unknown condition" + IntToStr(iCondition));
 			return true;
 	}
 	return true;
@@ -2322,7 +2303,7 @@ int PACKAGE_LIST::getPackageNumberByName(string name)
 	{
 		if (packages.at(i).get_name()==name) return i;
 	}
-	printf("%s: No such package %s\n", __func__, name.c_str());
+	mError("No such package " + name);
 //	abort();
 	return -1;
 }

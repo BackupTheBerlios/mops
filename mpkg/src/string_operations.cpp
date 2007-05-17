@@ -1,18 +1,36 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.9 2007/05/10 02:39:08 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.10 2007/05/17 15:12:36 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// Helpful function ))
+string IntToStr(int num)
+{
+  	char *s = (char *) malloc(2000);
+  	string ss;
+  	if (s)
+  	{
+		sprintf(s,"%d",num);
+	  	ss=s;
+	  	free(s);
+  	}
+  	else 
+  	{
+		perror("Error while allocating memory");
+	  	abort();
+  	}
+  	return ss;
+}
+
+
 char * strMerge(const char *part1, const char *part2)
 {
-#ifdef DEBUG
-	printf("part 1: [%s]\n", part1);
-	printf("part 2: [%s]\n", part2);
-#endif
+
 	int p1=strlen(part1);
 	int p2=strlen(part2);
 	// Beginning dump
@@ -25,9 +43,6 @@ char * strMerge(const char *part1, const char *part2)
 	{
 		ret[i]=part2[i-p1];
 	}
-#ifdef DEBUG
-	printf("ret: [%s]\n", ret);
-#endif
 	return ret;
 }
 
@@ -36,7 +51,6 @@ string cutSpaces(string str)
 	int start = str.find_first_not_of(" ");
 	int end = str.find_last_not_of(" ");
 	string ret =  str.substr(start, end-start+1);
-//	printf("[%s] [%s]\n", str.c_str(), ret.c_str());
 	return ret;
 }
 
@@ -133,18 +147,6 @@ unsigned int mstring::length()
 
 mstring::mstring(){}
 mstring::~mstring(){}
-/*
-int main()
-{
-	char *c1="void";
-	char *c2="matrix";
-	char *c3=strMerge(c1, c2);
-	printf("c3 = [%s]\n", c3);
-	free(c3);
-	return 0;
-}
-*/
-
 unsigned int fl2ul(float input)
 {
 	unsigned int preout = (unsigned int) input;
@@ -159,11 +161,6 @@ string humanizeSize(string size)
 {
 	return humanizeSize(strtod(size.c_str(), NULL));
 }
-/*string humanizeSize(unsigned int size)
-{
-	return humanizeSize((double) size);
-}
-*/
 string humanizeSize(double size)
 {
 	long double new_size;

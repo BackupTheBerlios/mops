@@ -11,7 +11,6 @@
 #include <sys/mount.h>
 #endif
 #include <mntent.h>
-
 string DL_CDROM_DEVICE="/dev/cdrom";
 string DL_CDROM_MOUNTPOINT="/mnt/cdrom";
 
@@ -143,7 +142,7 @@ check_volname:
 	}
 	if (Svolname == cdromVolName)
 	{
-		printf("Wrong volname\n");
+		mError("Wrong volname");
 		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
@@ -269,7 +268,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 	}
 	else
 	{
-		fprintf(stderr, "Error! Source and sorted lists doesn't equal in size!!!!\n");
+		mError("Error! Source and sorted lists doesn't equal in size!!!!");
 	}
 
 	DL_CDROM_DEVICE = cdromDevice;
@@ -302,14 +301,14 @@ process:
 			{
 		        	if (item->url_list.size()==0)
 				{
-					printf("Downloading %s is Failed: void download list\n", item->name.c_str());
+					mError("Downloading " + item->name + "is Failed: void download list");
 					item->status=DL_STATUS_FAILED;
 					is_have_error=true;
 				}
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-					printf("Downloading %s\n", item->url_list.at(j).c_str());
+					say("Downloading %s\n", item->url_list.at(j).c_str());
 					if (prData->size()>0)
 					{
 						prData->setItemCurrentAction(item->itemID, "Downloading");
@@ -356,14 +355,14 @@ process:
 						prData->setItemProgress(item->itemID, (double) size);
 						if ( out == NULL )
 						{
-							fprintf(stderr, "open target file failed");
+							mError("open target file failed");
 							item->status = DL_STATUS_FILE_ERROR;
 							is_have_error = true;
 						}
 						else
 						{
 							fseek(out,0,SEEK_END);
-							if (size!=0) printf("Resuming download from %d\n", size);
+							if (size!=0) say("Resuming download from %d\n", size);
 							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
@@ -398,7 +397,7 @@ process:
 						}
 						if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
 
-						printf("Downloading %s is Failed: error while downloading\n", item->name.c_str());
+						mError("Downloading " + item->name + " is Failed: error while downloading");
     			    			is_have_error = true;
     						item->status = DL_STATUS_FAILED;
     					}

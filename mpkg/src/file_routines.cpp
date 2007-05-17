@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.21 2007/05/16 16:49:22 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.22 2007/05/17 15:12:36 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -11,7 +11,7 @@ vector<string> temp_files;
 extern int errno;
 string get_file_md5(string filename)
 {
-	debug("get_file_md5 start");
+	mDebug("get_file_md5 start");
 	string tmp_md5=get_tmp_file();
 
 	string sys="md5sum "+filename+" > "+tmp_md5 + " 2>/dev/null";
@@ -19,7 +19,7 @@ string get_file_md5(string filename)
 	FILE* md5=fopen(tmp_md5.c_str(), "r");
 	if (!md5)
 	{
-		fprintf(stderr, "Unable to open md5 temp file\n");
+		mError("Unable to open md5 temp file");
 		return "";
 	}
 	char _c_md5[1000];
@@ -35,7 +35,7 @@ string get_file_md5(string filename)
 string get_tmp_file()
 {
 	string tmp_fname;
-	debug("get_tmp_file start");
+	mDebug("get_tmp_file start");
 	//char *t=tmpnam(NULL);
 	char t[]="/tmp/mpkg-XXXXXX";
 	int fd;
@@ -52,7 +52,7 @@ create_tmp:
 	}
 
 	tmp_fname=t;
-	debug("get_tmp_file end");
+	mDebug("get_tmp_file end");
 	temp_files.resize(temp_files.size()+1);
 	temp_files[temp_files.size()-1]=tmp_fname;
 	close(fd);
@@ -61,23 +61,18 @@ create_tmp:
 
 void delete_tmp_files()
 {
-	//printf("preparing to remove temp files\n");
-
 	string fname;
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
 		fname=temp_files[i]+".gz";
 		unlink(fname.c_str());
 		if ( unlink( temp_files[i].c_str() ) != 0 ) {
-			//printf("cannot delete temp file %s\n", temp_files[i].c_str());
-			debug( temp_files[i] );
-			debug("\n");
+			mDebug( temp_files[i] );
+			mDebug("\n");
 			perror( strerror( errno ) );
-		
 		}		
 	}
 
 	temp_files.clear(); // Clean-up list - for future use
-	//printf("temp directory cleaned up\n");
 }
 
 bool FileExists(string filename)
@@ -88,39 +83,32 @@ bool FileExists(string filename)
 
 bool FileNotEmpty(string filename)
 {
-	//printf("testing if a file is empty: filename = %s\n",filename.c_str());
 	ifstream test(filename.c_str(), ios::in);
 	ifstream::pos_type nullsize;
 	if (test.is_open())
 	{
-	//	printf("file opened\n");
 		nullsize = test.tellg();
 		test.close();
 	}
 	else {
-	//	perror("Error opening file");
 		return false;
 	}
 	ifstream test2(filename.c_str(), ios::in | ios::ate);
 	ifstream::pos_type endsize;
 	if (test2.is_open())
 	{
-	//	printf("file2 opened\n");
 		endsize = test2.tellg();
 		test2.close();
 	}
 	else {
-	  //     perror("Error opening file 2\n");
        	       return false;
 	}
 	if (endsize == nullsize)
 	{
-	//	printf("File is empty\n");
 		return false;
 	}
 	else
 	{
-	//	printf("File contains data\n");
 		return true;
 	}
 }
@@ -128,7 +116,7 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count, bool ignore_failure)
 {
-	debug("readfile start");
+	mDebug("readfile start");
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
 	{
@@ -136,7 +124,7 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 		return "";
 	}
 	long size=fStat.st_size;
-	printf("size = %d\n", size);
+	mDebug("size = " + IntToStr(size));
 	char *memblock = new char [size];
 
 	string ret;
@@ -149,7 +137,6 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 		inputFile.close();
 		ret = (string) memblock;
 		if (max_count > 0) ret = ret.substr(0, max_count);
-		//printf("%s\n", ret.c_str());
 		delete memblock;
 		return ret;
 	}
@@ -193,7 +180,7 @@ write_file:
 	}
 	else
 	{
-		printf("Unable to write file %s\n", filename.c_str());
+		mError("Unable to write file " + filename);
 		errRet = waitResponce(MPKG_SUBSYS_FILE_WRITE_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)
 			goto write_file;
@@ -211,13 +198,13 @@ unsigned int CheckFileType(string fname)
 	struct stat st;
 	if (lstat(fname.c_str(), &st) != 0) {
 		if ( errno == ENOENT ) {
-			fprintf(stderr, _("file %s not found\n"), fname.c_str());
+			mError("file "+fname+" not found");
 			return PKGTYPE_UNKNOWN;
 		}
 	}
 	
 	if ( !S_ISREG(st.st_mode) && !S_ISLNK(st.st_mode) ) {
-		fprintf(stderr, _("Not a regular file\n"));
+		mError("Not a regular file");
 		return PKGTYPE_UNKNOWN;
 	}
 
@@ -233,7 +220,7 @@ unsigned int CheckFileType(string fname)
 		string contCheck = get_tmp_file();
 		string check = "tar ztf "+fname+" install/data.xml > "+contCheck+" 2>/dev/null";
 		int tar_ret = system(check.c_str());
-		debug("Tar returns "+IntToStr(tar_ret));
+		mDebug("Tar returns "+IntToStr(tar_ret));
 		if (FileNotEmpty(contCheck))
 		{
 			return PKGTYPE_MOPSLINUX;
@@ -245,20 +232,19 @@ unsigned int CheckFileType(string fname)
 	}
 	if (ext==".deb")
 	{
-		debug("Debian package detected");
+		mDebug("Debian package detected");
 		return PKGTYPE_DEBIAN;
 	}
 	if (ext ==".rpm")
 	{
-		debug("RPM package detected");
+		mDebug("RPM package detected");
 		return PKGTYPE_RPM;
 	}
-	debug("Unknown package type "+ext);
+	mDebug("Unknown package type "+ext);
 	return PKGTYPE_UNKNOWN;
 }
 string getCdromVolname()
 {
-	//printf("cdromVolname\n");
 	mpkgErrorReturn errRet;
 check_volname:
 	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";

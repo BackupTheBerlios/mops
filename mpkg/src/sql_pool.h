@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.14 2007/05/17 13:17:35 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.15 2007/05/17 15:12:36 i27249 Exp $
  ************************************************************************************/
 
 
@@ -10,6 +10,7 @@
 #ifndef SQL_POOL_H_
 #define SQL_POOL_H_
 #include <sqlite3.h>
+#include "debug.h"
 #include "core.h"
 #include "config.h"
 #include "string_operations.h"

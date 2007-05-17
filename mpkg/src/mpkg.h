@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.26 2007/05/16 11:18:41 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.27 2007/05/17 15:12:36 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -89,7 +89,6 @@ class mpkgDatabase
 		int emerge_to_db(PACKAGE *package);	// Adds new package to database, filtering data
 		int install_package(PACKAGE *package); // PHYSICALLY install package (extract, execute scripts)
 		int remove_package(PACKAGE *package); // PHYSICALLY remove package (delete files, execute remove scripts)
-		int purge_package(PACKAGE *package); // removes config files
 		int uninstall(vector<string> pkgnames); // Wrapper, uninstalls all packages with given names.
 		int updateRepositoryData(PACKAGE_LIST *newPackages);
 		int syncronize_data(PACKAGE_LIST *pkgList);

@@ -1,13 +1,12 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.7 2007/04/14 15:53:52 i27249 Exp $
+ * $Id: converter.cpp,v 1.8 2007/05/17 15:12:36 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
 
 int slack_convert(string filename, string xml_output)
 {
-	printf(".");
 	PACKAGE package;
 	package.set_filename(filename);
 	// Resolving name, version, arch and build
@@ -42,7 +41,6 @@ int slack_convert(string filename, string xml_output)
 					filename[i+1] == '9')
 			{
 				package.set_name(tmp);
-//				printf("package name: %s\n", package.get_name().c_str());
 				pos=i+2;
 				break;
 			}
@@ -51,13 +49,11 @@ int slack_convert(string filename, string xml_output)
 	}
 	tmp.clear();
 	//VERSION
-	printf(".");
 	for (unsigned int i=pos-1; i< filename.length(); i++)
 	{
 		if (filename[i]=='-')
 		{
 			package.set_version(tmp);
-//			printf("package version: %s\n", package.get_version().c_str());
 			pos=i+2;
 			break;
 		}
@@ -65,27 +61,23 @@ int slack_convert(string filename, string xml_output)
 	}
 	tmp.clear();
 	//ARCH
-	printf(".");
 	for (unsigned int i=pos-1; i< filename.length(); i++)
 	{
 		if (filename[i]=='-')
 		{
 			package.set_arch(tmp);
-//			printf("package arch: %s\n", package.get_arch().c_str());
 			pos=i+2;
 			break;
 		}
 		tmp+=filename[i];
 	}
 	tmp.clear();
-	printf(".");
 	//BUILD
 	for (unsigned int i=pos-1; i<filename.length()-4; i++)
 	{
 		tmp+=filename[i];
 	}
 	package.set_build(tmp);
-//	printf("package build: %s\n", package.get_build().c_str());
 
 	tmp.clear();
 #define DESCRIPTION_PROCESS
@@ -156,51 +148,7 @@ int slack_convert(string filename, string xml_output)
 			package.set_description(description);
 		}
 	}
-	//printf("short description: [%s]\n", short_description.c_str());
-	//printf("description: [%s]\n", description.c_str());
-	//getc(stdin);
-
-	/*
-	if (!description.empty())
-	{
-		for (unsigned int i=0; i<package.get_name().length()+1; i++)
-		{
-			dpos=i;
-			tmp+=description[i];
-		}
-//		printf("After 1 cycle:\n%s\n", tmp.c_str());
-
-		while(dpos<description.length())
-		{
-			while(tmp!=package.get_name()+":")
-			{
-				for (unsigned int i=dpos; description[i]!='\n' && i<description.length(); i++)
-				{
-					dpos=i;
-					// Skipping to line end
-				}
-				tmp.clear();
-				for (unsigned int i=dpos+1; i<package.get_name().length()+1; i++)
-				{
-					dpos=i;
-					tmp+=description[i];
-				}
-			}
-			tmp.clear();
-			for (unsigned int i=dpos+1; description[i]!='\n' && i<description.length(); i++)
-			{
-				comment+=description[i];
-			}
-			if (str1)
-			{
-				package.set_short_description(comment);
-				comment.clear();
-			}
-		}
-		package.set_description(comment);
-	}*/
 #endif
-	printf(".");
 	XMLNode pkg=XMLNode::createXMLTopNode("package");
 	pkg.addChild("name");
 	pkg.getChildNode("name").addText(package.get_name().c_str());
@@ -224,17 +172,14 @@ int slack_convert(string filename, string xml_output)
 	pkg.getChildNode("maintainer").getChildNode("name").addText("Slackware to MPKG autoconverter by AiX");
 	pkg.getChildNode("maintainer").addChild("email");
 	pkg.getChildNode("maintainer").getChildNode("email").addText("i27249@gmail.com");
-	//printf("output written to %s\n", xml_output.c_str());
-	//printf(".");
 	pkg.writeToFile(xml_output.c_str());
-	//printf(".");
 	return 0;
 }
 
 int convert_package(string filename, string output_dir)
 {
 //	char tmp[1000];
-	printf("converting package %s...\n", filename.c_str());
+	say("converting package %s\n", filename.c_str());
 	int name_start=0;
 	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
 	{
@@ -247,16 +192,12 @@ int convert_package(string filename, string output_dir)
 	}
 
 	string tmp_dir=get_tmp_file();
-//	printf("tmp_dir=%s\n", tmp_dir.c_str());
 	string xml_output=tmp_dir+"/install/data.xml";
 	string reasm="rm "+tmp_dir+" && mkdir "+tmp_dir+" "+/*"2>/dev/null"+*/" && mkdir "+tmp_dir+"/install 2>/dev/null && cp "+filename+" "+tmp_dir+"/ && cd "+tmp_dir+" &&  tar zxf "+real_filename+" > /dev/null";
-//	printf("cmd: %s\n",reasm.c_str());
-//	scanf("%s", &tmp);
 	system(reasm.c_str());	
 	slack_convert(filename, xml_output);
 	reasm="cd "+tmp_dir+" && rm "+real_filename+" && makepkg -l n -c n "+real_filename+" 2&>/dev/null &&  mv *.tgz "+output_dir+" && rm -rf "+tmp_dir;
 	system(reasm.c_str());
-	//printf("done\n");
 	return 0;
 }
 
@@ -265,7 +206,7 @@ int tag_package(string filename, string tag)
 {
 	string run = "mkdir -p "+filename.substr(0,filename.length()-4)+" && tar zxf " + filename + " -C " + filename.substr(0,filename.length()-4);
 	if (system(run.c_str())!=0) return -1; // Extracting
-	printf("extracting complete\n");
+	mDebug("extracting complete");
 	
 	string xml_path = filename.substr(0,filename.length()-4) + "/install/data.xml";
 	if (!FileExists(xml_path)) return -2;
@@ -273,10 +214,10 @@ int tag_package(string filename, string tag)
 	XMLNode _node = XMLNode::parseFile(xml_path.c_str(), "package", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
-		printf("parse error\n");
+		mError("parse error");
 		return -1;
 	}
-	printf("File opened\n");
+	mDebug("File opened");
 	if (_node.nChildNode("tags")==0)
 	{
 		_node.addChild("tags");

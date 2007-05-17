@@ -1,13 +1,14 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus
- * $Id: bus.h,v 1.11 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: bus.h,v 1.12 2007/05/17 15:12:36 i27249 Exp $
  * *********************************************************/
 
 #ifndef BUS_H_
 #define BUS_H_
 
 #include "faststl.h"
+#include "debug.h"
 #include <vector>
 using namespace std;
 #define ITEMSTATE_WAIT 0

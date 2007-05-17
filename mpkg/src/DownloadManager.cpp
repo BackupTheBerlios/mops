@@ -17,24 +17,24 @@ InitializeDownloadObjects(DownloadFactory *factory)
 	void *dlhandler = dlopen("libmpkg-http.so", RTLD_LAZY);
 	//void *dlhandler = dlopen("./libmpkg-http.so", RTLD_LAZY);
 	if ( dlhandler == NULL ) {
-		fprintf(stderr, "critical error: cannot load libmpkg-http.so\n");
-		debug(dlerror());
+		mError("critical error: cannot load libmpkg-http.so");
+		mDebug(dlerror());
 		abort();
 	}
 
-	debug("libmpkg-http.so loaded");
+	mDebug("libmpkg-http.so loaded");
 	
 	GetHandler lpLoadHandler = (GetHandler ) dlsym(dlhandler, "getHandler");
 	//ASSERT( !lpLoadHandler );
 
 	if ( !lpLoadHandler ) {
-		fprintf(stderr, "critical error: cannot load symbol: 'getHandler'\n");
-		debug(dlerror());
+		mError("critical error: cannot load symbol: 'getHandler'");
+		mDebug(dlerror());
 		dlclose(dlhandler);
 		abort();
 	}
 
-	debug("lpLoadHandler init ok");
+	mDebug("lpLoadHandler init ok");
 
 	handler = lpLoadHandler();
 	
@@ -54,7 +54,7 @@ CommonGetFile(std::string url, std::string output, void *callback)
 	IDownload *g_pCurrentMethod = InitializeDownloadObjects(g_pDownloadFactory);
 
 	assert( g_pCurrentMethod );
-	debug("load file " + url + " to " + output);
+	mDebug("load file " + url + " to " + output);
 
 	
 	return g_pCurrentMethod->getFile(url, output); 

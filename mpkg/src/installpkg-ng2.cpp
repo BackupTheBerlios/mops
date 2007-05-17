@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.17 2007/05/15 22:09:21 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.18 2007/05/17 15:12:36 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -27,7 +27,7 @@ void ShowBanner()
 {
 	char *version="0.1 beta N (debug state)";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
-	//printf("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
+	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
 
 int main (int argc, char **argv)
@@ -35,7 +35,7 @@ int main (int argc, char **argv)
 	mpkg core;
 	if (!core.init_ok)
 	{
-		printf("Error initializing CORE\n");
+		mError("Error initializing CORE\n");
 		abort();
 	}
 	if ((string) argv[0] == "buildpkg")
@@ -68,12 +68,8 @@ int main (int argc, char **argv)
 	uid = getuid();
 	euid = geteuid();
 
-#ifdef DEBUG
-	printf("DEBUG: uid = %i, euid = %i\n", uid, euid);
-#endif
-
 	if ( uid != 0 ) {
-		fprintf(stderr, _("You must login as root to run this program\n"));
+		mError("You must login as root to run this program");
 		exit(1);
 	}
 	
@@ -117,11 +113,6 @@ int main (int argc, char **argv)
 	
 	}  while ( ich != -1 );
 
-
-#ifdef DEBUG
-	printf("DEBUG: last optind = %i\n", optind);
-	printf("DEBUG: argc = %i\n", argc);
-#endif
 
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
@@ -186,31 +177,13 @@ int main (int argc, char **argv)
 		SQLRecord sqlSearch;
 		PACKAGE_LIST pkgList;
 		core.get_packagelist(sqlSearch, &pkgList,false);
-		printf("total %d packages\n", pkgList.size());
+		say("total %d packages\n", pkgList.size());
 		pkgList.initVersioning();
 		pkgList.buildDependencyOrder();
 		for (int i=0; i<pkgList.size(); i++)
 		{
-			printf("%s: %d\n", pkgList.get_package(i)->get_name().c_str(), pkgList.get_package(i)->priority);
+			say("%s: %d\n", pkgList.get_package(i)->get_name().c_str(), pkgList.get_package(i)->priority);
 		}
-		
-		
-		/*
-		FastString str;
-		str = "void!";
-		printf("%s\n", str.c_str());
-		str += "multi";
-		str += "multi";
-		printf("%s\n", str.c_str());
-		str = "";
-		printf("[%s]\n", str.c_str());
-		printf("sizeof = %d\n", str.length());
-		string z;
-		z = "1";
-		printf("STL = %d\n", z.size());
-		str = "I am the dog";
-		printf("am found: [%s]\n", str.substr(str.find("am"), 2).c_str());
-		*/
 		delete_tmp_files();
 		return 0;
 	}
@@ -250,8 +223,7 @@ int main (int argc, char **argv)
 	if ( action == ACT_CONVERT  ) {
 		for (int i = optind; i < argc; i++)
 		{
-			printf("temporarily unimplemented\n");
-			//core.convert_package((string) argv[i], "/root/development/converted/");
+			mError("Feature disabled");
 		}
 		delete_tmp_files();
 		return 0;
@@ -260,10 +232,10 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_TAG )
 	{
-		printf("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
+		//mDebug("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
 		if (argc == 4)
 		{
-			printf("tagging...\n");
+			say("tagging...\n");
 			tag_package(argv[3], argv[2]);
 		}
 		delete_tmp_files();
@@ -278,7 +250,7 @@ int main (int argc, char **argv)
 		}
 		else 
 		{
-			printf("Please define output directory\n");
+			mError("Please define output directory");
 		}
 		delete_tmp_files();
 
@@ -309,7 +281,7 @@ int main (int argc, char **argv)
 		if (argc == 4)
 		{
 			
-			printf("Building repository index\nURL: %s\nName: %s\n", argv[optind], argv[optind+1]);
+			say("Building repository index\nURL: %s\nName: %s\n", argv[optind], argv[optind+1]);
 			core.rep.build_index(argv[optind], argv[optind+1]);
 		}
 		else
@@ -318,8 +290,11 @@ int main (int argc, char **argv)
 			{
 				core.rep.build_index("", "", true);
 			}
-			printf("To few arguments to index\n");
-			print_usage(stderr, 1);
+			else
+			{
+				mError("To few arguments to index\n");
+				print_usage(stderr, 1);
+			}
 		}
 		delete_tmp_files();
 		return 0;
@@ -345,33 +320,33 @@ int main (int argc, char **argv)
 	// ACTION SUMMARY - NEED TO FIX!
 	if (!core.DepTracker->get_install_list()->IsEmpty())
 	{
-		printf(_("Next packages will be installed:\n"));
+		say("Next packages will be installed:\n");
 		for (int i=0;i<core.DepTracker->get_install_list()->size();i++)
 		{
-			printf("%s\n", core.DepTracker->get_install_list()->get_package(i)->get_name(false).c_str());
+			say("%s\n", core.DepTracker->get_install_list()->get_package(i)->get_name(false).c_str());
 		}
 	}
 
 	if (!core.DepTracker->get_remove_list()->IsEmpty())
 	{
-		printf(_("\nNext packages will be removed:\n"));
+		say("\nNext packages will be removed:\n");
 		for (int i=0;i<core.DepTracker->get_remove_list()->size();i++)
 		{
-			printf("%s\n", core.DepTracker->get_remove_list()->get_package(i)->get_name(false).c_str());
+			say("%s\n", core.DepTracker->get_remove_list()->get_package(i)->get_name(false).c_str());
 		}
 	}
 
 	if (!core.DepTracker->get_failure_list()->IsEmpty())
 	{
 
-		printf(_("Next packages is failed to install:\n"));
+		say("Next packages is failed to install:\n");
 		for (int i=0;i<core.DepTracker->get_failure_list()->size();i++)
 		{
-			printf("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name(false).c_str());
+			say("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name(false).c_str());
 			//core.DepTracker->PrintFailure(core.DepTracker->get_failure_list()->get_package(i));
 		}
 	}
-	printf("\n");
+	say("\n");
 
 	return 0;
 }
@@ -383,7 +358,6 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("Options:\n"));
 	fprintf(stream,_("\t-h    --help       show this help\n"));
 	fprintf(stream,_("\t-v    --verbose    be verbose\n"));
-	//fprintf(stream,_("\t-p    --purge      purge package\n\n"));
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall    install packages\n"));
 	fprintf(stream,_("\tupgrade    upgrade selected package or full system if no package selected\n"));
@@ -409,11 +383,11 @@ void print_usage(FILE* stream, int exit_code)
 
 int list_rep(mpkg *core)
 {
-	printf("Repository list:\n");
+	say("Repository list:\n");
 	vector <string> rlist=core->get_repositorylist();
 	for (unsigned int i=0; i<rlist.size(); i++)
 	{
-		printf("[%d] %s\n", i+1, rlist[i].c_str());
+		say("[%d] %s\n", i+1, rlist[i].c_str());
 	}
 	return 0;
 }
@@ -441,15 +415,16 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 	core->get_packagelist(sqlSearch, &pkglist, false, true);
 	if (pkglist.IsEmpty())
 	{
-		printf(_("Package database empty\n"));
+		if (!search.empty()) say("Package database is empty\n");
+		else say("Nothing is found\n");
 		return 0;
 	}
 	for (int i=0; i<pkglist.size(); i++)
 	{
 		if (!onlyQueue || pkglist.get_package(i)->action()!=ST_NONE)
 		{
-			printf("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
-			printf("%s-%s-%s-%s\t(%s)\n", \
+			say("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
+			say("%s-%s-%s-%s\t(%s)\n", \
 				pkglist.get_package(i)->get_name().c_str(), \
 				pkglist.get_package(i)->get_version().c_str(), \
 				pkglist.get_package(i)->get_arch().c_str(), \
@@ -465,9 +440,8 @@ int check_action(char* act)
 	std::string _act(act);	
 	int res = 0;
 
-#ifdef DEBUG
-	printf("DEBUG: action = %s\n", act);
-#endif
+	mDebug((string) "action = " + act);
+
 
 	if ( _act != "install"
 		&& _act != "remove"
@@ -489,9 +463,7 @@ int check_action(char* act)
 		res = -1;
 	}
 
-#ifdef DEBUG
-	printf("DEBUG: res = %i\n", res);
-#endif
+	mDebug("res = " + IntToStr(res));
 
 	return res;
 }
@@ -500,9 +472,6 @@ int setup_action(char* act)
 {
 	std::string _act(act);
 
-#ifdef DEBUG
-	printf("[setup_action] DEBUG: action = %s\n", act);
-#endif
 	if ( _act == "test" )
 			return ACT_TEST;
 

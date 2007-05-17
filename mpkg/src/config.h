@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.36 2007/05/14 13:45:54 i27249 Exp $
+    $Id: config.h,v 1.37 2007/05/17 15:12:36 i27249 Exp $
 */
 
 
@@ -7,6 +7,7 @@
 #define CONFIG_H_
 #include "errorcodes.h"
 #include "bus.h"
+#include "string_operations.h"
 #include "faststl.h"
 #include <vector>
 using namespace std;

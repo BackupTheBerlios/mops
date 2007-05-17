@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.76 2007/05/16 16:49:22 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.77 2007/05/17 15:12:36 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -43,7 +43,7 @@ PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
 
 int mpkgDatabase::emerge_to_db(PACKAGE *package)
 {
-	debug("mpkgDatabase::emerge_to_db()");
+	mDebug("mpkgDatabase::emerge_to_db()");
 	int pkg_id;
 	pkg_id=get_package_id(package);
 	if (pkg_id==0)
@@ -151,7 +151,7 @@ int mpkgDatabase::commit_actions()
 		actionBus.setCurrentAction(ACTIONID_REMOVE);
 
 		currentStatus = "Looking for remove queue";
-			debug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
+			mDebug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
 		currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
 		pData.setCurrentAction("Removing packages");
 	
@@ -278,25 +278,26 @@ int mpkgDatabase::commit_actions()
 			pData.downloadAction=true;
 			if (CommonGetFileEx(downloadQueue, &currentItem, &actionBus, &pData) == DOWNLOAD_ERROR)
 			{
-				printf("Download failed (returned DOWNLOAD_ERROR), waiting responce\n");
+				mError("Download failed (returned DOWNLOAD_ERROR)");
 				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
 				switch(errRet)
 				{
 					case MPKG_RETURN_IGNORE:
-						printf("Download errors ignored, continue installing\n");
+						say("Download errors ignored, continue installing\n");
 						goto installProcess;
 						break;
 				
 					case MPKG_RETURN_RETRY:
-						printf("retrying...\n");
+						say("retrying...\n");
 						do_download = true;
 						break;
 					case MPKG_RETURN_ABORT:
-						printf("aborting...\n");
+						say("aborting...\n");
 						return -100;
 						break;
 					default:
-						printf("Unknown value, don't know what to do\n");
+						mError("Unknown value, don't know what to do, aborting");
+						return -100;
 				}
 					
 			}
@@ -325,7 +326,7 @@ installProcess:
 			}
 			if (actionBus.skipped(ACTIONID_MD5CHECK)) break;
 
-			printf("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
+			say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
 			currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
 	
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
@@ -343,17 +344,17 @@ installProcess:
 				switch(errRet)
 				{
 					case MPKG_RETURN_IGNORE:
-						printf("Wrong checksum ignored, continuing...\n");
+						say("Wrong checksum ignored, continuing...\n");
 						break;
 					case MPKG_RETURN_RETRY:
-						printf("Re-downloading...\n");
+						say("Re-downloading...\n");
 						break;
 					case MPKG_RETURN_ABORT:
-						printf("Aborting installation\n");
+						say("Aborting installation\n");
 						return -100;
 						break;
 					default:
-						printf("Unknown... aborting\n");
+						mError("Unknown reply, aborting");
 						return -120;
 						break;
 				}
@@ -416,7 +417,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 {
 
 	pData.setItemCurrentAction(package->itemID, "installing");
-	printf("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
+	say("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
 	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	// First of all: EXTRACT file list and scripts!!!
@@ -424,7 +425,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	bool no_purge=true;
 	FILE_LIST old_config_files;
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
-	debug("purge_id="+IntToStr(purge_id));
+	mDebug("purge_id="+IntToStr(purge_id));
 	if (purge_id==0)
 	{
 		no_purge=false;
@@ -461,7 +462,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	lp.fill_configfiles(package);
-	printf("fill ended\n");
+	mDebug("fill ended");
 	if (actionBus._abortActions)
 	{
 		sqlFlush();
@@ -476,11 +477,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		pData.increaseItemProgress(package->itemID);
 
 	}
-	debug("Checking file conflicts\n");
+	mDebug("Checking file conflicts\n");
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
 		currentStatus = "Error: Unresolved file conflict on package "+package->get_name();
-		printf("Unresolved file conflict on package %s, it will be skipped!\n", package->get_name().c_str());
+		mError("Unresolved file conflict on package " + package->get_name() + ", it will be skipped!");
 		return -5;
 	}
 	
@@ -493,7 +494,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	FILE_LIST package_files;
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
-	debug("Preparing scripts");
+	mDebug("Preparing scripts");
 	pData.increaseItemProgress(package->itemID);
 	if (actionBus._abortActions)
 	{
@@ -519,7 +520,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	pData.increaseItemProgress(package->itemID);
 
 
-	debug("calling extract");
+	mDebug("calling extract");
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
@@ -528,9 +529,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	//If previous version isn't purged, do not overwrite config files
 	if (no_purge)
 	{
-		debug("retrieving old config files");
+		mDebug("retrieving old config files");
 		get_filelist(purge_id, &old_config_files, true);
-		debug("no_purge flag IS SET, config files count = "+IntToStr(package->get_config_files()->size()));
+		mDebug("no_purge flag IS SET, config files count = "+IntToStr(package->get_config_files()->size()));
 		for (int i=0; i<package->get_config_files()->size(); i++)
 		{
 			// Writing new config files, skipping old
@@ -538,7 +539,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			{
 				if (package->get_config_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
 				{
-					debug("excluding file "+package->get_config_files()->get_file(i)->get_name());
+					mDebug("excluding file "+package->get_config_files()->get_file(i)->get_name());
 					sys+=" --exclude "+package->get_config_files()->get_file(i)->get_name();
 				}
 			}
@@ -554,12 +555,12 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				}
 				if (package->get_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
 				{
-					debug("Skipping file "+package->get_files()->get_file(i)->get_name());
+					mDebug("Skipping file "+package->get_files()->get_file(i)->get_name());
 					break;
 				}
 			}
 		}
-		debug("package_files size: "+IntToStr(package_files.size())+", package->get_files size: "+IntToStr(package->get_files()->size()));
+		mDebug("package_files size: "+IntToStr(package_files.size())+", package->get_files size: "+IntToStr(package->get_files()->size()));
 		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
@@ -586,25 +587,20 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	set_configexist(package->get_id(), ST_CONFIGEXIST);
 	set_action(package->get_id(), ST_NONE);
 	sqlFlush();
-	debug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
+	mDebug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	pData.increaseItemProgress(package->itemID);
 
 
 	return 0;
 }	//End of install_package
 
-int mpkgDatabase::purge_package(PACKAGE* package)
-{
-	printf("%s is deprecated, use remove_package instead\n", __func__);
-	return remove_package(package);
-}
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
 	pData.setItemCurrentAction(package->itemID, "removing");
 
-	printf("Removing package %s %s...\n",package->get_name().c_str(), package->get_fullversion().c_str());
+	say("Removing package %s %s...\n",package->get_name().c_str(), package->get_fullversion().c_str());
 
 	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
@@ -612,7 +608,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
 		// Running pre-remove scripts
-		debug("REMOVE PACKAGE::Preparing scripts");
+		mDebug("REMOVE PACKAGE::Preparing scripts");
 		if(!DO_NOT_RUN_SCRIPTS)
 		{
 			if (FileExists(package->get_scripts()->get_preremove()))
@@ -624,11 +620,11 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		}
 		pData.increaseItemProgress(package->itemID);
 		// removing package
-		debug("calling remove");
+		mDebug("calling remove");
 		string sys_cache=SYS_CACHE;
 		string sys_root=SYS_ROOT;
 		string fname;
-		debug("Package has "+IntToStr(package->get_files()->size())+" files");
+		mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
 
 		// Purge is now implemented here; checking all
 		currentStatus = statusHeader + "building file list";
@@ -715,7 +711,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.increaseItemProgress(package->itemID);
 	sqlFlush();
 	currentStatus = statusHeader + "remove complete";
-	debug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
+	mDebug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
 	return 0;
 }	// End of remove_package
 
@@ -762,7 +758,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	PACKAGE old_package;
 	if (get_package(package_id, &old_package, false)!=0)
 	{
-		debug("mpkg.cpp: update_package_data(): get_package error: no package or error while querying database");
+		mDebug("mpkg.cpp: update_package_data(): get_package error: no package or error while querying database");
 		return -1;
 	}
 	
@@ -770,11 +766,11 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", IntToStr(package_id));
 
-	debug("mpkg.cpp: update_package_data(): updating direct package data");
+	mDebug("mpkg.cpp: update_package_data(): updating direct package data");
 	// 1. Updating direct package data
 	if (package->get_md5()!=old_package.get_md5())
 	{
-		debug("mpkg.cpp: update_package_data(): md5 mismatch, updating description fields");
+		mDebug("mpkg.cpp: update_package_data(): md5 mismatch, updating description fields");
 		sqlUpdate.addField("package_description", package->get_description());
 		sqlUpdate.addField("package_short_description", package->get_short_description());
 		sqlUpdate.addField("package_compressed_size", package->get_compressed_size());
@@ -788,7 +784,7 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	// 2. Updating filename
 	if (package->get_filename()!=old_package.get_filename())
 	{
-		debug("mpkg.cpp: update_package_data(): filename mismatch, updating");
+		mDebug("mpkg.cpp: update_package_data(): filename mismatch, updating");
 		sqlUpdate.addField("package_filename", package->get_filename());
 	}
 
@@ -803,24 +799,24 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	// 	Step 1. Remove all existing package locations from "locations" table. Servers are untouched.
 	// 	Step 2. Add new locations.
 	// Note: after end of updating procedure for all packages, it will be good to do servers cleanup - delete all servers who has no locations.
-	debug("mpkg.cpp: update_package_data(): checking locations");	
+	mDebug("mpkg.cpp: update_package_data(): checking locations");	
 	if (*package->get_locations()!=*old_package.get_locations())
 	{
-		debug("mpkg.cpp: update_package_data(): locations mismatch, cleanup");
-		debug("mpkg.cpp: update_package_data(): old has "+IntToStr(old_package.get_locations()->size())+" locations, but new has "+\
+		mDebug("mpkg.cpp: update_package_data(): locations mismatch, cleanup");
+		mDebug("mpkg.cpp: update_package_data(): old has "+IntToStr(old_package.get_locations()->size())+" locations, but new has "+\
 				IntToStr(package->get_locations()->size())+" ones");
 		SQLRecord loc_sqlDelete;
 		loc_sqlDelete.addField("packages_package_id", IntToStr(package_id));
-		debug("mpkg.cpp: update_package_data(): deleting old locations relating this package");
+		mDebug("mpkg.cpp: update_package_data(): deleting old locations relating this package");
 		int sql_del=db.sql_delete("locations", loc_sqlDelete);
 		if (sql_del!=0)
 		{
-			debug("mpkg.cpp: update_package_data(): unable to delete old locations: SQL error "+IntToStr(sql_del));
+			mDebug("mpkg.cpp: update_package_data(): unable to delete old locations: SQL error "+IntToStr(sql_del));
 			return -2;
 		}
 		if (add_locationlist_record(package_id, package->get_locations())!=0)
 		{
-			debug("mpkg.cpp: update_package_data(): unable to add new locations: error in add_locationlist_record()");
+			mDebug("mpkg.cpp: update_package_data(): unable to add new locations: error in add_locationlist_record()");
 			return -3;
 		}
 		if (package->get_locations()->IsEmpty())
@@ -854,12 +850,12 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	{
 		if (db.sql_update("packages", sqlUpdate, sqlSearch)!=0)
 		{
-			debug("mpkg.cpp: update_package_data(): db.sql_update failed");
+			mDebug("mpkg.cpp: update_package_data(): db.sql_update failed");
 			return -8;
 		}
 	}
-	else debug("mpkg.cpp: update_package_data(): sqlUpdate empty, nothing to update");
-	debug("mpkg.cpp: update_package_data(): successful end");
+	else mDebug("mpkg.cpp: update_package_data(): sqlUpdate empty, nothing to update");
+	mDebug("mpkg.cpp: update_package_data(): successful end");
 	return 0;
 }
 
@@ -884,7 +880,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	// 4. Вызывается синхронизация рабочего списка и данных в базе (это уже отдельная тема).
 	//
 	// ////////////////////////////////////////////////
-	printf("Processing\n");	
+	mDebug("Retrieving current package list, clearing tables");	
 	// Стираем locations и servers
 	db.clear_table("locations");
 	db.clear_table("servers");
@@ -894,7 +890,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	SQLRecord sqlSearch;
 	get_packagelist(sqlSearch, pkgList, false);
 	
-	printf("Comparing\n");
+	say("Merging data\n");
 	// Ищем соответствия
 	int pkgNumber;
 	for (int i=0; i<newPackages->size(); i++)
@@ -912,12 +908,11 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		}
 	}
 
-	printf("Syncing\n");
+	say("Clean up...\n");
 	// Вызываем синхронизацию данных.
 	// Вообще говоря, ее можно было бы делать прямо здесь, но пусть таки будет универсальность.
 	delete newPackages;//->clear();
 	syncronize_data(pkgList);
-	printf("Done\n");
 	return 0;
 }
 int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
@@ -937,7 +932,7 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 		else add_locationlist_record(pkgList->get_package(i)->get_id(), pkgList->get_package(i)->get_locations());
 	}
 	delete pkgList;
-	printf("Cleanup (pause here)\n");
+	mDebug("Cleanup\n");
 
 	// Дополнение от 10 мая 2007 года: сносим нафиг все недоступные пакеты, которые не установлены. Нечего им болтаться в базе.
 	PACKAGE_LIST *allList = new PACKAGE_LIST;

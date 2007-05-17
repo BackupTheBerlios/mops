@@ -1,6 +1,6 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.cpp,v 1.3 2007/05/13 21:41:12 i27249 Exp $
+ * $Id: faststl.cpp,v 1.4 2007/05/17 15:12:36 i27249 Exp $
  * ******************************************************/
 
 
@@ -17,7 +17,7 @@ FastString::~FastString()
 
 FastString::FastString ( const char *c)
 {
-	printf("%s: str = %s\n", __func__, c);
+	//mDebug("str = " + c);
 	data = (char *) malloc(sizeof(c));
 	strcpy(data,c);
 }
@@ -27,7 +27,7 @@ char FastString::operator [] (unsigned int i)
 	if (this->length()>i) return data[i];
 	else
 	{
-		fprintf(stderr, "%s: out of range (length = %d, requested %d)\n", __func__, length(), i);
+		//mError("out of range (length = " + IntToStr(length()) + ", requested " + IntToStr(i) +")");
 		return 0;
 	}
 }
@@ -130,7 +130,6 @@ int FastString::find_first_of(FastString str)
 
 int FastString::find(FastString str)
 {
-	printf("%s: str = %s\n", __func__, str.c_str());
 	int z = strlen(data);
 	int y = str.length();
 	if (str.length()>z) return std::string::npos;

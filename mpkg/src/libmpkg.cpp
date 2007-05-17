@@ -1,26 +1,20 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.29 2007/05/16 09:01:15 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.30 2007/05/17 15:12:36 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
 
 mpkg::mpkg(bool _loadDatabase)
 {
-#ifdef APPLE_DEFINED
-	//printf("Running MacOS X, welcome!\n");
-#endif
-#ifdef LINUX_DEFINED
-	//printf("Running Linux, welcome!\n");
-#endif
-	debug("creating core");
+	mDebug("creating core");
 	currentStatus="Loading database...";
 	loadGlobalConfig();
 	db=NULL;
 	DepTracker=NULL;
 	if (_loadDatabase)
 	{
-		printf("Loading database\n");
+		mDebug("Loading database");
 		db = new mpkgDatabase();
 		DepTracker = new DependencyTracker(db);
 	}
@@ -32,7 +26,6 @@ mpkg::~mpkg()
 {
 	if (DepTracker!=NULL) delete DepTracker;
 	if (db!=NULL) delete db;
-	//printf("closing database...\n");
 	delete_tmp_files();
 }
 
@@ -64,7 +57,6 @@ int mpkg::convert_directory(string output_dir)
 // Packages installation
 int mpkg::install(vector<string> fname)
 {
-	//printf("function install\n");
 	int ret=0;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
@@ -118,7 +110,6 @@ int mpkg::purge(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
-		//printf("Filling purge queue...\n");
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker, true)!=0) ret--;
 	}
@@ -266,7 +257,7 @@ int mpkg::commit()
 	else
 	{
 		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
-		printf("Error in dependencies: %d failures \n", errorCount);
+		mError("Error in dependencies: " + IntToStr(errorCount) + "failures");
 		currentStatus = "Failed - depencency errors";
 	}
 	return 0;

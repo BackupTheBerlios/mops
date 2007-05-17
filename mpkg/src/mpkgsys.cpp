@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.26 2007/05/16 12:45:52 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.27 2007/05/17 15:12:36 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -39,7 +39,6 @@ int mpkgSys::unqueue(int package_id, mpkgDatabase *db)
 
 int mpkgSys::build_package()
 {
-    printf("building package...\n");
     if (FileNotEmpty("install/data.xml"))
     {
 	    PackageConfig p("install/data.xml");
@@ -47,7 +46,7 @@ int mpkgSys::build_package()
 	    string pkgname;
 	    string sysline;
 	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
-	    printf("Creating package %s\n", pkgname.c_str());
+	    say("Creating package %s\n", pkgname.c_str());
 #ifdef APPLE_DEFINED
 	    sysline = "tar czf "+pkgname+".tgz *";
 #else
@@ -73,7 +72,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
 
-	printf(_("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size());
+	say("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size();
 	
 	int total_packages=0; // Счетчик полученных пакетов.
 
@@ -98,10 +97,9 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	}
 	delete rep;
 	delete tmpPackages;
-	//printf("Total %d packages received, filtering...\n", total_packages);
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(availablePackages);
-	printf("Update complete.\n");
+	say("Update complete.\n");
 	actionBus.setActionState(ACTIONID_DBUPDATE);
 	return ret;
 }
@@ -120,11 +118,11 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	{
 		if (tmpPackage.installed())
 		{
-			printf("Package %s %s cannot be installed, because it is already installed.\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+			mError("Package "+ tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already installed");
 		}
 		if (!tmpPackage.available(localInstall))
 		{
-			printf("Package %s %s cannot be installed, because it is unavailable\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+			mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is unavailable");
 		}
 		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
@@ -139,7 +137,7 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	}
 	else
 	{
-		printf("requestInstall: get_package error: returned %d\n", ret);
+		mError("get_package error: returned " + IntToStr (ret));
 		return ret;
 	}
 }
@@ -214,8 +212,9 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		else
 		{
-			if (purge) printf("Package %s %s cannot be purged, because it is already purged\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
-			else printf("Package %s %s cannot be uninstalled, because it is already removed\n", tmpPackage.get_name().c_str(), tmpPackage.get_fullversion().c_str());
+			if (purge) mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
+			else  mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
+;
 			return MPKGERROR_IMPOSSIBLE;
 		}
 	}

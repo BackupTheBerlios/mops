@@ -27,12 +27,7 @@ void runShellCommand(std::string cmd)
 
 	pid = waitpid(child, &status, 0);
 
-	if ( WIFEXITED(status) ) {
-#ifdef DEBUG
-			printf("DEBUG: process %i exit successfull\n", pid);
-#endif
-		
-	} else {
+	if ( !WIFEXITED(status) ){
 		perror( strerror(errno) );
 		exit(1);
 	}

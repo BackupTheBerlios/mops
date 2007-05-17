@@ -3,11 +3,10 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.32 2007/05/17 13:17:35 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.33 2007/05/17 15:12:36 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
-#include "debug.h"
 
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
@@ -46,25 +45,17 @@ int SQLiteDB::clear_table(string table_name)
 int get_sql_table_counter=0;
 RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
-#ifdef _SQL_DEBUG_
-	debug("get_sql_table:");
-	printf("%s\n", sql_query->c_str());
-#endif
 	get_sql_table_counter++;
 	char *errmsg=0;
 	mpkgErrorReturn errRet;
 	int query_return;
-	//printf("CONVERSION\n");
 	const char *qqq = sql_query->c_str();
-	//printf("COUNT=%d\n",get_sql_table_counter);
-	//printf("CALL to GET_TABLE, length=%d\n", sql_query->size());
 	query_return=sqlite3_get_table(db, qqq, table, rows, cols, &errmsg);
-	//printf("END\n");
 	if (query_return!=SQLITE_OK) // Means error
 	{
 		perror("SQLite INTERNAL ERROR");
-		printf("sql_pool.cpp: get_sql_table(): SQL error while querying database: %s\n", errmsg);
-		printf("The query was: %s\n", sql_query->c_str());
+		mError((string) "SQL error while querying database: " + errmsg);
+		mError("The query was: " + *sql_query);
 		sqlError=query_return;
 		sqlErrMsg=errmsg;
 		free(errmsg);
@@ -96,7 +87,7 @@ int SQLiteDB::sqlFlush()
 	if (sqlCommit() == 0 && sqlBegin() == 0) return 0;
 	else
 	{
-		printf("Error flushing to DB!\n");
+		mError("Error flushing to DB!");
 		return -1;
 	}
 }
@@ -107,7 +98,7 @@ int SQLiteDB::init()
 	ret = sqlite3_open(db_filename.c_str(), &db);
 	if (ret!=SQLITE_OK)
 	{
-		printf("Error opening database, cannot continue\n");
+		mError("Error opening database, cannot continue");
 		return 1;
 	}
 	sqlBegin();
@@ -117,7 +108,7 @@ int SQLiteDB::init()
 RESULT SQLiteDB::sql_exec (string sql_query)
 {
 #ifdef _SQL_DEBUG_
-	debug("sql_exec: "+sql_query);
+	mDebug("sql_exec: "+sql_query);
 #endif
 	char *sql_errmsg=0;
 	int query_return;
@@ -128,8 +119,8 @@ RESULT SQLiteDB::sql_exec (string sql_query)
 	{
 		if (initOk)
 		{
-			printf("sql_pool.cpp: sql_exec(): SQL error while querying database: %s\n", sql_errmsg);
-			printf("The query was: %s\n", sql_query.c_str());
+			mError((string)"SQL error while querying database: " + sql_errmsg);
+			mError("The query was: " + sql_query);
 			sqlError=query_return;
 			sqlErrMsg=sql_errmsg;
 			free(sql_errmsg);
@@ -421,7 +412,7 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 	}
 	if (fields.empty()) 
 	{
-		debug("Fields are empty, cannot update SQL data");
+		mDebug("Fields are empty, cannot update SQL data");
 		return -1;
 	}
 	if (!search.empty())
@@ -452,16 +443,12 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 		}
 	}
 	sql_query+=";";
-	//if (table_name == "packages") printf("%s\n", sql_query.c_str());
 	return sql_exec(sql_query);
 }
 
 SQLiteDB::SQLiteDB(string filename)
 {
 	initOk = false;
-#ifdef DEBUG
-	printf("Database filename: %s\n", filename.c_str());
-#endif
 	db_filename=filename;
 	sqlError=0;
 	int sql_return;
@@ -474,7 +461,7 @@ opendb:
 	{
 		sqlError=sql_return;
 		sqlErrMsg="Error opening database file "+db_filename+", aborting.";
-		printf("%s\n", sqlErrMsg.c_str());
+		mError(sqlErrMsg);
 	       	sqlite3_close(db);
 	       	errRet = waitResponce(MPKG_SUBSYS_SQLDB_OPEN_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)
@@ -495,7 +482,7 @@ check_integrity:
 			goto check_integrity;
 		}
 
-		printf("Integrity check failed, aborting\n");
+		mError("Integrity check failed, aborting");
 		sqlite3_close(db);
 		abort();
 	}
@@ -509,7 +496,7 @@ int SQLiteDB::initDatabaseStructure()
 	ret = sqlite3_open(db_filename.c_str(), &db);
 	if (ret!=SQLITE_OK)
 	{
-		printf("Error opening database, cannot continue\n");
+		mError("Error opening database, cannot continue");
 		return 1;
 	}
 	sql_exec(ReadFile("/root/mpkg/sql/create_database.sql").c_str());
@@ -519,7 +506,6 @@ int SQLiteDB::initDatabaseStructure()
 
 
 SQLiteDB::~SQLiteDB(){
-	//printf("closing database and committing\n");
 	sqlCommit();
 	sqlite3_close(db);
 }

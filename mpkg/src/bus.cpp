@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.11 2007/05/16 12:45:52 i27249 Exp $
+ * $Id: bus.cpp,v 1.12 2007/05/17 15:12:36 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -152,7 +152,7 @@ void ProgressData::increaseItemProgress(int itemID)
 	{
 		itemProgress.at(itemID) = itemProgress.at(itemID) + 1;
 	}
-	else printf("NO ITEM!\n");
+	else mError("Item ID is out of range");
 }
 
 string ProgressData::getCurrentAction()
@@ -296,7 +296,7 @@ unsigned int ActionBus::getActionState(unsigned int pos)
 	}
 	else
 	{
-		printf("%s: no such action\n", __func__);
+		mError("Action position is out of range");
 		return 100;
 	}
 }
@@ -326,7 +326,6 @@ ActionID ActionBus::currentProcessingID()
 	{
 		if (getActionState(i)==ITEMSTATE_INPROGRESS) return actions.at(i).actionID;
 	}
-	//printf("%s: no action is processing, actions.size = %d\n", __func__, actions.size());
 	return ACTIONID_NONE;
 }
 
@@ -337,7 +336,7 @@ void ActionBus::setCurrentAction(ActionID actID)
 	{
 		if (getActionState(i)==ITEMSTATE_INPROGRESS)
 		{
-			printf("Incorrect use of ActionBus detected: multiple processing, autofix by setting flag ITEMSTATE_FINISHED\n");
+			mError("Incorrect use of ActionBus detected: multiple processing, autofix by setting flag ITEMSTATE_FINISHED");
 			setActionState(i, ITEMSTATE_FINISHED);
 		}
 	}
@@ -352,7 +351,7 @@ void ActionBus::setCurrentAction(ActionID actID)
 	if (!found)
 	{
 		actions.at(addAction(actID)).state=ITEMSTATE_INPROGRESS;
-		printf("Seems to incorrect use of setCurrentAction: no such action found (added)\n");
+		mError("Seems to incorrect use of setCurrentAction: no such action found (added)");
 	}
 }
 
@@ -362,7 +361,6 @@ void ActionBus::setActionState(ActionID actID, unsigned int state)
 	{
 		if (actions.at(i).actionID==actID){
 		       setActionState(i,state);
-		       //printf("%s: setting action state %d to %d (ID=%d)\n", __func__, state, i, (int) actID);
 		}
 	}
 }
@@ -371,10 +369,7 @@ void ActionBus::setActionState(unsigned int pos, unsigned int state)
 {
 	if (pos<actions.size()){
 		       actions.at(pos).state=state;
-		       //printf("%s: setting state %d to action %d (ID=%d)\n", __func__, state, pos, (int) actions.at(pos).actionID);
 		}
-	//printf("CHECK: %d\n", getActionState(pos));
-	//if (state != getActionState(pos)) printf("ERRRRRRRRRRRRRROOOOOOOOOOOOOOOORRRRRRRRRRRRRRRRR!!!!!!!!!!!!!\n");
 	
 }
 

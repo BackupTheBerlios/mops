@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.h,v 1.34 2007/05/15 07:08:46 i27249 Exp $
+	$Id: dataunits.h,v 1.35 2007/05/17 15:12:36 i27249 Exp $
 */
 
 
@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include "string_operations.h"
 using namespace std;
 
 string PrepareSql(string str);
@@ -591,7 +592,6 @@ class PACKAGE_LIST
 
 
 typedef int RESULT;
-string IntToStr(int num);
 bool meetVersion(versionData condition, string packageVersion);
 
 #endif //DATAUNITS_H_

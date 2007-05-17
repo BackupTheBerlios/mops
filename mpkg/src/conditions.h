@@ -1,11 +1,11 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.6 2007/03/12 00:39:44 i27249 Exp $
+    $Id: conditions.h,v 1.7 2007/05/17 15:12:36 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
 #define CONDITIONS_H_
-
+#include "debug.h"
 #define VER_MORE 1	// >
 #define VER_LESS 2	// <
 #define VER_EQUAL 3	// ==
