@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.43 2007/05/18 07:35:33 i27249 Exp $
+$Id: local_package.cpp,v 1.44 2007/05/18 12:04:53 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -126,11 +126,11 @@ string LocalPackage::files2xml(string input)
 int LocalPackage::fill_scripts(PACKAGE *package)
 {
 	mDebug("get_scripts start");
-	string scripts_dir=SCRIPTS_DIR+"/" + *package->get_filename() + "_" + *package->get_md5();
-	string tmp_preinstall=scripts_dir+"/preinstall.sh";
-	string tmp_postinstall=scripts_dir+"/doinst.sh";
-	string tmp_preremove=scripts_dir+"/preremove.sh";
-	string tmp_postremove=scripts_dir+"/postremove.sh";
+	string scripts_dir=SCRIPTS_DIR+"/" + *package->get_filename() + "_" + *package->get_md5() + "/";
+	string tmp_preinstall=scripts_dir+"preinstall.sh";
+	string tmp_postinstall=scripts_dir+"doinst.sh";
+	string tmp_preremove=scripts_dir+"preremove.sh";
+	string tmp_postremove=scripts_dir+"postremove.sh";
 	string mkdir_pkg="mkdir -p "+scripts_dir+" 2>/dev/null";
 	system(mkdir_pkg.c_str());
 	string sys_cache=SYS_CACHE;
@@ -288,7 +288,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	// Retrieving symlinks (from doinst.sh)
 	string lnfname=get_tmp_file();
 	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < " + \
-			  package->get_scriptdir() + "/doinst.sh > "+lnfname;
+			  package->get_scriptdir() + "doinst.sh > "+lnfname;
 	system(sed_cmd.c_str());
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)

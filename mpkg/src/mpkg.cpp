@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.79 2007/05/18 10:22:09 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.80 2007/05/18 12:04:53 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -506,9 +506,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
 		currentStatus = statusHeader + "executing pre-install scripts";
-		if (FileExists(package->get_scriptdir() + "/preinst.sh"))
+		if (FileExists(package->get_scriptdir() + "preinst.sh"))
 		{
-			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/preinst.sh";
+			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preinst.sh";
 			system(preinst.c_str());
 		}
 	}
@@ -574,9 +574,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
-		if (FileExists(package->get_scriptdir() + "/doinst.sh"))
+		if (FileExists(package->get_scriptdir() + "doinst.sh"))
 		{
-			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/doinst.sh";
+			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "doinst.sh";
 			system(postinst.c_str());
 		}
 	}
@@ -609,10 +609,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		mDebug("REMOVE PACKAGE::Preparing scripts");
 		if(!DO_NOT_RUN_SCRIPTS)
 		{
-			if (FileExists(package->get_scriptdir() + "/preremove.sh"))
+			if (FileExists(package->get_scriptdir() + "preremove.sh"))
 			{
 				currentStatus = statusHeader + "executing pre-remove scripts";
-				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/preremove.sh";
+				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
 				system(prerem.c_str());
 			}
 		}
@@ -671,10 +671,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		// Creating and running POST-REMOVE script
 		if (!DO_NOT_RUN_SCRIPTS)
 		{
-			if (FileExists(package->get_scriptdir() + "/postremove.sh"))
+			if (FileExists(package->get_scriptdir() + "postremove.sh"))
 			{
 				currentStatus = statusHeader + "executing post-removal scripts";
-				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "/postremove.sh";
+				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
 				system(postrem.c_str());
 			}
 		}

@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.54 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: corethread.cpp,v 1.55 2007/05/18 12:04:53 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -736,7 +736,7 @@ void coreThread::_loadPackageDatabase()
 	emit loadingStarted();
 	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	if (database->get_packagelist(sqlSearch, tmpPackageList, false)!=0)
+	if (database->get_packagelist(&sqlSearch, tmpPackageList, false)!=0)
 	{
 		printf("error returned from get_packagelist\n");
 		emit errorLoadingDatabase();
@@ -764,7 +764,6 @@ void coreThread::_loadPackageDatabase()
 	}
 	currentStatus = "Syncronizing";
 	sync();
-	unsigned int count = packageList->size();
 	currentStatus = "Setting up GUI elements";
 	emit clearTable();
 	emit setTableSize(0);
@@ -859,16 +858,16 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 	if (_p->get_dependencies()->size()>0)
 	{
 		depData = "<b> Depends on: </b>";
-		for (int i=0; i<_p->get_dependencies()->size(); i++)
+		for (unsigned int i=0; i<_p->get_dependencies()->size(); i++)
 		{
-			depData += "<br>"+_p->get_dependencies()->get_dependency(i)->getDepInfo();
+			depData += "<br>"+_p->get_dependencies()->at(i).getDepInfo();
 		}
 		depData+="<br>";
 	}
-	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
-			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
-		       	+ "<br>"+_p->get_short_description()+ "<br>" + depData + "</td></tr></tbody></table>";
+			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
+		       	+ "<br>"+*_p->get_short_description()+ "<br>" + depData + "</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
 }
 
@@ -913,13 +912,13 @@ void coreThread::_commitQueue()
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
 				case ST_INSTALL:
-					install_queue.push_back(packageList->get_package(i)->get_name());
+					install_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
 				case ST_REMOVE:
-					remove_queue.push_back(packageList->get_package(i)->get_name());
+					remove_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
 				case ST_PURGE:
-					purge_queue.push_back(packageList->get_package(i)->get_name());
+					purge_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
 				default:
 					printf("Unknown action %d\n", newStatus[i]);

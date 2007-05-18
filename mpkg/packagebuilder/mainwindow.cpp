@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.17 2007/05/16 16:49:22 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.18 2007/05/18 12:04:53 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -46,11 +46,11 @@ void Form::loadData()
 	
 
 		// Filling data 
-		ui.NameEdit->setText(pkg.get_name().c_str());
-		ui.VersionEdit->setText(pkg.get_version().c_str());
-		ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch().c_str()));
-		ui.BuildEdit->setText(pkg.get_build().c_str());
-		ui.ShortDescriptionEdit->setText(pkg.get_short_description().c_str());
+		ui.NameEdit->setText(pkg.get_name()->c_str());
+		ui.VersionEdit->setText(pkg.get_version()->c_str());
+		ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
+		ui.BuildEdit->setText(pkg.get_build()->c_str());
+		ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
 		
 		for (int i=0; i<pkg.get_descriptions()->size(); i++)
 		{

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.53 2007/05/18 10:22:09 i27249 Exp $
+	$Id: dataunits.cpp,v 1.54 2007/05/18 12:04:53 i27249 Exp $
 */
 
 
@@ -783,7 +783,7 @@ vector<string>* PACKAGE::get_tags()
 
 string PACKAGE::get_scriptdir()
 {
-	return SCRIPTS_DIR + package_name + "_" + package_md5 + "/";
+	return SCRIPTS_DIR + package_filename + "_" + package_md5 + "/";
 }
 
 

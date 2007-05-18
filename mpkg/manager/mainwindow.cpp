@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.88 2007/05/16 06:43:19 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.89 2007/05/18 12:04:53 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -146,7 +146,7 @@ void MainWindow::applyPackageFilter ()
 	bool statusOk = false;
 	bool categoryOk = false;
 	bool cloneOk = true;
-	TAG_LIST tmpTagList;
+	vector<string> tmpTagList;
 	string tagvalue;
 	int action;
 	bool available;
@@ -163,7 +163,7 @@ void MainWindow::applyPackageFilter ()
 		categoryOk = false;
 		cloneOk = true;
 
-		nameMask = nameMask.fromStdString(packagelist->get_package(i)->get_name());
+		nameMask = nameMask.fromStdString(*packagelist->get_package(i)->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			nameOk = true;
@@ -226,11 +226,10 @@ void MainWindow::applyPackageFilter ()
 				else
 					{
 					categoryOk = false;
-					//tmpTagList = *packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->get_tags();
 					tmpTagList = *packagelist->get_package(i)->get_tags();
-					for (int t = 0; t < tmpTagList.size(); t++)
+					for (unsigned int t = 0; t < tmpTagList.size(); t++)
 					{
-						if (tmpTagList.get_tag(t)->get_name() == tagvalue)
+						if (tmpTagList[t] == tagvalue)
 						{
 							categoryOk = true;
 						}
@@ -265,7 +264,7 @@ void MainWindow::applyPackageFilter ()
 				for (int d=0; d<ui.listWidget->count(); d++)
 				{
 					tmpcat = (string) _categories.getChildNode("group", d).getAttribute("tag");
-					if (tmpTagList.get_tag(k)->get_name()==tmpcat)
+					if (tmpTagList[k]==tmpcat)
 					{
 						// Do something with ui.listWidget
 					}
@@ -331,7 +330,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 		       "<br><b>It is max version: </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
 		       "<br><b>Max version: </b>" + packagelist->get_package(row)->maxVersion + \
 			"<br><br><b>Description: </b><br>" + \
-		       adjustStringWide(packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description().size())+ \
+		       adjustStringWide(*packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description()->size())+ \
 		       		       "</html>";
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
@@ -528,7 +527,7 @@ void MainWindow::updateProgressData()
 	ui.progressTable->clearContents();
 	int totalCount=pData.size();
 	int totalVisible=0;
-	for (int i=0; i<pData.size(); i++)
+	for (unsigned int i=0; i<pData.size(); i++)
 	{
 		if (pData.getItemState(i)!=ITEMSTATE_WAIT ) totalVisible++;
 	}
@@ -540,7 +539,7 @@ void MainWindow::updateProgressData()
 	bool keepCount;
 	if (pData.size()>0)
 	{
-		for (int i=0; i<pData.size(); i++)
+		for (unsigned int i=0; i<pData.size(); i++)
 		{
 			tablePos=i;
 			//ui.packageTable->setRowHidden(i, true);
@@ -702,7 +701,7 @@ void MainWindow::quickPackageSearch()
 	QString tmp;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
-		tmp = tmp.fromStdString(packagelist->get_package(i)->get_name());
+		tmp = tmp.fromStdString(*packagelist->get_package(i)->get_name());
 		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
 			ui.packageTable->setRowHidden(i, true);
@@ -735,25 +734,25 @@ void MainWindow::showPackageInfo()
 	//long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
 	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->get_package(id);
-	string info = "<html><h1>"+pkg->get_name()+" "+pkg->get_version()+"</h1><p><b>Architecture:</b> "+pkg->get_arch()+"<br><b>Build:</b> "+pkg->get_build();
-	info += "<br><b>Description: </b><br>"+pkg->get_description()+"</p></html>";
+	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>Architecture:</b> "+*pkg->get_arch()+"<br><b>Build:</b> "+*pkg->get_build();
+	info += "<br><b>Description: </b><br>"+*pkg->get_description()+"</p></html>";
 	mstring taglist;
-	for (int i=0; i< pkg->get_tags()->size(); i++)
+	for (unsigned int i=0; i< pkg->get_tags()->size(); i++)
 	{
 		taglist+="<br>";
-		taglist+=pkg->get_tags()->get_tag(i)->get_name();
+		taglist+=pkg->get_tags()->at(i);
 	}
 	string extendedInfo = (string) "<html>" \
-			       + (string) "<h2>" + pkg->get_name() + (string) "</h2>" \
-			       + (string) "<br><b>Version: </b>" + pkg->get_version() \
-			       + (string) "<br><b>Arch: </b>"+pkg->get_arch() \
-			       + (string) "<br><b>Build: </b>"+pkg->get_build() \
-			       + (string) "<br><b>Package size: </b>" + humanizeSize(pkg->get_compressed_size()) \
-			       + (string) "<br><b>Installed size: </b>" + humanizeSize(pkg->get_installed_size()) \
-			       + (string) "<br><b>Filename: </b>" + pkg->get_filename() \
-			       + (string) "<br><b>MD5 sum: </b>"+pkg->get_md5() \
-			       + (string) "<br><b>Maintainer: </b>"+pkg->get_packager() \
-			       + (string) " (" + pkg->get_packager_email() + (string)")" \
+			       + (string) "<h2>" + *pkg->get_name() + (string) "</h2>" \
+			       + (string) "<br><b>Version: </b>" + *pkg->get_version() \
+			       + (string) "<br><b>Arch: </b>"+*pkg->get_arch() \
+			       + (string) "<br><b>Build: </b>"+*pkg->get_build() \
+			       + (string) "<br><b>Package size: </b>" + humanizeSize(*pkg->get_compressed_size()) \
+			       + (string) "<br><b>Installed size: </b>" + humanizeSize(*pkg->get_installed_size()) \
+			       + (string) "<br><b>Filename: </b>" + *pkg->get_filename() \
+			       + (string) "<br><b>MD5 sum: </b>"+*pkg->get_md5() \
+			       + (string) "<br><b>Maintainer: </b>"+*pkg->get_packager() \
+			       + (string) " (" + *pkg->get_packager_email() + (string)")" \
 			       + (string) "<br><b>Status: </b>" + pkg->get_vstatus() \
 			       + (string) "<br><br><b>Tags: </b> " \
 			       + taglist.s_str() \
@@ -1038,10 +1037,10 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
 
 		
-		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+_p->get_name()+"</b> "\
+		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
-			+" <font color=\"green\"> \t["+humanizeSize(_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
-		       	+ "<br>"+_p->get_short_description()+"</td></tr></tbody></table>";
+			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
+		       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
 
 		setTableItem(x, state, pName);
 		
