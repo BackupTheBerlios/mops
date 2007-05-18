@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.9 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: string_operations.h,v 1.10 2007/05/18 07:35:33 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -10,6 +10,7 @@
 using namespace std;
 string IntToStr(int num);
 
+void PrepareSql(string* str);
 char * strMerge(const char *part1, const char *part2); // Merges part1 and part2, and returns the result. Note: you should free() the result at the end.
 string cutSpaces(string str);
 string humanizeSize(unsigned int size);

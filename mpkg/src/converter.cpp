@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.8 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: converter.cpp,v 1.9 2007/05/18 07:35:33 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -8,7 +8,7 @@
 int slack_convert(string filename, string xml_output)
 {
 	PACKAGE package;
-	package.set_filename(filename);
+	package.set_filename(&filename);
 	// Resolving name, version, arch and build
 	string tmp;
 	string tmp_xml = get_tmp_file();
@@ -40,7 +40,7 @@ int slack_convert(string filename, string xml_output)
 					filename[i+1] == '8' || \
 					filename[i+1] == '9')
 			{
-				package.set_name(tmp);
+				package.set_name(&tmp);
 				pos=i+2;
 				break;
 			}
@@ -53,7 +53,7 @@ int slack_convert(string filename, string xml_output)
 	{
 		if (filename[i]=='-')
 		{
-			package.set_version(tmp);
+			package.set_version(&tmp);
 			pos=i+2;
 			break;
 		}
@@ -65,7 +65,7 @@ int slack_convert(string filename, string xml_output)
 	{
 		if (filename[i]=='-')
 		{
-			package.set_arch(tmp);
+			package.set_arch(&tmp);
 			pos=i+2;
 			break;
 		}
@@ -77,7 +77,7 @@ int slack_convert(string filename, string xml_output)
 	{
 		tmp+=filename[i];
 	}
-	package.set_build(tmp);
+	package.set_build(&tmp);
 
 	tmp.clear();
 #define DESCRIPTION_PROCESS
@@ -108,7 +108,7 @@ int slack_convert(string filename, string xml_output)
 			}
 			description=tmp;
 			tmp.clear();
-			string pHead=package.get_name()+":";
+			string pHead=*package.get_name()+":";
 			int spos=description.find(pHead,0);
 			// Removing package: headers
 			for (unsigned int i=spos; i<description.length(); i++)
@@ -116,7 +116,7 @@ int slack_convert(string filename, string xml_output)
 				//head+=description[i];
 				if (i==0 || description[i-1]=='\n')
 				{
-					i=i+package.get_name().length()+1;
+					i=i+package.get_name()->length()+1;
 					//if (description[i-1]=='\n') i=i+package.get_name().length()+2;
 					//head.clear();
 				}
@@ -144,25 +144,25 @@ int slack_convert(string filename, string xml_output)
 			}
 			description=tmp;
 			tmp.clear();
-			package.set_short_description(short_description);
-			package.set_description(description);
+			package.set_short_description(&short_description);
+			package.set_description(&description);
 		}
 	}
 #endif
 	XMLNode pkg=XMLNode::createXMLTopNode("package");
 	pkg.addChild("name");
-	pkg.getChildNode("name").addText(package.get_name().c_str());
+	pkg.getChildNode("name").addText(package.get_name()->c_str());
 	pkg.addChild("version");
-	pkg.getChildNode("version").addText(package.get_version().c_str());
+	pkg.getChildNode("version").addText(package.get_version()->c_str());
 	pkg.addChild("arch");
-	pkg.getChildNode("arch").addText(package.get_arch().c_str());
+	pkg.getChildNode("arch").addText(package.get_arch()->c_str());
 	pkg.addChild("build");
-	pkg.getChildNode("build").addText(package.get_build().c_str());
+	pkg.getChildNode("build").addText(package.get_build()->c_str());
 #ifdef DESCRIPTION_PROCESS
 	pkg.addChild("short_description");
-	pkg.getChildNode("short_description").addText(package.get_short_description().c_str());
+	pkg.getChildNode("short_description").addText(package.get_short_description()->c_str());
 	pkg.addChild("description");
-	pkg.getChildNode("description").addText(package.get_description().c_str());
+	pkg.getChildNode("description").addText(package.get_description()->c_str());
 #endif
 	pkg.addChild("tags");
 	pkg.getChildNode("tags").addChild("tag");

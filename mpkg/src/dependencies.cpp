@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.26 2007/05/17 15:12:36 i27249 Exp $
+$Id: dependencies.cpp,v 1.27 2007/05/18 07:35:33 i27249 Exp $
 */
 
 
@@ -23,11 +23,11 @@ PACKAGE_LIST* DependencyTracker::get_failure_list()
 
 void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
 {
-	installQueryList.add(*pkg);
+	installQueryList.add(pkg);
 }
 void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 {
-	removeQueryList.add(*pkg);
+	removeQueryList.add(pkg);
 }
 
 int findBrokenPackages(PACKAGE_LIST pkgList, PACKAGE_LIST *output)
@@ -61,7 +61,7 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 		{
 			for (int t=0; t<known_md5.size(); t++)
 			{
-				if (pkgList->get_package(i)->get_md5()==known_md5.at(t))
+				if (*pkgList->get_package(i)->get_md5()==known_md5[t])
 				{
 					dupe=true;
 					break;
@@ -80,7 +80,7 @@ int DependencyTracker::renderData()
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
 	for (int i=0; i<installStream.size(); i++)
 	{
-		say("[%d] %s\n", i, installStream.get_package(i)->get_name().c_str());
+		say("[%d] %s\n", i, installStream.get_package(i)->get_name()->c_str());
 	}
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	filterDupes(&installStream);
@@ -97,10 +97,12 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 	// installationQueue - user-composed request for installation
 	// outStream - result, including all required packages.
 	PACKAGE_LIST outStream;
+	PACKAGE_LIST req;
 	outStream.add(installationQueue);
 	for (int i=0; i<outStream.size(); i++)
 	{
-		outStream.add(get_required_packages(outStream.get_package(i)));
+		req=get_required_packages(outStream.get_package(i));
+		outStream.add(&req);
 	}
 	return outStream;
 }
@@ -112,10 +114,10 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	PACKAGE tmpPackage;
 	for (int i=0; i<package->get_dependencies()->size(); i++)
 	{
-		if (get_dep_package(package->get_dependencies()->get_dependency(i), &tmpPackage)!=0) {
+		if (get_dep_package(&package->get_dependencies()->at(i), &tmpPackage)!=0) {
 			mError("package is broken"); package->set_broken();
 		}
-		else requiredPackages.add(tmpPackage);
+		else requiredPackages.add(&tmpPackage);
 	}
 	return requiredPackages;
 }
@@ -131,7 +133,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	PACKAGE_LIST reachablePackages;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", dep->get_package_name());
-	db->get_packagelist(sqlSearch, &reachablePackages, false);
+	db->get_packagelist(&sqlSearch, &reachablePackages, false);
 	
 	if (reachablePackages.IsEmpty())
 		return MPKGERROR_NOPACKAGE;
@@ -145,8 +147,8 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 		}
 	}
 	if (candidates.IsEmpty()) return MPKGERROR_NOPACKAGE;
-	if (candidates.hasInstalledOnes()) *returnPackage = candidates.getInstalledOne();
-	else *returnPackage = candidates.getMaxVersion();
+	if (candidates.hasInstalledOnes()) *returnPackage = *candidates.getInstalledOne();
+	else *returnPackage = *candidates.getMaxVersion();
 	return MPKGERROR_OK;
 }
 
@@ -155,10 +157,10 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 	// removeQueue - user-composed remove queue
 	// removeStream - result. Filtered.
 	PACKAGE_LIST removeStream;
-	removeStream.add(*removeQueue);
+	removeStream.add(removeQueue);
 	for (int i=0; i<removeStream.size(); i++)
 	{
-		removeStream.add(get_dependant_packages(removeStream.get_package(i)));
+		removeStream.push_back(get_dependant_packages(removeStream.get_package(i)));
 	}
 	return removeStream;
 }
@@ -166,10 +168,10 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 {
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_installed", "1");
+	sqlSearch.addField("package_installed", 1);
 	PACKAGE_LIST installedPackages;
 	PACKAGE_LIST dependantPackages;
-	db->get_packagelist(sqlSearch, &installedPackages,false);
+	db->get_packagelist(&sqlSearch, &installedPackages,false);
 	for (int i=0; i<installedPackages.size(); i++)
 	{
 		if (installedPackages.get_package(i)->isItRequired(package))
@@ -194,18 +196,18 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 	PACKAGE_LIST installQueuedList;
 	PACKAGE_LIST removeQueuedList;
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_installed", "1");
-	db->get_packagelist(sqlSearch, &installedList, false);
+	sqlSearch.addField("package_installed", 1);
+	db->get_packagelist(&sqlSearch, &installedList, false);
 
 	sqlSearch.clear();
-	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-	db->get_packagelist(sqlSearch, &installQueuedList, false);
+	sqlSearch.addField("package_action", ST_INSTALL);
+	db->get_packagelist(&sqlSearch, &installQueuedList, false);
 #ifdef EXTRACHECK_REMOVE_QUEUE
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_IN);
 	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
 	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	db->get_packagelist(sqlSearch, &removeQueuedList);
+	db->get_packagelist(&sqlSearch, &removeQueuedList);
 #endif
 	bool found;
 	// What we should do?
@@ -225,7 +227,8 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 		if (!found) remove_list.add(removeStream.get_package(i));
 	}
 	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
-	PACKAGE_LIST proxyinstalledList = installedList + installQueuedList;
+	PACKAGE_LIST proxyinstalledList = installedList;
+       proxyinstalledList.add(&installQueuedList);
 	for (int i=0; i<installStream.size(); i++)
 	{
 		found=false;
@@ -243,7 +246,7 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 		}
 	}
 	// 3.1 Filter conflict_list. Search for packages who required anything in conflict_list and it cannot be replaced by anything in installStream.
-	remove_list += conflict_list;
+	remove_list.add(&conflict_list);
 #ifdef BACKTRACE_DEPS
 	PACKAGE_LIST removeCandidates;
 	PACKAGE_LIST removeQueue2;
@@ -288,8 +291,8 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 		passed=false;
 		for (int t=0; t<searchList.size(); t++)
 		{
-			if (pkg->get_dependencies()->get_dependency(i)->get_package_name() == searchList.get_package(t)->get_name() && \
-					meetVersion(pkg->get_dependencies()->get_dependency(i)->get_version_data(), searchList.get_package(t)->get_version()))
+			if (*pkg->get_dependencies()->at(i).get_package_name() == *searchList.get_package(t)->get_name() && \
+					meetVersion(pkg->get_dependencies()->at(i).get_version_data(), searchList.get_package(t)->get_version()))
 			{
 				passed=true;
 				break;
@@ -310,7 +313,7 @@ bool DependencyTracker::commitToDb()
 	{
 		if (!installList.get_package(i)->installed())
 		{
-			say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name().c_str(), installList.get_package(i)->get_fullversion().c_str());
+			say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 			iC++;
 			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 		}
@@ -321,7 +324,7 @@ bool DependencyTracker::commitToDb()
 	{
 		if (removeList.get_package(i)->configexist())
 		{
-			say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name().c_str(), removeList.get_package(i)->get_fullversion().c_str());
+			say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 			rC++;
 			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 		}

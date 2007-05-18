@@ -1,7 +1,8 @@
 /*
 	MOPSLinux packaging system
-	Data types descriptions
-	$Id: dataunits.h,v 1.35 2007/05/17 15:12:36 i27249 Exp $
+	Basic data types descriptions
+	Second edition: RISC architecture =)
+	$Id: dataunits.h,v 1.36 2007/05/18 07:35:33 i27249 Exp $
 */
 
 
@@ -10,165 +11,52 @@
 
 #include <string>
 #include <vector>
-#include "string_operations.h"
 using namespace std;
 
-string PrepareSql(string str);
-
-class SERVER_TAG
-{
-    private:
-	// INTERNAL DATA //
-	int server_tag_id;
-	string server_tag_name;
-
-    public:
-	// Methods
-	int get_id();
-	string get_name(bool sql=false);
-
-	bool operator != (SERVER_TAG stag);
-	bool operator == (SERVER_TAG stag);
-
-	int set_id(int id);
-	int set_name(string name);
-	
-	// CLASS ROUTINES //
-	bool IsEmpty();
-	SERVER_TAG();
-	~SERVER_TAG();
-};
-
-class SERVER_TAG_LIST
-{
-    private:
-	vector <SERVER_TAG> server_tags;
-    public:
-	int add(SERVER_TAG server_tag);
-	void clear();
-	bool IsEmpty();
-	int size();
-
-	bool operator != (SERVER_TAG_LIST slist);
-	bool operator == (SERVER_TAG_LIST slist);
-
-
-	SERVER_TAG* get_server_tag(int num);
-	int set_server_tag(int num, SERVER_TAG serv_tag);
-
-	SERVER_TAG_LIST();
-	~SERVER_TAG_LIST();
-};
-
-class SERVER
-{
-
+// Server type definitions
+// Note: the definition order is important. Set this to comply the sorting order (less value comes first)
 #define SRV_LOCAL 0
 #define SRV_FILE 1
 #define SRV_NETWORK 2
 #define SRV_CDROM 3
 
-    private:
-	// INTERNAL DATA //
-	int server_id;
-	string server_url;
-	string server_priority;
-	
-	// EXTERNAL DATA //
-	SERVER_TAG_LIST server_tags;
-
-    public:
-	int get_id();
-	string get_url(bool sql=false);
-	int get_type();
-	string get_priority(bool sql=false);
-	SERVER_TAG_LIST* get_tags();
-
-	int set_id(int id);
-	int set_url(string url);
-	int set_priority(string priority);
-	int set_tags(SERVER_TAG_LIST tags);
-
-	bool operator != (SERVER nserv);
-	bool operator == (SERVER nserv);
-	// CLASS ROUTINES //
-	bool IsEmpty();
-	SERVER();
-	~SERVER();
-};
-
-class SERVER_LIST
-{
-    private:
-	vector <SERVER> servers;
-	
-    public:
-	SERVER* get_server(int num);
-	int set_server(int num, SERVER server);
-
-	int add(SERVER server);
-	void clear();
-	bool IsEmpty();
-	int size();
-	bool operator != (SERVER_LIST serv_list);
-	bool operator == (SERVER_LIST serv_list);
-
-	SERVER_LIST();
-	~SERVER_LIST();
-};
-
+// class LOCATION: describes one location unit
 class LOCATION
 {
     private:
 	// INTERNAL DATA //
-	long location_id;
+	int location_id;
+	string server_url;
 	string location_path;
 	bool local;
-
-	// EXTERNAL DATA //
-	SERVER server;
 	
     public:
-	bool operator != (LOCATION location);
-	bool operator == (LOCATION location);
+	// Comparsion
+	bool equalTo (LOCATION *location);
 
-	long get_id();
-	string get_path(bool sql=false);
-	void set_local();
+	// Data retriveal
+	int get_id();
+	int get_type();
 	bool get_local();
+	string* get_path();
+	string* get_server_url();
+	string get_full_url();
+
+	// Data writing
+	void set_id(int id);
+	void set_path(string* path);
+	void set_local();
 	void unset_local();
+	void set_server_url(string * new_url);
 
-	int set_id(long id);
-	int set_path(string path);
 
-	SERVER* get_server();
-	int set_server(SERVER new_server);
-
-	// CLASS ROUTINES //
-	void destroy();
+	// Dimensions, empty, etc
 	bool IsEmpty();
+	void clear();
+
+	// Constructor and destructor
 	LOCATION();
 	~LOCATION();
-};
-
-class LOCATION_LIST
-{
-    private:
-	vector<LOCATION> locations;
-    public:
-	bool operator != (LOCATION_LIST nloc);
-	bool operator == (LOCATION_LIST nloc);
-	LOCATION* get_location(int num);
-	vector<LOCATION> get_locations();
-	int set_location(int num, LOCATION location);
-	void sortLocations();
-	int add(LOCATION location);
-	void clear();
-	bool IsEmpty();
-	int size();
-
-	LOCATION_LIST();
-	~LOCATION_LIST();
 };
 
 struct versionData
@@ -186,54 +74,40 @@ class DEPENDENCY
 	string dependency_package_name;
 	int dependency_broken;
 	versionData version_data;
+
     public:
+	// Comparsion
+	bool equalTo(DEPENDENCY *dependency);
+
+	// Data retriveal
 	int get_id();
-	string getDepInfo();
-	string get_condition(bool sql=false);
-	string get_vcondition();
-	string get_type(bool sql=false);
-	string get_package_name(bool sql=false);
-	string get_package_version(bool sql=false);
-	string get_vbroken();
+	string *get_condition();
+	string *get_type();
+	string *get_package_name();
+	string *get_package_version();
 	int get_broken();
-	versionData get_version_data();
+	versionData *get_version_data();
 
-	int set_id(int id);
-	int set_condition(string condition);
-	int set_type(string type);
-	int set_package_name(string package_name);
-	int set_package_version(string package_version);
-	int set_broken(int broken);
+	// Visual data retriveal (UI purposes)
+	string get_vbroken();
+	string get_vcondition();
+	string getDepInfo();
 
-	bool operator != (DEPENDENCY ndep);
-	bool operator == (DEPENDENCY ndep);
-	// CLASS ROUTINES //
+	// Data writing
+	void set_id(int id);
+	void set_condition(string* condition);
+	void set_type(string* type);
+	void set_package_name(string* package_name);
+	void set_package_version(string* package_version);
+	void set_broken(int broken);
+
+	// Emptyness, empty, etc
 	bool IsEmpty();
 	void clear();
+
+	// Constructor & destructor
 	DEPENDENCY();
 	~DEPENDENCY();
-};
-
-class TAG
-{
-    private:
-	// INTERNAL DATA //
-	int tag_id;
-	string tag_name;
-
-    public:
-	int get_id();
-	string get_name(bool sql=false);
-	int set_id(int id);
-	int set_name(string name);
-	
-	bool operator != (TAG ntag);
-	bool operator == (TAG ntag);
-	// CLASS ROUTINES //
-	void clear();
-	bool IsEmpty();
-	TAG();
-	~TAG();
 };
 
 class FILES
@@ -243,122 +117,35 @@ class FILES
 	int file_id;
 	string file_name;
 	int file_type;
-	// EXTERNAL DATA //
-	//PACKAGE_LIST *file_packages;
-    public:
-
 	string backup_file;
-	bool operator != (FILES nfile);
-	bool operator == (FILES nfile);
+    public:
+	// Comparsion
+	bool equalTo(FILES *file);
+
+	// Data retriveal
 	int get_id();
-	string get_name(bool sql=false);
+	string* get_name();
 	int get_type();
+	string* get_backup_file();
 	bool config();
 
-	int set_id(int id);
-	int set_name(string name);
-	int set_type(int type);
+	// Data writing
+	void set_id(int id);
+	void set_name(string* name);
+	void set_type(int type);
+	void set_backup_file(string *fname);
 
-	// CLASS ROUTINES //
+	// Empty, clear
 	bool IsEmpty();
+	void clear();
+
+	// Constructor && destructor
 	FILES();
 	~FILES();
 };
 
-class TAG_LIST
-{
-    private:
-	vector <TAG> tags;
-    public:
-	TAG* get_tag(int num);
-	int set_tag(int num, TAG tag);
-
-	int add(TAG tag);
-	void clear();
-	bool IsEmpty();
-	int size();
-	bool operator != (TAG_LIST ntags);
-	bool operator == (TAG_LIST ntags);
-
-	TAG_LIST();
-	~TAG_LIST();
-};
-
-class DEPENDENCY_LIST
-{
-    private:
-	vector <DEPENDENCY> dependencies;
-    public:
-	DEPENDENCY* get_dependency(int num);
-	DEPENDENCY* at(int num);
-	DEPENDENCY* operator [] (int num);
-	int set_dependency(int num, DEPENDENCY dependency);
-	
-	bool operator != (DEPENDENCY_LIST ndep);
-	bool operator == (DEPENDENCY_LIST ndep);
-	int add(DEPENDENCY dependency);
-	void clear();
-	bool IsEmpty();
-	int size();
-
-	DEPENDENCY_LIST();
-	~DEPENDENCY_LIST();
-};
-
-class FILE_LIST
-{
-    private:
-	vector <FILES> files;
-    public:
-	bool operator != (FILE_LIST nfiles);
-	bool operator == (FILE_LIST nfiles);
-
-	FILES* get_file(int num);
-	int set_file(int num, FILES file);
-	
-	int add(FILES file);
-	int add_list(FILE_LIST filelist);
-	void clear();
-	bool IsEmpty();
-	int size();
-	void destroy();
-
-	FILE_LIST();
-	~FILE_LIST();
-};
-
-class SCRIPTS
-{
-    private:
-	int script_id;
-	string preinstall;
-	string postinstall;
-	string preremove;
-	string postremove;
-
-    public:
-	bool operator != (SCRIPTS scr);
-	bool operator == (SCRIPTS scr);
-	int get_id();
-	string get_vid();
-	string get_preinstall(bool sql=false);
-	string get_postinstall(bool sql=false);
-	string get_preremove(bool sql=false);
-	string get_postremove(bool sql=false);
-
-	void set_preinstall(string preinst);
-	void set_postinstall(string postinst);
-	void set_preremove(string prerem);
-	void set_postremove(string postrem);
-	void set_id(int id);
-	void set_vid(string id);
-	void clear();
-	bool IsEmpty();
-
-	SCRIPTS();
-	~SCRIPTS();
-};
-
+#ifdef ENABLE_INTERNATIONAL
+// Disabled for now - because it causes uncontrolled growing of the database. Maybe will store externally?
 class DESCRIPTION
 {
 	private:
@@ -369,31 +156,20 @@ class DESCRIPTION
 	public:
 		DESCRIPTION();
 		~DESCRIPTION();
-		int set_id(int id);
-		int set_language(string language);
-		int set_text(string text);
-		int set_shorttext(string short_text);
+		void set_id(int id);
+		void set_language(string* language);
+		void set_text(string* text);
+		void set_shorttext(string* short_text);
 		int get_id();
-		string get_language();
-		string get_text(bool sql=false);
-		string get_shorttext(bool sql=false);
+		string* get_language();
+		string* get_text();
+		string* get_shorttext();
 		void clear();
 };
+#endif
 
-class DESCRIPTION_LIST
-{
-	private:
-		vector<DESCRIPTION> descriptions;
-	public:
-		DESCRIPTION *get_description(unsigned int num);
-		int set_description(unsigned int num, DESCRIPTION description);
-		int add(DESCRIPTION description);
-		DESCRIPTION_LIST();
-		~DESCRIPTION_LIST();
-		unsigned int size();
-		bool empty();
-		void clear();
-};
+void _sortLocations(vector<LOCATION>* locations); // Location sorting
+
 
 class PACKAGE
 {
@@ -404,10 +180,6 @@ class PACKAGE
 	string package_version;
 	string package_arch;
 	string package_build;
-/*	char *c_package_name;
-	char *c_package_version;
-	char *c_package_arch;
-	char *c_package_build;*/
 	string package_compressed_size;
 	string package_installed_size;
 	string package_short_description;
@@ -418,130 +190,123 @@ class PACKAGE
 	bool package_available;
 	bool package_installed;
 	bool package_configexist;
-	int package_action;
-	
+	int package_action;	
 	string package_md5;
 	string package_filename;
 	int package_err_type;
 
-	versionData requiredVersion;
-
+	// EXTERNAL DATA //
+	vector<FILES> package_files;
+	vector<FILES> config_files;
+	vector<LOCATION> package_locations;
+	vector<DEPENDENCY> package_dependencies;
+	vector<string> package_tags;
+#ifdef ENABLE_INTERNATIONAL
+	vector<DESCRIPTION> package_descriptions;
+#endif
     public:
-	void sortLocations();
+	versionData requiredVersion;
 	int priority;
 	int itemID;	// For status purposes only, means the number in PackageData vector
 	bool isBroken;
 	bool isRequirement;
-	bool isItRequired(PACKAGE *testPackage);
-	void set_broken(bool flag=true);
-	void set_requiredVersion(versionData reqVersion);
 	vector<int>alternateVersions;
 	bool hasMaxVersion;
 	string maxVersion;
 	bool newPackage;	// Используется пока что только при обновлении. Есть мысль использовать в GUI (еще не знаю по какому принципу)
 	string installedVersion;
-	void clearVersioning();
+
+	// Comparsion
+	bool equalTo(PACKAGE *pkg);
+
+	// Data retrieving	
+	bool isItRequired(PACKAGE *testPackage);
 	bool isUpdate();
-	string get_fullversion();
 	int get_id();
-	string get_name(bool sql=false);
-	string get_version(bool sql=false);
-	string get_arch(bool sql=false);
-	string get_build(bool sql=false);
-	string get_compressed_size(bool sql=false);
-	string get_installed_size(bool sql=false);
-	string get_short_description(bool sql=false);
-	string get_description(bool sql=false);
-	string get_changelog(bool sql=false);
-	string get_packager(bool sql=false);
-	string get_packager_email(bool sql=false);
+	string *get_name();
+	string *get_version();
+	string *get_arch();
+	string *get_build();
+	string *get_compressed_size();
+	string *get_installed_size();
+	string *get_short_description();
+	string *get_description();
+	string *get_changelog();
+	string *get_packager();
+	string *get_packager_email();
 	bool available(bool includeLocal=false);
 	bool installed();
 	bool configexist();
 	int action();
-	bool reachable(bool includeConfigFiles=false);	// A combination of package_available and package_installed. If at least one of them is true, package_reachable == true, otherwise false.
-	string get_vstatus(bool color=false);
-	string get_md5(bool sql=false);
-	string get_filename(bool sql=false);
+	bool reachable(bool includeConfigFiles=false);	// ==(package_available || package_installed)
+	string *get_md5();
+	string *get_filename();
 	int get_err_type();
 
-	int set_id(int id);
-	int set_name(string name);
-	int set_version(string version);
-	int set_arch(string arch);
-	int set_build(string build);
-	int set_compressed_size(string compressed_size);
-	int set_installed_size(string installed_size);
-	int set_short_description(string short_description);
-	int set_description(string description);
-	int set_changelog(string changelog);
-	int set_packager(string packager);
-	int set_packager_email(string packager_email);
-	void set_available(bool flag = true);
+	vector<FILES>* get_config_files();
+	vector<FILES>* get_files();
+	vector<LOCATION>* get_locations();
+	vector<DEPENDENCY>* get_dependencies();
+	vector<string>* get_tags();
+	string get_scriptdir();
+
+#ifdef ENABLE_INTERNATIONAL
+	vector <DESCTIPTION> * get_descriptions();
+#endif
+	// UI functions
+	string get_fullversion();
+	string get_vstatus(bool color=false);
+
+	// Data writing
+	void set_broken(bool flag=true);
+	void set_requiredVersion(versionData *reqVersion);
+	void set_id(int id);
+	void set_name(string *name);
+	void set_version(string *version);
+	void set_arch(string *arch);
+	void set_build(string *build);
+	void set_compressed_size(string *compressed_size);
+	void set_installed_size(string *installed_size);
+	void set_short_description(string *short_description);
+	void set_description(string *description);
+	void set_changelog(string *changelog);
+	void set_packager(string *packager);
+	void set_packager_email(string *packager_email);
 	void set_installed(bool flag = true);
 	void set_configexist(bool flag = true);
 	void set_action(int new_action);
-	int set_md5(string md5);
-	int set_filename(string filename);
-	int set_err_type(int err);
+	void set_md5(string *md5);
+	void set_filename(string *filename);
+	void set_err_type(int err);
 
-    private:
-	// EXTERNAL DATA //
-	FILE_LIST package_files;
-	FILE_LIST config_files;
-	LOCATION_LIST package_locations;
-	DEPENDENCY_LIST package_dependencies;
-	DESCRIPTION_LIST package_descriptions;
-	TAG_LIST package_tags;
-	SCRIPTS package_scripts;
-    public:
-	DESCRIPTION_LIST* get_descriptions();
-	int set_descriptions(DESCRIPTION_LIST desclist);
-	FILE_LIST* get_config_files();
-	FILE_LIST* get_files();
-	LOCATION_LIST* get_locations();
-	DEPENDENCY_LIST* get_dependencies();
-	TAG_LIST* get_tags();
-	SCRIPTS* get_scripts();
+	void set_config_files(vector<FILES> *conf_files);
+	void set_files(vector<FILES> *files);
+	void set_locations(vector<LOCATION> *locations);
+	void set_dependencies(vector<DEPENDENCY> *dependencies);
+	void set_tags(vector<string> *tags);
 
-	bool operator == (PACKAGE npkg);
-	bool operator != (PACKAGE npkg);
+	void add_dependency(string *package_name, string *dep_condition, string *package_version);
+	void add_file(string *file_name);
+	void add_tag(string *tag);
 
-	int set_config_files(FILE_LIST conf_files);
-	int set_files(FILE_LIST files);
-	int set_locations(LOCATION_LIST locations);
-	int set_dependencies(DEPENDENCY_LIST dependencies);
-	int set_tags(TAG_LIST tags);
-	int set_scripts(SCRIPTS scripts);
+#ifdef ENABLE_INTERNATIONAL
+	void set_descriptions(vector <DESCRIPTION> *desclist);
+#endif
 
-	int add_dependency(string package_name, string dep_condition, string package_version);
-	int add_file(string file_name);
-	int add_tag(string tag);
 
-	// CLASS ROUTINES //
-	void destroy();
+	// Internal structure methods
+	void sortLocations();
+	void clearVersioning();
+	void sync();
+	
+	// Empty, clear, etc
 	void clear();
 	bool IsEmpty();
-	void sync();
+	
+	// Constructor & destructor
 	PACKAGE();
 	~PACKAGE();
 };
-class cloneList
-{
-	public:
-		vector<int>whoHasClones_IDs; 	// Список объектов, имеющих клоны
-		vector< vector<int> >objectCloneListID; 	// Список клонов каждого объекта
-		vector<int>masterCloneID;	// ID клона, имеющего максимальную версию.
-		vector<int>installedCloneID;	// ID установленного клона. Если такого нету, ставится равным -1
-
-		//cloneList(PACKAGE_LIST *pkgList); // Конструктор, здесь создается каталог клонов
-		cloneList();
-		bool initialized;
-		void init(vector<PACKAGE> &pkgList);
-		~cloneList();
-		int getCloneID(int testID);
-};
-
 class PACKAGE_LIST
 {
     private:
@@ -550,50 +315,40 @@ class PACKAGE_LIST
 	bool priorityInitialized;
 	void sortByPriority(bool reverse_order=false);
 	void buildDependencyOrder();
-	int getPackageNumberByName(string name);
+	int getPackageNumberByName(string *name);
 	double totalCompressedSize();
 	double totalInstalledSize();
 	double totalInstalledSizeByAction(int select_action);
 	double totalCompressedSizeByAction(int select_action);
 	bool hasInstalledOnes();
-	PACKAGE getInstalledOne();
-	PACKAGE getMaxVersion();
+	PACKAGE *getInstalledOne();
+	PACKAGE *getMaxVersion();
 	bool versioningInitialized;
 	PACKAGE* get_package(int num);
-	int set_package(int num, PACKAGE package);
-	bool operator != (PACKAGE_LIST nlist);
-	bool operator == (PACKAGE_LIST nlist);
-	bool operator += (PACKAGE_LIST pkgList);
-	PACKAGE* operator [] (int num);
-	PACKAGE_LIST operator + (PACKAGE_LIST pkgList2);
-	int add(PACKAGE package);
-	int add(PACKAGE *package);
-	int add(PACKAGE_LIST *pkgList);
-	int add(PACKAGE_LIST pkgList);
-	int add_list(PACKAGE_LIST *pkgList, bool skip_identical=true);
+	void set_package(int num, PACKAGE* package);
+	bool equalTo(PACKAGE_LIST *nlist);
+	void add(PACKAGE *package);
+	void push_back(PACKAGE_LIST plist);
+	void add(PACKAGE_LIST *pkgList);
+	void add_list(PACKAGE_LIST *pkgList, bool skip_identical=true);
 	void clear(unsigned int new_size = 0);
 	bool IsEmpty();
 	int size();
 	void set_size(unsigned int new_size);
-	int getPackageNumberByMD5(string md5);		// return number (NOT package ID!) of package in vector (if found). Else, returns -1.
-	int getMaxVersionID(string package_name); // Return package ID
-	int getMaxVersionNumber(string package_name);	// Return package number (in array)
+	int getPackageNumberByMD5(string* md5);		// return number (NOT package ID!) of package in vector (if found). Else, returns -1.
+	int getMaxVersionID(string* package_name); // Return package ID
+	int getMaxVersionNumber(string* package_name);	// Return package number (in array)
 
-	PACKAGE findMaxVersion();
-	DEPENDENCY_LIST getDepList(int i);
-	void destroy();
+	PACKAGE *findMaxVersion();
+	vector<DEPENDENCY>* getDepList(int i);
 	void initVersioning();
 	void clearVersioning();
-	//int getCloneID(int testID);
-	//cloneList cList;
 	PACKAGE_LIST();
 	~PACKAGE_LIST();
 };
 
-
-typedef int RESULT;
-bool meetVersion(versionData condition, string packageVersion);
+bool meetVersion(versionData *condition, string *packageVersion);
+int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id);
 
 #endif //DATAUNITS_H_
 
-int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id);

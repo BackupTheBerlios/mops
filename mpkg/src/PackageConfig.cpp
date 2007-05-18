@@ -1,20 +1,19 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.14 2007/05/17 15:12:36 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.15 2007/05/18 07:35:33 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
 #include "debug.h"
 using namespace std;
 
-//TODO: Add check for text!!!!!!!!!
 PackageConfig::PackageConfig(string _f)
 {
 retry:
 	parseOk = true;
 	XMLResults xmlErrCode;
 	this->fileName = _f;
-	_node = XMLNode::parseFile(fileName.c_str(), "PACKAGE", &xmlErrCode);
+	_node = XMLNode::parseFile(fileName.c_str(), "package", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
 		mError("XML parse error while extracting metadata of package " + fileName);
@@ -38,10 +37,10 @@ retry:
 	}
 }
 
-PackageConfig::PackageConfig(XMLNode rootnode)
+PackageConfig::PackageConfig(XMLNode *rootnode)
 {
 	parseOk = true;
-	_node = rootnode;
+	_node = *rootnode;
 }
 
 PackageConfig::~PackageConfig()
@@ -118,6 +117,7 @@ string PackageConfig::getChangelog()
 	else return "";
 }
 
+#
 string PackageConfig::getDescription(string lang)
 {
 	if (_node.nChildNode("description")!=0)
@@ -154,11 +154,11 @@ string PackageConfig::getDescriptionI(int num)
 	else return "";
 }
 
-
-DESCRIPTION_LIST PackageConfig::getDescriptions()
+#ifdef ENABLE_INTERNATIONAL
+vector<DESCRIPTION> PackageConfig::getDescriptions()
 {
 	DESCRIPTION desc;
-	DESCRIPTION_LIST descriptions;
+	vector<DESCRIPTION> descriptions;
 	
 	for (int i=0; i<_node.nChildNode("description"); i++)
 	{
@@ -172,11 +172,11 @@ DESCRIPTION_LIST PackageConfig::getDescriptions()
 					desc.set_shorttext((string )_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).getText());
 			}
 		}
-		descriptions.add(desc);
+		descriptions.push_back(desc);
 	}
 	return descriptions;
 }
-		
+#endif	
 	
 
 string PackageConfig::getShortDescription(string lang)
@@ -214,6 +214,7 @@ string PackageConfig::getShortDescriptionI(int num)
 	else return "";
 }
 
+#ifdef ENABLE_INTERNATIONAL
 vector<string> PackageConfig::getShortDescriptions()
 {
 	vector<string> descriptions;
@@ -223,7 +224,7 @@ vector<string> PackageConfig::getShortDescriptions()
 	}
 	return descriptions;
 }
-
+#endif
 string PackageConfig::getDependencyName(int dep_num)
 {
 	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \

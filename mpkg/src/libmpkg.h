@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.19 2007/05/16 16:49:22 i27249 Exp $
+ * $Id: libmpkg.h,v 1.20 2007/05/18 07:35:33 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -126,7 +126,7 @@ class mpkg
 		 * @@*/
 
 		// Package list retrieving
-		int get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=true, bool ultraFast=false);
+		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=true, bool ultraFast=false);
 		/* get_packagelist(SQLRecord, PACKAGE_LIST *, bool):
 		 * Fills the packagelist by packages who meets sqlSearch requirements.
 		 * To use this, you should define sqlSearch first. See documentation about an SQLRecord object.
@@ -138,9 +138,6 @@ class mpkg
 
 		// Dependency tree
 		int getDependencyTree(PACKAGE_LIST *tree);
-		// Server data retrieving
-		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);
-		int get_server(int server_id, SERVER *server);
 
 		// Configuration and settings: retrieving
 		vector<string> get_repositorylist();

@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.15 2007/05/17 15:12:36 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.16 2007/05/18 07:35:33 i27249 Exp $
  ************************************************************************************/
 
 
@@ -24,16 +24,16 @@ class SQLiteDB
 		bool initOk;
 		string sqlErrMsg;
 		string lastSQLQuery;
-		RESULT sql_exec (string sql_query);
+		int sql_exec (string sql_query);
 		int initDatabaseStructure();
 		bool CheckDatabaseIntegrity(); // Checks database integrity
-		RESULT get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table
+		int get_sql_table (string *sql_query, char ***table, int *rows, int *cols); // fills table
 		sqlite3 *db; //Database is open all the time during work (added: aix27249, for optimization reasons)
 	public:
 		vector<string> getFieldNames(string table_name);
 		int getLastError();
 		string getLastErrMsg();
-		RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+		int get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
 		int init();
 		int sqlBegin();
 		int sqlCommit();
@@ -59,7 +59,7 @@ class SQLProxy
 		int getLastError();
 		string getLastErrMsg();
 		int clear_table(string table_name);
-		RESULT get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+		int get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
 		int sql_insert(string table_name, SQLRecord values);
 		int sql_insert(string table_name, SQLTable values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);

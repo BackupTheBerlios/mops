@@ -1,3 +1,11 @@
+----------------------------------------------------------------------
+--
+--	MOPSLinux package system
+--	Database creation script
+--	$Id: create_database.sql,v 1.12 2007/05/18 07:35:33 i27249 Exp $
+--
+----------------------------------------------------------------------
+
 create table packages (
 	package_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	package_name TEXT NOT NULL,
@@ -21,15 +29,6 @@ create table packages (
 create index ppname on packages (package_name);
 create index ppaction on packages(package_action);
 
-create table scripts (
-	script_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	packages_package_id INTEGER NOT NULL,
-	preinstall TEXT NOT NULL DEFAULT '#!/bin/sh',
-	postinstall TEXT NOT NULL DEFAULT '#!/bin/sh',
-	preremove TEXT NOT NULL DEFAULT '#!/bin/sh',
-	postremove TEXT NOT NULL DEFAULT '#!/bin/sh'
-);
-
 create table files (
 	file_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	file_name TEXT NOT NULL,
@@ -51,30 +50,13 @@ create table conflicts (
 create table locations (
 	location_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	packages_package_id INTEGER NOT NULL,
-	servers_server_id INTEGER NOT NULL,
+	server_url TEXT NOT NULL,
 	location_path TEXT NOT NULL
 );
 create index locpid on locations(packages_package_id);
-create table servers (
-	server_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	server_url TEXT NOT NULL,
-	server_priority INTEGER NOT NULL DEFAULT '1' 
-);
-
 create table tags (
 	tags_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 	tags_name TEXT NOT NULL
-);
-
-create table server_tags (
-	server_tag_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	server_tag_name TEXT NOT NULL
-);
-
-create table server_tags_links (
-	server_tags_link_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-	servers_server_id INTEGER NOT NULL,
-	server_tags_server_tag_id INTEGER NOT NULL
 );
 
 create table tags_links (

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.18 2007/05/17 15:12:36 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.19 2007/05/18 07:35:33 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -174,17 +174,14 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		SQLRecord sqlSearch;
-		PACKAGE_LIST pkgList;
-		core.get_packagelist(sqlSearch, &pkgList,false);
-		say("total %d packages\n", pkgList.size());
-		pkgList.initVersioning();
-		pkgList.buildDependencyOrder();
-		for (int i=0; i<pkgList.size(); i++)
+		string tmp;
+		string a = "adjlaskjdlasjdla apwiugh;tsjf avnoweeabyvw;obyv;awevyawv;rborybvowefhwo<;hfwou<o;fh<wiugfzhwfe;iafjz<eh;wgfh;s<.wegfuh;w<ef";
+		string b = "adjlaskjdlasjdla apwiugh;tsjf avnoweeabyvw;yv;awevyawv;rborybvowefhwo<;hfwou<o;fh<w'iugfzhwfe;iafjz<eh;wgfh;s<'.wegfuh;w<ef";
+	
+		for (unsigned long i=0; i<1000000; i++)
 		{
-			say("%s: %d\n", pkgList.get_package(i)->get_name().c_str(), pkgList.get_package(i)->priority);
+			tmp=PrepareSql(&a);
 		}
-		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_REMOVE)

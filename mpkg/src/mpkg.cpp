@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.77 2007/05/17 15:12:36 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.78 2007/05/18 07:35:33 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -21,14 +21,14 @@ int mpkgDatabase::sqlFlush()
 	return db.sqlFlush();
 }
 
-PACKAGE mpkgDatabase::get_installed_package(string pkg_name)
+PACKAGE mpkgDatabase::get_installed_package(string* pkg_name)
 {
 	PACKAGE_LIST packagelist;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", pkg_name);
-	sqlSearch.addField("package_installed", IntToStr(ST_INSTALLED));
+	sqlSearch.addField("package_installed", ST_INSTALLED);
 
-	get_packagelist(sqlSearch, &packagelist);
+	get_packagelist(&sqlSearch, &packagelist);
 	// We do NOT allow multiple packages with same name to be installed, so, we simply get first package of list.
 	
 	if (packagelist.size()>0)

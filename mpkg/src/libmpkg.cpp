@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.30 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.31 2007/05/18 07:35:33 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -141,7 +141,7 @@ int mpkg::clean_cache()
 }
 
 // Package list retrieving
-int mpkg::get_packagelist(SQLRecord sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
+int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
 	currentStatus = "Retrieving package list...";
 	int ret = db->get_packagelist(sqlSearch, packagelist, GetExtraInfo, ultraFast);

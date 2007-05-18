@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.42 2007/05/17 15:12:36 i27249 Exp $
+$Id: local_package.cpp,v 1.43 2007/05/18 07:35:33 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -126,7 +126,7 @@ string LocalPackage::files2xml(string input)
 int LocalPackage::fill_scripts(PACKAGE *package)
 {
 	mDebug("get_scripts start");
-	string scripts_dir=SCRIPTS_DIR+"/" + package->get_filename() + "_" + package->get_md5();
+	string scripts_dir=SCRIPTS_DIR+"/" + *package->get_filename() + "_" + *package->get_md5();
 	string tmp_preinstall=scripts_dir+"/preinstall.sh";
 	string tmp_postinstall=scripts_dir+"/doinst.sh";
 	string tmp_preremove=scripts_dir+"/preremove.sh";
@@ -134,7 +134,7 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	string mkdir_pkg="mkdir -p "+scripts_dir+" 2>/dev/null";
 	system(mkdir_pkg.c_str());
 	string sys_cache=SYS_CACHE;
-	string filename=sys_cache+package->get_filename();
+	string filename=sys_cache + *package->get_filename();
 	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
 	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+ tmp_postinstall + " 2>/dev/null";
 	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
@@ -145,10 +145,6 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	system(sys_preremove.c_str());
 	system(sys_postremove.c_str());
 
-	package->get_scripts()->set_preinstall(tmp_preinstall);
-	package->get_scripts()->set_postinstall(tmp_postinstall);
-	package->get_scripts()->set_preremove(tmp_preremove);
-	package->get_scripts()->set_postremove(tmp_postremove);
 	return 0;
 }
 
@@ -178,10 +174,6 @@ int LocalPackage::get_scripts()
 	string str_preremove=ReadFile(tmp_preremove);
 	string str_postremove=ReadFile(tmp_postremove);
 
-	if (!str_preinstall.empty()) data.get_scripts()->set_preinstall(str_preinstall);
-	if (!str_postinstall.empty()) data.get_scripts()->set_postinstall(str_postinstall);
-	if (!str_preremove.empty()) data.get_scripts()->set_preremove(str_preremove);
-	if (!str_postremove.empty()) data.get_scripts()->set_postremove(str_postremove);
 	return 0;
 }
 
@@ -210,22 +202,22 @@ int LocalPackage::get_xml()
 	}
 	_packageXMLNode = p.getXMLNode(); // To be indexing work
 
-	data.set_name(p.getName());
-	data.set_version(p.getVersion());
-	data.set_arch(p.getArch());
-	data.set_build(p.getBuild());
-	data.set_packager(p.getAuthorName());
-	data.set_packager_email(p.getAuthorEmail());
-	data.set_description(p.getDescription());
-	data.set_short_description(p.getShortDescription());
-	data.set_changelog(p.getChangelog());
+	*data.get_name()=p.getName();
+	*data.get_version()=p.getVersion();
+	*data.get_arch()=p.getArch();
+	*data.get_build()=p.getBuild();
+	*data.get_packager()=p.getAuthorName();
+	*data.get_packager_email()=p.getAuthorEmail();
+	*data.get_description()=p.getDescription();
+	*data.get_short_description()=p.getShortDescription();
+	*data.get_changelog()=p.getChangelog();
 	
+#ifdef ENABLE_INTERNATIONAL
 	// This line enables international descriptions
-	data.set_descriptions(p.getDescriptions());
-	
+	data.get_descriptions(&p.getDescriptions());
+#endif	
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
-	TAG tag_tmp;
 
 	vector<string> vec_tmp_names;
 	vector<string> vec_tmp_conditions;
@@ -237,11 +229,11 @@ int LocalPackage::get_xml()
 
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		dep_tmp.set_package_name(vec_tmp_names[i]);
-		dep_tmp.set_package_version(vec_tmp_versions[i]);
-		dep_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
-		dep_tmp.set_type("DEPENDENCY");
-		data.get_dependencies()->add(dep_tmp);
+		dep_tmp.set_package_name(&vec_tmp_names[i]);
+		dep_tmp.set_package_version(&vec_tmp_versions[i]);
+		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*dep_tmp.get_type()==(string) "DEPENDENCY";
+		data.get_dependencies()->push_back(dep_tmp);
 		dep_tmp.clear();
 	}
 	vec_tmp_names=p.getSuggestNames();
@@ -250,28 +242,27 @@ int LocalPackage::get_xml()
 
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		suggest_tmp.set_package_name(vec_tmp_names[i]);
-		suggest_tmp.set_package_version(vec_tmp_versions[i]);
-		suggest_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
-		suggest_tmp.set_type("SUGGEST");
-		data.get_dependencies()->add(suggest_tmp);
+		suggest_tmp.set_package_name(&vec_tmp_names[i]);
+		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
+		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*suggest_tmp.get_type()=(string) "SUGGEST";
+		data.get_dependencies()->push_back(suggest_tmp);
 		suggest_tmp.clear();
 	}
 
 	vec_tmp_names=p.getTags();
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		tag_tmp.set_name(vec_tmp_names[i]);
-		data.get_tags()->add(tag_tmp);
-		tag_tmp.clear();
+		data.get_tags()->push_back(vec_tmp_names[i]);
 	}
 
 	vec_tmp_names=p.getConfigFilelist();
 	FILES configfile_tmp;
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
 	{
-		configfile_tmp.set_name(vec_tmp_names[i]);
-		data.get_config_files()->add(configfile_tmp);
+		configfile_tmp.set_name(&vec_tmp_names[i]);
+		configfile_tmp.set_type(FTYPE_CONFIG);
+		data.get_config_files()->push_back(configfile_tmp);
 	}
 	vec_tmp_names.clear();
 	vec_tmp_conditions.clear();
@@ -283,8 +274,6 @@ int LocalPackage::get_xml()
 int LocalPackage::fill_filelist(PACKAGE *package)
 {
 	mDebug("fill_filelist start");
-//#define OLD_FILELIST
-#ifndef OLD_FILELIST
 	FILES file_tmp;
 	// Retrieving regular files
 	string fname=get_tmp_file();
@@ -293,49 +282,21 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 	vector<string>file_names=ReadFileStrings(fname);
 	for (unsigned int i=2; i<file_names.size(); i++)
 	{
-		file_tmp.set_name(file_names[i]);
-		package->get_files()->add(file_tmp);
+		file_tmp.set_name(&file_names[i]);
+		package->get_files()->push_back(file_tmp);
 	}
 	// Retrieving symlinks (from doinst.sh)
 	string lnfname=get_tmp_file();
 	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < " + \
-			  package->get_scripts()->get_postinstall() + \
-			  " > "+lnfname;
+			  package->get_scriptdir() + "/doinst.sh > "+lnfname;
 	system(sed_cmd.c_str());
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)
 	{
-		file_tmp.set_name(link_names[i]);
-		package->get_files()->add(file_tmp);
+		file_tmp.set_name(&link_names[i]);
+		package->get_files()->push_back(file_tmp);
 	}
 	return 0;
-#endif
-
-
-#ifdef OLD_FILELIST
-	mDebug("fill_filelist start");
-	string tmp_flist=get_tmp_file();
-	string tmp_xml_flist=get_tmp_file();
-	FILES file_tmp;
-	//currentStatus = "["+package->get_name()+"] Creating flist node...";
-	CreateFlistNode(tmp_flist, tmp_xml_flist);
-	PackageConfig ftree(tmp_xml_flist);
-	if (!ftree.parseOk) return -100;
-	//currentStatus = "["+package->get_name()+"] Created PackageConfig object";
-	vector <string> vec_tmp_names=ftree.getFilelist();
-	//currentStatus = "["+package->get_name()+"] Vector build complete";
-	for (unsigned int i=2;i<vec_tmp_names.size();i++)
-	{
-		//currentProgress = i;
-		file_tmp.set_name(vec_tmp_names[i]);
-		package->get_files()->add(file_tmp);
-	}
-	//currentStatus = "["+package->get_name()+"] Adding files complete";
-	vec_tmp_names.clear();
-	mDebug("fill_filelist end");
-	package->sync();
-	return 0;
-#endif
 }
 
 
@@ -354,8 +315,8 @@ int LocalPackage::get_filelist()
 	{
 		_packageXMLNode.getChildNode("filelist").addChild("file");
 		_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
-		file_tmp.set_name(vec_tmp_names[i]);
-		data.get_files()->add(file_tmp);
+		file_tmp.set_name(&vec_tmp_names[i]);
+		data.get_files()->push_back(file_tmp);
 	}
 	vec_tmp_names.clear();
 	data.sync();
@@ -377,7 +338,7 @@ int LocalPackage::create_md5()
 		mError("Unable to read md5 temp file");
 		return 1;
 	}
-	data.set_md5(md5str);
+	data.set_md5(&md5str);
 	_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
 	mDebug("create_md5 end");
@@ -418,8 +379,8 @@ int LocalPackage::get_size()
 	csize=c_size;
 	string isize;
 	isize=i_size;
-	data.set_compressed_size(csize);
-	data.set_installed_size(isize);
+	data.set_compressed_size(&csize);
+	data.set_installed_size(&isize);
 	_packageXMLNode.addChild("compressed_size");
 	_packageXMLNode.getChildNode("compressed_size").addText(csize.c_str());
 	_packageXMLNode.addChild("installed_size");
@@ -431,14 +392,14 @@ int LocalPackage::get_size()
 int LocalPackage::set_additional_data()
 {
 	LOCATION location;
-	SERVER server;
 	location.set_local();
 	char pwd[MAXPATHLEN];
 	getcwd(pwd, MAXPATHLEN);
 	string fpath;
 	string fname;
 	int fname_start=0;
-	for(int i=data.get_filename().length()-1;i>=0 && data.get_filename()[i]!='/'; i--)
+	// OMG@@@!!!
+	for(int i=data.get_filename()->length()-1;i>=0 && data.get_filename()->at(i)!='/'; i--)
 	{
 		fname_start=i;
 	}
@@ -447,11 +408,11 @@ int LocalPackage::set_additional_data()
 
 		for (int i=0;i<fname_start;i++)
 		{
-			fpath+=data.get_filename()[i];
+			fpath+=data.get_filename()->at(i);
 		}
-		for (unsigned int i=fname_start;i<data.get_filename().length();i++)
+		for (unsigned int i=fname_start;i<data.get_filename()->length();i++)
 		{
-			fname+=data.get_filename()[i];
+			fname+=data.get_filename()->at(i);
 		}
 	}
 	mDebug("filename: "+fname);
@@ -464,13 +425,12 @@ int LocalPackage::set_additional_data()
 	}
 	else ffname=fpath;
 	mDebug("file path: "+ffname);
-	data.set_filename(fname);
-	server.set_url("local://");
-	location.set_server(server);
-	location.set_path(ffname);
-	data.get_locations()->add(location);
+	data.set_filename(&fname);
+	*location.get_server_url()=(string) "local://";
+	location.set_path(&ffname);
+	data.get_locations()->push_back(location);
 	_packageXMLNode.addChild("filename");
-	_packageXMLNode.getChildNode("filename").addText(data.get_filename().c_str());
+	_packageXMLNode.getChildNode("filename").addText(data.get_filename()->c_str());
 	_packageXMLNode.addChild("location");
 	_packageXMLNode.getChildNode("location").addText(fpath.c_str());
 
@@ -499,8 +459,9 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	FILES configfile_tmp;
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
 	{
-		configfile_tmp.set_name(vec_tmp_names[i]);
-		package->get_config_files()->add(configfile_tmp);
+		configfile_tmp.set_name(&vec_tmp_names[i]);
+		configfile_tmp.set_type(FTYPE_CONFIG);
+		package->get_config_files()->push_back(configfile_tmp);
 	}
 	vec_tmp_names.clear();
 	package->sync();
@@ -534,7 +495,7 @@ int LocalPackage::injectFile(bool index)
 	}
 	mDebug("set_additional_data\n");
 	mDebug("local_packaige.cpp: injectFile(): filename is "+ filename);
-	data.set_filename(filename);
+	data.set_filename(&filename);
 	
 	if (!index)
 	{

@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.33 2007/05/17 15:12:36 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.34 2007/05/18 07:35:33 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -43,7 +43,7 @@ int SQLiteDB::clear_table(string table_name)
 	return sql_exec(exec);
 }
 int get_sql_table_counter=0;
-RESULT SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
+int SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
 	get_sql_table_counter++;
 	char *errmsg=0;
@@ -105,7 +105,7 @@ int SQLiteDB::init()
 	return ret;
 
 }
-RESULT SQLiteDB::sql_exec (string sql_query)
+int SQLiteDB::sql_exec (string sql_query)
 {
 #ifdef _SQL_DEBUG_
 	mDebug("sql_exec: "+sql_query);
@@ -143,7 +143,7 @@ long long int SQLProxy::getLastID()
 	return sqliteDB.getLastID();
 }
 
-RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
+int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
 	string sql_query;
 	string sql_action;
@@ -161,7 +161,7 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 	if (fields.empty()) // If fields is empty, just get all fields
 	{
 		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
-		for (unsigned int i=0;i<fieldnames.size();i++)
+		for (unsigned int i=0; i<fieldnames.size(); i++)
 			fields.addField(fieldnames[i]);
 	}
 	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
@@ -186,7 +186,7 @@ RESULT SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table
 		}
 		else
 		{
-			for (int i=0;i<search.size();i++)
+			for (int i=0; i<search.size(); i++)
 			{
 				if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
 				if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
@@ -539,7 +539,7 @@ string SQLProxy::getLastErrMsg()
 	return sqliteDB.getLastErrMsg();
 }
 
-RESULT SQLProxy::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
+int SQLProxy::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
 	return sqliteDB.get_sql_vtable(output, fields, table_name, search);
 }

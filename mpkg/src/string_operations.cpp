@@ -1,12 +1,31 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.10 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.11 2007/05/18 07:35:33 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+void PrepareSql(string *str)
+{
+	if (str->empty())
+	{
+		*str="0";
+		return;
+	}
+	if (str->find("\'")==std::string::npos) return;
+	int last_pos=0;
+	int offset = 0;
+	while (offset<str->length())
+	{
+		last_pos=str->substr(offset).find_first_of("\'");
+		if (last_pos!=std::string::npos) str->insert(last_pos+offset, "\'");
+		else return;
+		offset = offset + last_pos + 2;
+	}
+	
+}
 
 // Helpful function ))
 string IntToStr(int num)

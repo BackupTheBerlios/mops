@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.9 2007/03/22 16:40:10 i27249 Exp $
+ *	$Id: core.h,v 1.10 2007/05/18 07:35:33 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -37,15 +37,17 @@ class SQLRecord
 		bool empty();
 		void clear();
 		vector<string> getRecordValues();
-		string getFieldName(unsigned int num);
-		string getValue(string fieldname);
-		string getValueI(unsigned int num);
+		string* getFieldName(unsigned int num);
+		string* getValue(string fieldname);
+		string* getValueI(unsigned int num);
 		void setSearchMode(int mode);
 		int getSearchMode();
 		void setEqMode(int mode);
 		int getEqMode();
-		int addField(string filename, string value="");
-		bool setValue(string fieldname, string value);
+		void addField(string fieldname, string *value);
+		void addField(string fieldname, int value);
+		void addField(string fieldname);
+		bool setValue(string fieldname, string *value);
 
 		SQLRecord();
 		~SQLRecord();
@@ -57,15 +59,15 @@ class SQLTable
 		vector<SQLRecord> table;
 	public:
 		int getRecordCount(); 	// returns record count
+		int size();
 		bool empty();		// returns TRUE if table is empty (record count = 0), otherwise returns false
 		void clear();		// clears table
-		string getValue (unsigned int num, string fieldname);	// returns value of field called fieldname in num record
-		SQLRecord getRecord(unsigned int num);
+		string* getValue (unsigned int num, string fieldname);	// returns value of field called fieldname in num record
+		SQLRecord* getRecord(unsigned int num);
 
-		void addRecord(SQLRecord record);
+		void addRecord(SQLRecord* record);
 		SQLTable();
 		~SQLTable();
-		// TODO!!!
 };
 
 

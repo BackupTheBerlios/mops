@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.8 2007/03/28 14:39:58 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.9 2007/05/18 07:35:33 i27249 Exp $
  *
  * **********************************************************/
 
@@ -26,7 +26,7 @@ class PackageConfig
 {
 public:
 	PackageConfig(string _f);
-	PackageConfig(XMLNode rootnode);
+	PackageConfig(XMLNode *rootnode);
 	~PackageConfig();
 
 	string getName(void);
@@ -41,12 +41,15 @@ public:
 	string getSuggestCondition(int suggest_num);
 	string getSuggestVersion(int suggest_num);
 
+
 	string getDescription(string lang="");
 	string getDescriptionI(int num=0);
 	string getShortDescription(string lang="");
 	string getShortDescriptionI(int num=0);
-	DESCRIPTION_LIST getDescriptions();
+#ifdef ENABLE_INTERNATIONAL
+	vector<DESCRIPTION> getDescriptions();
 	vector<string>getShortDescriptions();
+#endif
 
 	string getDependencyName(int dep_num);
 	string getDependencyCondition(int dep_num);
