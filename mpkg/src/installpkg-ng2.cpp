@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.19 2007/05/18 07:35:33 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.20 2007/05/18 10:22:09 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -145,11 +145,11 @@ int main (int argc, char **argv)
 		PACKAGE_LIST tmp;
 		SQLRecord sqlSearch;
 		sqlSearch.setSearchMode(SEARCH_OR);
-		sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-		sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
-		sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+		sqlSearch.addField("package_action", ST_INSTALL);
+		sqlSearch.addField("package_action", ST_REMOVE);
+		sqlSearch.addField("package_action", ST_PURGE);
 
-		core.get_packagelist(sqlSearch, &tmp, false, true);
+		core.get_packagelist(&sqlSearch, &tmp, false, true);
 		for (int i=0; i<tmp.size(); i++)
 		{
 			core.unqueue(tmp.get_package(i)->get_id());
@@ -174,14 +174,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		string tmp;
-		string a = "adjlaskjdlasjdla apwiugh;tsjf avnoweeabyvw;obyv;awevyawv;rborybvowefhwo<;hfwou<o;fh<wiugfzhwfe;iafjz<eh;wgfh;s<.wegfuh;w<ef";
-		string b = "adjlaskjdlasjdla apwiugh;tsjf avnoweeabyvw;yv;awevyawv;rborybvowefhwo<;hfwou<o;fh<w'iugfzhwfe;iafjz<eh;wgfh;s<'.wegfuh;w<ef";
-	
-		for (unsigned long i=0; i<1000000; i++)
-		{
-			tmp=PrepareSql(&a);
-		}
+		mError("No tests for now");
 		return 0;
 	}
 	if (action == ACT_REMOVE)
@@ -320,7 +313,7 @@ int main (int argc, char **argv)
 		say("Next packages will be installed:\n");
 		for (int i=0;i<core.DepTracker->get_install_list()->size();i++)
 		{
-			say("%s\n", core.DepTracker->get_install_list()->get_package(i)->get_name(false).c_str());
+			say("%s\n", core.DepTracker->get_install_list()->get_package(i)->get_name()->c_str());
 		}
 	}
 
@@ -329,7 +322,7 @@ int main (int argc, char **argv)
 		say("\nNext packages will be removed:\n");
 		for (int i=0;i<core.DepTracker->get_remove_list()->size();i++)
 		{
-			say("%s\n", core.DepTracker->get_remove_list()->get_package(i)->get_name(false).c_str());
+			say("%s\n", core.DepTracker->get_remove_list()->get_package(i)->get_name()->c_str());
 		}
 	}
 
@@ -339,7 +332,7 @@ int main (int argc, char **argv)
 		say("Next packages is failed to install:\n");
 		for (int i=0;i<core.DepTracker->get_failure_list()->size();i++)
 		{
-			say("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name(false).c_str());
+			say("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name()->c_str());
 			//core.DepTracker->PrintFailure(core.DepTracker->get_failure_list()->get_package(i));
 		}
 	}
@@ -398,18 +391,18 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		sqlSearch.setEqMode(EQ_LIKE);
 		for (unsigned int i=0; i<search.size(); i++)
 		{
-			sqlSearch.addField("package_name", search[i]);
+			sqlSearch.addField("package_name", &search[i]);
 		}
 	}
 	if (onlyQueue)
 	{
 		sqlSearch.setSearchMode(SEARCH_OR);
-		sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-		sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
-		sqlSearch.addField("package_action", IntToStr(ST_PURGE));
+		sqlSearch.addField("package_action", ST_INSTALL);
+		sqlSearch.addField("package_action", ST_REMOVE);
+		sqlSearch.addField("package_action", ST_PURGE);
 	}
 
-	core->get_packagelist(sqlSearch, &pkglist, false, true);
+	core->get_packagelist(&sqlSearch, &pkglist, false, true);
 	if (pkglist.IsEmpty())
 	{
 		if (!search.empty()) say("Package database is empty\n");
@@ -422,11 +415,11 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		{
 			say("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
 			say("%s-%s-%s-%s\t(%s)\n", \
-				pkglist.get_package(i)->get_name().c_str(), \
-				pkglist.get_package(i)->get_version().c_str(), \
-				pkglist.get_package(i)->get_arch().c_str(), \
-				pkglist.get_package(i)->get_build().c_str(), \
-				pkglist.get_package(i)->get_short_description().c_str());
+				pkglist.get_package(i)->get_name()->c_str(), \
+				pkglist.get_package(i)->get_version()->c_str(), \
+				pkglist.get_package(i)->get_arch()->c_str(), \
+				pkglist.get_package(i)->get_build()->c_str(), \
+				pkglist.get_package(i)->get_short_description()->c_str());
 		}
 	}
 	return 0;

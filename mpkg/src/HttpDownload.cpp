@@ -172,6 +172,7 @@ copy_file:
 
 DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
+	mDebug("Downloading " + url + " to " + file);
 	string dir = file.substr(0,file.find_last_of("/"));
 	dir = "mkdir -p "+dir;
 	system(dir.c_str());
@@ -361,9 +362,10 @@ process:
 						}
 						else
 						{
+							mDebug("Trying to download via CURL");
 							fseek(out,0,SEEK_END);
 							if (size!=0) say("Resuming download from %d\n", size);
-							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
+							//curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);

@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.34 2007/05/18 07:35:33 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.35 2007/05/18 10:22:09 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -14,13 +14,9 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies limit 1;")!=0 || \
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files limit 1;")!=0 || \
 			sql_exec("select conflict_id, conflict_file_name, backup_file, conflicted_package_id from conflicts limit 1;")!=0 || \
-			sql_exec("select location_id, packages_package_id, servers_server_id, location_path from locations limit 1;")!=0 || \
-			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_available, package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
-			sql_exec("select server_tag_id, server_tag_name from server_tags limit 1;")!=0 || \
-			sql_exec("select server_tags_link_id, servers_server_id, server_tags_server_tag_id from server_tags_links limit 1;")!=0 || \
-			sql_exec("select server_id, server_url, server_priority from servers limit 1;")!=0 || \
+			sql_exec("select location_id, packages_package_id, server_url, location_path from locations limit 1;")!=0 || \
+			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
 			sql_exec("select tags_id, tags_name from tags limit 1;")!=0 || \
-			sql_exec("select script_id, packages_package_id, preinstall, postinstall, preremove, postremove from scripts limit 1;")!=0 || \
 			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links limit 1;")!=0)// || \
 			sql_exec("select description_id, packages_package_id, description_language, description_text, short_description_text from descriptions limit 1;")!=0 || \
 			sql_exec("select changelog_id, packages_package_id, changelog_language, changelog_text from changelogs limit 1;")!=0 || \
@@ -160,13 +156,15 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 	// Get what?
 	if (fields.empty()) // If fields is empty, just get all fields
 	{
+		mDebug("Fields empty");
 		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
 		for (unsigned int i=0; i<fieldnames.size(); i++)
 			fields.addField(fieldnames[i]);
+		mDebug("empty fields built correctly");
 	}
 	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
 	{
-		sql_fields+=fields.getFieldName(i);
+		sql_fields+=*fields.getFieldName(i);
 		if (i!=fields.size()-1) sql_fields+=", ";
 	}
 
@@ -176,10 +174,10 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 		sql_where="where ";
 		if (search.getSearchMode()==SEARCH_IN)
 		{
-			sql_where += search.getFieldName(0) + " in (";
+			sql_where += *search.getFieldName(0) + " in (";
 			for (int i=0; i<search.size(); i++)
 			{
-				sql_where += "'"+search.getValueI(i)+"'";
+				sql_where += "'" + *search.getValueI(i)+"'";
 				if (i!=search.size()-1) sql_where+=", ";
 			}
 			sql_where += ")";
@@ -188,8 +186,8 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 		{
 			for (int i=0; i<search.size(); i++)
 			{
-				if (search.getEqMode()!=EQ_LIKE) sql_where+=search.getFieldName(i) + "='"+search.getValueI(i)+"'";
-				if (search.getEqMode()==EQ_LIKE) sql_where+=search.getFieldName(i) + " like '%"+search.getValueI(i)+"%'";
+				if (search.getEqMode()!=EQ_LIKE) sql_where += *search.getFieldName(i) + "='" + *search.getValueI(i)+"'";
+				if (search.getEqMode()==EQ_LIKE) sql_where+= *search.getFieldName(i) + " like '%" + *search.getValueI(i)+"%'";
 				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
 				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
 			}
@@ -197,7 +195,7 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 	}
 
 	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str()+";";
-	
+	mDebug("built sql query");
 	lastSQLQuery=sql_query;
 
 	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
@@ -212,10 +210,10 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
 			{
-				row.setValue(fields.getFieldName(field_num), (string) table[value_pos]);
+				*row.getValue(*fields.getFieldName(field_num)) = (string) table[value_pos];
 				field_num++;
 			}
-			output->addRecord(row);
+			output->addRecord(&row);
 		}
 		sqlite3_free_table(table);
 		return 0;
@@ -251,7 +249,6 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("package_changelog");// TEXT NULL,
 		fieldNames.push_back("package_packager");// TEXT NULL,
 		fieldNames.push_back("package_packager_email");// TEXT NULL,
-		fieldNames.push_back("package_available");// INTEGER NOT NULL,
 		fieldNames.push_back("package_installed");// INTEGER NOT NULL,
 		fieldNames.push_back("package_configexist");// INTEGER NOT NULL,
 		fieldNames.push_back("package_action");// INTEGER NOT NULL,
@@ -259,15 +256,14 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("package_filename");// NOT NULL
 	}
 	
-	if (table_name=="scripts")
+	if(table_name=="files")
 	{
-		fieldNames.push_back("script_id");// INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL,
-		fieldNames.push_back("preinstall");//  TEXT NOT NULL DEFAULT '#!/bin/sh',
-		fieldNames.push_back("postinstall");//  TEXT NOT NULL DEFAULT '#!/bin/sh',
-		fieldNames.push_back("preremove");//  TEXT NOT NULL DEFAULT '#!/bin/sh',
-		fieldNames.push_back("postremove");//  TEXT NOT NULL DEFAULT '#!/bin/sh'
+		fieldNames.push_back("file_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+		fieldNames.push_back("file_name");//  TEXT NOT NULL,
+		fieldNames.push_back("file_type");//  INTEGER NOT NULL,
+		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL
 	}
+
 	
 	if (table_name == "conflicts")
 	{
@@ -276,45 +272,18 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("backup_file");
 		fieldNames.push_back("conflicted_package_id");
 	}
-
-	if(table_name=="files")
-	{
-		fieldNames.push_back("file_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-		fieldNames.push_back("file_name");//  TEXT NOT NULL,
-		fieldNames.push_back("file_type");//  INTEGER NOT NULL,
-		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL
-	}
  	if(table_name=="locations")
 	{
 		fieldNames.push_back("location_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 		fieldNames.push_back("packages_package_id");//  INTEGER NOT NULL,
-		fieldNames.push_back("servers_server_id");//  INTEGER NOT NULL,
+		fieldNames.push_back("server_url");//  INTEGER NOT NULL,
 		fieldNames.push_back("location_path");//  TEXT NOT NULL
-	}
-	if(table_name=="servers")
-	{
-		fieldNames.push_back("server_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-		fieldNames.push_back("server_url");//  TEXT NOT NULL,
-		fieldNames.push_back("server_priority");//  INTEGER NOT NULL DEFAULT '1' 
 	}
 
  	if(table_name=="tags")
 	{
 		fieldNames.push_back("tags_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
 		fieldNames.push_back("tags_name");//  TEXT NOT NULL
-	}
-
- 	if(table_name=="server_tags")
-	{
-		fieldNames.push_back("server_tag_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-		fieldNames.push_back("server_tag_name");//  TEXT NOT NULL
-	}
-
- 	if(table_name=="server_tags_links")
-	{
-		fieldNames.push_back("server_tags_link_id");//  INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
-		fieldNames.push_back("servers_server_id");//  INTEGER NOT NULL,
-		fieldNames.push_back("server_tags_server_tag_id");//  INTEGER NOT NULL
 	}
 
  	if(table_name=="tags_links")
@@ -333,20 +302,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("dependency_package_name");//  TEXT NOT NULL,
 		fieldNames.push_back("dependency_package_version");//  TEXT NULL
 	}
-	if(table_name=="configfiles")
-	{
-		fieldNames.push_back("configfile_id");
-		fieldNames.push_back("packages_package_id");
-		fieldNames.push_back("packages_package_name");
-		fieldNames.push_back("configfile_name");
-	}
-	if(table_name=="configfiles_links")
-	{
-		fieldNames.push_back("configfiles_link_id");
-		fieldNames.push_back("configfiles_configfile_id");
-		fieldNames.push_back("packages_package_id");
-	}
-	
+#ifdef ENABLE_INTERNATIONAL
 	if (table_name=="descriptions") {
 		fieldNames.push_back("description_id");
 		fieldNames.push_back("packages_package_id");
@@ -367,6 +323,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("rating_value");
 		fieldNames.push_back("packages_package_name");
 	}
+#endif
 	return fieldNames;
 }
 
@@ -377,7 +334,7 @@ int SQLiteDB::sql_insert(string table_name, SQLRecord values)
 	string sql_query="insert into "+table_name+" values( NULL, ";
 	for (unsigned int i=1; i<fieldNames.size();i++)
 	{
-		sql_query+="'"+values.getValue(fieldNames[i])+"'";
+		sql_query+="'"+*values.getValue(fieldNames[i])+"'";
 		if (i!=fieldNames.size()-1) sql_query+=", ";
 	}
 	sql_query+=");";
@@ -393,7 +350,7 @@ int SQLiteDB::sql_insert(string table_name, SQLTable values)
 		sql_query+="insert into "+table_name+" values(NULL, ";
 		for (unsigned int i=1; i<fieldNames.size();i++)
 		{
-			sql_query+="'"+values.getValue(k, fieldNames[i])+"'";
+			sql_query+="'"+*values.getValue(k, fieldNames[i])+"'";
 			if (i!=fieldNames.size()-1) sql_query+=", ";
 		}
 		sql_query+=");";
@@ -407,7 +364,7 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 	string sql_query="update "+table_name+" set ";
 	for (int i=0;i<fields.size(); i++)
 	{
-		sql_query+=fields.getFieldName(i)+"='"+fields.getValue(fields.getFieldName(i))+"'";
+		sql_query+=*fields.getFieldName(i)+"='"+*fields.getValue(*fields.getFieldName(i))+"'";
 		if (i!=fields.size()-1) sql_query+=", ";
 	}
 	if (fields.empty()) 
@@ -420,7 +377,7 @@ int SQLiteDB::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
+			sql_query+=*search.getFieldName(i)+"='"+*search.getValueI(i)+"'";
 		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}
@@ -437,7 +394,7 @@ int SQLiteDB::sql_delete(string table_name, SQLRecord search)
 		sql_query+=" where ";
 		for (int i=0; i<search.size(); i++)
 		{
-			sql_query+=search.getFieldName(i)+"='"+search.getValueI(i)+"'";
+			sql_query+=*search.getFieldName(i)+"='"+*search.getValueI(i)+"'";
 		       	if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_query+=" and ";
 			if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_query+=" or ";
 		}

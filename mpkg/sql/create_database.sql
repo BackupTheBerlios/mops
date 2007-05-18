@@ -2,7 +2,7 @@
 --
 --	MOPSLinux package system
 --	Database creation script
---	$Id: create_database.sql,v 1.12 2007/05/18 07:35:33 i27249 Exp $
+--	$Id: create_database.sql,v 1.13 2007/05/18 10:22:09 i27249 Exp $
 --
 ----------------------------------------------------------------------
 
@@ -19,7 +19,6 @@ create table packages (
 	package_changelog TEXT NULL,
 	package_packager TEXT NULL,
 	package_packager_email TEXT NULL,
-	package_available INTEGER NOT NULL,
 	package_installed INTEGER NOT NULL,
 	package_configexist INTEGER NOT NULL,
 	package_action INTEGER NOT NULL,

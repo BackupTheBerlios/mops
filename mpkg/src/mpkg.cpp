@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.78 2007/05/18 07:35:33 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.79 2007/05/18 10:22:09 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -60,7 +60,7 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 	// Раз пакет уже в базе (и в единственном числе - а иначе и быть не должно), сравниваем данные.
 	// В случае необходимости, добавляем location.
 	PACKAGE db_package;
-	LOCATION_LIST new_locations;
+	vector<LOCATION> new_locations;
 	get_package(pkg_id, &db_package, true);
 	package->set_id(pkg_id);
 
@@ -68,23 +68,22 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 	{
 		for (int i=0; i<db_package.get_locations()->size(); i++)
 		{
-			if (package->get_locations()->get_location(j)->get_server()!=db_package.get_locations()->get_location(i)->get_server() || \
-					package->get_locations()->get_location(j)->get_path()!=db_package.get_locations()->get_location(i)->get_path())
+			if (!package->get_locations()->at(j).equalTo(&db_package.get_locations()->at(i)))
 			{
-				new_locations.add(*package->get_locations()->get_location(j));
+				new_locations.push_back(package->get_locations()->at(j));
 			}
 		}
 	}
-	if (!new_locations.IsEmpty()) add_locationlist_record(pkg_id, &new_locations);
+	if (!new_locations.empty()) add_locationlist_record(pkg_id, &new_locations);
 	return 0;
 }
 
 
 bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 {
-	string fname = SYS_CACHE+"/"+package->get_filename();
-	string got_md5 = get_file_md5(SYS_CACHE + "/" + package->get_filename());
-	if (FileExists(fname) && package->get_md5() == got_md5)
+	string fname = SYS_CACHE + "/" + *package->get_filename();
+	string got_md5 = get_file_md5(SYS_CACHE + "/" + *package->get_filename());
+	if (FileExists(fname) && *package->get_md5() == got_md5)
 		return true;
 	else
 	{
@@ -103,24 +102,24 @@ int mpkgDatabase::commit_actions()
 	PACKAGE_LIST remove_list;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
-	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	if (get_packagelist(sqlSearch, &remove_list)!=0) return -1;
+	sqlSearch.addField("package_action", ST_REMOVE);
+	sqlSearch.addField("package_action", ST_PURGE);
+	if (get_packagelist(&sqlSearch, &remove_list)!=0) return -1;
 	remove_list.sortByPriority(true);
 	PACKAGE_LIST install_list;
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-	if (get_packagelist(sqlSearch, &install_list,false)!=0) return -5;
+	sqlSearch.addField("package_action", ST_INSTALL);
+	if (get_packagelist(&sqlSearch, &install_list,false)!=0) return -5;
 	install_list.sortByPriority();
 
 	for (int i=0; i<remove_list.size(); i++)
 	{
-		remove_list.get_package(i)->itemID = pData.addItem(remove_list.get_package(i)->get_name(), 10);
+		remove_list.get_package(i)->itemID = pData.addItem(*remove_list.get_package(i)->get_name(), 10);
 	}
 	for (int i=0; i<install_list.size(); i++)
 	{
-		install_list.get_package(i)->itemID = pData.addItem(install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size().c_str()));
+		install_list.get_package(i)->itemID = pData.addItem(*install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size()->c_str()));
 	}
 	
 	// Building action list
@@ -177,7 +176,7 @@ int mpkgDatabase::commit_actions()
 				return MPKGERROR_ABORTED;
 			}
 			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			currentStatus = "Removing package " + remove_list.get_package(i)->get_name();
+			currentStatus = "Removing package " + *remove_list.get_package(i)->get_name();
 			if (remove_package(remove_list.get_package(i))!=0)
 			{
 				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
@@ -231,7 +230,7 @@ int mpkgDatabase::commit_actions()
 			pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
 			pData.setItemProgress(install_list.get_package(i)->itemID, 0);
 	
-			currentStatus = "Checking cache and building download queue: " + install_list.get_package(i)->get_name();
+			currentStatus = "Checking cache and building download queue: " + *install_list.get_package(i)->get_name();
 	
 	
 			if (skip || !check_cache(install_list.get_package(i), false))
@@ -241,9 +240,9 @@ int mpkgDatabase::commit_actions()
 
 				itemLocations.clear();
 				
-				tmpDownloadItem.expectedSize=strtod(install_list.get_package(i)->get_compressed_size().c_str(), NULL);
-				tmpDownloadItem.file = SYS_CACHE + install_list.get_package(i)->get_filename();
-				tmpDownloadItem.name = install_list.get_package(i)->get_name();
+				tmpDownloadItem.expectedSize=strtod(install_list.get_package(i)->get_compressed_size()->c_str(), NULL);
+				tmpDownloadItem.file = SYS_CACHE + *install_list.get_package(i)->get_filename();
+				tmpDownloadItem.name = *install_list.get_package(i)->get_name();
 				tmpDownloadItem.priority = 0;
 				tmpDownloadItem.status = DL_STATUS_WAIT;
 				tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
@@ -251,9 +250,9 @@ int mpkgDatabase::commit_actions()
 				install_list.get_package(i)->sortLocations();
 				for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
 				{
-					itemLocations.push_back(install_list.get_package(i)->get_locations()->get_location(k)->get_server()->get_url() \
-						     + install_list.get_package(i)->get_locations()->get_location(k)->get_path() \
-						     + install_list.get_package(i)->get_filename());
+					itemLocations.push_back(*install_list.get_package(i)->get_locations()->at(k).get_server_url() \
+						     + *install_list.get_package(i)->get_locations()->at(k).get_path() \
+						     + *install_list.get_package(i)->get_filename());
 	
 				}
 				tmpDownloadItem.url_list = itemLocations;
@@ -326,8 +325,8 @@ installProcess:
 			}
 			if (actionBus.skipped(ACTIONID_MD5CHECK)) break;
 
-			say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename().c_str());
-			currentStatus = "Checking md5 of downloaded files: " + install_list.get_package(i)->get_name();
+			say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
+			currentStatus = "Checking md5 of downloaded files: " + *install_list.get_package(i)->get_name();
 	
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking md5");
@@ -394,7 +393,7 @@ installProcess:
 				return MPKGERROR_ABORTED;
 			}
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			currentStatus = "Installing package " + install_list.get_package(i)->get_name();
+			currentStatus = "Installing package " + *install_list.get_package(i)->get_name();
 			if (install_package(install_list.get_package(i))!=0)
 			{
 				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
@@ -417,13 +416,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 {
 
 	pData.setItemCurrentAction(package->itemID, "installing");
-	say("Installing %s %s\n",package->get_name().c_str(), package->get_fullversion().c_str());
-	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package "+package->get_name()+": ";
+	say("Installing %s %s\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package " + *package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	// First of all: EXTRACT file list and scripts!!!
-	LocalPackage lp(SYS_CACHE+package->get_filename());
+	LocalPackage lp(SYS_CACHE + *package->get_filename());
 	bool no_purge=true;
-	FILE_LIST old_config_files;
+	vector<FILES> old_config_files;
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
 	mDebug("purge_id="+IntToStr(purge_id));
 	if (purge_id==0)
@@ -480,18 +479,17 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	mDebug("Checking file conflicts\n");
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
-		currentStatus = "Error: Unresolved file conflict on package "+package->get_name();
-		mError("Unresolved file conflict on package " + package->get_name() + ", it will be skipped!");
+		currentStatus = "Error: Unresolved file conflict on package " + *package->get_name();
+		mError("Unresolved file conflict on package " + *package->get_name() + ", it will be skipped!");
 		return -5;
 	}
 	
-	add_scripts_record(package->get_id(), package->get_scripts()); // Add paths to scripts to database
 	currentStatus = statusHeader + "installing...";
 	pData.increaseItemProgress(package->itemID);
 
 
 // Filtering file list...
-	FILE_LIST package_files;
+	vector<FILES> package_files;
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	mDebug("Preparing scripts");
@@ -508,9 +506,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
 		currentStatus = statusHeader + "executing pre-install scripts";
-		if (FileExists(package->get_scripts()->get_preinstall()))
+		if (FileExists(package->get_scriptdir() + "/preinst.sh"))
 		{
-			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_preinstall();
+			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/preinst.sh";
 			system(preinst.c_str());
 		}
 	}
@@ -525,7 +523,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	string sys_root=SYS_ROOT;
 	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
 	system(create_root.c_str());
-	sys="(cd "+sys_root+"; tar zxf "+sys_cache+package->get_filename()+" --exclude install";
+	sys="(cd "+sys_root+"; tar zxf "+sys_cache + *package->get_filename()+" --exclude install";
 	//If previous version isn't purged, do not overwrite config files
 	if (no_purge)
 	{
@@ -537,10 +535,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			// Writing new config files, skipping old
 			for (int k=0; k < old_config_files.size(); k++)
 			{
-				if (package->get_config_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
+				if (*package->get_config_files()->at(i).get_name()==*old_config_files[k].get_name())
 				{
-					mDebug("excluding file "+package->get_config_files()->get_file(i)->get_name());
-					sys+=" --exclude "+package->get_config_files()->get_file(i)->get_name();
+					mDebug("excluding file "+*package->get_config_files()->at(i).get_name());
+					sys+=" --exclude "+*package->get_config_files()->at(i).get_name();
 				}
 			}
 		}
@@ -550,12 +548,12 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			{
 				if (k==old_config_files.size()) 
 				{
-					package_files.add(*package->get_files()->get_file(i));
+					package_files.push_back(package->get_files()->at(i));
 					break;
 				}
-				if (package->get_files()->get_file(i)->get_name()==old_config_files.get_file(k)->get_name())
+				if (*package->get_files()->at(i).get_name()==*old_config_files[k].get_name())
 				{
-					mDebug("Skipping file "+package->get_files()->get_file(i)->get_name());
+					mDebug("Skipping file " + *package->get_files()->at(i).get_name());
 					break;
 				}
 			}
@@ -576,9 +574,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	// Creating and running POST-INSTALL script
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
-		if (FileExists(package->get_scripts()->get_postinstall()))
+		if (FileExists(package->get_scriptdir() + "/doinst.sh"))
 		{
-			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_postinstall();
+			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/doinst.sh";
 			system(postinst.c_str());
 		}
 	}
@@ -600,9 +598,9 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
 	pData.setItemCurrentAction(package->itemID, "removing");
 
-	say("Removing package %s %s...\n",package->get_name().c_str(), package->get_fullversion().c_str());
+	say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
 
-	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+package->get_name()+": ";
+	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+*package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
@@ -611,10 +609,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		mDebug("REMOVE PACKAGE::Preparing scripts");
 		if(!DO_NOT_RUN_SCRIPTS)
 		{
-			if (FileExists(package->get_scripts()->get_preremove()))
+			if (FileExists(package->get_scriptdir() + "/preremove.sh"))
 			{
 				currentStatus = statusHeader + "executing pre-remove scripts";
-				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_preremove();
+				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "/preremove.sh";
 				system(prerem.c_str());
 			}
 		}
@@ -628,14 +626,14 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 		// Purge is now implemented here; checking all
 		currentStatus = statusHeader + "building file list";
-		FILE_LIST *remove_files=package->get_files();
+		vector<FILES> *remove_files=package->get_files();
 		currentStatus = statusHeader + "removing files...";
 		bool removeThis;
 		for (int i=0; i<remove_files->size(); i++)
 		{
 			removeThis = false;
-			if (package->action()==ST_PURGE || remove_files->get_file(i)->get_type()==FTYPE_PLAIN) removeThis = true;
-			fname=sys_root + remove_files->get_file(i)->get_name(false);
+			if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
+			fname=sys_root + *remove_files->at(i).get_name();
 			if (removeThis && fname[fname.length()-1]!='/')
 			{
 				pData.increaseItemProgress(package->itemID);
@@ -651,7 +649,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		pData.increaseItemProgress(package->itemID);
 		for (int i=0; i<remove_files->size(); i++)
 		{
-			fname=sys_root + remove_files->get_file(i)->get_name(false);
+			fname=sys_root + *remove_files->at(i).get_name();
 			for (unsigned int d=0; d<fname.length(); d++)
 			{
 				edir+=fname[d];
@@ -670,35 +668,36 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			empty_dirs.clear();
 		}
 	
-		// Creating and running POST-INSTALL script
+		// Creating and running POST-REMOVE script
 		if (!DO_NOT_RUN_SCRIPTS)
 		{
-			if (FileExists(package->get_scripts()->get_postremove()))
+			if (FileExists(package->get_scriptdir() + "/postremove.sh"))
 			{
 				currentStatus = statusHeader + "executing post-removal scripts";
-				string postrem="cd " + SYS_ROOT + " ; sh "+package->get_scripts()->get_postremove();
+				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "/postremove.sh";
 				system(postrem.c_str());
 			}
 		}
 	}
 	// Restoring backups
-	FILE_LIST restore = get_conflict_records(package->get_id());
-	if (!restore.IsEmpty())
+	vector<FILES>restore;
+       	get_conflict_records(package->get_id(), &restore);
+	if (!restore.empty())
 	{
 		string cmd;
 		string tmpName;
 		for (int i=0; i<restore.size(); i++)
 		{
 			cmd = "mkdir -p ";
-		       	cmd += SYS_ROOT + restore.get_file(i)->backup_file.substr(0, restore.get_file(i)->backup_file.find_last_of("/"));
+		       	cmd += SYS_ROOT + restore[i].get_backup_file()->substr(0, restore[i].get_backup_file()->find_last_of("/"));
 			system(cmd.c_str());
 			cmd = "mv ";
-		        cmd += restore.get_file(i)->backup_file + " ";
-			tmpName = restore.get_file(i)->backup_file.substr(strlen(SYS_BACKUP));
+		        cmd += *restore[i].get_backup_file() + " ";
+			tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
 			tmpName = tmpName.substr(tmpName.find("/"));
 		        cmd += SYS_ROOT	+ tmpName;
 			system(cmd.c_str());
-			delete_conflict_record(package->get_id(), restore.get_file(i)->backup_file);
+			delete_conflict_record(package->get_id(), restore[i].get_backup_file());
 		}
 	}
 
@@ -725,13 +724,13 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	sqlSearch.setSearchMode(SEARCH_OR);
 	for (int i=0; i<pkgList->size(); i++)
 	{
-		sqlSearch.addField("package_id", IntToStr(pkgList->get_package(i)->get_id()));
+		sqlSearch.addField("package_id", pkgList->get_package(i)->get_id());
 	}
 	db.sql_delete("packages", sqlSearch);
 	sqlSearch.clear();
 	for (int i=0; i<pkgList->size(); i++)
 	{
-		sqlSearch.addField("packages_package_id", IntToStr(pkgList->get_package(i)->get_id()));
+		sqlSearch.addField("packages_package_id", pkgList->get_package(i)->get_id());
 	}
 	db.sql_delete("tags_links", sqlSearch);
 	db.sql_delete("dependencies", sqlSearch);
@@ -748,8 +747,8 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 int mpkgDatabase::cleanFileList(int package_id)
 {
 	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_id", IntToStr(package_id));
-	if (get_configexist(package_id)) sqlSearch.addField("file_type", IntToStr(FTYPE_PLAIN));
+	sqlSearch.addField("packages_package_id", package_id);
+	if (get_configexist(package_id)) sqlSearch.addField("file_type", FTYPE_PLAIN);
 	return db.sql_delete("files", sqlSearch);
 }
 
@@ -764,11 +763,11 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	
 	SQLRecord sqlUpdate;
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_id", IntToStr(package_id));
+	sqlSearch.addField("package_id", package_id);
 
 	mDebug("mpkg.cpp: update_package_data(): updating direct package data");
 	// 1. Updating direct package data
-	if (package->get_md5()!=old_package.get_md5())
+	if (*package->get_md5()!=*old_package.get_md5())
 	{
 		mDebug("mpkg.cpp: update_package_data(): md5 mismatch, updating description fields");
 		sqlUpdate.addField("package_description", package->get_description());
@@ -782,14 +781,14 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	}
 
 	// 2. Updating filename
-	if (package->get_filename()!=old_package.get_filename())
+	if (*package->get_filename()!=*old_package.get_filename())
 	{
 		mDebug("mpkg.cpp: update_package_data(): filename mismatch, updating");
 		sqlUpdate.addField("package_filename", package->get_filename());
 	}
 
 	// 3. Updating status. Seems that somewhere here is an error causing double scan is required
-	sqlUpdate.addField("package_available", IntToStr(package->available()));
+	sqlUpdate.addField("package_available", package->available());
 
 
 	// 4. Updating locations
@@ -800,13 +799,13 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 	// 	Step 2. Add new locations.
 	// Note: after end of updating procedure for all packages, it will be good to do servers cleanup - delete all servers who has no locations.
 	mDebug("mpkg.cpp: update_package_data(): checking locations");	
-	if (*package->get_locations()!=*old_package.get_locations())
+	if (!package->locationsEqualTo(&old_package))
 	{
 		mDebug("mpkg.cpp: update_package_data(): locations mismatch, cleanup");
 		mDebug("mpkg.cpp: update_package_data(): old has "+IntToStr(old_package.get_locations()->size())+" locations, but new has "+\
 				IntToStr(package->get_locations()->size())+" ones");
 		SQLRecord loc_sqlDelete;
-		loc_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+		loc_sqlDelete.addField("packages_package_id", package_id);
 		mDebug("mpkg.cpp: update_package_data(): deleting old locations relating this package");
 		int sql_del=db.sql_delete("locations", loc_sqlDelete);
 		if (sql_del!=0)
@@ -819,27 +818,27 @@ int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 			mDebug("mpkg.cpp: update_package_data(): unable to add new locations: error in add_locationlist_record()");
 			return -3;
 		}
-		if (package->get_locations()->IsEmpty())
+		if (package->get_locations()->empty())
 		{
-			sqlUpdate.addField("package_available", IntToStr(ST_NOTAVAILABLE));
+			sqlUpdate.addField("package_available", ST_NOTAVAILABLE);
 		}
 	}
 
 	// 5. Updating tags
-	if (*package->get_tags()!=*old_package.get_tags())
+	if (!package->tagsEqualTo(&old_package))
 	{
 		SQLRecord taglink_sqlDelete;
-		taglink_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+		taglink_sqlDelete.addField("packages_package_id", package_id);
 
 		if (db.sql_delete("tags_links", taglink_sqlDelete)!=0) return -4;
 		if (add_taglist_record(package_id, package->get_tags())!=0) return -5;
 	}
 
 	// 6. Updating dependencies
-	if (*package->get_dependencies()!=*old_package.get_dependencies())
+	if (!package->depsEqualTo(&old_package))
 	{
 		SQLRecord dep_sqlDelete;
-		dep_sqlDelete.addField("packages_package_id", IntToStr(package_id));
+		dep_sqlDelete.addField("packages_package_id", package_id);
 
 		if(db.sql_delete("dependencies", dep_sqlDelete)!=0) return -6;
 		if (add_dependencylist_record(package_id, package->get_dependencies())!=0) return -7;
@@ -883,12 +882,11 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	mDebug("Retrieving current package list, clearing tables");	
 	// Стираем locations и servers
 	db.clear_table("locations");
-	db.clear_table("servers");
 
 	// Забираем текущий список пакетов
 	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	get_packagelist(sqlSearch, pkgList, false);
+	get_packagelist(&sqlSearch, pkgList, false);
 	
 	say("Merging data\n");
 	// Ищем соответствия
@@ -899,12 +897,12 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		
 		if (pkgNumber!=-1)	// Если соответствие найдено...
 		{
-			pkgList->get_package(pkgNumber)->set_locations(*newPackages->get_package(i)->get_locations());	// Записываем locations
+			pkgList->get_package(pkgNumber)->set_locations(newPackages->get_package(i)->get_locations());	// Записываем locations
 		}
 		else			// Если соответствие НЕ найдено...
 		{
 			newPackages->get_package(i)->newPackage=true;
-			pkgList->add(*newPackages->get_package(i));
+			pkgList->add(newPackages->get_package(i));
 		}
 	}
 
@@ -937,18 +935,22 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 	// Дополнение от 10 мая 2007 года: сносим нафиг все недоступные пакеты, которые не установлены. Нечего им болтаться в базе.
 	PACKAGE_LIST *allList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	get_packagelist(sqlSearch, allList, false);
+	mDebug("retrievin pkglist");
+	get_packagelist(&sqlSearch, allList, false);
+	mDebug("retrieved package list");
 	PACKAGE_LIST deleteQueue;
 	for (int i=0; i<allList->size(); i++)
 	{
 		if (!allList->get_package(i)->reachable(true))
 		{
-			deleteQueue.add(*allList->get_package(i));
+			deleteQueue.add(allList->get_package(i));
 		}
 	}
-	delete allList;
+	mDebug("built delete queue");
 	if (!deleteQueue.IsEmpty()) delete_packages(&deleteQueue);
-
+	mDebug("removed wrong packages");
+	delete allList;
+	mDebug("deleted object, returning");
 	return 0;
 
 }

@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.42 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: repository.cpp,v 1.43 2007/05/18 10:22:09 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -35,9 +35,11 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 	// [PACKAGE DESCRIPTION:\n]	Package description (max 11 lines starting with [package_name:]) 
 	PACKAGE *pkg = new PACKAGE;
 	LOCATION *tmplocation = new LOCATION;
+#ifdef ENABLE_INTERNATIONAL
 	DESCRIPTION *tmpDesc = new DESCRIPTION;
-	string *tmpDescStr = new string;
 	tmpDesc->set_language("en");
+#endif
+	string *tmpDescStr = new string;
 	string *tmpstr = packageslist;
 	int tmpSize;
 	int lines = 0;
@@ -160,7 +162,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 		// Stage 2: info cleanup
 		
 		// Filename
-		pkg->set_filename(slackPackageName);
+		pkg->set_filename(&slackPackageName);
 		
 		if (md5list->find(slackPackageName) == std::string::npos)
 		{
@@ -174,7 +176,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 		md5tmp = md5tmp.substr(0, md5tmp.find_last_of(" \t"));
 		md5tmp = md5tmp.substr(md5tmp.rfind("\n")+1);
 		md5tmp = cutSpaces(md5tmp);
-		pkg->set_md5(md5tmp);
+		pkg->set_md5(&md5tmp);
 		mDebug("MD5 = " + md5tmp);
 		
 		filename = slackPackageName;
@@ -205,7 +207,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 						filename[i+1] == '8' || \
 						filename[i+1] == '9')
 					{
-						pkg->set_name(tmp);
+						pkg->set_name(&tmp);
 						pos=i+2;
 						break;
 					}
@@ -218,7 +220,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 			{
 				if (filename[i]=='-')
 				{
-					pkg->set_version(tmp);
+					pkg->set_version(&tmp);
 					pos=i+2;
 					break;
 				}
@@ -230,7 +232,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 			{
 				if (filename[i]=='-')
 				{
-					pkg->set_arch(tmp);
+					pkg->set_arch(&tmp);
 					pos=i+2;
 					break;
 				}
@@ -242,33 +244,33 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 			{
 				tmp+=filename[i];
 			}
-			pkg->set_build(tmp);
+			pkg->set_build(&tmp);
 
 			tmp.clear();
 		}
 		
-		mDebug("package name: "+ pkg->get_name());
-		mDebug("package version: "+ pkg->get_version());
-		mDebug("package arch: "+ pkg->get_arch());
-		mDebug("package build: "+ pkg->get_build());
+		mDebug("package name: "+ *pkg->get_name());
+		mDebug("package version: "+ *pkg->get_version());
+		mDebug("package arch: "+ *pkg->get_arch());
+		mDebug("package build: "+ *pkg->get_build());
 		// Location
 		if (slackPackageLocation.find("./") == 0)
 		{
 			mDebug("DOTCUT:");
 			slackPackageLocation = slackPackageLocation.substr(2);
 		}
-		tmplocation->set_path(slackPackageLocation);
-		tmplocation->get_server()->set_url(server_url);
-		pkg->get_locations()->add(*tmplocation);
-		mDebug("LOC_SET: "+pkg->get_locations()->get_location(0)->get_path());
+		tmplocation->set_path(&slackPackageLocation);
+		tmplocation->set_server_url(&server_url);
+		pkg->get_locations()->push_back(*tmplocation);
+		//mDebug("LOC_SET: "+*pkg->get_locations()->at(0)->get_path());
 
 		// Size
 		tmpSize = atoi(slackCompressedSize.substr(0, slackCompressedSize.length()-2).c_str());
-		pkg->set_compressed_size(IntToStr(tmpSize*1024));
-		mDebug("package size (compressed): "+ pkg->get_compressed_size());
+		*pkg->get_compressed_size()=IntToStr(tmpSize*1024);
+		mDebug("package size (compressed): "+ *pkg->get_compressed_size());
 		tmpSize = atoi(slackUncompressedSize.substr(0, slackUncompressedSize.length()-2).c_str());
-		pkg->set_installed_size(IntToStr(tmpSize*1024));
-		mDebug("package size (uncompressed): "+ pkg->get_installed_size());
+		*pkg->get_installed_size()=IntToStr(tmpSize*1024);
+		mDebug("package size (uncompressed): "+ *pkg->get_installed_size());
 
 		mDebug("reached description");
 		// Description
@@ -277,32 +279,32 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 		if (slackDescription.length()>0)
 		{
 			slackDescription = slackDescription.substr(1);
-			if (slackDescription.length()>=slackDescription.find(pkg->get_name()+": ")+pkg->get_name().length()+2)
+			if (slackDescription.length() >= slackDescription.find(*pkg->get_name()+": ") + pkg->get_name()->length()+2)
 			{
-				slackDescription = slackDescription.substr(slackDescription.find(pkg->get_name()+": ")+pkg->get_name().length()+2);
-				tmpDesc->set_shorttext(slackDescription.substr(0, slackDescription.find_first_of("\n")));
-				pkg->set_short_description(tmpDesc->get_shorttext());
-				mDebug("short description: "+tmpDesc->get_shorttext());
+				slackDescription = slackDescription.substr(slackDescription.find(*pkg->get_name()+": ")+pkg->get_name()->length()+2);
+				//tmpDesc->set_shorttext(slackDescription.substr(0, slackDescription.find_first_of("\n")));
+				*pkg->get_short_description()=slackDescription.substr(0, slackDescription.find_first_of("\n"));
+				//mDebug("short description: "+slackDescription.substr(0, slackDescription.find_first_of("\n")));
 			}
 			pos = slackDescription.find("\n");
 			lines = 0;
 			while (pos != std::string::npos && lines < 11)
 			{
-				pos = slackDescription.find(pkg->get_name()+": ");
+				pos = slackDescription.find(*pkg->get_name()+": ");
 				if (pos == std::string::npos)
 				{
 					mDebug("Description end");
 				}
 				else
 				{
-					slackDescription = slackDescription.substr(pos+pkg->get_name().length()+2);
+					slackDescription = slackDescription.substr(pos+pkg->get_name()->length()+2);
 					*tmpDescStr = *tmpDescStr + slackDescription.substr(0,slackDescription.find("\n"))+"\n";
 					lines++;
 				}
 			}
 			mDebug("Description: "+ *tmpDescStr);
-			tmpDesc->set_text(*tmpDescStr);
-			pkg->set_description(tmpDesc->get_text());
+			//tmpDesc->set_text(*tmpDescStr);
+			pkg->set_description(tmpDescStr);
 #ifdef ENABLE_INTERNATIONAL			
 			pkg->get_descriptions()->add(tmpDesc);
 #endif
@@ -314,7 +316,7 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 	}
 	delete pkg;
 	delete tmplocation;
-	delete tmpDesc;
+	//delete tmpDesc;
 	delete tmpDescStr;
 	//delete tmpstr;
 
@@ -323,24 +325,23 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 
 int xml2package(XMLNode *pkgnode, PACKAGE *data)
 {
-	PackageConfig p(*pkgnode);
+	PackageConfig p(pkgnode);
 	if (!p.parseOk) return -100;
 	
-	data->set_name(p.getName());
-	data->set_version(p.getVersion());
-	data->set_arch(p.getArch());
-	data->set_build(p.getBuild());
-	data->set_packager(p.getAuthorName());
-	data->set_packager_email(p.getAuthorEmail());
-	data->set_descriptions(p.getDescriptions());
+	*data->get_name()=p.getName();
+	*data->get_version()=p.getVersion();
+	*data->get_arch()=p.getArch();
+	*data->get_build()=p.getBuild();
+	*data->get_packager()=p.getAuthorName();
+	*data->get_packager_email()=p.getAuthorEmail();
+	//*data->get_descriptions=(p.getDescriptions());
 
-	data->set_description(p.getDescription());
-	data->set_short_description(p.getShortDescription());
-	data->set_changelog(p.getChangelog());
+	*data->get_description()=p.getDescription();
+	*data->get_short_description()=p.getShortDescription();
+	*data->get_changelog()=p.getChangelog();
 
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
-	TAG tag_tmp;
 
 	vector<string> vec_tmp_names;
 	vector<string> vec_tmp_conditions;
@@ -352,11 +353,11 @@ int xml2package(XMLNode *pkgnode, PACKAGE *data)
 
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		dep_tmp.set_package_name(vec_tmp_names[i]);
-		dep_tmp.set_package_version(vec_tmp_versions[i]);
-		dep_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
-		dep_tmp.set_type("DEPENDENCY");
-		data->get_dependencies()->add(dep_tmp);
+		dep_tmp.set_package_name(&vec_tmp_names[i]);
+		dep_tmp.set_package_version(&vec_tmp_versions[i]);
+		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*dep_tmp.get_type()="DEPENDENCY";
+		data->get_dependencies()->push_back(dep_tmp);
 		dep_tmp.clear();
 	}
 	vec_tmp_names=p.getSuggestNames();
@@ -365,40 +366,34 @@ int xml2package(XMLNode *pkgnode, PACKAGE *data)
 
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		suggest_tmp.set_package_name(vec_tmp_names[i]);
-		suggest_tmp.set_package_version(vec_tmp_versions[i]);
-		suggest_tmp.set_condition(IntToStr(condition2int(vec_tmp_conditions[i])));
-		suggest_tmp.set_type("SUGGEST");
-		data->get_dependencies()->add(suggest_tmp);
+		suggest_tmp.set_package_name(&vec_tmp_names[i]);
+		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
+		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*suggest_tmp.get_type()="SUGGEST";
+		data->get_dependencies()->push_back(suggest_tmp);
 		suggest_tmp.clear();
 	}
 
-	vec_tmp_names=p.getTags();
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		tag_tmp.set_name(vec_tmp_names[i]);
-		data->get_tags()->add(tag_tmp);
-		tag_tmp.clear();
-	}
+	*data->get_tags()=p.getTags();
 
 	vec_tmp_names.clear();
 	vec_tmp_conditions.clear();
 	vec_tmp_versions.clear();
 
 	LOCATION tmp_location;
-	tmp_location.set_path(p.getLocation());
-	data->get_locations()->add(tmp_location);
-	data->set_filename(p.getFilename());
-	data->set_md5(p.getMd5());
-	data->set_compressed_size(p.getCompressedSize());
-	data->set_installed_size(p.getInstalledSize());
+	*tmp_location.get_path()=p.getLocation();
+	data->get_locations()->push_back(tmp_location);
+	*data->get_filename()=p.getFilename();
+	*data->get_md5()=p.getMd5();
+	*data->get_compressed_size()=p.getCompressedSize();
+	*data->get_installed_size()=p.getInstalledSize();
 	
 	vec_tmp_names=p.getFilelist();
 	FILES file_tmp;
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		file_tmp.set_name(vec_tmp_names[i]);
-		data->get_files()->add(file_tmp);
+		file_tmp.set_name(&vec_tmp_names[i]);
+		data->get_files()->push_back(file_tmp);
 	}
 	return 0;
 }
@@ -598,7 +593,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					*tmp = repository_root->getChildNode("package", i);
 					xml2package(tmp, pkg);
 					// Adding location data
-					pkg->get_locations()->get_location(0)->get_server()->set_url(server_url);
+					pkg->get_locations()->at(0).set_server_url(&server_url);
 					packages->add(pkg);
 				}
 				delete tmp;

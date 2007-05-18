@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.52 2007/05/18 07:35:33 i27249 Exp $
+	$Id: dataunits.cpp,v 1.53 2007/05/18 10:22:09 i27249 Exp $
 */
 
 
@@ -363,6 +363,44 @@ void PACKAGE::sortLocations()
 bool PACKAGE::equalTo (PACKAGE *npkg)
 {
 	if (package_md5!=*npkg->get_md5()) return false;
+	return true;
+}
+bool PACKAGE::locationsEqualTo(PACKAGE *pkg)
+{
+	if (package_locations.size()!=pkg->get_locations()->size()) return false;
+	for (unsigned int i=0; i<package_locations.size(); i++)
+	{
+		for (unsigned int j=0; j<pkg->get_locations()->size(); j++)
+		{
+			if (!package_locations[i].equalTo(&pkg->get_locations()->at(j)))
+				return false;
+		}
+	}
+	return true;
+}
+bool PACKAGE::tagsEqualTo(PACKAGE *pkg)
+{
+	if (package_tags.size()!=pkg->get_tags()->size()) return false;
+	for (unsigned int i=0; i<package_tags.size(); i++)
+	{
+		for (unsigned int j=0; j<pkg->get_tags()->size(); j++)
+		{
+			if (package_tags[i]!=pkg->get_tags()->at(j)) return false;
+		}
+	}
+	return true;
+}
+
+bool PACKAGE::depsEqualTo(PACKAGE *pkg)
+{
+	if (package_dependencies.size()!=pkg->get_dependencies()->size()) return false;
+	for (unsigned int i=0; i<package_tags.size(); i++)
+	{
+		for (unsigned int j=0; j<pkg->get_dependencies()->size(); j++)
+		{
+			if (!package_dependencies[i].equalTo(&pkg->get_dependencies()->at(j))) return false;
+		}
+	}
 	return true;
 }
 

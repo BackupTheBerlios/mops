@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.49 2007/05/18 07:35:33 i27249 Exp $
+ *	$Id: core.cpp,v 1.50 2007/05/18 10:22:09 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -499,7 +499,6 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 
 		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, "package_md5"));
 		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, "package_filename"));
-		delete sqlTable;
 		if (GetExtraInfo)
 		{
 			get_filelist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_files());
@@ -521,6 +520,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		//debug("done.");
 	}
 	//debug("get_packagelist end");
+	delete sqlTable;
 	return 0;
 
 }

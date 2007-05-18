@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.27 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.28 2007/05/18 10:22:09 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -19,10 +19,10 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	PACKAGE_LIST toInstall;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
-	sqlSearch.addField("package_action", IntToStr(ST_INSTALL));
-	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
-	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	db->get_packagelist(sqlSearch, &toInstall);
+	sqlSearch.addField("package_action", ST_INSTALL);
+	sqlSearch.addField("package_action", ST_REMOVE);
+	sqlSearch.addField("package_action", ST_PURGE);
+	db->get_packagelist(&sqlSearch, &toInstall);
 	for (int i=0; i<toInstall.size();i++)
 	{
 		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);
@@ -118,11 +118,11 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	{
 		if (tmpPackage.installed())
 		{
-			mError("Package "+ tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already installed");
+			mError("Package "+ *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already installed");
 		}
 		if (!tmpPackage.available(localInstall))
 		{
-			mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is unavailable");
+			mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is unavailable");
 		}
 		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
@@ -153,13 +153,13 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	// Exclusion for here: package_name could be a filename of local placed package.
 	bool tryLocalInstall=false;
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_name", package_name);
+	sqlSearch.addField("package_name", &package_name);
 	PACKAGE_LIST candidates;
-	int ret = db->get_packagelist(sqlSearch, &candidates, false);
+	int ret = db->get_packagelist(&sqlSearch, &candidates, false);
 	int id=-1;
 	if (ret == 0)
 	{
-		id = candidates.getMaxVersionID(package_name);
+		id = candidates.getMaxVersionID(&package_name);
 		if (id>=0)
 		{
 			return requestInstall(id, db, DepTracker);
@@ -212,8 +212,8 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		else
 		{
-			if (purge) mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
-			else  mError("Package " + tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
+			if (purge) mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
+			else  mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
 ;
 			return MPKGERROR_IMPOSSIBLE;
 		}
@@ -226,10 +226,10 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
 {	
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_name", package_name);
-	sqlSearch.addField("package_installed", "1");
+	sqlSearch.addField("package_name", &package_name);
+	sqlSearch.addField("package_installed", 1);
 	PACKAGE_LIST candidates;
-	int ret = db->get_packagelist(sqlSearch, &candidates, false);
+	int ret = db->get_packagelist(&sqlSearch, &candidates, false);
 	int id=-1;
 	if (ret == 0)
 	{
