@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.20 2007/05/18 10:22:09 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.21 2007/05/19 17:45:20 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -174,7 +174,11 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		mError("No tests for now");
+		PACKAGE_LIST pkgList;
+		SQLRecord sqlSearch;
+		core.get_packagelist(&sqlSearch, &pkgList);
+		core.db->get_full_taglist(&pkgList);
+
 		return 0;
 	}
 	if (action == ACT_REMOVE)
@@ -402,7 +406,7 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		sqlSearch.addField("package_action", ST_PURGE);
 	}
 
-	core->get_packagelist(&sqlSearch, &pkglist, false, true);
+	core->get_packagelist(&sqlSearch, &pkglist, false, false);
 	if (pkglist.IsEmpty())
 	{
 		if (!search.empty()) say("Package database is empty\n");

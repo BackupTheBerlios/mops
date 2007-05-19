@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.16 2007/05/18 07:35:33 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.17 2007/05/19 17:45:20 i27249 Exp $
  ************************************************************************************/
 
 
@@ -33,7 +33,7 @@ class SQLiteDB
 		vector<string> getFieldNames(string table_name);
 		int getLastError();
 		string getLastErrMsg();
-		int get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+		int get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_name, SQLRecord &search);
 		int init();
 		int sqlBegin();
 		int sqlCommit();

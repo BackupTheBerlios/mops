@@ -1,13 +1,13 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.55 2007/05/18 12:04:53 i27249 Exp $
+ * $Id: corethread.cpp,v 1.56 2007/05/19 17:45:20 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
 //#define TIMER_RES 600
 #define IDLE_RES 600
-#define RUNNING_RES 50
+#define RUNNING_RES 200
 errorBus::errorBus()
 {
 	action = eBUS_Pause;
@@ -17,7 +17,7 @@ errorBus::errorBus()
 void errorBus::run()
 {
 
-	setPriority(QThread::LowestPriority);
+	//setPriority(QThread::LowestPriority);
 	forever
 	{
 		if (action == eBUS_Run)
@@ -522,7 +522,7 @@ statusThread::statusThread()
 
 void statusThread::run()
 {
-	setPriority(QThread::LowestPriority);
+	//setPriority(QThread::LowestPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
 	string dlStatus;
@@ -658,7 +658,7 @@ void coreThread::sync()
 void coreThread::run()
 {
 
-	setPriority(QThread::LowPriority);
+	//setPriority(QThread::LowPriority);
 	forever 
 	{
 		if (currentAction == CA_Idle)
@@ -720,16 +720,10 @@ void coreThread::loadPackageDatabase()
 
 void coreThread::_loadPackageDatabase()
 {
-	printf("%s: Adding actions\n", __func__);
 	actionBus.clear();
 	actionBus.addAction(ACTIONID_DBLOADING);
 	actionBus.addAction(ACTIONID_GETPKGLIST);
-	//actionBus.addAction(ACTIONID_VERSIONBUILD);
-	printf("%s: Actions added\n", __func__);
 	pData.clear();
-	//progressEnabled=true;
-	//currentProgress=-1;
-	//actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = 0;
 
 	emit resetProgressBar();
 	currentStatus = "Loading package database";
@@ -745,14 +739,10 @@ void coreThread::_loadPackageDatabase()
 		return;
 	}
 	delete packageList;
-	//actionBus.setCurrentAction(ACTIONID_VERSIONBUILD);
 	currentStatus = "Building version list";
-	//actionBus.actions.at(actionBus.getActionPosition(ACTIONID_VERSIONBUILD))._progressMaximum = tmpPackageList->size();
 	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DBLOADING))._progressMaximum = tmpPackageList->size();
 
-	//printf("init versioning...\n");
 	tmpPackageList->initVersioning();
-	//actionBus.setActionState(ACTIONID_VERSIONBUILD);
 	actionBus.setActionState(ACTIONID_GETPKGLIST);
 	actionBus.setCurrentAction(ACTIONID_DBLOADING);
 	currentStatus = "Initializing status vectors";

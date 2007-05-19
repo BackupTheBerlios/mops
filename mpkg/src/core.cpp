@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.50 2007/05/18 10:22:09 i27249 Exp $
+ *	$Id: core.cpp,v 1.51 2007/05/19 17:45:20 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -456,7 +456,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 
 int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
-	//debug("get_packagelist start");
+	printf("get_packagelist start\n");
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -508,7 +508,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		if (!ultraFast)
 		{
 			get_dependencylist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_dependencies());
-			get_taglist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_tags());
+		//	get_taglist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_tags());
 		}
 #ifdef ENABLE_INTERNATIONAL
 		
@@ -519,7 +519,8 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		//debug("setting package...");
 		//debug("done.");
 	}
-	//debug("get_packagelist end");
+	get_full_taglist(packagelist);
+	printf("get_packagelist end\n");
 	delete sqlTable;
 	return 0;
 
@@ -613,6 +614,66 @@ int mpkgDatabase::get_dependencylist(int package_id, vector<DEPENDENCY> *deplist
 	return 0;
 }
 
+void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomplete
+{
+	SQLRecord fields;
+	SQLRecord search;
+	SQLTable deplist;
+	db.get_sql_vtable(&deplist, fields, "dependencies", search);
+	for (unsigned int i=0; i<deplist.size(); i++)
+	{
+		for (unsigned int p=0; p<pkgList->size(); p++)
+		{
+			if (pkgList->get_package(t)->get_id()==atoi(deplist.getValue(i, "packages_package_id")->c_str()))
+			{
+				// set deps here
+			}
+		}
+	}
+}
+
+void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
+{
+	int counter=0;
+	int success=0;
+	SQLRecord fields;
+	SQLRecord search;
+	SQLTable tags;
+	SQLTable links;
+
+	db.get_sql_vtable(&tags, fields, "tags", search);
+	
+	fields.addField("packages_package_id");
+	fields.addField("tags_tag_id");
+	db.get_sql_vtable(&links, fields, "tags_links", search);
+	printf("tag size = %d, link size = %d\n", tags.size(), links.size());
+	int tag_id;
+	string tag_id_str;
+	for (unsigned int i=0; i<links.size(); i++)
+	{
+		for (unsigned int p=0; p<pkgList->size(); p++)
+		{
+			counter++;
+			if (pkgList->get_package(p)->get_id()==atoi(links.getValue(i, "packages_package_id")->c_str()))
+			{
+				tag_id_str=*links.getValue(i, "tags_tag_id");
+				for (unsigned int t=0; t<tags.size(); t++)
+				{
+					if (*tags.getValue(t, "tags_id")==tag_id_str)
+					{
+						success++;
+						pkgList->get_package(p)->get_tags()->push_back(*tags.getValue(t, "tags_name"));
+						break;
+					}
+				}
+			}
+		}
+	}
+	printf("iterations made: %d, success: %d\n", counter, success);
+}
+
+
+
 int mpkgDatabase::get_taglist(int package_id, vector<string> *taglist)
 {
 	// Step 1. Read link table, and create a list of tag's ids.
@@ -647,13 +708,16 @@ int mpkgDatabase::get_taglist(int package_id, vector<string> *taglist)
 
 	// Step 2. Read the tags with readed ids
 	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "tags", sqlSearch);
+
+/*
 	if (!sqlTable->empty())
 	{
+		taglist->resize(sqlTable->getRecordCount());
 		for (int i=0; i<sqlTable->getRecordCount(); i++)
 		{
-			taglist->push_back(*sqlTable->getValue(i, "tags_name"));
+			taglist->at(i)=*sqlTable->getValue(i, "tags_name");
 		}
-	}
+	}*/
 	delete sqlTable;
 	return 0;
 }
@@ -996,7 +1060,10 @@ SQLRecord::SQLRecord()
 }
 SQLRecord::~SQLRecord(){}
 
-
+int SQLTable::size()
+{
+	return table.size();
+}
 int SQLTable::getRecordCount()
 {
 	return table.size();
@@ -1021,7 +1088,7 @@ string* SQLTable::getValue(unsigned int num, string fieldname)
 	}
 	else 
 	{
-		mError("no such ID, aborting");
+		mError("Cannot find field " + fieldname+ " with ID " + IntToStr(num) + ": no such ID. Aborting...");
 		abort();
 		return NULL;
 	}

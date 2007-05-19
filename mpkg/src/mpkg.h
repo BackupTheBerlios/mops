@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.28 2007/05/18 07:35:33 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.29 2007/05/19 17:45:20 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -22,7 +22,10 @@ class mpkgDatabase
 #endif
 		int get_filelist (int package_id, vector<FILES> *filelist, bool config_only=false);
 		int get_dependencylist(int package_id, vector<DEPENDENCY> *deplist);
+		void get_full_dependencylist(PACKAGE_LIST *pkgList);
+
 		int get_taglist(int package_id, vector<string> *taglist);
+		void get_full_taglist(PACKAGE_LIST *pkgList);
 //		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);
 //		int get_server(int server_id, SERVER *server);
 		int get_locationlist(int package_id, vector<LOCATION> *location_list);

@@ -3,13 +3,14 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.35 2007/05/18 10:22:09 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.36 2007/05/19 17:45:20 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
 
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
+	printf("Integrity check\n");
 	if (\
 			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies limit 1;")!=0 || \
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files limit 1;")!=0 || \
@@ -23,11 +24,13 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select rating_id, rating_value, packages_package_name from ratings limit 1;")!=0 \
 			)
 	{
+		printf("complete - failed\n");
 		return false;
 	}
 
 	else 
 	{
+		printf("complete successful\n");
 		return true;
 	}
 }
@@ -139,7 +142,7 @@ long long int SQLProxy::getLastID()
 	return sqliteDB.getLastID();
 }
 
-int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
+int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_name, SQLRecord &search)
 {
 	string sql_query;
 	string sql_action;
@@ -172,7 +175,7 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 	if (!search.empty())
 	{
 		sql_where="where ";
-		if (search.getSearchMode()==SEARCH_IN)
+		if (search.getSearchMode()==SEARCH_IN || search.getSearchMode()==SEARCH_OR)
 		{
 			sql_where += *search.getFieldName(0) + " in (";
 			for (int i=0; i<search.size(); i++)
@@ -187,9 +190,9 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 			for (int i=0; i<search.size(); i++)
 			{
 				if (search.getEqMode()!=EQ_LIKE) sql_where += *search.getFieldName(i) + "='" + *search.getValueI(i)+"'";
-				if (search.getEqMode()==EQ_LIKE) sql_where+= *search.getFieldName(i) + " like '%" + *search.getValueI(i)+"%'";
-				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_AND) sql_where+=" and ";
-				if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
+				else sql_where+= *search.getFieldName(i) + " like '%" + *search.getValueI(i)+"%'";
+				if (i!=search.size()-1/* && search.getSearchMode()==SEARCH_AND*/) sql_where+=" and ";
+				//if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
 			}
 		}
 	}
