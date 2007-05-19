@@ -53,11 +53,6 @@ static int downloadCallback(void *clientp,
 	return 0;
 }
 
-HttpDownload::~HttpDownload()
-{
-	printf("HttpDownload delete\n");
-	curl_easy_cleanup(ch);
-}
 
 int fileLinker(std::string source, std::string output)
 {
@@ -387,7 +382,9 @@ process:
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;
+#ifdef DL_CLEANUP
 							curl_easy_cleanup(ch);
+#endif
 							return DOWNLOAD_OK;
 						}
 						item->status = DL_STATUS_OK;
@@ -403,7 +400,9 @@ process:
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;
+#ifdef DL_CLEANUP
 							curl_easy_cleanup(ch);
+#endif
 							return DOWNLOAD_ERROR;
 						}
 						if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
@@ -421,12 +420,17 @@ process:
     	}
 	if (!is_have_error) 
 	{
+#ifdef DL_CLEANUP
 		curl_easy_cleanup(ch);
+#endif
 		return DOWNLOAD_OK;
+
 	}
 	else
 	{
+#ifdef DL_CLEANUP
 		curl_easy_cleanup(ch);
+#endif
 		return DOWNLOAD_ERROR;
 	}
 }

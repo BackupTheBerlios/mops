@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.80 2007/05/18 12:04:53 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.81 2007/05/19 22:53:26 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -423,7 +423,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	LocalPackage lp(SYS_CACHE + *package->get_filename());
 	bool no_purge=true;
 	vector<FILES> old_config_files;
+	mDebug("purge check");
 	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
+	mDebug("purge check complete");
 	mDebug("purge_id="+IntToStr(purge_id));
 	if (purge_id==0)
 	{
@@ -479,10 +481,12 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	mDebug("Checking file conflicts\n");
 	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 	{
+		mDebug("Check failed (dupes present)");
 		currentStatus = "Error: Unresolved file conflict on package " + *package->get_name();
 		mError("Unresolved file conflict on package " + *package->get_name() + ", it will be skipped!");
 		return -5;
 	}
+	mDebug("Check conflicts ok");
 	
 	currentStatus = statusHeader + "installing...";
 	pData.increaseItemProgress(package->itemID);

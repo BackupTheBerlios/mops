@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.36 2007/05/19 17:45:20 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.37 2007/05/19 22:53:26 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -200,15 +200,18 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str()+";";
 	mDebug("built sql query");
 	lastSQLQuery=sql_query;
-
+	mDebug("performing sql request");
 	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
+	mDebug("sql request complete");
 	if (sql_ret==0)
 	{
+		mDebug("sql ok, parsing output");
 		output->clear(); // Ensure that output is clean and empty
 		SQLRecord row; 	// One row of data
 		int field_num=0;
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
+			mDebug("parsing "+IntToStr(current_row)+" row (total " + IntToStr(rows) + ")");
 			field_num=0;
 			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
@@ -218,7 +221,9 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 			}
 			output->addRecord(&row);
 		}
+		mDebug("parse complete, cleanup");
 		sqlite3_free_table(table);
+		mDebug("cleanup complete");
 		return 0;
 	}
 	else return sql_ret;

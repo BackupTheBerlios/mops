@@ -17,8 +17,8 @@ class HttpDownload : public IDownload {
 public:
 	HttpDownload();
 	
-	//virtual ~HttpDownload() {};
-	~HttpDownload();
+	virtual ~HttpDownload() {};
+	//~HttpDownload();
 	DownloadResults getFile(string url, string file, string cdromDevice, string cdromMountPoint);
 	DownloadResults getFile(DownloadsList &list, string *itemname, string cdromDevice, string cdromMountPoint, ActionBus *aaBus, ProgressData *prData);
 
