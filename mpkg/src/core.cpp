@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.51 2007/05/19 17:45:20 i27249 Exp $
+ *	$Id: core.cpp,v 1.52 2007/05/19 21:58:38 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -456,7 +456,6 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 
 int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
-	printf("get_packagelist start\n");
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -465,20 +464,19 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	{
 		return MPKGERROR_SQLQUERYERROR;
 	}
-	if (!consoleMode)
+/*	if (!consoleMode)
 	{
 		actionBus.setCurrentAction(ACTIONID_GETPKGLIST);
 		actionBus.setActionProgressMaximum(ACTIONID_DBLOADING, sqlTable->getRecordCount());
 
 		actionBus.setActionProgressMaximum(ACTIONID_GETPKGLIST, sqlTable->getRecordCount());
 		actionBus.setActionProgress(ACTIONID_GETPKGLIST, 0);
-	}
+	}*/
 	packagelist->clear(sqlTable->getRecordCount());
 	
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
 	{
-		if (!consoleMode) actionBus.setActionProgress(ACTIONID_GETPKGLIST, i);
-		//debug("retrieving package "+IntToStr(i));
+		//if (!consoleMode) actionBus.setActionProgress(ACTIONID_GETPKGLIST, i);
 		packagelist->get_package(i)->set_id(atoi(sqlTable->getValue(i, "package_id")->c_str()));
 		packagelist->get_package(i)->set_name(sqlTable->getValue(i, "package_name"));
 		packagelist->get_package(i)->set_version(sqlTable->getValue(i, "package_version"));
@@ -491,8 +489,6 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		packagelist->get_package(i)->set_changelog(sqlTable->getValue(i, "package_changelog"));
 		packagelist->get_package(i)->set_packager(sqlTable->getValue(i, "package_packager"));
 		packagelist->get_package(i)->set_packager_email(sqlTable->getValue(i, "package_packager_email"));
-		
-		//packagelist->get_package(i)->set_available(atoi(sqlTable.getValue(i,"package_available").c_str()));
 		packagelist->get_package(i)->set_installed(atoi(sqlTable->getValue(i,"package_installed")->c_str()));
 		packagelist->get_package(i)->set_configexist(atoi(sqlTable->getValue(i,"package_configexist")->c_str()));
 		packagelist->get_package(i)->set_action(atoi(sqlTable->getValue(i,"package_action")->c_str()));
@@ -505,22 +501,21 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		}
 		packagelist->get_package(i)->sync();
 		get_locationlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_locations());
+		
+		/*
 		if (!ultraFast)
 		{
 			get_dependencylist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_dependencies());
-		//	get_taglist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_tags());
+			get_taglist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_tags());
 		}
+		*/
 #ifdef ENABLE_INTERNATIONAL
 		
-		//debug("description list...");
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
-		
-		//debug("setting package...");
-		//debug("done.");
 	}
 	get_full_taglist(packagelist);
-	printf("get_packagelist end\n");
+	get_full_dependencylist(packagelist);
 	delete sqlTable;
 	return 0;
 
@@ -620,13 +615,19 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	SQLRecord search;
 	SQLTable deplist;
 	db.get_sql_vtable(&deplist, fields, "dependencies", search);
+	string pid_str;
+	DEPENDENCY dep_tmp;
 	for (unsigned int i=0; i<deplist.size(); i++)
 	{
 		for (unsigned int p=0; p<pkgList->size(); p++)
 		{
-			if (pkgList->get_package(t)->get_id()==atoi(deplist.getValue(i, "packages_package_id")->c_str()))
+			if (pkgList->get_package(p)->get_id()==atoi(deplist.getValue(i, "packages_package_id")->c_str()))
 			{
-				// set deps here
+				dep_tmp.set_condition(deplist.getValue(i, "dependency_condition"));
+				dep_tmp.set_type(deplist.getValue(i, "dependency_type"));
+				dep_tmp.set_package_name(deplist.getValue(i, "dependency_package_name"));
+				dep_tmp.set_package_version(deplist.getValue(i, "dependency_package_version"));
+				pkgList->get_package(p)->get_dependencies()->push_back(dep_tmp);
 			}
 		}
 	}
@@ -646,7 +647,6 @@ void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
 	fields.addField("packages_package_id");
 	fields.addField("tags_tag_id");
 	db.get_sql_vtable(&links, fields, "tags_links", search);
-	printf("tag size = %d, link size = %d\n", tags.size(), links.size());
 	int tag_id;
 	string tag_id_str;
 	for (unsigned int i=0; i<links.size(); i++)
@@ -669,7 +669,6 @@ void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
 			}
 		}
 	}
-	printf("iterations made: %d, success: %d\n", counter, success);
 }
 
 

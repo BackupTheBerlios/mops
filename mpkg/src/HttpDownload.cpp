@@ -20,6 +20,7 @@ double prevDlValue;
 
 HttpDownload::HttpDownload()
 {
+	printf("HttpDownload init\n");
 	ch = curl_easy_init();
 }
 
@@ -50,6 +51,12 @@ static int downloadCallback(void *clientp,
 
 	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
 	return 0;
+}
+
+HttpDownload::~HttpDownload()
+{
+	printf("HttpDownload delete\n");
+	curl_easy_cleanup(ch);
 }
 
 int fileLinker(std::string source, std::string output)
@@ -380,6 +387,7 @@ process:
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;
+							curl_easy_cleanup(ch);
 							return DOWNLOAD_OK;
 						}
 						item->status = DL_STATUS_OK;
@@ -395,7 +403,8 @@ process:
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;
-								return DOWNLOAD_ERROR;
+							curl_easy_cleanup(ch);
+							return DOWNLOAD_ERROR;
 						}
 						if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
 
@@ -410,6 +419,14 @@ process:
 		if (ppActionBus->currentProcessingID()==ACTIONID_DOWNLOAD) ppActionBus->setActionProgress(ACTIONID_DOWNLOAD, i);
 
     	}
-	if (!is_have_error) return DOWNLOAD_OK;
-	else return DOWNLOAD_ERROR;
+	if (!is_have_error) 
+	{
+		curl_easy_cleanup(ch);
+		return DOWNLOAD_OK;
+	}
+	else
+	{
+		curl_easy_cleanup(ch);
+		return DOWNLOAD_ERROR;
+	}
 }

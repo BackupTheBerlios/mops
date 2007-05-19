@@ -7,6 +7,8 @@
 #include "debug.h"
 #include "DownloadManager.h"
 
+void *dlhandler=NULL;
+
 IDownload*
 InitializeDownloadObjects(DownloadFactory *factory)
 {
@@ -14,7 +16,7 @@ InitializeDownloadObjects(DownloadFactory *factory)
 	IDownload *handler = NULL;
 
 
-	void *dlhandler = dlopen("libmpkg-http.so", RTLD_LAZY);
+	dlhandler = dlopen("libmpkg-http.so", RTLD_LAZY);
 	//void *dlhandler = dlopen("./libmpkg-http.so", RTLD_LAZY);
 	if ( dlhandler == NULL ) {
 		mError("critical error: cannot load libmpkg-http.so");
@@ -42,8 +44,6 @@ InitializeDownloadObjects(DownloadFactory *factory)
 
 	return handler;
 
-	dlclose(dlhandler);
-
 }
 
 DownloadResults
@@ -57,7 +57,10 @@ CommonGetFile(std::string url, std::string output, void *callback)
 	mDebug("load file " + url + " to " + output);
 
 	
-	return g_pCurrentMethod->getFile(url, output); 
+	DownloadResults ret = g_pCurrentMethod->getFile(url, output); 
+	delete g_pDownloadFactory;
+	dlclose(dlhandler);
+	return ret;
 }	
 
 DownloadResults
@@ -68,8 +71,11 @@ CommonGetFileEx(DownloadsList &list, std::string *itemname, ActionBus *aaBus, Pr
 	IDownload *g_pCurrentMethod = InitializeDownloadObjects(g_pDownloadFactory);
 
 	assert( g_pCurrentMethod );
-	
-	return g_pCurrentMethod->getFile(list, itemname); 
+
+	DownloadResults ret = g_pCurrentMethod->getFile(list, itemname); 
+	delete g_pDownloadFactory;
+	dlclose(dlhandler);
+	return ret;
 }	
 
 
