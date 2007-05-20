@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.12 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: bus.cpp,v 1.13 2007/05/20 01:32:55 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -217,13 +217,21 @@ int ActionBus::getActionPosition(ActionID actID, bool addIfNone)
 
 void ActionBus::setActionProgress(ActionID actID, double p)
 {
+	// Imho, this is bad!
+	int t=getActionPosition(actID);
+	if (t>=0) actions.at(t)._currentProgress=p;
+	/*
+	for (unsigned int i=0; i<actions.size(); i++)
+	{
+
 	if (currentProcessing()>=0)
-		actions.at(currentProcessing())._currentProgress=p;
+		actions.at(currentProcessing())._currentProgress=p;*/
 }
 
 void ActionBus::setActionProgressMaximum(ActionID actID, double p)
 {
-	actions.at(getActionPosition(actID))._progressMaximum=p;
+	int t=getActionPosition(actID);
+	if (t>=0) actions.at(t)._progressMaximum=p;
 }
 unsigned int ActionBus::addAction(ActionID actionID, bool hasPData, bool skip)
 {
