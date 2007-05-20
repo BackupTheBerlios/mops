@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.53 2007/05/19 22:53:26 i27249 Exp $
+ *	$Id: core.cpp,v 1.54 2007/05/20 01:10:19 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -139,8 +139,8 @@ int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, str
 	get_package(overwritten_id, &pkg);
 
 	SQLRecord sqlFill;
-	sqlFill.addField("conflicted_package_id", conflicted_id);
-	sqlFill.addField("conflicted_file_name", file_name);
+	sqlFill.addField("conflict_package_id", conflicted_id);
+	sqlFill.addField("conflict_file_name", file_name);
 	string x = *pkg.get_name() + "_" + *pkg.get_md5() + "/" + *file_name;
 	sqlFill.addField("backup_file",&x );
 	return db.sql_insert("conflicts", sqlFill);
@@ -149,7 +149,7 @@ int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, str
 int mpkgDatabase::delete_conflict_record(int conflicted_id, string *file_name)
 {
 	SQLRecord sqlFill;
-	sqlFill.addField("conflicted_package_id", conflicted_id);
+	sqlFill.addField("conflict_package_id", conflicted_id);
 	sqlFill.addField("backup_file", file_name);
 	return db.sql_delete("conflicts", sqlFill);
 }
@@ -157,7 +157,7 @@ int mpkgDatabase::delete_conflict_record(int conflicted_id, string *file_name)
 void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 {
 	SQLRecord sqlSearch;
-	sqlSearch.addField("conflicted_package_id", conflicted_id);
+	sqlSearch.addField("conflict_package_id", conflicted_id);
 	SQLRecord sqlFields;
 	sqlFields.addField("backup_file");
 	sqlFields.addField("conflict_file_name");

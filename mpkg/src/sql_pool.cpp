@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.37 2007/05/19 22:53:26 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.38 2007/05/20 01:10:19 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -278,7 +278,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("conflict_id");
 		fieldNames.push_back("conflict_file_name");
 		fieldNames.push_back("backup_file");
-		fieldNames.push_back("conflicted_package_id");
+		fieldNames.push_back("conflict_package_id");
 	}
  	if(table_name=="locations")
 	{

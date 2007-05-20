@@ -20,7 +20,6 @@ double prevDlValue;
 
 HttpDownload::HttpDownload()
 {
-	printf("HttpDownload init\n");
 	ch = curl_easy_init();
 }
 

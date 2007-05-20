@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.28 2007/05/18 10:22:09 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.29 2007/05/20 01:10:19 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -72,8 +72,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
 
-	say("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size();
-	
+	say("Updating package data from %d repository(s)...\n", REPOSITORY_LIST.size());
 	int total_packages=0; // Счетчик полученных пакетов.
 
 	actionBus.setCurrentAction(ACTIONID_DBUPDATE);

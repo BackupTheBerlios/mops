@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.81 2007/05/19 22:53:26 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.82 2007/05/20 01:10:19 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -892,7 +892,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	SQLRecord sqlSearch;
 	get_packagelist(&sqlSearch, pkgList, false);
 	
-	say("Merging data\n");
+	//say("Merging data\n");
 	// Ищем соответствия
 	int pkgNumber;
 	for (int i=0; i<newPackages->size(); i++)
@@ -910,7 +910,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 		}
 	}
 
-	say("Clean up...\n");
+	//say("Clean up...\n");
 	// Вызываем синхронизацию данных.
 	// Вообще говоря, ее можно было бы делать прямо здесь, но пусть таки будет универсальность.
 	delete newPackages;//->clear();
