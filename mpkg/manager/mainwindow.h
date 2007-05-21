@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.42 2007/05/16 06:43:19 i27249 Exp $
+ * $Id: mainwindow.h,v 1.43 2007/05/21 23:52:14 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -16,18 +16,9 @@
 #include "db.h"
 #include "corethread.h"
 
-//#include "progress.h"
-//#include "checkbox.h";
 #include <QThread>
-// TABLE INDEX
 #define PT_INSTALLCHECK 0
-//#define PT_STATUS 1
 #define PT_NAME 1
-//#define PT_VERSION 3
-//#define PT_ARCH 4
-//#define PT_BUILD 5
-//#define PT_MAXAVAILABLE 6
-//#define PT_INFO 7
 #define PT_ID 2
 
 
@@ -98,15 +89,12 @@ class MainWindow: public QMainWindow
 
 		
 		// Table operations
-		//void fitTable();
 		void clearTable();
 		void selectAll();
 		void deselectAll();
 		void setTableSize(unsigned int size);
 		void setTableItem(unsigned int row, bool checkState, string cellItemText);
 		void setTableItemVisible(unsigned int row, bool visible);
-
-//
 
 		void showPreferences();
 		void showAbout();
@@ -116,28 +104,17 @@ class MainWindow: public QMainWindow
 		void resetChanges();
 		void resetQueue();
 		void cleanCache();
-		//void saveQueue();
 		void showAddRemoveRepositories();
-		//void showCustomFilter();
 		void setInstalledFilter();
-		//void setAvailableFilter(bool showThis=false);
-		//void setBrokenFilter(bool showThis=false);
-		//void setUnavailableFilter(bool showThis=false);
-		//void setRemovedFilter(bool showThis=false);
-		//void showHelpTopics();
-		//void showFaq();
 		void clearForm();
 		void updateData();
 		void markToInstall();
 		void execMenu();
 		void showPackageInfo();
-		//void fitTable();
 		void markChanges(int x, Qt::CheckState state, int force_state=-1);
 		void quickPackageSearch();
 		void showAllPackages();
 
-		//void MainWindow::resetQueue();
-	
 	public:
 		Ui::MainWindow ui;
 		Ui::aboutBox _aboutBox;
@@ -150,15 +127,20 @@ class MainWindow: public QMainWindow
 
 		XMLNode _categories;
 		
-		//Ui::loadingBox loadBox;
 	private:
-		//QLabel *indicator;
+		double totalInstalledSize;
+		double totalAvailableSize;
+		unsigned int totalAvailableCount;
+		unsigned int installedCount;
+		unsigned int installQueueCount;
+		unsigned int removeQueueCount;
+		double willBeFreed;
+		double willBeOccupied;
+
 		QMovie *movie; 
 		mpkg *mDb;
 		void setBarValue(QProgressBar *Bar, int stepValue);
 		PACKAGE_LIST *packagelist;
-		//void insertPackageIntoTable(unsigned int package_num);
-		//void searchPackagesByTag(QString tag);
 		vector<string> install_queue;
 		vector<string> remove_queue;
 		vector<string> purge_queue;
@@ -174,7 +156,6 @@ class CheckBox: public QCheckBox
 	Q_OBJECT
 	public:
 		CheckBox(MainWindow *parent);
-		//CheckBox(const QString & text, QWidget *parent = 0);
 	public slots:
 		void markChanges();
 	public:
@@ -182,17 +163,4 @@ class CheckBox: public QCheckBox
 	MainWindow *mw;
 	
 };
-
-
-/*
-class thLoadData: public QThread
-{
-	Q_OBJECT
-	public:
-		void run();
-	signals:
-		void packageAdded(const 
-};
-*/
-
 #endif

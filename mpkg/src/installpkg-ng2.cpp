@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.21 2007/05/19 17:45:20 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.22 2007/05/21 23:52:14 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -174,11 +174,8 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		PACKAGE_LIST pkgList;
-		SQLRecord sqlSearch;
-		core.get_packagelist(&sqlSearch, &pkgList);
-		core.db->get_full_taglist(&pkgList);
-
+		get_disk_freespace("/");
+		delete_tmp_files();
 		return 0;
 	}
 	if (action == ACT_REMOVE)

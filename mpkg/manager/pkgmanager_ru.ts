@@ -8,213 +8,208 @@
         <translation>Менеджер пакетов MOPSLinux</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="42"/>
+        <location filename="mainwindow.cpp" line="40"/>
         <source>Database initialization error!
 Check your settings</source>
         <translation>Ошибка инициализации базы данных! Проверьте настройки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="53"/>
+        <location filename="mainwindow.cpp" line="51"/>
         <source>Loading database...</source>
         <translation>Загрузка базы данных...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="58"/>
+        <location filename="mainwindow.cpp" line="56"/>
         <source>Data loaded, rendering visuals</source>
         <translation>Данные загружены, прорисовываем таблицы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="96"/>
+        <location filename="mainwindow.cpp" line="90"/>
         <source>Idle</source>
         <translation>Ожидание указаний</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="142"/>
+        <location filename="mainwindow.cpp" line="144"/>
         <source>Packages</source>
         <translation>Пакеты</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="278"/>
-        <source> packages), total: </source>
-        <translation> пакетов), всего: </translation>
+        <location filename="mainwindow.cpp" line="317"/>
+        <source> packages)</source>
+        <translation> пакетов)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="278"/>
         <source> to install</source>
-        <translation> для установки</translation>
+        <translation type="obsolete"> для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="331"/>
+        <location filename="mainwindow.cpp" line="373"/>
         <source>Depends on:</source>
         <translation>Зависит от:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="339"/>
+        <location filename="mainwindow.cpp" line="381"/>
         <source>Installed version:</source>
         <translation>Установленная версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="340"/>
+        <location filename="mainwindow.cpp" line="382"/>
         <source>It is max version:</source>
         <translation>Это последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="341"/>
+        <location filename="mainwindow.cpp" line="383"/>
         <source>Max version:</source>
         <translation>Последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="751"/>
+        <location filename="mainwindow.cpp" line="798"/>
         <source>Description:</source>
         <translation>Описание:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="381"/>
+        <location filename="mainwindow.cpp" line="433"/>
         <source>You need to be root to run package manager</source>
         <translation>Для запуска менеджера пакетов требуются привилегии root</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="410"/>
+        <location filename="mainwindow.cpp" line="462"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="411"/>
+        <location filename="mainwindow.cpp" line="463"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="412"/>
+        <location filename="mainwindow.cpp" line="464"/>
         <source>Purge</source>
         <translation>Удалить полностью</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="748"/>
+        <location filename="mainwindow.cpp" line="795"/>
         <source>Architecture:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="762"/>
+        <location filename="mainwindow.cpp" line="809"/>
         <source>Build:</source>
         <translation>Сборка:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="760"/>
+        <location filename="mainwindow.cpp" line="807"/>
         <source>Version:</source>
         <translation>Версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="761"/>
+        <location filename="mainwindow.cpp" line="808"/>
         <source>Arch:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="763"/>
+        <location filename="mainwindow.cpp" line="810"/>
         <source>Package size:</source>
         <translation>Размер пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="764"/>
+        <location filename="mainwindow.cpp" line="811"/>
         <source>Installed size:</source>
         <translation>Размер после установки:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="765"/>
+        <location filename="mainwindow.cpp" line="812"/>
         <source>Filename:</source>
         <translation>Имя файла:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="766"/>
+        <location filename="mainwindow.cpp" line="813"/>
         <source>MD5 sum:</source>
         <translation>Контрольная сумма:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="767"/>
+        <location filename="mainwindow.cpp" line="814"/>
         <source>Maintainer:</source>
         <translation>Сборщик пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="769"/>
+        <location filename="mainwindow.cpp" line="816"/>
         <source>Status:</source>
         <translation>Статус:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="770"/>
+        <location filename="mainwindow.cpp" line="817"/>
         <source>Tags:</source>
         <translation>Тэги:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="794"/>
-        <source></source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="803"/>
+        <location filename="mainwindow.cpp" line="845"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="845"/>
+        <location filename="mainwindow.cpp" line="883"/>
         <source>Some actions doesn&apos;t completed</source>
         <translation>Некоторые операции еще не завершены</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="884"/>
         <source>Some actions hasn&apos;t completed yet. Abort and exit?</source>
         <translation>Не все операции завершены к данному моменту. Вы хотите отменить все и выйти?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="852"/>
+        <location filename="mainwindow.cpp" line="890"/>
         <source>Aborting actions...</source>
         <translation>Отменяем операции...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="859"/>
+        <location filename="mainwindow.cpp" line="897"/>
         <source>Exiting...</source>
         <translation>Выходим...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="989"/>
+        <location filename="mainwindow.cpp" line="1046"/>
         <source>Package queued to remove</source>
         <translation>Пакет добавлен в очередь для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1034"/>
+        <location filename="mainwindow.cpp" line="1091"/>
         <source>Package queued to purge</source>
         <translation>Пакет поставлен в очередь для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1029"/>
+        <location filename="mainwindow.cpp" line="1086"/>
         <source>Package queued to install</source>
         <translation>Пакет поставлен в очередь для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="972"/>
+        <location filename="mainwindow.cpp" line="1029"/>
         <source>Package keeped in system</source>
         <translation>Пакет оставлен в системе</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="984"/>
+        <location filename="mainwindow.cpp" line="1041"/>
         <source>Package removed from remove queue</source>
         <translation>Пакет удален из очереди для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="996"/>
+        <location filename="mainwindow.cpp" line="1053"/>
         <source>Package removed from purge queue</source>
         <translation>Пакет удален из очереди для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1038"/>
+        <location filename="mainwindow.cpp" line="1095"/>
         <source>Unknown condition</source>
         <translation>Неясно</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1022"/>
+        <location filename="mainwindow.cpp" line="1079"/>
         <source>Package unqueued</source>
         <translation>Пакет удален из очереди</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1067"/>
+        <location filename="mainwindow.cpp" line="1124"/>
         <source>update</source>
         <translation>обновление</translation>
     </message>
@@ -294,159 +289,244 @@ Check your settings</source>
         <translation>Всего:</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="555"/>
+        <location filename="pkgmanager.ui" line="557"/>
         <source>Apply changes</source>
         <translation>Применить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="570"/>
+        <location filename="pkgmanager.ui" line="572"/>
         <source>Skip</source>
         <translation>Пропустить</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="577"/>
+        <location filename="pkgmanager.ui" line="579"/>
         <source>Abort</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="814"/>
+        <location filename="pkgmanager.ui" line="816"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="605"/>
+        <location filename="pkgmanager.ui" line="607"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="613"/>
+        <location filename="pkgmanager.ui" line="615"/>
         <source>Filters</source>
         <translation>Фильтры</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="627"/>
+        <location filename="pkgmanager.ui" line="629"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="643"/>
+        <location filename="pkgmanager.ui" line="645"/>
         <source>Repositories</source>
         <translation>Репозитории</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="656"/>
+        <location filename="pkgmanager.ui" line="658"/>
         <source>Add/remove repositories</source>
         <translation>Изменить список репозиториев</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="666"/>
+        <location filename="pkgmanager.ui" line="668"/>
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="671"/>
+        <location filename="pkgmanager.ui" line="673"/>
         <source>Available</source>
         <translation>Доступен</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="685"/>
+        <location filename="pkgmanager.ui" line="687"/>
         <source>Show installed</source>
         <translation>Показывать установленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="699"/>
+        <location filename="pkgmanager.ui" line="701"/>
         <source>Show available</source>
         <translation>Показывать доступные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="713"/>
+        <location filename="pkgmanager.ui" line="715"/>
         <source>Show broken</source>
         <translation>Показывать битые</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="733"/>
+        <location filename="pkgmanager.ui" line="735"/>
         <source>Show not purged</source>
         <translation>Показывать не полностью удаленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="736"/>
+        <location filename="pkgmanager.ui" line="738"/>
         <source>Show packages that have config files (i.e. not purged)</source>
         <translation>Показывать пакеты которые имеют конфигурационные файлы</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="830"/>
+        <location filename="pkgmanager.ui" line="832"/>
         <source>Show queued</source>
         <translation>Показывать пакеты в очереди</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="761"/>
+        <location filename="pkgmanager.ui" line="763"/>
         <source>Custom filter...</source>
         <translation>Особый фильтр...</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="769"/>
+        <location filename="pkgmanager.ui" line="771"/>
         <source>Help topics</source>
         <translation>Поиск по справке</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="774"/>
+        <location filename="pkgmanager.ui" line="776"/>
         <source>Mini-FAQ</source>
         <translation>Мини-FAQ</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="779"/>
+        <location filename="pkgmanager.ui" line="781"/>
         <source>About...</source>
         <translation>О программе...</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="784"/>
+        <location filename="pkgmanager.ui" line="786"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="789"/>
+        <location filename="pkgmanager.ui" line="791"/>
         <source>Core settings</source>
         <translation>Настройки ядра</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="794"/>
+        <location filename="pkgmanager.ui" line="796"/>
         <source>Commit changes</source>
         <translation>Применить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="799"/>
+        <location filename="pkgmanager.ui" line="801"/>
         <source>Reset changes</source>
         <translation>Сбросить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="804"/>
+        <location filename="pkgmanager.ui" line="806"/>
         <source>Reset all queue</source>
         <translation>Обнулить всю очередь</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="809"/>
+        <location filename="pkgmanager.ui" line="811"/>
         <source>Save queue</source>
         <translation>Сохранить очередь</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="819"/>
+        <location filename="pkgmanager.ui" line="821"/>
         <source>Clean cache</source>
         <translation>Очистить кеш загрузок</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="844"/>
+        <location filename="pkgmanager.ui" line="846"/>
         <source>Show purge</source>
         <translation>Показывать не полностью удаленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="858"/>
+        <location filename="pkgmanager.ui" line="860"/>
         <source>Show unavailable</source>
         <translation>Показывать недоступные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="863"/>
+        <location filename="pkgmanager.ui" line="865"/>
         <source>Update data</source>
         <translation>Обновить данные</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="308"/>
+        <source>Installed: </source>
+        <translation>Установлено: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="309"/>
+        <source>, Available: </source>
+        <translation>, Доступно: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="310"/>
+        <source>, To install: </source>
+        <translation>, Для установки: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="311"/>
+        <source>, To remove: </source>
+        <translation>, к удалению: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="312"/>
+        <source>, Will be freed: </source>
+        <translation>, Будет освобождено: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="313"/>
+        <source>, Will be occupied: </source>
+        <translation>, Будет занято: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="841"/>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="912"/>
+        <source>Insufficient disk space</source>
+        <translation>Недостаточно места на диске</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="913"/>
+        <source>It seems that only </source>
+        <translation>Похоже, что только </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="914"/>
+        <source> is available on /, but we need </source>
+        <translation>свободного места имеется в /, однако требуется </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="915"/>
+        <source>, please free additional </source>
+        <translation>, пожалуйста, освободите </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="916"/>
+        <source> to perform all requested operations. Are you sure you want to continue anyway?</source>
+        <translation> для выполнения всех запрошенных операций. Вы уверены что хотите продолжить не взирая на это?</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="922"/>
+        <source>Will be installed: </source>
+        <translation>Будет установлено: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="923"/>
+        <source> packages, will be removed: </source>
+        <translation> пакетов, будет удалено: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="924"/>
+        <source> packages, disk space will be occupied: </source>
+        <translation> пакетов, будет занято места на диске: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="925"/>
+        <source> packages, disk space will be freed: </source>
+        <translation> пакетов, будет освобождено места на диске: </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="927"/>
+        <source>Action summary</source>
+        <translation>Статистика запрошенных операций</translation>
     </message>
 </context>
 <context>
@@ -457,17 +537,17 @@ Check your settings</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="374"/>
+        <location filename="preferencesbox.cpp" line="393"/>
         <source>URL:</source>
         <translation>Адрес:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="394"/>
+        <location filename="preferencesbox.cpp" line="413"/>
         <source>Path:</source>
         <translation>Путь:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="404"/>
+        <location filename="preferencesbox.cpp" line="423"/>
         <source>Relative path:</source>
         <translation>Относительный путь:</translation>
     </message>
@@ -512,17 +592,17 @@ Check your settings</source>
         <translation>Применить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="410"/>
+        <location filename="preferencesbox.cpp" line="429"/>
         <source>Volume name:</source>
         <translation>Метка диска:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="493"/>
+        <location filename="preferencesbox.cpp" line="512"/>
         <source>Repository list changed</source>
         <translation>Список репозиториев изменен</translation>
     </message>
     <message>
-        <location filename="preferencesbox.cpp" line="493"/>
+        <location filename="preferencesbox.cpp" line="512"/>
         <source>You have modified repository list. Update package data?</source>
         <translation>Вы изменили список репозиториев, обновить данные?</translation>
     </message>
@@ -605,12 +685,12 @@ Developed in RPUNet (www.rpunet.ru) by:
         <translation>Все операции завершены</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="930"/>
+        <location filename="corethread.cpp" line="929"/>
         <source>Cleaning package cache</source>
         <translation>Очистка кеша загрузок</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="932"/>
+        <location filename="corethread.cpp" line="931"/>
         <source>Cleanup complete</source>
         <translation>Очистка завершена</translation>
     </message>
@@ -889,222 +969,222 @@ Free some disk space and try again</source>
         <translation>Настройки ядра</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="168"/>
+        <location filename="preferencesbox.ui" line="179"/>
         <source>Database file:</source>
         <translation>Файл базы данных:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="178"/>
+        <location filename="preferencesbox.ui" line="207"/>
         <source>System root:</source>
         <translation>Путь к корню файловой системы:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="522"/>
+        <location filename="preferencesbox.ui" line="553"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="198"/>
+        <location filename="preferencesbox.ui" line="200"/>
         <source>CD/DVD device: </source>
         <translation>Имя CD-ROM:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="212"/>
+        <location filename="preferencesbox.ui" line="165"/>
         <source>Mount point:</source>
         <translation>Точка монтирования:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="236"/>
+        <location filename="preferencesbox.ui" line="227"/>
         <source>Scripts folder:</source>
         <translation>Папка для хранения скриптов:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="243"/>
+        <location filename="preferencesbox.ui" line="172"/>
         <source>Package cache:</source>
         <translation>Папка для кеша загруженных пакетов:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="255"/>
+        <location filename="preferencesbox.ui" line="281"/>
         <source>File conflict checking:</source>
         <translation>Проверка конфликтов файлов:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="275"/>
+        <location filename="preferencesbox.ui" line="301"/>
         <source>At installation (default)</source>
         <translation>При установке (рекомендуется)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="282"/>
+        <location filename="preferencesbox.ui" line="308"/>
         <source>At remove</source>
         <translation>При удалении (не реализовано)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="289"/>
+        <location filename="preferencesbox.ui" line="315"/>
         <source>Disable (DANGEROUS!)</source>
         <translation>Отключить совсем (Это опасно!)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="303"/>
+        <location filename="preferencesbox.ui" line="248"/>
         <source>Run scripts</source>
         <translation>Выполнять установочные скрипты</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="327"/>
+        <location filename="preferencesbox.ui" line="358"/>
         <source>Repositories</source>
         <translation>Репозитории</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="368"/>
+        <location filename="preferencesbox.ui" line="399"/>
         <source>URL</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="395"/>
+        <location filename="preferencesbox.ui" line="426"/>
         <source>Edit...</source>
         <translation>Изменить...</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="402"/>
+        <location filename="preferencesbox.ui" line="433"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="409"/>
+        <location filename="preferencesbox.ui" line="440"/>
         <source>Add...</source>
         <translation>Добавить...</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="435"/>
+        <location filename="preferencesbox.ui" line="466"/>
         <source>Add/Modify repository</source>
         <translation>Добавление/изменение репозитория</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="463"/>
+        <location filename="preferencesbox.ui" line="494"/>
         <source>Type:</source>
         <translation>Тип:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="474"/>
+        <location filename="preferencesbox.ui" line="505"/>
         <source>Network (ftp, http...)</source>
         <translation>Сеть (ftp, http...)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="482"/>
+        <location filename="preferencesbox.ui" line="513"/>
         <source>Folder (file://)</source>
         <translation>Локальная папка (file://)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="490"/>
+        <location filename="preferencesbox.ui" line="521"/>
         <source>CD/DVD (cdrom://)</source>
         <translation>CD/DVD (cdrom://)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="509"/>
+        <location filename="preferencesbox.ui" line="540"/>
         <source>URL:</source>
         <translation>Адрес:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="541"/>
+        <location filename="preferencesbox.ui" line="572"/>
         <source>Volume name:</source>
         <translation>Метка диска:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="551"/>
+        <location filename="preferencesbox.ui" line="582"/>
         <source>Detect</source>
         <translation>Определить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="558"/>
+        <location filename="preferencesbox.ui" line="589"/>
         <source>Authorization required</source>
         <translation>Требуется авторизация</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="573"/>
+        <location filename="preferencesbox.ui" line="604"/>
         <source>Login:</source>
         <translation>Логин:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="596"/>
+        <location filename="preferencesbox.ui" line="627"/>
         <source>Password:</source>
         <translation>Пароль:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="623"/>
+        <location filename="preferencesbox.ui" line="654"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1217"/>
+        <location filename="preferencesbox.ui" line="1248"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="643"/>
+        <location filename="preferencesbox.ui" line="674"/>
         <source>Updates</source>
         <translation>Обновления</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="658"/>
+        <location filename="preferencesbox.ui" line="689"/>
         <source>How should I update the system?</source>
         <translation>Каким образом следует проводить обновление системы?</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="670"/>
+        <location filename="preferencesbox.ui" line="701"/>
         <source>Fully automatically</source>
         <translation>Полностью автоматически</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="677"/>
+        <location filename="preferencesbox.ui" line="708"/>
         <source>Just download, ask me for install</source>
         <translation>Только загружать, а поставлю я сам</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="684"/>
+        <location filename="preferencesbox.ui" line="715"/>
         <source>Only notify me if updates available</source>
         <translation>Просто сообщать мне о новых обновлениях</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="691"/>
+        <location filename="preferencesbox.ui" line="722"/>
         <source>Fully manually</source>
         <translation>Ничего не автоматизировать</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="720"/>
+        <location filename="preferencesbox.ui" line="751"/>
         <source>Options</source>
         <translation>Опции</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="740"/>
+        <location filename="preferencesbox.ui" line="771"/>
         <source>Download in background when idle</source>
         <translation>Производить закачку фоновым процессом при простое</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="773"/>
+        <location filename="preferencesbox.ui" line="804"/>
         <source>Install in background when idle (DANGEROUS!)</source>
         <translation>Производить установку в фоновом процессе (Опасно!)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="803"/>
+        <location filename="preferencesbox.ui" line="834"/>
         <source>Time to do updates:</source>
         <translation>Когда производить обновления:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="836"/>
+        <location filename="preferencesbox.ui" line="867"/>
         <source>Download speed limit (kb/s):</source>
         <translation>Лимит скорости закачки (кб/с):</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="846"/>
+        <location filename="preferencesbox.ui" line="877"/>
         <source>100</source>
         <translation>100</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="885"/>
+        <location filename="preferencesbox.ui" line="916"/>
         <source>Source compiling</source>
         <translation>Сборка из исходников</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="897"/>
+        <location filename="preferencesbox.ui" line="928"/>
         <source>Generic compilation parameters
 
 Because of ability to install packages using compilation from sources, we need to get information about your hardware for proper optimization. In most cases, it is autodetected well, but you can customize this.</source>
@@ -1113,177 +1193,177 @@ Because of ability to install packages using compilation from sources, we need t
 Укажите, как вы желаете производить оптимизацию собираемых пакетов.</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="936"/>
+        <location filename="preferencesbox.ui" line="967"/>
         <source>Choose a balance between speed and compilation time</source>
         <translation>Выберите глубину оптимизации</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="939"/>
+        <location filename="preferencesbox.ui" line="970"/>
         <source>Optimization level:</source>
         <translation>Уровень оптимизации:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="961"/>
+        <location filename="preferencesbox.ui" line="992"/>
         <source>i586, Pentium</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="966"/>
+        <location filename="preferencesbox.ui" line="997"/>
         <source>Pentium-MMX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="971"/>
+        <location filename="preferencesbox.ui" line="1002"/>
         <source>i686, Pentium PRO</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="976"/>
+        <location filename="preferencesbox.ui" line="1007"/>
         <source>Pentium II</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="981"/>
+        <location filename="preferencesbox.ui" line="1012"/>
         <source>Pentium III</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="986"/>
+        <location filename="preferencesbox.ui" line="1017"/>
         <source>Pentium III Mobile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="991"/>
+        <location filename="preferencesbox.ui" line="1022"/>
         <source>Pentium M (Centrino)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="996"/>
+        <location filename="preferencesbox.ui" line="1027"/>
         <source>Pentium 4</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1001"/>
+        <location filename="preferencesbox.ui" line="1032"/>
         <source>Pentium 4 M</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1006"/>
+        <location filename="preferencesbox.ui" line="1037"/>
         <source>Prescott</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1011"/>
+        <location filename="preferencesbox.ui" line="1042"/>
         <source>Nocona</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1016"/>
+        <location filename="preferencesbox.ui" line="1047"/>
         <source>Conroe</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1021"/>
+        <location filename="preferencesbox.ui" line="1052"/>
         <source>i486</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1026"/>
+        <location filename="preferencesbox.ui" line="1057"/>
         <source>i386</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1031"/>
+        <location filename="preferencesbox.ui" line="1062"/>
         <source>K6-2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1036"/>
+        <location filename="preferencesbox.ui" line="1067"/>
         <source>K6-3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1041"/>
+        <location filename="preferencesbox.ui" line="1072"/>
         <source>Athlon, Athlon Thunderbird</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1046"/>
+        <location filename="preferencesbox.ui" line="1077"/>
         <source>Athlon XP, Athlon MP, Athlon 4</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1051"/>
+        <location filename="preferencesbox.ui" line="1082"/>
         <source>K8, Athlon 64, Athlon FX, Opteron</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1056"/>
+        <location filename="preferencesbox.ui" line="1087"/>
         <source>Winchip-C6</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1061"/>
+        <location filename="preferencesbox.ui" line="1092"/>
         <source>Winchip-2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1066"/>
+        <location filename="preferencesbox.ui" line="1097"/>
         <source>VIA C3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1071"/>
+        <location filename="preferencesbox.ui" line="1102"/>
         <source>VIA C3-2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1086"/>
+        <location filename="preferencesbox.ui" line="1117"/>
         <source>O0 (no optimization)</source>
         <translation>O0 (без оптимизации)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1091"/>
+        <location filename="preferencesbox.ui" line="1122"/>
         <source>O1 (basic optimization)</source>
         <translation>O1 (базовая оптимизация)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1096"/>
+        <location filename="preferencesbox.ui" line="1127"/>
         <source>O2 (optimal value)</source>
         <translation>O2 (оптимальный вариант)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1101"/>
+        <location filename="preferencesbox.ui" line="1132"/>
         <source>O3 (maximum)</source>
         <translation>O3 (максимум)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1106"/>
+        <location filename="preferencesbox.ui" line="1137"/>
         <source>Os (Like O2, but with size optimizations)</source>
         <translation>Os (по сути - O2 с оптимизацией размера)</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1119"/>
+        <location filename="preferencesbox.ui" line="1150"/>
         <source>CPU class:</source>
         <translation>Тип процессора:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1129"/>
+        <location filename="preferencesbox.ui" line="1160"/>
         <source>Number of CPUs:</source>
         <translation>Количество процессоров:</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1139"/>
+        <location filename="preferencesbox.ui" line="1170"/>
         <source>2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1190"/>
+        <location filename="preferencesbox.ui" line="1221"/>
         <source>Apply</source>
         <translation>Применить</translation>
     </message>
     <message>
-        <location filename="preferencesbox.ui" line="1210"/>
+        <location filename="preferencesbox.ui" line="1241"/>
         <source>OK</source>
         <translation>ОК</translation>
     </message>

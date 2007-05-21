@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.92 2007/05/21 18:35:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.93 2007/05/21 23:52:14 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -72,10 +72,7 @@ void MainWindow::loadingStarted()
 void MainWindow::filterCloneItems()
 {
 
-	}
-
-		
-		
+}			
 
 void MainWindow::loadingFinished()
 {
@@ -132,12 +129,49 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 
 void MainWindow::applyPackageFilter ()
 {
+	totalInstalledSize=0;
+	totalAvailableSize=0;
+	totalAvailableCount = 0;
+	installedCount = 0;
+	installQueueCount = 0;
+	removeQueueCount = 0;
+	willBeFreed = 0;
+	willBeOccupied = 0;
 	if (!initializeOk)
 	{
 		return;
 	}
 	string pkgBoxLabel = tr("Packages").toStdString();
 	QString nameMask;
+	for (unsigned int i=0; i<packagelist->size(); i++)
+	{
+		if (packagelist->get_package(i)->installed())
+		{
+			installedCount++;
+			totalInstalledSize = totalInstalledSize + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
+		}
+		if (packagelist->get_package(i)->available())
+		{
+			totalAvailableCount++;
+			totalAvailableSize=totalAvailableSize + atoi(packagelist->get_package(i)->get_compressed_size()->c_str());
+		}
+		if (newStatus[i]==ST_INSTALL)
+		{
+			installQueueCount++;
+			willBeOccupied = willBeOccupied + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
+		}
+		if (newStatus[i]==ST_REMOVE)
+		{
+			removeQueueCount++;
+			willBeFreed = willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
+		}
+		if (newStatus[i]==ST_PURGE)
+		{
+			removeQueueCount++;
+			if (packagelist->get_package(i)->installed()) willBeFreed=willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
+		}
+	}
+
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
@@ -270,10 +304,19 @@ void MainWindow::applyPackageFilter ()
 		}
 #endif
 	} // for (...)	
-	string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
+	//string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
+	QString countStat = tr("Installed: ") + IntToStr(installedCount).c_str() +\
+			    tr(", Available: ")+IntToStr(totalAvailableCount).c_str()+\
+			    tr(", To install: ")+IntToStr(installQueueCount).c_str()+\
+			    tr(", To remove: ")+IntToStr(removeQueueCount).c_str();
+	if (willBeFreed>willBeOccupied) countStat += tr(", Will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
+	if (willBeFreed<willBeOccupied) countStat+= tr(", Will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
+
 	
-	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+tr(" packages), total: ").toStdString() + s_installQueueSize + tr(" to install").toStdString();
+	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
+			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
+	ui.statLabel->setText(countStat);
 }
 
 
@@ -294,6 +337,7 @@ void MainWindow::selectAll()
 	{
 		if (!ui.packageTable->isRowHidden(i)) markChanges(i, Qt::Checked);
 	}
+	applyPackageFilter();
 }
 
 void MainWindow::deselectAll()
@@ -302,6 +346,7 @@ void MainWindow::deselectAll()
 	{
 		if (!ui.packageTable->isRowHidden(i)) markChanges(i, Qt::Unchecked);
 	}
+	applyPackageFilter();
 }
 
 string bool2str(bool data)
@@ -343,6 +388,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
+	QObject::connect(stat, SIGNAL(stateChanged(int)), this, SLOT(applyPackageFilter()));
 	ui.packageTable->setRowHeight(row-1, 45);
 }
 
@@ -355,6 +401,15 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	totalInstalledSize=0;
+	totalAvailableSize=0;
+	totalAvailableCount = 0;
+	installedCount = 0;
+	installQueueCount = 0;
+	removeQueueCount = 0;
+	willBeFreed = 0;
+	willBeOccupied = 0;
+
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf-8"));
 
@@ -851,6 +906,32 @@ void MainWindow::showCoreSettings()
 }
 void MainWindow::commitChanges()
 {
+	if (willBeOccupied - willBeFreed - get_disk_freespace() > 0)
+	{
+		if (QMessageBox::warning(this, \
+					tr("Insufficient disk space"),
+					tr("It seems that only ") + humanizeSize(get_disk_freespace()).c_str() +\
+				       	tr(" is available on /, but we need ") + humanizeSize(willBeOccupied - willBeFreed).c_str() + \
+					tr(", please free additional ") + humanizeSize(willBeOccupied - willBeFreed - get_disk_freespace()).c_str() + \
+					tr(" to perform all requested operations. Are you sure you want to continue anyway?"), \
+					QMessageBox::Yes | QMessageBox::No, QMessageBox::No)==QMessageBox::No)
+		{
+			return;
+		}
+	}
+	QString text = 	tr("Will be installed: ")+IntToStr(installQueueCount).c_str() + \
+			tr(" packages, will be removed: ") + IntToStr(removeQueueCount).c_str();
+	if (willBeOccupied > willBeFreed) text+=tr(" packages, disk space will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
+	else text+=tr(" packages, disk space will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
+	if (QMessageBox::information(this, \
+				tr("Action summary"),
+				text,
+				QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)==QMessageBox::Cancel)
+	{
+		return;
+	}
+
+
 	emit commit(newStatus);
 }
 void MainWindow::resetChanges()

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.23 2007/05/21 10:08:18 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.24 2007/05/21 23:52:14 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -9,6 +9,26 @@
 #include <fstream>
 vector<string> temp_files;
 extern int errno;
+
+double get_disk_freespace(string point)
+{
+	string tmp_file = get_tmp_file();
+	string cmd = "df " + point + " > " + tmp_file;
+	system(cmd.c_str());
+	FILE *df = fopen(tmp_file.c_str(), "r");
+	if (!df) return 0;
+	char buff[200];
+	memset(&buff, 0, sizeof(buff));
+	for (int i=0; i<12; i++)
+	{
+		fscanf(df, "%s", &buff);
+	}
+	fclose(df);
+	double ret = strtod(buff, NULL);
+	return ret*1024;
+}
+
+
 string get_file_md5(string filename)
 {
 	string tmp_md5=get_tmp_file();
