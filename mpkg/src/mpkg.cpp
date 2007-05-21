@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.83 2007/05/21 10:08:18 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.84 2007/05/21 14:07:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -128,20 +128,20 @@ int mpkgDatabase::commit_actions()
 	if (remove_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_REMOVE);
-		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_REMOVE))._progressMaximum=remove_list.size();
+		actionBus.setActionProgressMaximum(ACTIONID_REMOVE, remove_list.size());
 	}
 	if (install_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_CACHECHECK);
 		actionBus.setSkippable(ACTIONID_CACHECHECK, true);
-		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_CACHECHECK))._progressMaximum=install_list.size();
+		actionBus.setActionProgressMaximum(ACTIONID_CACHECHECK, install_list.size());
 		actionBus.addAction(ACTIONID_DOWNLOAD);
-		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DOWNLOAD))._progressMaximum=install_list.size();
+		actionBus.setActionProgressMaximum(ACTIONID_DOWNLOAD, install_list.size());
 		actionBus.addAction(ACTIONID_MD5CHECK);
 		actionBus.setSkippable(ACTIONID_MD5CHECK, true);
-		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_MD5CHECK))._progressMaximum=install_list.size();
+		actionBus.setActionProgressMaximum(ACTIONID_MD5CHECK, install_list.size());
 		actionBus.addAction(ACTIONID_INSTALL);
-		actionBus.actions.at(actionBus.getActionPosition(ACTIONID_INSTALL))._progressMaximum=install_list.size();
+		actionBus.setActionProgressMaximum(ACTIONID_INSTALL, install_list.size());
 
 	}
 	// Done
@@ -168,7 +168,7 @@ int mpkgDatabase::commit_actions()
 	
 		for (int i=0;i<remove_list.size();i++)
 		{
-			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
+			actionBus.setActionProgress(ACTIONID_REMOVE,i);
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -214,7 +214,7 @@ int mpkgDatabase::commit_actions()
 		for (int i=0; i<install_list.size(); i++)
 		{
 
-			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
+			actionBus.setActionProgress(ACTIONID_CACHECHECK, i);
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -316,7 +316,7 @@ installProcess:
 		pData.setCurrentAction("Checking md5");
 		for (int i=0; i<install_list.size(); i++)
 		{
-			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
+			actionBus.setActionProgress(ACTIONID_MD5CHECK, i);
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -384,8 +384,8 @@ installProcess:
 		}
 		for (int i=0;i<install_list.size();i++)
 		{
-
-			actionBus.actions.at(actionBus.currentProcessing())._currentProgress=i;
+			
+			actionBus.setActionProgress(ACTIONID_INSTALL, i);
 			if (actionBus._abortActions)
 			{
 				sqlFlush();
@@ -567,13 +567,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
-#ifdef ACTUAL_EXTRACT
+//#ifdef ACTUAL_EXTRACT
 	if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
 	else {
 		currentStatus = "Failed to extract!";
 		return -10;
 	}
-#endif
+//#endif
 	pData.increaseItemProgress(package->itemID);
 
 

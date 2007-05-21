@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.57 2007/05/21 10:08:18 i27249 Exp $
+ * $Id: corethread.cpp,v 1.58 2007/05/21 14:07:18 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -42,7 +42,7 @@ void errorBus::run()
 
 					case MPKG_DOWNLOAD_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Download error","Some files failed to download. What to do?",
+						emit sendErrorMessage(tr("Download error"),tr("Some files failed to download. What to do?"),
 								QMessageBox::Retry | QMessageBox::Abort | QMessageBox::Ignore, 
 								QMessageBox::Retry);
 						while (userReply == QMessageBox::NoButton)
@@ -71,8 +71,8 @@ void errorBus::run()
 					case MPKG_CDROM_MOUNT_ERROR:
 						printf("event recvd\n");
 						userReply = QMessageBox::NoButton;
-						txt = "Please insert disk with label "+CDROM_VOLUMELABEL+" into "+CDROM_DEVICENAME;
-						emit sendErrorMessage("Please insert disk", \
+						txt = tr("Please insert disk with label ").toStdString()+CDROM_VOLUMELABEL+tr(" into ").toStdString()+CDROM_DEVICENAME;
+						emit sendErrorMessage(tr("Please insert a disk"), \
 								txt.c_str(), QMessageBox::Ok | QMessageBox::Abort, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
@@ -93,7 +93,7 @@ void errorBus::run()
 					
 					case MPKG_INDEX_DOWNLOAD_TIMEOUT:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Download error","Unable to download repository index. WTF?",
+						emit sendErrorMessage(tr("Download error"),tr("Unable to download repository index. WTF?"),
 								QMessageBox::Retry | QMessageBox::Abort | QMessageBox::Ignore, 
 								QMessageBox::Retry);
 						while(userReply == QMessageBox::NoButton)
@@ -119,7 +119,7 @@ void errorBus::run()
 
 					case MPKG_INDEX_PARSE_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Parse error","Error parsing repository index!",
+						emit sendErrorMessage(tr("Parse error"),tr("Error parsing repository index!"),
 								QMessageBox::Ok, 
 								QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
@@ -156,7 +156,7 @@ void errorBus::run()
 						setErrorReturn(MPKG_RETURN_SKIP);
 					case MPKG_INDEX_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Repository index error","Error retrieving repository index!",
+						emit sendErrorMessage(tr("Repository index error"),tr("Error retrieving repository index!"),
 								QMessageBox::Ok, 
 								QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
@@ -179,7 +179,7 @@ void errorBus::run()
 					//---------- INSTALLATION ERRORS --------------//
 					case MPKG_INSTALL_OUT_OF_SPACE:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Out of space!", "Error installing packages - out of space.\nFree some disk space and try again", QMessageBox::Retry | QMessageBox::Abort, QMessageBox::Retry);
+						emit sendErrorMessage(tr("Out of space!"), tr("Error installing packages - out of space.\nFree some disk space and try again"), QMessageBox::Retry | QMessageBox::Abort, QMessageBox::Retry);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -199,7 +199,7 @@ void errorBus::run()
 
 					case MPKG_INSTALL_SCRIPT_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Script error", "Error executing script", QMessageBox::Ok, QMessageBox::Ok);
+						emit sendErrorMessage(tr("Script error"), tr("Error executing script"), QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -208,7 +208,7 @@ void errorBus::run()
 						break;
 					case MPKG_INSTALL_EXTRACT_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Package extraction error", "Error extracting package.", QMessageBox::Ok, QMessageBox::Ok);
+						emit sendErrorMessage(tr("Package extraction error"), tr("Error extracting package."), QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -218,7 +218,7 @@ void errorBus::run()
 
 					case MPKG_INSTALL_META_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error extracting metadata", "Error while extracting metadata from package. Seems that package is broken", QMessageBox::Ok, QMessageBox::Ok);
+						emit sendErrorMessage(tr("Error extracting metadata"), tr("Error while extracting metadata from package. Seems that package is broken"), QMessageBox::Ok, QMessageBox::Ok);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -228,7 +228,7 @@ void errorBus::run()
 
 					case MPKG_INSTALL_FILE_CONFLICT:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("File conflict detected", "File conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)", QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
+						emit sendErrorMessage(tr("File conflict detected"), tr("Unresolvable file conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)"), QMessageBox::Ignore | QMessageBox::Abort, QMessageBox::Ignore);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -252,7 +252,7 @@ void errorBus::run()
 					//---------STARTUP ERRORS---------------//
 					case MPKG_STARTUP_COMPONENT_NOT_FOUND:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Some components not found!", "Some components were not found, the program can fail during runtime. Continue?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+						emit sendErrorMessage(tr("Some components not found!"), tr("Some components were not found, the program can fail during runtime. Continue?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -273,7 +273,7 @@ void errorBus::run()
 						break;
 					case MPKG_STARTUP_NOT_ROOT:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("UID != 0", "You should run this program as root!", QMessageBox::Abort, QMessageBox::Abort);
+						emit sendErrorMessage(tr("Access denied"), tr("You should run this program as root"), QMessageBox::Abort, QMessageBox::Abort);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -285,7 +285,7 @@ void errorBus::run()
 					//---------- SUBSYSTEM ERRORS ---------------------//
 					case MPKG_SUBSYS_SQLDB_INCORRECT:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("SQL database error","Incorrect database structure. Reinitialize?",
+						emit sendErrorMessage(tr("SQL database error"),tr("Incorrect database structure. Create from scratch?"),
 								QMessageBox::Yes | QMessageBox::No, 
 								QMessageBox::No);
 						while(userReply == QMessageBox::NoButton)
@@ -308,7 +308,7 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_SQLDB_OPEN_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("SQL database error","Unable to open database. This is critical, cannot continue",
+						emit sendErrorMessage(tr("SQL database error"),tr("Unable to open database. This is critical, cannot continue"),
 								QMessageBox::Ok,
 								QMessageBox::Ok);
 						while (userReply == QMessageBox::NoButton)
@@ -320,8 +320,8 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_XMLCONFIG_READ_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error in configuration files",
-							       	"Error in configuration files. Try to recreate? WARNING: all your settings will be lost!|",
+						emit sendErrorMessage(tr("Error in configuration files"),
+							       	tr("Error in configuration files. Try to recreate? WARNING: all your settings will be lost!|"),
 								QMessageBox::Yes | QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -343,8 +343,8 @@ void errorBus::run()
 						break;
 					case MPKG_SUBSYS_XMLCONFIG_WRITE_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error writing configuration files",
-							       	"Error writing configuration files. Retry?",
+						emit sendErrorMessage(tr("Error writing configuration files"),
+							       	tr("Error writing configuration files. Retry?"),
 								QMessageBox::Yes | QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -367,8 +367,8 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_SQLQUERY_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Internal error",
-							       	"SQL query error detected. This is critical internal error, we exit now.",
+						emit sendErrorMessage(tr("Internal error"),
+							       	tr("SQL query error detected. This is critical internal error, we exit now."),
 								QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -388,8 +388,8 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_TMPFILE_CREATE_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error creating temp file",
-							       	"Error while creating a temp file. In most cases this mean that no free file descriptors available. This is critical, cannot continue",
+						emit sendErrorMessage(tr("Error creating a temporary file"),
+							       	tr("Error while creating a temp file. In most cases this mean that no free file descriptors available. This is critical, cannot continue"),
 								QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -409,8 +409,8 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_FILE_WRITE_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error writing file",
-							       	"File write error! Check for free space. Retry?",
+						emit sendErrorMessage(tr("Error writing file"),
+							       	tr("File write error! Check for free space. Retry?"),
 								QMessageBox::Yes | QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -433,8 +433,8 @@ void errorBus::run()
 
 					case MPKG_SUBSYS_FILE_READ_ERROR:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Error reading file",
-							       	"File read error! Retry?",
+						emit sendErrorMessage(tr("Error reading file"),
+							       	tr("File read error! Retry?"),
 								QMessageBox::Yes | QMessageBox::Abort, 
 								QMessageBox::Abort);
 						while (userReply == QMessageBox::NoButton)
@@ -456,7 +456,7 @@ void errorBus::run()
 						break;
 					default:
 						userReply = QMessageBox::NoButton;
-						emit sendErrorMessage("Unknown error!!!", "Unknown error occured!!", QMessageBox::Ignore, QMessageBox::Ignore);
+						emit sendErrorMessage(tr("Unknown error!!!"), tr("Unknown error occured!!"), QMessageBox::Ignore, QMessageBox::Ignore);
 						while(userReply == QMessageBox::NoButton)
 						{
 							msleep(TIMER_RES);
@@ -522,7 +522,6 @@ statusThread::statusThread()
 
 void statusThread::run()
 {
-	//setPriority(QThread::LowestPriority);
 	int tmp_c, tmp_c2;
 	double dtmp, dtmp2;
 	string dlStatus;
@@ -726,7 +725,7 @@ void coreThread::_loadPackageDatabase()
 	pData.clear();
 
 	emit resetProgressBar();
-	currentStatus = "Loading package database";
+	currentStatus = tr("Loading package database").toStdString();
 	emit loadingStarted();
 	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
@@ -739,26 +738,23 @@ void coreThread::_loadPackageDatabase()
 		return;
 	}
 	delete packageList;
-	currentStatus = "Building version list";
+	currentStatus = tr("Building version list").toStdString();
 	actionBus.actions.at(actionBus.getActionPosition(ACTIONID_DBLOADING))._progressMaximum = tmpPackageList->size();
 
 	tmpPackageList->initVersioning();
 	actionBus.setActionState(ACTIONID_GETPKGLIST);
 	actionBus.setCurrentAction(ACTIONID_DBLOADING);
-	currentStatus = "Initializing status vectors";
 	packageList = tmpPackageList;
 	newStatus.clear();
 	for (int i=0; i<packageList->size(); i++)
 	{
 		newStatus.push_back(packageList->get_package(i)->action());
 	}
-	currentStatus = "Syncronizing";
 	sync();
-	currentStatus = "Setting up GUI elements";
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
-	currentStatus = "Loading packages into table";
+	currentStatus = tr("Loading packages into table").toStdString();
 	for (int i=0; i<packageList->size(); i++)
 	{
 		insertPackageIntoTable(i);
@@ -779,10 +775,9 @@ void coreThread::_loadPackageDatabase()
 
 	emit disableProgressBar();
 	emit loadingFinished();
-	currentStatus = "Applying package filters";
 	emit initState(true);
 	emit applyFilters();
-	currentStatus = "Loading finished";
+	currentStatus = tr("Loading finished").toStdString();
 	currentAction=CA_Idle;
 	actionBus.clear();
 	pData.clear();
@@ -804,7 +799,7 @@ void coreThread::_getCdromName()
 
 void coreThread::insertPackageIntoTable(unsigned int package_num)
 {
-	currentStatus = "Loading packages into table: "+IntToStr(package_num);
+	currentStatus = tr("Loading packages into table: ").toStdString()+IntToStr(package_num);
 
 	bool checked = false;
 	string package_icon;
@@ -816,7 +811,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 
 	PACKAGE *_p = packageList->get_package(package_num);
 	string cloneHeader;
-	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
+	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 	
 	switch (_p->action())
 	{
@@ -859,7 +854,7 @@ PACKAGE_LIST *coreThread::getPackageList()
 
 void coreThread::_updatePackageDatabase()
 {
-	currentStatus = "Updating package database from repositories...";
+	currentStatus = tr("Updating package database from repositories...").toStdString();
 	emit loadingStarted();
 	database->update_repository_data();
 	currentAction = CA_LoadDatabase;
@@ -877,7 +872,7 @@ void coreThread::commitQueue(vector<int> nStatus)
 }
 void coreThread::_commitQueue()
 {
-	currentStatus = "Committing...";
+	currentStatus = tr("Committing...").toStdString();
 	vector<string> install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
@@ -912,9 +907,10 @@ void coreThread::_commitQueue()
 	{
 		database->unqueue(reset_queue[i]);
 	}
-	currentStatus = "Committing changes...";
+	currentStatus = tr("Committing changes...").toStdString();
 	database->commit();
-	currentStatus = "All operations completed";
+
+	currentStatus = tr("All operations completed").toStdString();
 	delete database;
 	database = new mpkg;
 	currentAction = CA_LoadDatabase;
@@ -930,9 +926,9 @@ void coreThread::syncData()
 
 void coreThread::cleanCache()
 {
-	currentStatus = "Cleaning package cache";
+	currentStatus = tr("Cleaning package cache").toStdString();
 	database->clean_cache();
-	currentStatus = "Cleanup complete";
+	currentStatus = tr("Cleanup complete").toStdString();
 	sleep(1);
 	emit loadingFinished();
 }

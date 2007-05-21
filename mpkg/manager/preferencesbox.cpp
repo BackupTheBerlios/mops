@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.16 2007/05/14 13:45:54 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.17 2007/05/21 14:07:18 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -62,23 +62,17 @@ void PreferencesBox::addRepositoryShow()
 {
 	editMode = REP_ADDMODE;
 
-	ui.applyRepChangesButton->setText("Add");
+	ui.applyRepChangesButton->setText(tr("Add"));
 	ui.addRepositoryButton->setEnabled(false);
 	ui.delRepositoryButton->setEnabled(false);
 	ui.editRepositoryButton->setEnabled(false);
 	ui.repTypeComboBox->setCurrentIndex(0);
 	changeRepositoryType();
-	//ui.urlLabel->setText("URL:");
 	ui.urlEdit->clear();
 	ui.loginEdit->clear();
 	ui.passwdEdit->clear();
 	ui.volNameEdit->clear();
 	ui.authCheckBox->setCheckState(Qt::Unchecked);
-	//ui.loginLabel->hide();
-	//ui.loginEdit->hide();
-	//ui.passwdlabel->hide();
-	//ui.passwdEdit->hide();
-	//ui.urlHelpSearch->hide();
 	ui.addModifyRepositoryFrame->show();
 }
 
@@ -106,7 +100,7 @@ void PreferencesBox::changeRepositoryType()
 	switch(ui.repTypeComboBox->currentIndex())
 	{
 		case 0:
-			ui.urlLabel->setText("URL:");
+			ui.urlLabel->setText(tr("URL:"));
 			ui.urlHelpSearch->hide();
 			ui.authCheckBox->show();
 			ui.volNameEdit->hide();
@@ -115,7 +109,7 @@ void PreferencesBox::changeRepositoryType()
 			switchAuthMode();
 			break;
 		case 1:
-			ui.urlLabel->setText("Path:");
+			ui.urlLabel->setText(tr("Path:"));
 			ui.urlHelpSearch->show();
 			ui.authCheckBox->hide();
 			ui.loginLabel->hide();
@@ -128,7 +122,7 @@ void PreferencesBox::changeRepositoryType()
 
 			break;
 		case 2:
-			ui.urlLabel->setText("Relative path:");
+			ui.urlLabel->setText(tr("Relative path:"));
 			ui.urlHelpSearch->show();
 			ui.authCheckBox->hide();
 			ui.loginLabel->hide();
@@ -146,33 +140,31 @@ void PreferencesBox::detectCdromVolnameCall()
 {
 	//mpkgErrorReturn errRet;
 	ui.volNameDetectButton->setEnabled(false);
-	ui.volNameDetectButton->setText("Detecting...");
+	ui.volNameDetectButton->setText(tr("Detecting..."));
 	emit getCdromName();
 }
 
 void PreferencesBox::repTableChanged()
 {
-	printf("Changes detected\n");
 	repositoryChangesMade=true;
 }
 
 void PreferencesBox::recvCdromVolname(string volname)
 {
-	printf("recv volname = [%s]\n", volname.c_str());
 	if (volname.empty())
 	{
-		printf("no volname\n");
-		ui.volNameDetectButton->setText("Detect");
+		mDebug("no volname");
+		ui.volNameDetectButton->setText(tr("Detect"));
 		ui.volNameDetectButton->setEnabled(true);
 		return;
 	}
-	ui.volNameDetectButton->setText("Detect");
+	ui.volNameDetectButton->setText(tr("Detect"));
 	ui.volNameDetectButton->setEnabled(true);
 	ui.volNameEdit->setText(volname.c_str());
 }
 void PreferencesBox::urlHelpSearchShow()
 {
-	QString url = QFileDialog::getExistingDirectory(this, "Select a repository folder", ui.urlEdit->text());
+	QString url = QFileDialog::getExistingDirectory(this, tr("Select a repository folder"), ui.urlEdit->text());
 	if (!url.isEmpty()) ui.urlEdit->setText(url);
 }
 
@@ -180,7 +172,7 @@ void PreferencesBox::sysCacheHelpShow()
 {
 	string current = ui.syscacheEdit->text().toStdString();
 	if (current[current.length()-1] == '/') current = current.substr(0,current.length()-1);
-	QString sroot = QFileDialog::getExistingDirectory(this, "Select package cache folder", current.c_str());
+	QString sroot = QFileDialog::getExistingDirectory(this, tr("Select package cache folder"), current.c_str());
 	if (!sroot.isEmpty()) ui.syscacheEdit->setText(sroot);
 }
 
@@ -189,7 +181,7 @@ void PreferencesBox::sysDBHelpShow()
 	string current = ui.dbfileEdit->text().toStdString();
 	current = current.substr(current.find("://")+3);
 
-	QString sroot = QFileDialog::getOpenFileName(this, "Select a database file", current.c_str());
+	QString sroot = QFileDialog::getOpenFileName(this, tr("Select a database file"), current.c_str());
 	if (!sroot.isEmpty()) ui.dbfileEdit->setText(sroot);
 }
 
@@ -198,7 +190,7 @@ void PreferencesBox::sysScriptsHelpShow()
 	string current = ui.scriptsfolderEdit->text().toStdString();
 	if (current[current.length()-1] == '/') current = current.substr(0,current.length()-1);
 
-	QString sroot = QFileDialog::getExistingDirectory(this, "Select script storage folder", current.c_str());
+	QString sroot = QFileDialog::getExistingDirectory(this, tr("Select script storage folder"), current.c_str());
 	if (!sroot.isEmpty()) ui.scriptsfolderEdit->setText(sroot);
 }
 
@@ -207,7 +199,7 @@ void PreferencesBox::sysRootHelpShow()
 	string current = ui.sysrootEdit->text().toStdString();
 	if (current[current.length()-1] == '/') current = current.substr(0,current.length()-1);
 
-	QString sroot = QFileDialog::getExistingDirectory(this, "Select system root folder", current.c_str());
+	QString sroot = QFileDialog::getExistingDirectory(this, tr("Select system root folder"), current.c_str());
 	if (!sroot.isEmpty()) ui.sysrootEdit->setText(sroot);
 }
 
@@ -225,7 +217,7 @@ void PreferencesBox::editRepositoryShow()
 	editingRepository = ui.repositoryTable->currentRow();
 	editMode = REP_EDITMODE;
 	
-	ui.applyRepChangesButton->setText("Apply");
+	ui.applyRepChangesButton->setText(tr("Apply"));
 	//string url_type;
 	string login;
 	string password;
@@ -300,9 +292,6 @@ void PreferencesBox::openInterface()
 
 void PreferencesBox::loadData()
 {
-	// Load interface
-	// Load core
-	printf("Loading core data\n");
 	ui.sysrootEdit->setText(mDb->get_sysroot().c_str());
 	ui.syscacheEdit->setText(mDb->get_syscache().c_str());
 	ui.dbfileEdit->setText(mDb->get_dburl().c_str());
@@ -311,7 +300,6 @@ void PreferencesBox::loadData()
 	ui.mountPointEdit->setText(mDb->get_cdrommountpoint().c_str());
 	ui.volNameLabel->setTextFormat(Qt::RichText);
 	ui.urlLabel->setTextFormat(Qt::RichText);
-	printf("Loading checkfiles configuration\n");
 	switch(mDb->get_checkFiles())
 	{
 		case CHECKFILES_PREINSTALL:
@@ -334,14 +322,10 @@ void PreferencesBox::loadData()
 			break;
 	}
 	ui.scriptsfolderEdit->setText(mDb->get_scriptsdir().c_str());
-	// Load accounts
-	// Load repository
-	printf("Loading repository vectors\n");
 	vector<string> rList;
         rList = mDb->get_repositorylist();
 	vector<string> drList;
         drList = mDb->get_disabled_repositorylist();
-	printf("Filling repository table\n");
 	ui.repositoryTable->clearContents();
 	ui.repositoryTable->setRowCount(rList.size()+drList.size());
 	oldRepStatus.clear();
@@ -358,7 +342,6 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i,0,rCheckBox);
 		ui.repositoryTable->setItem(i, 1, new QTableWidgetItem(rList[i].c_str()));
 	}
-	printf("Filling disabled repository table\n");
 	for (unsigned int i=0; i < drList.size(); i++)
 	{
 		repStatus.push_back(true);
@@ -370,10 +353,8 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBox);
 		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
 	}
-	printf("Setting table sizes\n");
 	ui.repositoryTable->setColumnWidth(0, 32);
  	ui.repositoryTable->setColumnWidth(1, 900);
-	printf("Data loaded\n");
 	repositoryChangesMade = false;
 }
 
@@ -390,7 +371,7 @@ void PreferencesBox::applyRepositoryChanges()
 			body_pos = tmp_url.find("://");
 			if (body_pos == std::string::npos)
 			{
-				ui.urlLabel->setText("<html><font color = \"#FF0000\">URL:</color></html>");
+				ui.urlLabel->setText("<html><font color = \"#FF0000\">"+tr("URL:")+"</color></html>");
 				return;
 			}
 			else body_pos = body_pos + 3;
@@ -410,7 +391,7 @@ void PreferencesBox::applyRepositoryChanges()
 			urlString = "file://";
 			if (ui.urlEdit->text().length()==0)
 			{
-				ui.urlLabel->setText("<font color=\"#FF0000\">Path:</color>");
+				ui.urlLabel->setText("<font color=\"#FF0000\">"+tr("Path:")+"</color>");
 				return;
 			}
 
@@ -420,13 +401,13 @@ void PreferencesBox::applyRepositoryChanges()
 			urlString = "cdrom://";
 			if (ui.urlEdit->text().length()==0)
 			{
-				ui.urlLabel->setText("<font color=\"#FF0000\">Relative path:</color>");
+				ui.urlLabel->setText("<font color=\"#FF0000\">"+tr("Relative path:")+"</color>");
 				return;
 			}
 
 			if (ui.volNameEdit->text().length()==0)
 			{
-				ui.volNameLabel->setText("<font color=\"#FF0000\">Volume name:</color>");
+				ui.volNameLabel->setText("<font color=\"#FF0000\">"+tr("Volume name:")+"</color>");
 				return;
 			}
 			urlString += ui.volNameEdit->text().toStdString() + "/" + ui.urlEdit->text().toStdString();
@@ -467,9 +448,7 @@ void PreferencesBox::cancelRepositoryEdit()
 
 void PreferencesBox::openCore()
 {
-	printf("loading data...\n");
 	loadData();
-	printf("Enabling window...\n");
 	ui.tabWidget->setCurrentIndex(1);
 	show();
 }
@@ -501,23 +480,19 @@ void PreferencesBox::applyConfig()
 	{
 		if (repStatus[i])
 		{
-			printf("enabled\n");
 			rList.push_back(ui.repositoryTable->item(i, 1)->text().toStdString());
 		}
 		else
 		{
-			printf("disabled\n");
 			drList.push_back(ui.repositoryTable->item(i,1)->text().toStdString());
 		}
 	}
 	mDb->set_repositorylist(rList, drList);
 	if (repositoryChangesMade)
 	{
-		if (QMessageBox::warning(this, "Repository list changed", "You have modified repository list. Update package data?", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)==QMessageBox::Yes) emit updatePackageData();
+		if (QMessageBox::warning(this, tr("Repository list changed"), tr("You have modified repository list. Update package data?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)==QMessageBox::Yes) emit updatePackageData();
 	}
 	repositoryChangesMade = false;
-
-	// TODO: Apply config
 }
 
 RCheckBox::RCheckBox(PreferencesBox *parent)

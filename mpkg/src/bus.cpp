@@ -1,24 +1,13 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.13 2007/05/20 01:32:55 i27249 Exp $
+ * $Id: bus.cpp,v 1.14 2007/05/21 14:07:18 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
 string currentItem;
 ProgressData pData;
 ActionBus actionBus;
-//double dlProgress;
-//double dlProgressMax;
-/*static void ProgressData::setProgress(unsigned int itemNum, double progress)
-{
-	if (itemNum<itemProgress.size()) itemProgress.at(itemNum)=progress;
-}
-static void ProgressData::setProgressMaximum(unsigned int itemNum, double progress)
-{
-	if (itemNum<itemProgressMaximum.size()) itemProgressMaximum.at(itemNum)=progress;
-}
-*/
 
 ProgressData::ProgressData()
 {
@@ -456,3 +445,4 @@ double ActionState::progressMaximum()
 {
 	return _progressMaximum;
 }
+

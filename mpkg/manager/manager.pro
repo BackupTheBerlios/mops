@@ -8,6 +8,8 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
+
+TRANSLATIONS = 	pkgmanager_ru.ts
 HEADERS += aboutbox.h \
            corethread.h \
            db.h \
@@ -21,7 +23,7 @@ FORMS += aboutbox.ui \
          pkgmanager.ui \
          preferencesbox.ui
 
- SOURCES += aboutbox.cpp \
+SOURCES += aboutbox.cpp \
            corethread.cpp \
            db.cpp \
            loading.cpp \
@@ -29,3 +31,11 @@ FORMS += aboutbox.ui \
            mainwindow.cpp \
            preferencesbox.cpp \
            tablelabel.cpp
+
+LIBS += -lmpkg
+
+
+CODECFORTR = "UTF-8"
+CODECFORSRC = "UTF-8"
+CODECFORCSTRINGS = "UTF-8"
+		

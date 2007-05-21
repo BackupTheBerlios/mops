@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.90 2007/05/21 10:08:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.91 2007/05/21 14:07:18 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -50,12 +50,12 @@ void MainWindow::showErrorMessage(QString headerText, QString bodyText, QMessage
 }
 void MainWindow::sqlQueryBegin()
 {
-	currentStatus="Loading database...";
+	currentStatus=tr("Loading database...").toStdString();
 }
 
 void MainWindow::sqlQueryEnd()
 {
-	currentStatus="Data loaded, rendering visuals";
+	currentStatus=tr("Data loaded, rendering visuals").toStdString();
 }
 
 void MainWindow::loadingStarted()
@@ -93,7 +93,7 @@ void MainWindow::loadingFinished()
 	ui.deselectAllButton->show();
 
 	setTableSize();
-	currentStatus = "Idle";
+	currentStatus = tr("Idle").toStdString();
 }
 
 void MainWindow::enableProgressBar()
@@ -137,10 +137,9 @@ void MainWindow::applyPackageFilter ()
 {
 	if (!initializeOk)
 	{
-		printf("Attempt to run %s without initializing main window\n", __func__);
 		return;
 	}
-	string pkgBoxLabel = "Packages";
+	string pkgBoxLabel = tr("Packages").toStdString();
 	QString nameMask;
 	bool nameOk = false;
 	bool statusOk = false;
@@ -276,7 +275,7 @@ void MainWindow::applyPackageFilter ()
 	} // for (...)	
 	string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
 	
-	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+" packages), total: " + s_installQueueSize + " to install";
+	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())+tr(" packages), total: ").toStdString() + s_installQueueSize + tr(" to install").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
 }
 
@@ -329,7 +328,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	string depData;
 	if (packagelist->get_package(row)->get_dependencies()->size()>0)
 	{
-		depData = "<b> Depends on: </b>";
+		depData = "<b> "+tr("Depends on:").toStdString()+" </b>";
 		for (unsigned int i=0; i<packagelist->get_package(row)->get_dependencies()->size(); i++)
 		{
 			depData += "<br>"+packagelist->get_package(row)->get_dependencies()->at(i).getDepInfo();
@@ -337,11 +336,11 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 		depData+="<br>";
 	}
 
-	cellItemText+="<html><b>Installed version: </b>" + packagelist->get_package(row)->installedVersion + \
-		       "<br><b>It is max version: </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
-		       "<br><b>Max version: </b>" + packagelist->get_package(row)->maxVersion + \
+	cellItemText+="<html><b>"+tr("Installed version:").toStdString()+" </b>" + packagelist->get_package(row)->installedVersion + \
+		       "<br><b>"+tr("It is max version:").toStdString()+" </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
+		       "<br><b>"+tr("Max version:").toStdString()+" </b>" + packagelist->get_package(row)->maxVersion + \
 			"<br>" + depData + \
-			"<br><br><b>Description: </b><br>" + \
+			"<br><br><b>"+tr("Description:").toStdString()+" </b><br>" + \
 		       adjustStringWide(*packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description()->size())+ \
 		       		       "</html>";
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
@@ -359,6 +358,9 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf-8"));
+
 	initializeOk=false;
 	consoleMode=false; // Setting event tracking to GUI mode
 	currentCategoryID=1;
@@ -383,7 +385,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	}
 
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
 	initCategories();
@@ -398,8 +399,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.indicatorLabel->setMovie(movie);
 	movie->start();
 	ui.progressTable->setColumnWidth(0,190);
-	ui.progressTable->setColumnWidth(1,150);
-	ui.progressTable->setColumnWidth(2,350);
+	ui.progressTable->setColumnWidth(1,350);
+	ui.progressTable->setColumnHidden(2,true);
 
 	this->show();
 	clearForm();
@@ -554,8 +555,6 @@ void MainWindow::updateProgressData()
 		for (unsigned int i=0; i<pData.size(); i++)
 		{
 			tablePos=i;
-			//ui.packageTable->setRowHidden(i, true);
-
 			showIt=false;
 			updateIt=false;
 			keepCount=false;
@@ -590,21 +589,20 @@ void MainWindow::updateProgressData()
 				}
 				
 				ui.progressTable->setItem(tablePos,0, __name);
-				ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.getItemCurrentAction(i).c_str()));
-				
 				if (pData.getItemState(i)==ITEMSTATE_INPROGRESS)
 				{
 					QProgressBar *pBar = new QProgressBar;
+					pBar->setFormat(pData.getItemCurrentAction(i).c_str());
 					if (pData.size()>0) dtmp = 100 * (pData.getItemProgress(i)/pData.getItemProgressMaximum(i));
 					tmp_c = (int) dtmp;
 
 					pBar->setMaximum(100);
 					pBar->setValue(tmp_c);
-					ui.progressTable->setCellWidget(tablePos,2,pBar);
+					ui.progressTable->setCellWidget(tablePos,1,pBar);
 				}
 				else
 				{
-					ui.progressTable->setItem(tablePos, 2, new QTableWidgetItem(""));
+					ui.progressTable->setItem(tablePos,1,new QTableWidgetItem(pData.getItemCurrentAction(i).c_str()));
 				}
 				ui.progressTable->setRowHeight(tablePos,20);
 			}
@@ -746,8 +744,11 @@ void MainWindow::showPackageInfo()
 	//long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
 	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->get_package(id);
-	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>Architecture:</b> "+*pkg->get_arch()+"<br><b>Build:</b> "+*pkg->get_build();
-	info += "<br><b>Description: </b><br>"+*pkg->get_description()+"</p></html>";
+	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>"+\
+		       tr("Architecture:").toStdString()+"</b> "+*pkg->get_arch()+"<br><b>" + \
+		       tr("Build:").toStdString()+"</b> "+*pkg->get_build();
+
+	info += "<br><b>" + tr("Description:").toStdString()+" </b><br>"+*pkg->get_description()+"</p></html>";
 	mstring taglist;
 	for (unsigned int i=0; i< pkg->get_tags()->size(); i++)
 	{
@@ -756,17 +757,17 @@ void MainWindow::showPackageInfo()
 	}
 	string extendedInfo = (string) "<html>" \
 			       + (string) "<h2>" + *pkg->get_name() + (string) "</h2>" \
-			       + (string) "<br><b>Version: </b>" + *pkg->get_version() \
-			       + (string) "<br><b>Arch: </b>"+*pkg->get_arch() \
-			       + (string) "<br><b>Build: </b>"+*pkg->get_build() \
-			       + (string) "<br><b>Package size: </b>" + humanizeSize(*pkg->get_compressed_size()) \
-			       + (string) "<br><b>Installed size: </b>" + humanizeSize(*pkg->get_installed_size()) \
-			       + (string) "<br><b>Filename: </b>" + *pkg->get_filename() \
-			       + (string) "<br><b>MD5 sum: </b>"+*pkg->get_md5() \
-			       + (string) "<br><b>Maintainer: </b>"+*pkg->get_packager() \
+			       + (string) "<br><b>"+tr("Version:").toStdString()+" </b>" + *pkg->get_version() \
+			       + (string) "<br><b>"+tr("Arch:").toStdString()+" </b>"+*pkg->get_arch() \
+			       + (string) "<br><b>"+tr("Build:").toStdString()+" </b>"+*pkg->get_build() \
+			       + (string) "<br><b>"+tr("Package size:").toStdString()+" </b>" + humanizeSize(*pkg->get_compressed_size()) \
+			       + (string) "<br><b>"+tr("Installed size:").toStdString()+" </b>" + humanizeSize(*pkg->get_installed_size()) \
+			       + (string) "<br><b>"+tr("Filename:").toStdString()+" </b>" + *pkg->get_filename() \
+			       + (string) "<br><b>"+tr("MD5 sum:").toStdString()+" </b>"+*pkg->get_md5() \
+			       + (string) "<br><b>"+tr("Maintainer:").toStdString()+" </b>"+*pkg->get_packager() \
 			       + (string) " (" + *pkg->get_packager_email() + (string)")" \
-			       + (string) "<br><b>Status: </b>" + pkg->get_vstatus() \
-			       + (string) "<br><br><b>Tags: </b> " \
+			       + (string) "<br><b>"+tr("Status:").toStdString()+" </b>" + pkg->get_vstatus() \
+			       + (string) "<br><br><b>"+tr("Tags:").toStdString()+"</b> " \
 			       + taglist.s_str() \
 			       + (string) "</html>";
 
@@ -838,9 +839,26 @@ void MainWindow::updateData()
 	
 void MainWindow::quitApp()
 {
-	this->hide();
-	//currentStatus="exiting...";
+	if (!actionBus.idle())
+	{
+		if (QMessageBox::warning(this, \
+					tr("Some actions doesn't completed"), \
+					tr("Some actions hasn't completed yet. Abort and exit?"), \
+					QMessageBox::Yes | QMessageBox::No, \
+					QMessageBox::No) \
+				== QMessageBox::Yes)
+		{
+			actionBus.abortActions();
+			currentStatus = tr("Aborting actions...").toStdString();
+		}
+		else
+		{
+			return;
+		}
+	}
+	else currentStatus = tr("Exiting...").toStdString();
 	thread->callQuit();
+	this->hide();
 	qApp->quit();
 
 }
@@ -925,19 +943,19 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 			if (_p->installed() && force_state == ST_REMOVE)
 			{
 				newStatus[i]=force_state;
-				currentStatus="Package queued to remove";
+				currentStatus=tr("Package queued to remove").toStdString();
 				state = Qt::Unchecked;
 			}
 			if (_p->configexist() && force_state == ST_PURGE)
 			{
 				newStatus[i] = force_state;
-				currentStatus = "Package queued to purge";
+				currentStatus = tr("Package queued to purge").toStdString();
 				state = Qt::Unchecked;
 			}
 			if (!_p->installed() && force_state == ST_INSTALL)
 			{
 				newStatus[i] = force_state;
-				currentStatus = "Package queued to install";
+				currentStatus = tr("Package queued to install").toStdString();
 				state = Qt::Checked;
 			}
 		}
@@ -951,40 +969,40 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					currentStatus="Package keeped in system";
+					currentStatus=tr("Package keeped in system").toStdString();
 				}
 				else
 				{
 					newStatus[i]=ST_REMOVE;
-					currentStatus="Package queued to remove";
+					currentStatus=tr("Package queued to remove").toStdString();
 				}
 				break;
 			case ST_REMOVE:
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					currentStatus="Package removed from remove queue";
+					currentStatus=tr("Package removed from remove queue").toStdString();
 				}
 				else
 				{
 					newStatus[i]=ST_REMOVE;
-					currentStatus="Package queued to remove";
+					currentStatus=tr("Package queued to remove").toStdString();
 				}
 				break;
 			case ST_PURGE:
 				if (state == Qt::Checked)
 				{
 					newStatus[i]=ST_NONE;
-					currentStatus="Package removed from purge queue";
+					currentStatus=tr("Package removed from purge queue").toStdString();
 				}
 				else
 				{
 					newStatus[i]=ST_PURGE;
-					currentStatus="Package queued to purge";
+					currentStatus=tr("Package queued to purge").toStdString();
 				}
 				break;
 			default:
-				currentStatus="Unknown condition";
+				currentStatus=tr("Unknown condition").toStdString();
 			}
 		} // if(_p->installed())
 		else
@@ -996,28 +1014,28 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 					if (state==Qt::Checked)
 					{
 						newStatus[i]=ST_INSTALL;
-						currentStatus="Package queued to install";
+						currentStatus=tr("Package queued to install").toStdString();
 					}
 					else
 					{
 						newStatus[i]=ST_NONE;
-						currentStatus="Package unqueued";
+						currentStatus=tr("Package unqueued").toStdString();
 					}
 					break;
 				case ST_PURGE:
 					if (state==Qt::Checked)
 					{
 						newStatus[i]=ST_NONE;
-						currentStatus="Package queued to install";
+						currentStatus=tr("Package queued to install").toStdString();
 					}
 					else
 					{
 						newStatus[i]=ST_PURGE;
-						currentStatus="Package queued to purge";
+						currentStatus=tr("Package queued to purge").toStdString();
 					}
 					break;
 				default:
-					currentStatus="Unknown condition";
+					currentStatus=tr("Unknown condition").toStdString();
 			}
 		} // else
 		} // else (force_state)
@@ -1046,7 +1064,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 			break;
 		}
 		string cloneHeader;
-		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">[update]</font></b>";
+		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 
 		
 		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\

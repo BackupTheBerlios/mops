@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.22 2007/05/16 06:43:19 i27249 Exp $
+ *     $Id: main.cpp,v 1.23 2007/05/21 14:07:18 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -14,7 +14,9 @@ int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 	MainWindow mw;
-	
+	QTranslator translator;
+	translator.load("pkgmanager_ru");
+	app.installTranslator(&translator);
 	QObject::connect(mw.ui.selectAllButton, SIGNAL(clicked()), &mw, SLOT(selectAll()));
 	QObject::connect(mw.ui.deselectAllButton, SIGNAL(clicked()), &mw, SLOT(deselectAll()));
 	QObject::connect(mw.ui.actionQuit, SIGNAL(triggered()), &mw, SLOT(quitApp()));
