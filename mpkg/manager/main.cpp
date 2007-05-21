@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.24 2007/05/21 16:56:08 i27249 Exp $
+ *     $Id: main.cpp,v 1.25 2007/05/21 18:35:55 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
 	QTranslator translator;
-	translator.load("pkgmanager_ru");
+	translator.load("/usr/share/mpkg/pkgmanager_ru");
 	app.installTranslator(&translator);
 
 	MainWindow mw;

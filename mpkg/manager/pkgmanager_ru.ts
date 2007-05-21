@@ -906,7 +906,7 @@ Free some disk space and try again</source>
     <message>
         <location filename="preferencesbox.ui" line="198"/>
         <source>CD/DVD device: </source>
-        <translation>Имя устройства CD/DVD: </translation>
+        <translation>Имя CD-ROM:</translation>
     </message>
     <message>
         <location filename="preferencesbox.ui" line="212"/>

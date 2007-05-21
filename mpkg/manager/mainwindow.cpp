@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.91 2007/05/21 14:07:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.92 2007/05/21 18:35:55 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
-//#include "packageitem.h"
 void MainWindow::setSkipButton(bool flag)
 {
 	ui.skipButton->setVisible(flag);
@@ -33,7 +32,6 @@ void MainWindow::setIdleButtons(bool flag)
 	ui.applyButton->setVisible(flag);
 	ui.quitButton->setVisible(flag);
 	ui.abortButton->setVisible(!flag);
-	//ui.listWidget->setVisible(flag);
 }
 
 void MainWindow::errorLoadingDatabase()
@@ -85,7 +83,6 @@ void MainWindow::loadingFinished()
 	ui.splashFrame->hide();
 	ui.packageListBox->setEnabled(true);
 	ui.progressTable->hide();
-	//ui.packageInfoBox->show();
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
 	ui.packageTable->show();
@@ -414,15 +411,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	qRegisterMetaType<string>("string");
 	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
 	qRegisterMetaType< vector<int> >("vector<int>");
-	//QObject::connect(installPackageAction, SIGNAL(triggered()), this, SLOT(markToInstall()));
-	//QObject::connect(ui.packageTable, SIGNAL(customContextMenuRequested(const QPoint)), this, SLOT(execMenu()));
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
 	ui.progressTable->hide();
 	// Building thread connections
 	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
-	//QObject::connect(thread, SIGNAL(showProgressWindow(bool)), StatusThread, SLOT(setPDataActive(bool)));
 	QObject::connect(StatusThread, SIGNAL(setSkipButton(bool)), this, SLOT(setSkipButton(bool)));
 	QObject::connect(StatusThread, SIGNAL(setIdleButtons(bool)), this, SLOT(setIdleButtons(bool)));
 	QObject::connect(ui.abortButton, SIGNAL(clicked()), this, SLOT(abortActions()));
@@ -472,7 +466,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
 	prefBox = new PreferencesBox(mDb);
-		//ui.statusbar->addWidget(indicator);
 	QObject::connect(prefBox, SIGNAL(updatePackageData()), thread, SLOT(updatePackageDatabase()));
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
@@ -741,7 +734,6 @@ void MainWindow::resetQueue()
 
 void MainWindow::showPackageInfo()
 {
-	//long id = ui.packageTable->item(ui.packageTable->currentRow(), PT_ID)->text().toLong();
 	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->get_package(id);
 	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>"+\
@@ -793,21 +785,12 @@ void MainWindow::initPackageTable()
     QTableWidgetItem *__colItem0 = new QTableWidgetItem();
     __colItem0->setText(QApplication::translate("MainWindow", "", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_INSTALLCHECK, __colItem0);
-   
-    //QTableWidgetItem *__colItem = new QTableWidgetItem();
-    //__colItem->setText(QApplication::translate("MainWindow", "Status", 0, QApplication::UnicodeUTF8));
-    //ui.packageTable->setHorizontalHeaderItem(PT_STATUS, __colItem);
-    //ui.packageTable->setColumnHidden(PT_STATUS, true);
 
     QTableWidgetItem *__colItem1 = new QTableWidgetItem();
     __colItem1->setText(QApplication::translate("MainWindow", "Name", 0, QApplication::UnicodeUTF8));
     ui.packageTable->setHorizontalHeaderItem(PT_NAME, __colItem1);
 
-    //QTableWidgetItem *__colItem7 = new QTableWidgetItem();
-    //__colItem7->setText(QApplication::translate("MainWindow", "ID", 0, QApplication::UnicodeUTF8));
-    //ui.packageTable->setHorizontalHeaderItem(PT_ID, __colItem7);
-    //ui.packageTable->setColumnHidden(PT_ID, true);
-	setTableSize();
+   setTableSize();
 }
 
 
@@ -874,11 +857,9 @@ void MainWindow::resetChanges()
 {
 	emit loadData();
 }
-//void MainWindow::saveQueue(){}
 void MainWindow::showAddRemoveRepositories(){
 	prefBox->openRepositories();
 }
-//void MainWindow::showCustomFilter(){}
 void MainWindow::setInstalledFilter()
 {
 	int action=0;
@@ -889,10 +870,6 @@ void MainWindow::setInstalledFilter()
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
 		showIt = false;
-		//action = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->action();
-		//available = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->available();
-		//installed = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->installed();
-		//configexist = packagelist->get_package(ui.packageTable->item(i, PT_ID)->text().toLong())->configexist();
 		action = packagelist->get_package(i)->action();
 		available = packagelist->get_package(i)->available();
 		installed = packagelist->get_package(i)->installed();
@@ -930,7 +907,6 @@ void MainWindow::setInstalledFilter()
 
 void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
-		//unsigned long i = ui.packageTable->item(x, PT_ID)->text().toLong();
 		unsigned long i = x;
 		if (i >= newStatus.size())
 		{
