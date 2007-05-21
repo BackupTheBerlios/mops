@@ -1,7 +1,7 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.8 2007/05/16 09:40:20 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.9 2007/05/21 19:25:45 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
@@ -13,17 +13,17 @@ TrayApp::TrayApp()
 	mThread->start();
 
 	appMenu = new QMenu;
-	appMenu->setTitle("Updates monitor");
+	appMenu->setTitle(tr("Updates monitor"));
 
 	forceUpdateAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/reload.png"),\
-			"Check now");
+			tr("Check now"));
 	appMenu->addSeparator();
 	mergeUpdatesAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/vcs_update.png"),\
-		       "Import changes into database");
+		       tr("Import changes into database"));
 	launchManagerAction = appMenu->addAction(QIcon("/usr/share/mpkg/icons/icons/crystalsvg/128x128/apps/package_applications.png"),\
-		       "Launch package manager");
+		       tr("Launch package manager"));
 	appMenu->addSeparator();
-	quitAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/exit.png"),"Quit");
+	quitAction = appMenu->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/exit.png"),tr("Quit"));
 	setContextMenu(appMenu);
 
 
@@ -42,7 +42,7 @@ TrayApp::TrayApp()
 
 	emit execThread();
 	emit forceCheckSig();
-	setToolTip("Updates monitor");
+	setToolTip(tr("Updates monitor"));
 	setIcon(QIcon("/usr/share/mpkg/icons/available.png"));
 	show();
 }
@@ -84,17 +84,16 @@ void TrayApp::showUpdateMessage(bool hasUpdates)
 {
 	if (hasUpdates) {
 		setIcon(QIcon("/usr/share/mpkg/icons/update.png"));
-		showMessage("System update monitor", "New updates available");
+		showMessage(tr("System update monitor"), tr("New updates available"));
 	}
 	else 
 	{
 		setIcon(QIcon("/usr/share/mpkg/icons/installed.png"));
-		//setIcon(QIcon("/opt/kde/share/icons/crystalsvg/22x22/actions/domtreeviewer.png"));
 	}
 
 }
 
 void TrayApp::showStateMessage(QString text)
 {
-	showMessage("System update monitor", text);
+	showMessage(tr("System update monitor"), text);
 }

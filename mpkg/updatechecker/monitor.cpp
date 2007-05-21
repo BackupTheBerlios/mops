@@ -1,7 +1,7 @@
 /******************************************
  * MOPSLinux package system
  * Update monitor - processing thread
- * $Id: monitor.cpp,v 1.5 2007/05/16 09:40:20 i27249 Exp $
+ * $Id: monitor.cpp,v 1.6 2007/05/21 19:25:45 i27249 Exp $
  */
 
 #include "monitor.h"
@@ -98,7 +98,7 @@ void monitorThread::mergeUpdates()
 void monitorThread::_mergeUpdates()
 {
 	system("mpkg update");
-	emit showStateMessage("Database updated");
+	emit showStateMessage(tr("Database updated"));
 }
 
 
