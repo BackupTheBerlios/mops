@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.55 2007/05/21 10:08:18 i27249 Exp $
+ *	$Id: core.cpp,v 1.56 2007/05/21 16:56:08 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -400,19 +400,34 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 void mpkgDatabase::createDBCache(bool extra)
 {
 	bool updateFList=false;
-	if (extra && !hasFileList) updateFList=true;
-	if (db.internalDataChanged || updateFList)
+	if (db.internalDataChanged)
 	{
 		mDebug("Creating cache");
 		SQLRecord sqlSearch;
-		get_packagelist(&sqlSearch, &packageDBCache, updateFList);
+		get_packagelist(&sqlSearch, &packageDBCache);
 		db.internalDataChanged=false;
-		hasFileList=updateFList;
 	}
 }
 
 int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInfo)
 {
+	/*
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_id");
+	PACKAGE_LIST p;
+	get_packagelist(&sqlSearch, &p, GetExtraInfo);
+	printf("package size = %d\n", p.size());
+	if (p.size()==1)
+	{
+		*package=*p.get_package(0);
+		return 0;
+	}
+	else
+	{
+		package->clear();
+		return MPKGERROR_NOPACKAGE;
+	}
+	*/
 	createDBCache(GetExtraInfo);
 	for (unsigned int i=0; i<packageDBCache.size(); i++)
 	{
@@ -429,15 +444,12 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 {
 	if (sqlSearch->empty() && !db.internalDataChanged)
 	{
-		bool upd=false;
-		if (GetExtraInfo && !hasFileList) upd=true;
-		if (!upd)
-		{
-			mDebug("SQL optimization using full cache");
-			*packagelist=packageDBCache;
-			return 0;
-		}
+		mDebug("SQL optimization using full cache");
+		*packagelist=packageDBCache;
+		return 0;
 	}
+
+#ifdef OPTIMIZE_SQL_QUERIES
 	if (sqlSearch->size()==1 && sqlSearch->getEqMode()==EQ_EQUAL )
 	{
 		if (*sqlSearch->getFieldName(0)=="package_name")
@@ -474,6 +486,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 
 
 	}
+#endif
 
 
 	SQLTable *sqlTable = new SQLTable;
@@ -506,19 +519,30 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 
 		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, "package_md5"));
 		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, "package_filename"));
-		if (GetExtraInfo)
+		/*if (GetExtraInfo && !sqlSearch->empty() && sqlSearch->size()<5)
 		{
 			get_filelist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_files());
-		}
-		packagelist->get_package(i)->sync();
-		get_locationlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_locations());
+		}*/
+		//get_locationlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_locations());
 #ifdef ENABLE_INTERNATIONAL
 		
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
 	}
+	/*
+	if (sqlSearch->empty() || sqlSearch->size()>=5)
+	{
+		if (GetExtraInfo) get_full_filelist(packagelist);
+	}*/
 	get_full_taglist(packagelist);
 	get_full_dependencylist(packagelist);
+	get_full_locationlist(packagelist);
+	if (sqlSearch->empty())
+	{
+		packageDBCache=*packagelist;
+		db.internalDataChanged=false;
+	}
+
 	delete sqlTable;
 	return 0;
 
@@ -586,6 +610,45 @@ int mpkgDatabase::get_filelist(int package_id, vector<FILES> *filelist, bool con
 	delete sqlTable;
 	return 0;
 }
+
+void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
+{
+	SQLTable *sqlTable = new SQLTable;
+	SQLRecord sqlSearch;
+	SQLRecord sqlFields;
+	sqlFields.addField("file_name");
+	sqlFields.addField("file_type");
+	sqlFields.addField("packages_package_id");
+	printf("query start\n");
+	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
+	printf("query end\n");
+	FILES tmp;
+	unsigned int package_id;
+	unsigned int counter;
+	for (unsigned int i=0; i<sqlTable->size(); i++)
+	{
+		package_id=atoi(sqlTable->getValue(i, "packages_package_id")->c_str());
+		for (unsigned int t=0; t<pkgList->size(); t++)
+		{
+			counter++;
+			if (pkgList->get_package(t)->get_id()==package_id)
+			{
+				tmp.set_name(sqlTable->getValue(i, "file_name"));
+				tmp.set_type(atoi(sqlTable->getValue(i, "file_type")->c_str()));
+				pkgList->get_package(t)->get_files()->push_back(tmp);
+			}
+		}
+	}
+	printf("linking end\n");
+	delete sqlTable;
+	for (unsigned int i=0; i<pkgList->size(); i++)
+	{
+		pkgList->get_package(i)->sync();
+	}
+	printf("syncling end, total %d iterations\n", counter);
+}
+
+
 
 int mpkgDatabase::get_dependencylist(int package_id, vector<DEPENDENCY> *deplist)
 {
@@ -744,6 +807,37 @@ int mpkgDatabase::get_locationlist(int package_id, vector<LOCATION> *location_li
 	}
 	delete sqlTable;
 	return 0;
+}
+
+void mpkgDatabase::get_full_locationlist(PACKAGE_LIST *pkgList)
+{
+	SQLTable *sqlTable = new SQLTable;
+	SQLRecord sqlFields;
+	SQLRecord sqlSearch;
+	sqlFields.addField("location_path");
+	sqlFields.addField("location_id");
+	sqlFields.addField("server_url");
+	sqlFields.addField("packages_package_id");
+
+	db.get_sql_vtable(sqlTable, sqlFields, "locations", sqlSearch);
+
+	int package_id;
+	LOCATION tmp;
+	for (unsigned int i=0; i<sqlTable->size(); i++)
+	{
+		package_id = atoi(sqlTable->getValue(i, "packages_package_id")->c_str());
+		for (unsigned int t=0; t<pkgList->size(); t++)
+		{
+			if (pkgList->get_package(t)->get_id()==package_id)
+			{
+				tmp.set_id(atoi(sqlTable->getValue(i, "location_id")->c_str()));
+				tmp.set_server_url(sqlTable->getValue(i, "server_url"));
+				tmp.set_path(sqlTable->getValue(i, "location_path"));
+				pkgList->get_package(t)->get_locations()->push_back(tmp);
+			}
+		}
+	}
+	delete sqlTable;
 }
 
 int mpkgDatabase::get_package_id(PACKAGE *package)

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.30 2007/05/21 10:08:18 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.31 2007/05/21 16:56:08 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -187,7 +187,7 @@ int mpkgSys::requestUninstall(PACKAGE *package, mpkgDatabase *db, DependencyTrac
 int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
 {
 	PACKAGE tmpPackage;
-	int ret = db->get_package(package_id, &tmpPackage);
+	int ret = db->get_package(package_id, &tmpPackage, false);
 	bool process=false;
 	if (ret == 0)
 	{
@@ -206,6 +206,7 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		if (process)
 		{
+			printf("rem added\n");
 			DepTracker->addToRemoveQuery(&tmpPackage);
 			return tmpPackage.get_id();
 		}

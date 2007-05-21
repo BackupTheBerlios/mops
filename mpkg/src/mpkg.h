@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.30 2007/05/21 10:08:18 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.31 2007/05/21 16:56:08 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -15,12 +15,13 @@ class mpkgDatabase
 {
 	public:
 		// Functions to get data
-		int get_package(int package_id, PACKAGE *package, bool GetExtraInfo=true);
-		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=true, bool ultraFast=false);
+		int get_package(int package_id, PACKAGE *package, bool GetExtraInfo=false);
+		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=false, bool ultraFast=false);
 #ifdef ENABLE_INTERNATIONAL
 		int get_descriptionlist(int package_id, vector<DESCRIPTION> *desclist, string language="");
 #endif
 		int get_filelist (int package_id, vector<FILES> *filelist, bool config_only=false);
+		void get_full_filelist(PACKAGE_LIST *pkgList);
 		int get_dependencylist(int package_id, vector<DEPENDENCY> *deplist);
 		void get_full_dependencylist(PACKAGE_LIST *pkgList);
 
@@ -29,6 +30,7 @@ class mpkgDatabase
 //		int get_server_tag_list(int server_id, SERVER_TAG_LIST *server_tag_list);
 //		int get_server(int server_id, SERVER *server);
 		int get_locationlist(int package_id, vector<LOCATION> *location_list);
+		void get_full_locationlist(PACKAGE_LIST *pkgList);
 //		int get_last_id(/*string table_name, string id_field=""*/);
 		int get_package_id(PACKAGE *package);
 		int get_installed(int package_id);

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.84 2007/05/21 14:07:18 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.85 2007/05/21 16:56:08 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -566,6 +566,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		mDebug("package_files size: "+IntToStr(package_files.size())+", package->get_files size: "+IntToStr(package->get_files()->size()));
 		add_filelist_record(package->get_id(), &package_files);
 	}
+	package->get_files()->clear();
+	package_files.clear();
 	sys+=" > /dev/null)";
 //#ifdef ACTUAL_EXTRACT
 	if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
@@ -602,6 +604,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	get_filelist(package->get_id(), package->get_files());
+	package->sync();
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
 	pData.setItemCurrentAction(package->itemID, "removing");
 
@@ -717,7 +721,8 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.increaseItemProgress(package->itemID);
 	sqlFlush();
 	currentStatus = statusHeader + "remove complete";
-	mDebug("*********************************************\n*        Package removed sussessfully     *\n*********************************************");
+	mDebug("Package removed sussessfully");
+	package->get_files()->clear();
 	return 0;
 }	// End of remove_package
 
