@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.22 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.23 2007/05/21 10:08:18 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -11,7 +11,6 @@ vector<string> temp_files;
 extern int errno;
 string get_file_md5(string filename)
 {
-	mDebug("get_file_md5 start");
 	string tmp_md5=get_tmp_file();
 
 	string sys="md5sum "+filename+" > "+tmp_md5 + " 2>/dev/null";
@@ -35,7 +34,6 @@ string get_file_md5(string filename)
 string get_tmp_file()
 {
 	string tmp_fname;
-	mDebug("get_tmp_file start");
 	//char *t=tmpnam(NULL);
 	char t[]="/tmp/mpkg-XXXXXX";
 	int fd;
@@ -52,7 +50,6 @@ create_tmp:
 	}
 
 	tmp_fname=t;
-	mDebug("get_tmp_file end");
 	temp_files.resize(temp_files.size()+1);
 	temp_files[temp_files.size()-1]=tmp_fname;
 	close(fd);
@@ -116,7 +113,6 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count, bool ignore_failure)
 {
-	mDebug("readfile start");
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
 	{
@@ -124,7 +120,6 @@ string ReadFile(string filename, int max_count, bool ignore_failure)
 		return "";
 	}
 	long size=fStat.st_size;
-	mDebug("size = " + IntToStr(size));
 	char *memblock = new char [size];
 
 	string ret;

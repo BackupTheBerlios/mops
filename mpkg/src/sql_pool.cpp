@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.38 2007/05/20 01:10:19 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.39 2007/05/21 10:08:18 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -159,11 +159,11 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 	// Get what?
 	if (fields.empty()) // If fields is empty, just get all fields
 	{
-		mDebug("Fields empty");
+		//mDebug("Fields empty");
 		vector<string> fieldnames=getFieldNames(table_name); // Get field names to fill
 		for (unsigned int i=0; i<fieldnames.size(); i++)
 			fields.addField(fieldnames[i]);
-		mDebug("empty fields built correctly");
+		//mDebug("empty fields built correctly");
 	}
 	for (int i=0; i<fields.size();i++) // Otherwise, get special fields
 	{
@@ -198,20 +198,20 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 	}
 
 	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str()+";";
-	mDebug("built sql query");
+	//mDebug("built sql query");
 	lastSQLQuery=sql_query;
-	mDebug("performing sql request");
+	//mDebug("performing sql request");
 	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
-	mDebug("sql request complete");
+	//mDebug("sql request complete");
 	if (sql_ret==0)
 	{
-		mDebug("sql ok, parsing output");
+		//mDebug("sql ok, parsing output");
 		output->clear(); // Ensure that output is clean and empty
 		SQLRecord row; 	// One row of data
 		int field_num=0;
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
-			mDebug("parsing "+IntToStr(current_row)+" row (total " + IntToStr(rows) + ")");
+			//mDebug("parsing "+IntToStr(current_row)+" row (total " + IntToStr(rows) + ")");
 			field_num=0;
 			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
@@ -221,9 +221,9 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 			}
 			output->addRecord(&row);
 		}
-		mDebug("parse complete, cleanup");
+		//mDebug("parse complete, cleanup");
 		sqlite3_free_table(table);
-		mDebug("cleanup complete");
+		//mDebug("cleanup complete");
 		return 0;
 	}
 	else return sql_ret;
@@ -278,7 +278,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("conflict_id");
 		fieldNames.push_back("conflict_file_name");
 		fieldNames.push_back("backup_file");
-		fieldNames.push_back("conflict_package_id");
+		fieldNames.push_back("conflicted_package_id");
 	}
  	if(table_name=="locations")
 	{
@@ -482,6 +482,7 @@ int SQLProxy::sqlCommit()
 
 int SQLProxy::clear_table(string table_name)
 {
+	internalDataChanged=true;
 	return sqliteDB.clear_table(table_name);
 }
 
@@ -511,23 +512,30 @@ int SQLProxy::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_na
 
 int SQLProxy::sql_insert(string table_name, SQLRecord values)
 {
+	internalDataChanged=true;
 	return sqliteDB.sql_insert(table_name, values);
 }
 
 int SQLProxy::sql_insert(string table_name, SQLTable values)
 {
+	internalDataChanged=true;
 	return sqliteDB.sql_insert(table_name, values);
 }
 
 int SQLProxy::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 {
+	internalDataChanged=true;
 	return sqliteDB.sql_update(table_name, fields, search);
 }
 
 int SQLProxy::sql_delete(string table_name, SQLRecord search)
 {
+	internalDataChanged=true;
 	return sqliteDB.sql_delete(table_name, search);
 }
 
-SQLProxy::SQLProxy(){}
+SQLProxy::SQLProxy()
+{
+	internalDataChanged=true;
+}
 SQLProxy::~SQLProxy(){}

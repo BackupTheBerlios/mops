@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.29 2007/05/20 01:10:19 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.30 2007/05/21 10:08:18 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -112,7 +112,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool localInstall)
 {
 	PACKAGE tmpPackage;
-	int ret = db->get_package(package_id, &tmpPackage);
+	int ret = db->get_package(package_id, &tmpPackage, false);
 	if (ret == 0)
 	{
 		if (tmpPackage.installed())

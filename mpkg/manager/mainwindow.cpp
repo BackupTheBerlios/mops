@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.89 2007/05/18 12:04:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.90 2007/05/21 10:08:18 i27249 Exp $
  *
  * TODO: Interface improvements
  * 
@@ -326,9 +326,21 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	pkgName->setText(cellItemText.c_str());
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
+	string depData;
+	if (packagelist->get_package(row)->get_dependencies()->size()>0)
+	{
+		depData = "<b> Depends on: </b>";
+		for (unsigned int i=0; i<packagelist->get_package(row)->get_dependencies()->size(); i++)
+		{
+			depData += "<br>"+packagelist->get_package(row)->get_dependencies()->at(i).getDepInfo();
+		}
+		depData+="<br>";
+	}
+
 	cellItemText+="<html><b>Installed version: </b>" + packagelist->get_package(row)->installedVersion + \
 		       "<br><b>It is max version: </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
 		       "<br><b>Max version: </b>" + packagelist->get_package(row)->maxVersion + \
+			"<br>" + depData + \
 			"<br><br><b>Description: </b><br>" + \
 		       adjustStringWide(*packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description()->size())+ \
 		       		       "</html>";

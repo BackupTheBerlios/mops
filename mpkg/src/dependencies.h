@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.10 2007/05/02 12:27:15 i27249 Exp $
+$Id: dependencies.h,v 1.11 2007/05/21 10:08:18 i27249 Exp $
 */
 
 
@@ -31,6 +31,9 @@ class DependencyTracker
 
 		PACKAGE_LIST installQueryList;
 		PACKAGE_LIST removeQueryList;
+
+		PACKAGE_LIST installedPackages;
+
 		mpkgDatabase *db;
 
 	public:

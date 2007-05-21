@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.56 2007/05/19 17:45:20 i27249 Exp $
+ * $Id: corethread.cpp,v 1.57 2007/05/21 10:08:18 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -844,20 +844,10 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 			package_icon="purge.png";
 			break;
 	}
-	string depData;
-	if (_p->get_dependencies()->size()>0)
-	{
-		depData = "<b> Depends on: </b>";
-		for (unsigned int i=0; i<_p->get_dependencies()->size(); i++)
-		{
-			depData += "<br>"+_p->get_dependencies()->at(i).getDepInfo();
-		}
-		depData+="<br>";
-	}
-	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
+		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
-		       	+ "<br>"+*_p->get_short_description()+ "<br>" + depData + "</td></tr></tbody></table>";
+		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
 	emit setTableItem(package_num, checked, pName);
 }
 

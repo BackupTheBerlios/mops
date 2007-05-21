@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.27 2007/05/18 07:35:33 i27249 Exp $
+$Id: dependencies.cpp,v 1.28 2007/05/21 10:08:18 i27249 Exp $
 */
 
 
@@ -76,19 +76,32 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 
 int DependencyTracker::renderData()
 {
+	// Retrieving common package list from database - we will use C++ logic.
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_installed", 1);
+	db->get_packagelist(&sqlSearch, &installedPackages,false);
+
+	mDebug("Rendering installations");
 	int failureCounter = 0;
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
-	for (int i=0; i<installStream.size(); i++)
+
+/*	for (int i=0; i<installStream.size(); i++)
 	{
 		say("[%d] %s\n", i, installStream.get_package(i)->get_name()->c_str());
-	}
+	}*/
+	mDebug("Rendering removing");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
+	mDebug("Filtering dupes: install");
 	filterDupes(&installStream);
+	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
 
+	mDebug("Muxing streams");
 	muxStreams(installStream, removeStream);
 
+	mDebug("Searching for broken packages");
 	failureCounter = findBrokenPackages(installList, &failure_list);
+	mDebug("done");
 	return failureCounter;
 }
 // Tree
@@ -167,11 +180,7 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 
 PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 {
-	SQLRecord sqlSearch;
-	sqlSearch.addField("package_installed", 1);
-	PACKAGE_LIST installedPackages;
 	PACKAGE_LIST dependantPackages;
-	db->get_packagelist(&sqlSearch, &installedPackages,false);
 	for (int i=0; i<installedPackages.size(); i++)
 	{
 		if (installedPackages.get_package(i)->isItRequired(package))
@@ -192,12 +201,12 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 	PACKAGE_LIST install_list;
 	PACKAGE_LIST remove_list;
 	PACKAGE_LIST conflict_list;
-	PACKAGE_LIST installedList;
+	//PACKAGE_LIST installedList;
 	PACKAGE_LIST installQueuedList;
 	PACKAGE_LIST removeQueuedList;
 	SQLRecord sqlSearch;
-	sqlSearch.addField("package_installed", 1);
-	db->get_packagelist(&sqlSearch, &installedList, false);
+	//sqlSearch.addField("package_installed", 1);
+	//db->get_packagelist(&sqlSearch, &installedList, false);
 
 	sqlSearch.clear();
 	sqlSearch.addField("package_action", ST_INSTALL);
@@ -227,7 +236,7 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 		if (!found) remove_list.add(removeStream.get_package(i));
 	}
 	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
-	PACKAGE_LIST proxyinstalledList = installedList;
+	PACKAGE_LIST proxyinstalledList = installedPackages;
        proxyinstalledList.add(&installQueuedList);
 	for (int i=0; i<installStream.size(); i++)
 	{
@@ -250,7 +259,7 @@ int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remov
 #ifdef BACKTRACE_DEPS
 	PACKAGE_LIST removeCandidates;
 	PACKAGE_LIST removeQueue2;
-	PACKAGE_LIST willInstalled = installStream + installedList;
+	PACKAGE_LIST willInstalled = installStream + installedPackages;
 	removeCandidates = conflict_list;
 	for (int i=0; i<conflict_list.size(); i++)
 	{
@@ -313,7 +322,7 @@ bool DependencyTracker::commitToDb()
 	{
 		if (!installList.get_package(i)->installed())
 		{
-			say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
+			//say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 			iC++;
 			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 		}
@@ -324,7 +333,7 @@ bool DependencyTracker::commitToDb()
 	{
 		if (removeList.get_package(i)->configexist())
 		{
-			say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+			//say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 			rC++;
 			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 		}

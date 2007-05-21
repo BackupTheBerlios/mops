@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.82 2007/05/20 01:10:19 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.83 2007/05/21 10:08:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -13,6 +13,7 @@
 
 mpkgDatabase::mpkgDatabase()
 {
+	hasFileList=false;
 }
 mpkgDatabase::~mpkgDatabase(){}
 
@@ -566,11 +567,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		add_filelist_record(package->get_id(), &package_files);
 	}
 	sys+=" > /dev/null)";
+#ifdef ACTUAL_EXTRACT
 	if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
 	else {
 		currentStatus = "Failed to extract!";
 		return -10;
 	}
+#endif
 	pData.increaseItemProgress(package->itemID);
 
 

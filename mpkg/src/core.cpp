@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.54 2007/05/20 01:10:19 i27249 Exp $
+ *	$Id: core.cpp,v 1.55 2007/05/21 10:08:18 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -139,7 +139,7 @@ int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, str
 	get_package(overwritten_id, &pkg);
 
 	SQLRecord sqlFill;
-	sqlFill.addField("conflict_package_id", conflicted_id);
+	sqlFill.addField("conflicted_package_id", conflicted_id);
 	sqlFill.addField("conflict_file_name", file_name);
 	string x = *pkg.get_name() + "_" + *pkg.get_md5() + "/" + *file_name;
 	sqlFill.addField("backup_file",&x );
@@ -149,7 +149,7 @@ int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, str
 int mpkgDatabase::delete_conflict_record(int conflicted_id, string *file_name)
 {
 	SQLRecord sqlFill;
-	sqlFill.addField("conflict_package_id", conflicted_id);
+	sqlFill.addField("conflicted_package_id", conflicted_id);
 	sqlFill.addField("backup_file", file_name);
 	return db.sql_delete("conflicts", sqlFill);
 }
@@ -157,7 +157,7 @@ int mpkgDatabase::delete_conflict_record(int conflicted_id, string *file_name)
 void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 {
 	SQLRecord sqlSearch;
-	sqlSearch.addField("conflict_package_id", conflicted_id);
+	sqlSearch.addField("conflicted_package_id", conflicted_id);
 	SQLRecord sqlFields;
 	sqlFields.addField("backup_file");
 	sqlFields.addField("conflict_file_name");
@@ -397,65 +397,85 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 
 //--------------------Mid-level functions-------------------------
 
+void mpkgDatabase::createDBCache(bool extra)
+{
+	bool updateFList=false;
+	if (extra && !hasFileList) updateFList=true;
+	if (db.internalDataChanged || updateFList)
+	{
+		mDebug("Creating cache");
+		SQLRecord sqlSearch;
+		get_packagelist(&sqlSearch, &packageDBCache, updateFList);
+		db.internalDataChanged=false;
+		hasFileList=updateFList;
+	}
+}
+
 int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInfo)
 {
-	if (package_id<0)
+	createDBCache(GetExtraInfo);
+	for (unsigned int i=0; i<packageDBCache.size(); i++)
 	{
-		mError("Requested to find a package without ID");
-		return MPKGERROR_INCORRECTDATA;
+		if (packageDBCache.get_package(i)->get_id()==package_id)
+		{
+			*package=*packageDBCache.get_package(i);
+			return 0;
+		}
 	}
-	SQLTable *sqlTable = new SQLTable;
-	SQLRecord sqlFields;
-	SQLRecord sqlSearch;
-
-	sqlSearch.addField("package_id", package_id);
-	
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
-	if (sql_ret!=0)
-	{
-		return sql_ret;
-	}
-	if (sqlTable->empty())
-		return MPKGERROR_NOPACKAGE;
-	if (sqlTable->getRecordCount()>1)
-		return MPKGERROR_AMBIGUITY;
-
-
-	package->set_id(package_id);
-	package->set_name(sqlTable->getValue(0,"package_name"));
-	package->set_version(sqlTable->getValue(0,"package_version"));
-	package->set_arch(sqlTable->getValue(0,"package_arch"));
-	package->set_build(sqlTable->getValue(0,"package_build"));
-	package->set_compressed_size(sqlTable->getValue(0,"package_compressed_size"));
-	package->set_installed_size(sqlTable->getValue(0,"package_installed_size"));
-	package->set_short_description(sqlTable->getValue(0,"package_short_description"));
-	package->set_description(sqlTable->getValue(0,"package_description"));
-	package->set_changelog(sqlTable->getValue(0,"package_changelog"));
-	package->set_packager(sqlTable->getValue(0,"package_packager"));
-	package->set_packager_email(sqlTable->getValue(0,"package_packager_email"));
-	package->set_installed(atoi(sqlTable->getValue(0,"package_installed")->c_str()));
-	package->set_configexist(atoi(sqlTable->getValue(0,"package_configexist")->c_str()));
-	package->set_action(atoi(sqlTable->getValue(0,"package_action")->c_str()));
-	package->set_md5(sqlTable->getValue(0,"package_md5"));
-	package->set_filename(sqlTable->getValue(0,"package_filename"));
-	
-	delete sqlTable;
-	if (GetExtraInfo)
-	{
-		get_filelist(package_id, package->get_files());
-	}
-	get_locationlist(package_id, package->get_locations());
-	get_dependencylist(package_id, package->get_dependencies());
-	get_taglist(package_id, package->get_tags());
-#ifdef ENABLE_INTERNATIONAL
-	get_descriptionlist(package_id, package->get_descriptions());
-#endif
-	
-	return 0;
+	return MPKGERROR_NOPACKAGE;
 }
 
 int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
 {
+	if (sqlSearch->empty() && !db.internalDataChanged)
+	{
+		bool upd=false;
+		if (GetExtraInfo && !hasFileList) upd=true;
+		if (!upd)
+		{
+			mDebug("SQL optimization using full cache");
+			*packagelist=packageDBCache;
+			return 0;
+		}
+	}
+	if (sqlSearch->size()==1 && sqlSearch->getEqMode()==EQ_EQUAL )
+	{
+		if (*sqlSearch->getFieldName(0)=="package_name")
+		{
+			mDebug("SQL optimization by package_name");
+			string pattern=*sqlSearch->getValue("package_name");
+			createDBCache(GetExtraInfo);
+			packagelist->clear();
+			for (unsigned int i=0; i<packageDBCache.size(); i++)
+			{
+				if (*packageDBCache.get_package(i)->get_name()==pattern)
+				{
+					packagelist->add(packageDBCache.get_package(i));
+				}
+			}
+			return 0;
+		}
+		if (*sqlSearch->getFieldName(0)=="package_id")
+		{
+			mDebug("SQL optimization by package_id");
+			int id=atoi(sqlSearch->getValue("package_id")->c_str());
+			createDBCache(GetExtraInfo);
+			packagelist->clear();
+			for (unsigned int i=0; i<packageDBCache.size(); i++)
+			{
+				if (packageDBCache.get_package(i)->get_id()==id)
+				{
+					packagelist->add(packageDBCache.get_package(i));
+					return 0;
+				}
+			}
+			return 0;
+		}
+
+
+	}
+
+
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -464,19 +484,10 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	{
 		return MPKGERROR_SQLQUERYERROR;
 	}
-/*	if (!consoleMode)
-	{
-		actionBus.setCurrentAction(ACTIONID_GETPKGLIST);
-		actionBus.setActionProgressMaximum(ACTIONID_DBLOADING, sqlTable->getRecordCount());
-
-		actionBus.setActionProgressMaximum(ACTIONID_GETPKGLIST, sqlTable->getRecordCount());
-		actionBus.setActionProgress(ACTIONID_GETPKGLIST, 0);
-	}*/
 	packagelist->clear(sqlTable->getRecordCount());
 	
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
 	{
-		//if (!consoleMode) actionBus.setActionProgress(ACTIONID_GETPKGLIST, i);
 		packagelist->get_package(i)->set_id(atoi(sqlTable->getValue(i, "package_id")->c_str()));
 		packagelist->get_package(i)->set_name(sqlTable->getValue(i, "package_name"));
 		packagelist->get_package(i)->set_version(sqlTable->getValue(i, "package_version"));
@@ -501,14 +512,6 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		}
 		packagelist->get_package(i)->sync();
 		get_locationlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_locations());
-		
-		/*
-		if (!ultraFast)
-		{
-			get_dependencylist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_dependencies());
-			get_taglist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_tags());
-		}
-		*/
 #ifdef ENABLE_INTERNATIONAL
 		
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());

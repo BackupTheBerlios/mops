@@ -13,8 +13,8 @@ CXX           = g++
 LEX           = flex
 YACC          = yacc
 DEFINES       = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
-CFLAGS        = -pipe -march=pentium-m -fomit-frame-pointer -O2 -Wall -W -D_REENTRANT  $(DEFINES)
-CXXFLAGS      = -pipe -march=pentium-m -fomit-frame-pointer -O2 -Wall -W -D_REENTRANT  $(DEFINES)
+CFLAGS        = -pipe -march=prescott -mtune=prescott -fomit-frame-pointer -O2 -Wall -W -D_REENTRANT  $(DEFINES)
+CXXFLAGS      = -pipe -march=prescott -mtune=prescott -fomit-frame-pointer -O2 -Wall -W -D_REENTRANT  $(DEFINES)
 LEXFLAGS      = 
 YACCFLAGS     = -d
 INCPATH       = -I/usr/local/Trolltech/Qt-4.2.3/mkspecs/linux-g++ -I. -I/usr/local/Trolltech/Qt-4.2.3/include/QtCore -I/usr/local/Trolltech/Qt-4.2.3/include/QtCore -I/usr/local/Trolltech/Qt-4.2.3/include/QtGui -I/usr/local/Trolltech/Qt-4.2.3/include/QtGui -I/usr/local/Trolltech/Qt-4.2.3/include -I. -I. -I.
