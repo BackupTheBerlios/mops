@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.22 2007/05/16 02:37:04 i27249 Exp $
+ * $Id: corethread.h,v 1.23 2007/05/22 16:56:00 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -40,6 +40,7 @@
 #define CA_Quit 3
 #define CA_UpdateDatabase 4
 #define CA_GetCdromName 5
+#define CA_GetAvailableTags 6
 // Default group definitions
 
 
@@ -120,6 +121,7 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
+		void getAvailableTags();
 		void cleanCache();
 		void callQuit();
 		void updatePackageDatabase(); 	// Call to update repositories data
@@ -138,15 +140,18 @@ class coreThread: public QThread
 		void insertPackageIntoTable(unsigned int package_num); // Displaying function
 		void _getCdromName();
 		void _commitQueue();
+		void _getAvailableTags();
 
 
 	signals:
+		void showMessageBox(QString header, QString text);
 		void resetProgressBar();
 		void initState(bool flag);
 		void sendCdromName(string volname);
 		void applyFilters();
 		void setStatus(QString msg);
 		void loadData();
+		void sendAvailableTags(vector<string> output);
 		// Debug signals
 		void yesImRunning();
 		

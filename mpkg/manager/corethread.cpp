@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.58 2007/05/21 14:07:18 i27249 Exp $
+ * $Id: corethread.cpp,v 1.59 2007/05/22 16:56:00 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -692,6 +692,10 @@ void coreThread::run()
 				sync();
 				break;
 
+			case CA_GetAvailableTags:
+				_getAvailableTags();
+				break;
+
 			case CA_Idle:
 				emit setStatus(database->current_status().c_str());
 				msleep(TIMER_RES);
@@ -715,6 +719,22 @@ void coreThread::loadPackageDatabase()
 {
 
 	currentAction = CA_LoadDatabase;
+}
+
+void coreThread::getAvailableTags()
+{
+	printf("received signal in thread, queueing action\n");
+	_getAvailableTags();
+}
+
+void coreThread::_getAvailableTags()
+{
+	printf("processing retriveal\n");
+	vector<string> output;
+	database->get_available_tags(&output);
+	printf("sending data\n");
+	emit sendAvailableTags(output);
+	currentAction=CA_Idle;
 }
 
 void coreThread::_loadPackageDatabase()
@@ -908,15 +928,35 @@ void coreThread::_commitQueue()
 		database->unqueue(reset_queue[i]);
 	}
 	currentStatus = tr("Committing changes...").toStdString();
-	database->commit();
+	int ret = database->commit();
 
-	currentStatus = tr("All operations completed").toStdString();
+	if (ret==0) currentStatus = tr("All operations completed successfully").toStdString();
 	delete database;
 	database = new mpkg;
 	currentAction = CA_LoadDatabase;
 	actionBus.clear();
 	pData.clear();
-
+	QString body;
+	switch(ret)
+	{
+		case 0:
+			body = tr("All operations completed successfully");
+			break;
+		case MPKGERROR_UNRESOLVEDDEPS:
+			body = tr("Operations completed with errors: unresolved dependencies");
+			break;
+		case MPKGERROR_SQLQUERYERROR:
+			body = tr("Error while processing operations: internal SQL error");
+			break;
+		case MPKGERROR_ABORTED:
+			body = tr("Processing aborted");
+			break;
+		default:
+			body = tr("Operations completed with errors");
+			break;
+	}
+	
+	emit showMessageBox(tr("All operations completed"), body);
 }
 
 void coreThread::syncData()

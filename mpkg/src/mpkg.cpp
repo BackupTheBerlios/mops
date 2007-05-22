@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.85 2007/05/21 16:56:08 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.86 2007/05/22 16:56:01 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -99,19 +99,20 @@ int mpkgDatabase::commit_actions()
 	sqlFlush();
 	// Zero: purging required packages
 	// First: removing required packages
-
+	unsigned int installFailures=0;
+	unsigned int removeFailures=0;
 	PACKAGE_LIST remove_list;
 	SQLRecord sqlSearch;
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_REMOVE);
 	sqlSearch.addField("package_action", ST_PURGE);
-	if (get_packagelist(&sqlSearch, &remove_list)!=0) return -1;
+	if (get_packagelist(&sqlSearch, &remove_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	remove_list.sortByPriority(true);
 	PACKAGE_LIST install_list;
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_INSTALL);
-	if (get_packagelist(&sqlSearch, &install_list,false)!=0) return -5;
+	if (get_packagelist(&sqlSearch, &install_list,false)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
 
 	for (int i=0; i<remove_list.size(); i++)
@@ -180,6 +181,7 @@ int mpkgDatabase::commit_actions()
 			currentStatus = "Removing package " + *remove_list.get_package(i)->get_name();
 			if (remove_package(remove_list.get_package(i))!=0)
 			{
+				removeFailures++;
 				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
 				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 			}
@@ -397,6 +399,7 @@ installProcess:
 			currentStatus = "Installing package " + *install_list.get_package(i)->get_name();
 			if (install_package(install_list.get_package(i))!=0)
 			{
+				installFailures++;
 				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 			}
@@ -409,6 +412,7 @@ installProcess:
 		currentStatus = "Installation complete.";
 		actionBus.setActionState(ACTIONID_INSTALL);
 	}
+	if (removeFailures!=0 && installFailures!=0) return MPKGERROR_COMMITERROR;
 	actionBus.clear();
 	return 0;
 }
@@ -751,6 +755,40 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	db.sql_delete("changelogs", sqlSearch);
 	db.sql_delete("ratings", sqlSearch);
 #endif
+
+	// Removing unused tags
+	sqlSearch.clear();
+	SQLTable available_tags;
+	SQLRecord fields;
+
+	db.get_sql_vtable(&available_tags, sqlSearch, "tags", fields);
+	SQLTable tmp_out;
+	vector<string> toDelete;
+	if (available_tags.size()>0)
+	{
+		fields.addField("tags_tag_id");
+		for (unsigned int i=0; i<available_tags.size(); i++)
+		{
+			sqlSearch.clear();
+			sqlSearch.addField("tags_tag_id", available_tags.getValue(i, "tags_id"));
+			db.get_sql_vtable(&tmp_out, sqlSearch, "tags_links", fields);
+			if (tmp_out.empty())
+			{
+				toDelete.push_back(*available_tags.getValue(i,"tags_id"));
+			}
+		}
+		available_tags.clear();
+		sqlSearch.clear();
+		sqlSearch.setSearchMode(SEARCH_OR);
+		if (toDelete.size()>0)
+		{
+			for (unsigned int i=0; i<toDelete.size(); i++)
+			{
+				sqlSearch.addField("tags_id", &toDelete[i]);
+			}
+			db.sql_delete("tags", sqlSearch);
+		}
+	}
 	return 0;
 }
 
@@ -894,6 +932,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	mDebug("Retrieving current package list, clearing tables");	
 	// Стираем locations и servers
 	db.clear_table("locations");
+	
 
 	// Забираем текущий список пакетов
 	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
@@ -963,6 +1002,12 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 	mDebug("removed wrong packages");
 	delete allList;
 	mDebug("deleted object, returning");
+	
+	
+		
+
+
+	
 	return 0;
 
 }

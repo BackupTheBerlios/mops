@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.20 2007/05/18 07:35:33 i27249 Exp $
+ * $Id: libmpkg.h,v 1.21 2007/05/22 16:56:01 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -169,6 +169,7 @@ class mpkg
 		int set_cdrommountpoint(string cdromMountPoint);
 		int set_checkFiles(unsigned int value);
 		
+		void get_available_tags(vector<string>* output);
 		// Error bus
 
 

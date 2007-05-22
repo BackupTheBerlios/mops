@@ -442,14 +442,27 @@
           <item>
            <widget class="QPushButton" name="selectAllButton" >
             <property name="text" >
-             <string>Install all visible</string>
+             <string/>
+            </property>
+            <property name="icon" >
+             <iconset>/usr/share/mpkg/icons/install.png</iconset>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QPushButton" name="deselectAllButton" >
             <property name="text" >
-             <string>Remove all visible</string>
+             <string/>
+            </property>
+            <property name="icon" >
+             <iconset>/usr/share/mpkg/icons/purge.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="quickSearchLabel" >
+            <property name="text" >
+             <string>Quick search:</string>
             </property>
            </widget>
           </item>

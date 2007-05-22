@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.31 2007/05/18 07:35:33 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.32 2007/05/22 16:56:01 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -52,6 +52,11 @@ int mpkg::build_package()
 int mpkg::convert_directory(string output_dir)
 {
 	return mpkgSys::convert_directory(output_dir);
+}
+
+void mpkg::get_available_tags(vector<string>* output)
+{
+	db->get_available_tags(output);
 }
 	
 // Packages installation
@@ -251,15 +256,16 @@ int mpkg::commit()
 	{
 		DepTracker->commitToDb();
 		currentStatus = "Committing changes...";
-		db->commit_actions();
+		unsigned int ret = db->commit_actions();
 		currentStatus = "Complete.";
+		return ret;
 	}
 	else
 	{
 		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
 		mError("Error in dependencies: " + IntToStr(errorCount) + "failures");
 		currentStatus = "Failed - depencency errors";
+		return MPKGERROR_UNRESOLVEDDEPS;
 	}
-	return 0;
 }
 

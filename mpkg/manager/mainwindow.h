@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.43 2007/05/21 23:52:14 i27249 Exp $
+ * $Id: mainwindow.h,v 1.44 2007/05/22 16:56:00 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -36,6 +36,7 @@ class MainWindow: public QMainWindow
 		PreferencesBox *prefBox;
 
 	signals:
+		void getAvailableTags();
 		void redrawReady(bool flag);
 		void loadPackageDatabase();
 		void startThread();
@@ -48,6 +49,8 @@ class MainWindow: public QMainWindow
 		void callCleanCache();
 		void commit(vector<int> nStatus);
 	public slots:
+		void showMessageBox(QString header, QString body);
+		void receiveAvailableTags(vector<string> tags);
 		void setSkipButton(bool flag);
 		void setIdleButtons(bool flag);
 		
@@ -146,6 +149,7 @@ class MainWindow: public QMainWindow
 		vector<string> purge_queue;
 		vector<bool>stateChanged;
 		vector<int>newStatus;
+		vector<string> availableTags;
 		void initPackageTable();
 		int currentCategoryID;
 

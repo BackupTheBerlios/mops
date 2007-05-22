@@ -1,12 +1,9 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.93 2007/05/21 23:52:14 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.94 2007/05/22 16:56:00 i27249 Exp $
  *
- * TODO: Interface improvements
- * 
- *
- * ***************************************************************/
+ ****************************************************************/
 
 #include <QTextCodec>
 #include <QtGui>
@@ -46,6 +43,11 @@ void MainWindow::showErrorMessage(QString headerText, QString bodyText, QMessage
 {
 	emit sendUserReply(QMessageBox::warning(this, headerText, bodyText, buttons, defaultButton));
 }
+
+void MainWindow::showMessageBox(QString header, QString body)
+{
+	QMessageBox::information(this, header, body, QMessageBox::Ok, QMessageBox::Ok);
+}
 void MainWindow::sqlQueryBegin()
 {
 	currentStatus=tr("Loading database...").toStdString();
@@ -65,6 +67,7 @@ void MainWindow::loadingStarted()
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
 	ui.quickPackageSearchEdit->hide();
+	ui.quickSearchLabel->hide();
 	ui.clearSearchButton->hide();
 	ui.splashFrame->show();
 }
@@ -80,6 +83,7 @@ void MainWindow::loadingFinished()
 	ui.splashFrame->hide();
 	ui.packageListBox->setEnabled(true);
 	ui.progressTable->hide();
+	ui.quickSearchLabel->show();
 	ui.quickPackageSearchEdit->show();
 	ui.clearSearchButton->show();
 	ui.packageTable->show();
@@ -241,7 +245,12 @@ void MainWindow::applyPackageFilter ()
 		if (statusOk)
 		{
 
-			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
+//			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
+			if (currentCategoryID>=0 && availableTags.size()>currentCategoryID)
+			{
+				tagvalue = availableTags[currentCategoryID];
+			}
+			else tagvalue = "";
 			if (tagvalue == "_updates_")
 			{
 				if (packagelist->get_package(i)->isUpdate()) categoryOk = true;
@@ -273,7 +282,7 @@ void MainWindow::applyPackageFilter ()
 						if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
 					}
 				} // else (tagvalue)
-			} // if (statusOk)
+			} // if (statusOk)*/
 		}
 		if (nameOk && statusOk && categoryOk && cloneOk)
 		{
@@ -439,12 +448,13 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
-	initCategories();
+	//initCategories();
 #ifdef RELEASE
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
 #endif
 	ui.quickPackageSearchEdit->hide();
+	ui.quickSearchLabel->hide();
 	ui.clearSearchButton->hide();
 	ui.packageTable->hide();
 	movie = new QMovie("/usr/share/mpkg/icons/indicator.mng");
@@ -454,7 +464,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 	ui.progressTable->setColumnWidth(1,350);
 	ui.progressTable->setColumnHidden(2,true);
 
-	this->show();
 	clearForm();
 	disableProgressBar(); disableProgressBar2();
 	
@@ -466,6 +475,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	qRegisterMetaType<string>("string");
 	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
 	qRegisterMetaType< vector<int> >("vector<int>");
+	qRegisterMetaType< vector<string> >("vector<string>");
 	StatusThread = new statusThread;
 	thread = new coreThread; // Creating core thread
 	packagelist = new PACKAGE_LIST;
@@ -511,12 +521,14 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
 	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
 	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
-
+	QObject::connect(this, SIGNAL(getAvailableTags()), thread, SLOT(getAvailableTags()));
+	QObject::connect(thread, SIGNAL(sendAvailableTags(vector<string>)), this, SLOT(receiveAvailableTags(vector<string>)));
 	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()));
 	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()));
 	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)));
 	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)));
 	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()));
+	QObject::connect(thread, SIGNAL(showMessageBox(QString, QString)), this, SLOT(showMessageBox(QString, QString)));
 	// Startup initialization
 	emit startThread(); // Starting thread (does nothing imho....)
 	emit startStatusThread();
@@ -525,12 +537,15 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
 
+	this->show();
 	// Wait threads to start
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
 	{
 		printf("Waiting threads to start...\n");
 		sleep(1);
 	}
+
+	emit getAvailableTags();
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 }
 
@@ -560,6 +575,7 @@ void MainWindow::showProgressWindow(bool flag)
 		{
 			ui.packageTable->hide();
 			ui.selectAllButton->hide();
+			ui.quickSearchLabel->hide();
 			ui.deselectAllButton->hide();
 			ui.quickPackageSearchEdit->hide();
 			ui.clearSearchButton->hide();
@@ -573,6 +589,7 @@ void MainWindow::showProgressWindow(bool flag)
 			ui.selectAllButton->show();
 			ui.deselectAllButton->show();
 			ui.quickPackageSearchEdit->show();
+			ui.quickSearchLabel->show();
 			ui.clearSearchButton->show();
 		}
 		ui.progressTable->hide();
@@ -668,6 +685,21 @@ void MainWindow::cleanCache()
 	emit callCleanCache();
 }	
 
+void MainWindow::receiveAvailableTags(vector<string> tags)
+{
+	availableTags.clear();
+	availableTags.push_back("_all_");
+	availableTags.push_back("_updates_");
+	for (unsigned int i=0; i<tags.size(); i++)
+	{
+		availableTags.push_back(tags[i]);
+	}
+	availableTags.push_back("_misc_");
+
+	printf("data received\n");
+	initCategories();
+}
+
 void MainWindow::initCategories()
 {
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
@@ -679,20 +711,38 @@ void MainWindow::initCategories()
 		// Init defaults here...
 		return;
 	}
-#ifndef CAT_TABLE
 	ui.listWidget->clear();
-	for (int i = 0; i< _categories.nChildNode("group"); i++)
+
+	bool named = false;
+	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
-		QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
-    		__item->setText(QApplication::translate("MainWindow", _categories.getChildNode("group",i).getAttribute("name"), 0, QApplication::UnicodeUTF8));
-    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", i).getAttribute("icon"))));
+
+		named=false;
+		for (int t = 0; t< _categories.nChildNode("group");t++)
+		{
+			if (availableTags[i]==(string) _categories.getChildNode("group",t).getAttribute("tag"))
+			{
+				named=true;
+				QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
+				__item->setText(_categories.getChildNode("group",t).getAttribute("name"));
+		    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", t).getAttribute("icon"))));
+			}
+		}
+		if (!named)
+		{
+			QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
+			__item->setText(availableTags[i].c_str());
+	    		__item->setIcon(QIcon("/usr/share/mpkg/icons/icons/taskbar.png"));
+		}
+
 	}
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	ui.listWidget->setCurrentRow(1);
 	ui.listWidget->scrollToItem(ui.listWidget->item(0));
-#else
-	ui.categoryTable->clearContents();
+	
+	// Realization 2 - via table (imho, ugly)
+	/*ui.categoryTable->clearContents();
 	ui.categoryTable->setRowCount(_categories.nChildNode("group"));
 	QString itemText;
 	
@@ -712,7 +762,7 @@ void MainWindow::initCategories()
 		ui.categoryTable->setColumnWidth(1,400);
 
 	}
-#endif
+	*/
 }
 
 void MainWindow::hideEntireTable()

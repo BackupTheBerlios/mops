@@ -8,33 +8,33 @@
         <translation>Менеджер пакетов MOPSLinux</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="40"/>
+        <location filename="mainwindow.cpp" line="37"/>
         <source>Database initialization error!
 Check your settings</source>
         <translation>Ошибка инициализации базы данных! Проверьте настройки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="51"/>
+        <location filename="mainwindow.cpp" line="53"/>
         <source>Loading database...</source>
         <translation>Загрузка базы данных...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="56"/>
+        <location filename="mainwindow.cpp" line="58"/>
         <source>Data loaded, rendering visuals</source>
         <translation>Данные загружены, прорисовываем таблицы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="90"/>
+        <location filename="mainwindow.cpp" line="94"/>
         <source>Idle</source>
         <translation>Ожидание указаний</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="144"/>
+        <location filename="mainwindow.cpp" line="148"/>
         <source>Packages</source>
         <translation>Пакеты</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="317"/>
+        <location filename="mainwindow.cpp" line="326"/>
         <source> packages)</source>
         <translation> пакетов)</translation>
     </message>
@@ -44,172 +44,172 @@ Check your settings</source>
         <translation type="obsolete"> для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="373"/>
+        <location filename="mainwindow.cpp" line="382"/>
         <source>Depends on:</source>
         <translation>Зависит от:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="381"/>
+        <location filename="mainwindow.cpp" line="390"/>
         <source>Installed version:</source>
         <translation>Установленная версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="382"/>
+        <location filename="mainwindow.cpp" line="391"/>
         <source>It is max version:</source>
         <translation>Это последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="383"/>
+        <location filename="mainwindow.cpp" line="392"/>
         <source>Max version:</source>
         <translation>Последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="798"/>
+        <location filename="mainwindow.cpp" line="848"/>
         <source>Description:</source>
         <translation>Описание:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="433"/>
+        <location filename="mainwindow.cpp" line="442"/>
         <source>You need to be root to run package manager</source>
         <translation>Для запуска менеджера пакетов требуются привилегии root</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="462"/>
+        <location filename="mainwindow.cpp" line="471"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="463"/>
+        <location filename="mainwindow.cpp" line="472"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="464"/>
+        <location filename="mainwindow.cpp" line="473"/>
         <source>Purge</source>
         <translation>Удалить полностью</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="795"/>
+        <location filename="mainwindow.cpp" line="845"/>
         <source>Architecture:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="809"/>
+        <location filename="mainwindow.cpp" line="859"/>
         <source>Build:</source>
         <translation>Сборка:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="807"/>
+        <location filename="mainwindow.cpp" line="857"/>
         <source>Version:</source>
         <translation>Версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="808"/>
+        <location filename="mainwindow.cpp" line="858"/>
         <source>Arch:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="810"/>
+        <location filename="mainwindow.cpp" line="860"/>
         <source>Package size:</source>
         <translation>Размер пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="811"/>
+        <location filename="mainwindow.cpp" line="861"/>
         <source>Installed size:</source>
         <translation>Размер после установки:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="812"/>
+        <location filename="mainwindow.cpp" line="862"/>
         <source>Filename:</source>
         <translation>Имя файла:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="813"/>
+        <location filename="mainwindow.cpp" line="863"/>
         <source>MD5 sum:</source>
         <translation>Контрольная сумма:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="814"/>
+        <location filename="mainwindow.cpp" line="864"/>
         <source>Maintainer:</source>
         <translation>Сборщик пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="816"/>
+        <location filename="mainwindow.cpp" line="866"/>
         <source>Status:</source>
         <translation>Статус:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="817"/>
+        <location filename="mainwindow.cpp" line="867"/>
         <source>Tags:</source>
         <translation>Тэги:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="845"/>
+        <location filename="mainwindow.cpp" line="895"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="883"/>
+        <location filename="mainwindow.cpp" line="933"/>
         <source>Some actions doesn&apos;t completed</source>
         <translation>Некоторые операции еще не завершены</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="884"/>
+        <location filename="mainwindow.cpp" line="934"/>
         <source>Some actions hasn&apos;t completed yet. Abort and exit?</source>
         <translation>Не все операции завершены к данному моменту. Вы хотите отменить все и выйти?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="890"/>
+        <location filename="mainwindow.cpp" line="940"/>
         <source>Aborting actions...</source>
         <translation>Отменяем операции...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="897"/>
+        <location filename="mainwindow.cpp" line="947"/>
         <source>Exiting...</source>
         <translation>Выходим...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1046"/>
+        <location filename="mainwindow.cpp" line="1096"/>
         <source>Package queued to remove</source>
         <translation>Пакет добавлен в очередь для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1091"/>
+        <location filename="mainwindow.cpp" line="1141"/>
         <source>Package queued to purge</source>
         <translation>Пакет поставлен в очередь для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1086"/>
+        <location filename="mainwindow.cpp" line="1136"/>
         <source>Package queued to install</source>
         <translation>Пакет поставлен в очередь для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1029"/>
+        <location filename="mainwindow.cpp" line="1079"/>
         <source>Package keeped in system</source>
         <translation>Пакет оставлен в системе</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1041"/>
+        <location filename="mainwindow.cpp" line="1091"/>
         <source>Package removed from remove queue</source>
         <translation>Пакет удален из очереди для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1053"/>
+        <location filename="mainwindow.cpp" line="1103"/>
         <source>Package removed from purge queue</source>
         <translation>Пакет удален из очереди для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1095"/>
+        <location filename="mainwindow.cpp" line="1145"/>
         <source>Unknown condition</source>
         <translation>Неясно</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1079"/>
+        <location filename="mainwindow.cpp" line="1129"/>
         <source>Package unqueued</source>
         <translation>Пакет удален из очереди</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1124"/>
+        <location filename="mainwindow.cpp" line="1174"/>
         <source>update</source>
         <translation>обновление</translation>
     </message>
@@ -266,267 +266,267 @@ Check your settings</source>
     <message>
         <location filename="pkgmanager.ui" line="445"/>
         <source>Install all visible</source>
-        <translation>Установить все видимые</translation>
+        <translation type="obsolete">Установить все видимые</translation>
     </message>
     <message>
         <location filename="pkgmanager.ui" line="452"/>
         <source>Remove all visible</source>
-        <translation>Удалить все видимые</translation>
+        <translation type="obsolete">Удалить все видимые</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="462"/>
+        <location filename="pkgmanager.ui" line="475"/>
         <source>...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="482"/>
+        <location filename="pkgmanager.ui" line="495"/>
         <source>This process:</source>
         <translation>Данный процесс:</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="511"/>
+        <location filename="pkgmanager.ui" line="524"/>
         <source>Overall:</source>
         <translation>Всего:</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="557"/>
+        <location filename="pkgmanager.ui" line="570"/>
         <source>Apply changes</source>
         <translation>Применить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="572"/>
+        <location filename="pkgmanager.ui" line="585"/>
         <source>Skip</source>
         <translation>Пропустить</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="579"/>
+        <location filename="pkgmanager.ui" line="592"/>
         <source>Abort</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="816"/>
+        <location filename="pkgmanager.ui" line="829"/>
         <source>Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="607"/>
+        <location filename="pkgmanager.ui" line="620"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="615"/>
+        <location filename="pkgmanager.ui" line="628"/>
         <source>Filters</source>
         <translation>Фильтры</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="629"/>
+        <location filename="pkgmanager.ui" line="642"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="645"/>
+        <location filename="pkgmanager.ui" line="658"/>
         <source>Repositories</source>
         <translation>Репозитории</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="658"/>
+        <location filename="pkgmanager.ui" line="671"/>
         <source>Add/remove repositories</source>
         <translation>Изменить список репозиториев</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="668"/>
+        <location filename="pkgmanager.ui" line="681"/>
         <source>Installed</source>
         <translation>Установлен</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="673"/>
+        <location filename="pkgmanager.ui" line="686"/>
         <source>Available</source>
         <translation>Доступен</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="687"/>
+        <location filename="pkgmanager.ui" line="700"/>
         <source>Show installed</source>
         <translation>Показывать установленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="701"/>
+        <location filename="pkgmanager.ui" line="714"/>
         <source>Show available</source>
         <translation>Показывать доступные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="715"/>
+        <location filename="pkgmanager.ui" line="728"/>
         <source>Show broken</source>
         <translation>Показывать битые</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="735"/>
+        <location filename="pkgmanager.ui" line="748"/>
         <source>Show not purged</source>
         <translation>Показывать не полностью удаленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="738"/>
+        <location filename="pkgmanager.ui" line="751"/>
         <source>Show packages that have config files (i.e. not purged)</source>
         <translation>Показывать пакеты которые имеют конфигурационные файлы</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="832"/>
+        <location filename="pkgmanager.ui" line="845"/>
         <source>Show queued</source>
         <translation>Показывать пакеты в очереди</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="763"/>
+        <location filename="pkgmanager.ui" line="776"/>
         <source>Custom filter...</source>
         <translation>Особый фильтр...</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="771"/>
+        <location filename="pkgmanager.ui" line="784"/>
         <source>Help topics</source>
         <translation>Поиск по справке</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="776"/>
+        <location filename="pkgmanager.ui" line="789"/>
         <source>Mini-FAQ</source>
         <translation>Мини-FAQ</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="781"/>
+        <location filename="pkgmanager.ui" line="794"/>
         <source>About...</source>
         <translation>О программе...</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="786"/>
+        <location filename="pkgmanager.ui" line="799"/>
         <source>Preferences</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="791"/>
+        <location filename="pkgmanager.ui" line="804"/>
         <source>Core settings</source>
         <translation>Настройки ядра</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="796"/>
+        <location filename="pkgmanager.ui" line="809"/>
         <source>Commit changes</source>
         <translation>Применить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="801"/>
+        <location filename="pkgmanager.ui" line="814"/>
         <source>Reset changes</source>
         <translation>Сбросить изменения</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="806"/>
+        <location filename="pkgmanager.ui" line="819"/>
         <source>Reset all queue</source>
         <translation>Обнулить всю очередь</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="811"/>
+        <location filename="pkgmanager.ui" line="824"/>
         <source>Save queue</source>
         <translation>Сохранить очередь</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="821"/>
+        <location filename="pkgmanager.ui" line="834"/>
         <source>Clean cache</source>
         <translation>Очистить кеш загрузок</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="846"/>
+        <location filename="pkgmanager.ui" line="859"/>
         <source>Show purge</source>
         <translation>Показывать не полностью удаленные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="860"/>
+        <location filename="pkgmanager.ui" line="873"/>
         <source>Show unavailable</source>
         <translation>Показывать недоступные</translation>
     </message>
     <message>
-        <location filename="pkgmanager.ui" line="865"/>
+        <location filename="pkgmanager.ui" line="878"/>
         <source>Update data</source>
         <translation>Обновить данные</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="308"/>
+        <location filename="mainwindow.cpp" line="317"/>
         <source>Installed: </source>
         <translation>Установлено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="309"/>
+        <location filename="mainwindow.cpp" line="318"/>
         <source>, Available: </source>
         <translation>, Доступно: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="310"/>
+        <location filename="mainwindow.cpp" line="319"/>
         <source>, To install: </source>
         <translation>, Для установки: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="311"/>
+        <location filename="mainwindow.cpp" line="320"/>
         <source>, To remove: </source>
         <translation>, к удалению: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="312"/>
+        <location filename="mainwindow.cpp" line="321"/>
         <source>, Will be freed: </source>
         <translation>, Будет освобождено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="313"/>
+        <location filename="mainwindow.cpp" line="322"/>
         <source>, Will be occupied: </source>
         <translation>, Будет занято: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="841"/>
-        <source></source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="912"/>
+        <location filename="mainwindow.cpp" line="962"/>
         <source>Insufficient disk space</source>
         <translation>Недостаточно места на диске</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="913"/>
+        <location filename="mainwindow.cpp" line="963"/>
         <source>It seems that only </source>
         <translation>Похоже, что только </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="914"/>
+        <location filename="mainwindow.cpp" line="964"/>
         <source> is available on /, but we need </source>
         <translation>свободного места имеется в /, однако требуется </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="915"/>
+        <location filename="mainwindow.cpp" line="965"/>
         <source>, please free additional </source>
         <translation>, пожалуйста, освободите </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="916"/>
+        <location filename="mainwindow.cpp" line="966"/>
         <source> to perform all requested operations. Are you sure you want to continue anyway?</source>
         <translation> для выполнения всех запрошенных операций. Вы уверены что хотите продолжить не взирая на это?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="922"/>
+        <location filename="mainwindow.cpp" line="972"/>
         <source>Will be installed: </source>
         <translation>Будет установлено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="923"/>
+        <location filename="mainwindow.cpp" line="973"/>
         <source> packages, will be removed: </source>
         <translation> пакетов, будет удалено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="924"/>
+        <location filename="mainwindow.cpp" line="974"/>
         <source> packages, disk space will be occupied: </source>
         <translation> пакетов, будет занято места на диске: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="925"/>
+        <location filename="mainwindow.cpp" line="975"/>
         <source> packages, disk space will be freed: </source>
         <translation> пакетов, будет освобождено места на диске: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="927"/>
+        <location filename="mainwindow.cpp" line="977"/>
         <source>Action summary</source>
         <translation>Статистика запрошенных операций</translation>
+    </message>
+    <message>
+        <location filename="pkgmanager.ui" line="465"/>
+        <source>Quick search:</source>
+        <translation>Быстрый поиск:</translation>
     </message>
 </context>
 <context>
@@ -635,64 +635,89 @@ Developed in RPUNet (www.rpunet.ru) by:
 <context>
     <name>coreThread</name>
     <message>
-        <location filename="corethread.cpp" line="728"/>
+        <location filename="corethread.cpp" line="748"/>
         <source>Loading package database</source>
         <translation>Загрузка базы пакетов</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="741"/>
+        <location filename="corethread.cpp" line="761"/>
         <source>Building version list</source>
         <translation>Вычисление связей</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="757"/>
+        <location filename="corethread.cpp" line="777"/>
         <source>Loading packages into table</source>
         <translation>Заполнение таблицы</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="780"/>
+        <location filename="corethread.cpp" line="800"/>
         <source>Loading finished</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="802"/>
+        <location filename="corethread.cpp" line="822"/>
         <source>Loading packages into table: </source>
         <translation>Загрузка информации о пакетах: </translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="814"/>
+        <location filename="corethread.cpp" line="834"/>
         <source>update</source>
         <translation>обновление</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="857"/>
+        <location filename="corethread.cpp" line="877"/>
         <source>Updating package database from repositories...</source>
         <translation>Обновление данных из репозиториев...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="875"/>
+        <location filename="corethread.cpp" line="895"/>
         <source>Committing...</source>
         <translation>Применение изменений...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="910"/>
+        <location filename="corethread.cpp" line="930"/>
         <source>Committing changes...</source>
         <translation>Применение изменений...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="913"/>
+        <location filename="corethread.cpp" line="959"/>
         <source>All operations completed</source>
         <translation>Все операции завершены</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="929"/>
+        <location filename="corethread.cpp" line="969"/>
         <source>Cleaning package cache</source>
         <translation>Очистка кеша загрузок</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="931"/>
+        <location filename="corethread.cpp" line="971"/>
         <source>Cleanup complete</source>
         <translation>Очистка завершена</translation>
+    </message>
+    <message>
+        <location filename="corethread.cpp" line="943"/>
+        <source>All operations completed successfully</source>
+        <translation>Все операции были успешно завершены</translation>
+    </message>
+    <message>
+        <location filename="corethread.cpp" line="946"/>
+        <source>Operations completed with errors: unresolved dependencies</source>
+        <translation>Некоторые операции завершились с ошибками: неразрешенные зависимости</translation>
+    </message>
+    <message>
+        <location filename="corethread.cpp" line="949"/>
+        <source>Error while processing operations: internal SQL error</source>
+        <translation>При выполнении операции произошла критическая ошибка в SQL</translation>
+    </message>
+    <message>
+        <location filename="corethread.cpp" line="952"/>
+        <source>Processing aborted</source>
+        <translation>Операция отменена</translation>
+    </message>
+    <message>
+        <location filename="corethread.cpp" line="955"/>
+        <source>Operations completed with errors</source>
+        <translation>В процессе выполнения операций произошла неизвестная ошибка</translation>
     </message>
 </context>
 <context>

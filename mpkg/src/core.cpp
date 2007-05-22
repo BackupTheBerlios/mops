@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.56 2007/05/21 16:56:08 i27249 Exp $
+ *	$Id: core.cpp,v 1.57 2007/05/22 16:56:00 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -785,6 +785,21 @@ int mpkgDatabase::get_taglist(int package_id, vector<string> *taglist)
 	}*/
 	delete sqlTable;
 	return 0;
+}
+
+void mpkgDatabase::get_available_tags(vector<string> *output)
+{
+	SQLTable sqlTable;
+	SQLRecord sqlSearch;
+	SQLRecord sqlFields;
+	sqlFields.addField("tags_name");
+	db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
+	output->clear();
+	output->resize(sqlTable.size());
+	for (unsigned int i=0; i<sqlTable.size(); i++)
+	{
+		output->at(i)=*sqlTable.getValue(i,"tags_name");
+	}
 }
 
 int mpkgDatabase::get_locationlist(int package_id, vector<LOCATION> *location_list)
