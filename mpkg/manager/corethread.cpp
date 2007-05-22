@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.59 2007/05/22 16:56:00 i27249 Exp $
+ * $Id: corethread.cpp,v 1.60 2007/05/22 19:57:21 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -696,6 +696,14 @@ void coreThread::run()
 				_getAvailableTags();
 				break;
 
+			case CA_GetRequiredPackages:
+				_getRequiredPackages();
+				break;
+
+			case CA_GetDependantPackages:
+				_getDependantPackages();
+				break;
+
 			case CA_Idle:
 				emit setStatus(database->current_status().c_str());
 				msleep(TIMER_RES);
@@ -739,6 +747,7 @@ void coreThread::_getAvailableTags()
 
 void coreThread::_loadPackageDatabase()
 {
+
 	actionBus.clear();
 	actionBus.addAction(ACTIONID_DBLOADING);
 	actionBus.addAction(ACTIONID_GETPKGLIST);
@@ -771,10 +780,15 @@ void coreThread::_loadPackageDatabase()
 		newStatus.push_back(packageList->get_package(i)->action());
 	}
 	sync();
+	currentStatus = tr("Preparing dependency engine").toStdString();
+	database->DepTracker->renderData();
+
 	emit clearTable();
 	emit setTableSize(0);
 	emit setTableSize(packageList->size());
+
 	currentStatus = tr("Loading packages into table").toStdString();
+
 	for (int i=0; i<packageList->size(); i++)
 	{
 		insertPackageIntoTable(i);
@@ -973,4 +987,36 @@ void coreThread::cleanCache()
 	emit loadingFinished();
 }
 
+// Realtime dependency tracking
+
+void coreThread::getRequiredPackages(unsigned int package_num)
+{
+	packageProcessingNumber = package_num;
+	currentAction = CA_GetRequiredPackages;
+}
+
+void coreThread::getDependantPackages(unsigned int package_num)
+{
+	packageProcessingNumber = package_num;
+	currentAction = CA_GetDependantPackages;
+}
+void coreThread::_getRequiredPackages()
+{
+	PACKAGE_LIST query;
+	query.add(packageList->get_package(packageProcessingNumber));
+	PACKAGE_LIST req = database->DepTracker->renderRequiredList(&query);
+	filterDupes(&req);
+	emit sendRequiredPackages(packageProcessingNumber, req);
+	currentAction = CA_Idle;
+}
+
+void coreThread::_getDependantPackages()
+{
+	PACKAGE_LIST query;
+	query.add(packageList->get_package(packageProcessingNumber));
+	PACKAGE_LIST dep = database->DepTracker->renderRemoveQueue(&query);
+	filterDupes(&dep);
+	emit sendDependantPackages(packageProcessingNumber, dep);
+	currentAction = CA_Idle;
+}
 

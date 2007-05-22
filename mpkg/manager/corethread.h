@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.23 2007/05/22 16:56:00 i27249 Exp $
+ * $Id: corethread.h,v 1.24 2007/05/22 19:57:21 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -41,6 +41,8 @@
 #define CA_UpdateDatabase 4
 #define CA_GetCdromName 5
 #define CA_GetAvailableTags 6
+#define CA_GetRequiredPackages 7
+#define CA_GetDependantPackages 8
 // Default group definitions
 
 
@@ -121,6 +123,8 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
+		void getRequiredPackages(unsigned int package_num);
+		void getDependantPackages(unsigned int package_num);
 		void getAvailableTags();
 		void cleanCache();
 		void callQuit();
@@ -135,6 +139,8 @@ class coreThread: public QThread
 		unsigned long idleThreshold;
 
 		unsigned int TIMER_RES;
+		void _getRequiredPackages();
+		void _getDependantPackages();
 		void _loadPackageDatabase();	// loading data from database - real implementation
 		void _updatePackageDatabase();	// updating data from repositories - real implementation
 		void insertPackageIntoTable(unsigned int package_num); // Displaying function
@@ -144,6 +150,8 @@ class coreThread: public QThread
 
 
 	signals:
+		void sendRequiredPackages(unsigned int package_num, PACKAGE_LIST req);
+		void sendDependantPackages(unsigned int package_num, PACKAGE_LIST dep);
 		void showMessageBox(QString header, QString text);
 		void resetProgressBar();
 		void initState(bool flag);
@@ -183,6 +191,7 @@ class coreThread: public QThread
 		PACKAGE_LIST * getPackageList();
 
 	private:
+		unsigned int packageProcessingNumber;
 		int currentAction;
 		mpkg *database;
 		PACKAGE_LIST *packageList;

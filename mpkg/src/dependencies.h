@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.11 2007/05/21 10:08:18 i27249 Exp $
+$Id: dependencies.h,v 1.12 2007/05/22 19:57:21 i27249 Exp $
 */
 
 
@@ -42,12 +42,8 @@ class DependencyTracker
 		PACKAGE_LIST* get_install_list();
 		PACKAGE_LIST* get_remove_list();
 		PACKAGE_LIST* get_failure_list();
-		//RESULT merge(PACKAGE *package, bool suggest_skip=true, bool do_normalize=false);
-		//RESULT unmerge(PACKAGE *package, int do_purge=0, bool do_upgrade=false);
-		//int normalize();
 		int renderData();	// Returns 0 if all ok, failure count if something fails (broken dependencies, etc)
 		bool commitToDb();
-		//bool checkVersion(string version1, int condition, string version2);
 		
 		PACKAGE_LIST renderRequiredList(PACKAGE_LIST *installationQueue);
 		PACKAGE_LIST get_required_packages(PACKAGE *package);
@@ -56,8 +52,6 @@ class DependencyTracker
 		PACKAGE_LIST get_dependant_packages(PACKAGE *package);
 		int muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream);
 		bool checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList);
-
-
 
 		DependencyTracker(mpkgDatabase *mpkgDB);
 		~DependencyTracker();

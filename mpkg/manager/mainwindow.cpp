@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.94 2007/05/22 16:56:00 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.95 2007/05/22 19:57:21 i27249 Exp $
  *
  ****************************************************************/
 
@@ -537,6 +537,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
 
+	QObject::connect(this, SIGNAL(getRequiredPackages(unsigned int)), thread, SLOT(getRequiredPackages(unsigned int)));
+	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
+	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
+	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
+
 	this->show();
 	// Wait threads to start
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
@@ -1035,43 +1040,60 @@ void MainWindow::setInstalledFilter()
 	}
 }
 
+void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
+{
+	printf("received %d requirements for package %d\n",req.size(), package_num);
+}
+
+void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
+{
+	printf("received %d dependencies from package %d\n",dep.size(), package_num);
+}
 
 void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
-		unsigned long i = x;
-		if (i >= newStatus.size())
+	if (state == Qt::Checked)
+	{
+		emit getRequiredPackages(x);
+	}
+	else
+	{
+		emit getDependantPackages(x);
+	}
+	unsigned long i = x;
+	if (i >= newStatus.size())
+	{
+		printf("i is out of range: i=%ld, max = %d\n", i, packagelist->size());
+		return;
+	}
+	PACKAGE *_p = packagelist->get_package(i);
+	if (force_state>=0)
+	{
+		if (_p->installed() && force_state == ST_REMOVE)
 		{
-			printf("i is out of range: i=%ld, max = %d\n", i, packagelist->size());
-			return;
+			newStatus[i]=force_state;
+			currentStatus=tr("Package queued to remove").toStdString();
+			state = Qt::Unchecked;
 		}
-		PACKAGE *_p = packagelist->get_package(i);
-		if (force_state>=0)
+		if (_p->configexist() && force_state == ST_PURGE)
 		{
-			if (_p->installed() && force_state == ST_REMOVE)
-			{
-				newStatus[i]=force_state;
-				currentStatus=tr("Package queued to remove").toStdString();
-				state = Qt::Unchecked;
-			}
-			if (_p->configexist() && force_state == ST_PURGE)
-			{
-				newStatus[i] = force_state;
-				currentStatus = tr("Package queued to purge").toStdString();
-				state = Qt::Unchecked;
-			}
-			if (!_p->installed() && force_state == ST_INSTALL)
-			{
-				newStatus[i] = force_state;
-				currentStatus = tr("Package queued to install").toStdString();
-				state = Qt::Checked;
-			}
+			newStatus[i] = force_state;
+			currentStatus = tr("Package queued to purge").toStdString();
+			state = Qt::Unchecked;
 		}
-		else
+		if (!_p->installed() && force_state == ST_INSTALL)
 		{
-		if (_p->installed())
-			{
-			switch(_p->action())
-			{
+			newStatus[i] = force_state;
+			currentStatus = tr("Package queued to install").toStdString();
+			state = Qt::Checked;
+		}
+	}
+	else
+	{
+	if (_p->installed())
+		{
+		switch(_p->action())
+		{
 			case ST_NONE:
 				if (state == Qt::Checked)
 				{
@@ -1145,10 +1167,10 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 					currentStatus=tr("Unknown condition").toStdString();
 			}
 		} // else
-		} // else (force_state)
-		string package_icon;
-		switch (newStatus[i])
-		{
+	} // else (force_state)
+	string package_icon;
+	switch (newStatus[i])
+	{
 		case ST_NONE:
 			if (_p->installed()) package_icon = "installed.png";
 			else
@@ -1169,18 +1191,16 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		case ST_PURGE:
 			package_icon="purge.png";
 			break;
-		}
-		string cloneHeader;
-		if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
-
+	}
+	string cloneHeader;
+	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 		
-		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
-			+_p->get_fullversion()\
-			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
-		       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
+	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
+		+_p->get_fullversion()\
+		+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
+	       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
 
-		setTableItem(x, state, pName);
-		
+	setTableItem(x, state, pName);		
 }
 
 void MainWindow::loadData()
