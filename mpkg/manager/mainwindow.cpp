@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.95 2007/05/22 19:57:21 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.96 2007/05/23 13:24:14 i27249 Exp $
  *
  ****************************************************************/
 
@@ -60,6 +60,8 @@ void MainWindow::sqlQueryEnd()
 
 void MainWindow::loadingStarted()
 {
+
+	ui.statLabel->setText("");
 	ui.loadingLabel->setText("<html><img src=\"/usr/share/mpkg/splash.png\"></img></html>");
 	ui.packageListBox->setEnabled(false);
 	ui.packageInfoBox->hide();
@@ -131,7 +133,7 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 	ui.progressBar2->setValue(value);
 }
 
-void MainWindow::applyPackageFilter ()
+void MainWindow::generateStat()
 {
 	totalInstalledSize=0;
 	totalAvailableSize=0;
@@ -145,9 +147,7 @@ void MainWindow::applyPackageFilter ()
 	{
 		return;
 	}
-	string pkgBoxLabel = tr("Packages").toStdString();
-	QString nameMask;
-	for (unsigned int i=0; i<packagelist->size(); i++)
+	for (int i=0; i<packagelist->size(); i++)
 	{
 		if (packagelist->get_package(i)->installed())
 		{
@@ -175,7 +175,22 @@ void MainWindow::applyPackageFilter ()
 			if (packagelist->get_package(i)->installed()) willBeFreed=willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
 	}
+	QString countStat = tr("Installed: ") + IntToStr(installedCount).c_str() +\
+			    tr(", Available: ")+IntToStr(totalAvailableCount).c_str()+\
+			    tr(", To install: ")+IntToStr(installQueueCount).c_str()+\
+			    tr(", To remove: ")+IntToStr(removeQueueCount).c_str();
+	if (willBeFreed>willBeOccupied) countStat += tr(", Will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
+	if (willBeFreed<willBeOccupied) countStat+= tr(", Will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
 
+	ui.statLabel->setText(countStat);
+}
+
+void MainWindow::applyPackageFilter ()
+{
+
+	string pkgBoxLabel = tr("Packages").toStdString();
+	generateStat();
+	QString nameMask;
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
@@ -246,7 +261,7 @@ void MainWindow::applyPackageFilter ()
 		{
 
 //			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
-			if (currentCategoryID>=0 && availableTags.size()>currentCategoryID)
+			if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
 			{
 				tagvalue = availableTags[currentCategoryID];
 			}
@@ -314,18 +329,10 @@ void MainWindow::applyPackageFilter ()
 #endif
 	} // for (...)	
 	//string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
-	QString countStat = tr("Installed: ") + IntToStr(installedCount).c_str() +\
-			    tr(", Available: ")+IntToStr(totalAvailableCount).c_str()+\
-			    tr(", To install: ")+IntToStr(installQueueCount).c_str()+\
-			    tr(", To remove: ")+IntToStr(removeQueueCount).c_str();
-	if (willBeFreed>willBeOccupied) countStat += tr(", Will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
-	if (willBeFreed<willBeOccupied) countStat+= tr(", Will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
 
-	
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
-	ui.statLabel->setText(countStat);
 }
 
 
@@ -358,10 +365,10 @@ void MainWindow::deselectAll()
 	applyPackageFilter();
 }
 
-string bool2str(bool data)
+string MainWindow::bool2str(bool data)
 {
-	if (data) return "true";
-	else return "false";
+	if (data) return tr("true").toStdString();
+	else return tr("false").toStdString();
 }
 
 void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
@@ -391,7 +398,7 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 		       "<br><b>"+tr("It is max version:").toStdString()+" </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
 		       "<br><b>"+tr("Max version:").toStdString()+" </b>" + packagelist->get_package(row)->maxVersion + \
 			"<br>" + depData + \
-			"<br><br><b>"+tr("Description:").toStdString()+" </b><br>" + \
+			"<b>"+tr("Description:").toStdString()+" </b><br>" + \
 		       adjustStringWide(*packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description()->size())+ \
 		       		       "</html>";
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
@@ -448,7 +455,6 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
-	//initCategories();
 #ifdef RELEASE
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
@@ -546,7 +552,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	// Wait threads to start
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
 	{
-		printf("Waiting threads to start...\n");
+		say("Waiting for threads to start...\n");
 		sleep(1);
 	}
 
@@ -556,7 +562,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 void MainWindow::abortActions()
 {
-	if (QMessageBox::warning(this, "Please confirm abort", "Are you sure you want to abort current operations?", QMessageBox::Yes | QMessageBox::No, QMessageBox::No)==QMessageBox::Yes)
+	if (QMessageBox::warning(this, tr("Please confirm abort"), tr("Are you sure you want to abort current operations?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No)==QMessageBox::Yes)
 	{
 		actionBus.abortActions();
 	}
@@ -605,7 +611,7 @@ void MainWindow::updateProgressData()
 {
 	ui.packagesBox->setTitle(pData.getCurrentAction().c_str());
 	emit redrawReady(false);
-	double dtmp;
+	double dtmp=0;
 	int tmp_c;
 	ui.progressTable->clearContents();
 	int totalCount=pData.size();
@@ -701,7 +707,6 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 	}
 	availableTags.push_back("_misc_");
 
-	printf("data received\n");
 	initCategories();
 }
 
@@ -745,29 +750,6 @@ void MainWindow::initCategories()
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	ui.listWidget->setCurrentRow(1);
 	ui.listWidget->scrollToItem(ui.listWidget->item(0));
-	
-	// Realization 2 - via table (imho, ugly)
-	/*ui.categoryTable->clearContents();
-	ui.categoryTable->setRowCount(_categories.nChildNode("group"));
-	QString itemText;
-	
-	for (int i=0; i<_categories.nChildNode("group"); i++)
-	{
-		CheckBox *cBox = new CheckBox(this);
-		cBox->row = i;
-
-		ui.categoryTable->setRowHeight(i,64);
-		QIcon catIcon;
-		const QString iconName = QString::fromUtf8(_categories.getChildNode("group", i).getAttribute("icon"));
-		const QSize iconSize = *new QSize (64,64);
-		catIcon.addFile(iconName, iconSize);
-		ui.categoryTable->setItem(i,1, new QTableWidgetItem(catIcon, _categories.getChildNode("group",i).getAttribute("name")));
-		ui.categoryTable->setCellWidget(i,0,cBox);
-		ui.categoryTable->setColumnWidth(0,15);
-		ui.categoryTable->setColumnWidth(1,400);
-
-	}
-	*/
 }
 
 void MainWindow::hideEntireTable()
@@ -797,7 +779,7 @@ MainWindow::~MainWindow()
 	ErrorBus->Stop();
 	while (StatusThread->isRunning() || thread->isRunning() || ErrorBus->isRunning())
 	{
-		printf("Waiting threads to exit...\n");
+		say("Waiting for threads to exit...\n");
 		sleep(1);
 	}
 
@@ -974,18 +956,48 @@ void MainWindow::commitChanges()
 			return;
 		}
 	}
-	QString text = 	tr("Will be installed: ")+IntToStr(installQueueCount).c_str() + \
-			tr(" packages, will be removed: ") + IntToStr(removeQueueCount).c_str();
-	if (willBeOccupied > willBeFreed) text+=tr(" packages, disk space will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
-	else text+=tr(" packages, disk space will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
-	if (QMessageBox::information(this, \
-				tr("Action summary"),
-				text,
-				QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)==QMessageBox::Cancel)
+	QString installList;
+	QString removeList;
+	for (unsigned int i=0; i<newStatus.size(); i++)
 	{
-		return;
+		if (newStatus[i]==ST_INSTALL)
+		{
+			installList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
+				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
+		}
+		if (newStatus[i]==ST_REMOVE || newStatus[i] == ST_PURGE)
+		{
+			removeList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
+				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
+		}
 	}
 
+	QMessageBox msgBox;
+	msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+	QString details;
+	
+	if (installList.length()>0) details += tr("Next packages will be installed:") + installList + "\n";
+	if (removeList.length()>0) details += tr("Next packages will be removed:") + removeList + "\n";
+	
+	msgBox.setDetailedText(details);
+	
+	QString text = 	tr("Will be installed: ")+IntToStr(installQueueCount).c_str() + \
+			tr(" packages\n") + tr("Will be removed: ") + IntToStr(removeQueueCount).c_str() + tr(" packages\n");
+	
+	if (willBeOccupied > willBeFreed)
+	{
+		text+= tr("Disk space will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
+	}
+	else
+	{
+		text+=tr("Disk space will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
+	}
+
+	msgBox.setWindowTitle(tr("Action summary"));
+	
+	msgBox.setText(text);
+	
+	if (msgBox.exec() == QMessageBox::Cancel) return;
 
 	emit commit(newStatus);
 }
@@ -1042,16 +1054,44 @@ void MainWindow::setInstalledFilter()
 
 void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
 {
-	printf("received %d requirements for package %d\n",req.size(), package_num);
+
+	if (req.size()==1) return;
+	int this_id=packagelist->get_package(package_num)->get_id();
+	for (int i=0; i<packagelist->size(); i++)
+	{
+		for (int t=0; t<req.size(); t++)
+		{
+			if (packagelist->get_package(i)->get_id()!=this_id && packagelist->get_package(i)->get_id()==req.get_package(t)->get_id())
+			{
+				markChanges(i, Qt::Checked);
+			}
+		}		
+	}
+	generateStat();
 }
 
 void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
 {
-	printf("received %d dependencies from package %d\n",dep.size(), package_num);
+	if (dep.size()==1) return;
+	int this_id=packagelist->get_package(package_num)->get_id();
+	for (int i=0; i<packagelist->size(); i++)
+	{
+		for (int t=0; t<dep.size(); t++)
+		{
+			if (packagelist->get_package(i)->get_id()!=this_id && packagelist->get_package(i)->get_id()==dep.get_package(t)->get_id())
+			{
+				markChanges(i, Qt::Unchecked);
+			}
+		}		
+	}
+	generateStat();
+
 }
 
 void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
+
+	generateStat();
 	if (state == Qt::Checked)
 	{
 		emit getRequiredPackages(x);
@@ -1063,7 +1103,6 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 	unsigned long i = x;
 	if (i >= newStatus.size())
 	{
-		printf("i is out of range: i=%ld, max = %d\n", i, packagelist->size());
 		return;
 	}
 	PACKAGE *_p = packagelist->get_package(i);
@@ -1205,6 +1244,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 
 void MainWindow::loadData()
 {
+	ui.statLabel->setText("");
 	emit loadPackageDatabase();
 
 }
