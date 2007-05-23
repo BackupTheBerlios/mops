@@ -1,6 +1,6 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.cpp,v 1.4 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: faststl.cpp,v 1.5 2007/05/23 14:16:03 i27249 Exp $
  * ******************************************************/
 
 
@@ -116,8 +116,8 @@ FastString FastString::substr(unsigned int start, int length)
 
 int FastString::find_first_of(FastString str)
 {
-	int z = strlen(data);
-	int y = str.length();
+	unsigned int z = strlen(data);
+	unsigned int y = str.length();
 	for (unsigned int i=0; i<z; i++)
 	{
 		for (unsigned int t=0; t<y; t++)
@@ -130,8 +130,8 @@ int FastString::find_first_of(FastString str)
 
 int FastString::find(FastString str)
 {
-	int z = strlen(data);
-	int y = str.length();
+	unsigned int z = strlen(data);
+	unsigned int y = str.length();
 	if (str.length()>z) return std::string::npos;
 	bool found = true;
 	for (unsigned int i=0; i<z-y; i++)
@@ -149,9 +149,9 @@ int FastString::find(FastString str)
 
 int FastString::find_last_of(FastString str)
 {
-	int z = strlen(data);
-	int y = str.length();
-	for (unsigned int i=z-1; i>=0; i++)
+	unsigned int z = strlen(data);
+	unsigned int y = str.length();
+	for (int i=z-1; i>=0; i++)
 	{
 		for (unsigned int t=0; t<y; t++)
 		{

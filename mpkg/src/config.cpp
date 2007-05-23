@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.30 2007/05/17 15:12:36 i27249 Exp $
+ * $Id: config.cpp,v 1.31 2007/05/23 14:16:03 i27249 Exp $
  *
  * ***************************************************/
 
@@ -534,16 +534,25 @@ int consoleSendErrorMessage(string header, string text, string actionList, strin
 		if (actionList.find_first_of(" ")==string::npos) break;
 		actionList=actionList.substr(actionList.find_first_of(" ")+1);
 	}
+	unsigned int def_action_num=1;
 	for (unsigned int i=0; i<actList.size(); i++)
 	{
-		say("[%d] %s\n", i+1, actList[i].c_str());
+		if (actList[i]==defaultAction)
+		{
+			def_action_num = i+1;
+			say("[%d] %s (default)\n", i+1, actList[i].c_str());
+
+		}
+		else say("[%d] %s\n", i+1, actList[i].c_str());
 	}
-	char ret[200];
-	
-       	scanf("%s", &ret);
-	string t=ret;
-	int ret_num = atoi(t.c_str());
-	mDebug("return value = [" + t + "] [" + IntToStr(ret_num) + "]");
+	//char ret[200];
+	unsigned int r=0;
+	scanf("%d", &r);
+       	//scanf("%s", &ret);
+	//string t=ret;
+	int ret_num = r;//atoi(t.c_str());
+	if (r==0 || r>actList.size()) ret_num=def_action_num;
+	mDebug("return value = [" + IntToStr(ret_num) + "]");
 	return ret_num;
 }
 

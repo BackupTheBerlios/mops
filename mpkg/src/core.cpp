@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.57 2007/05/22 16:56:00 i27249 Exp $
+ *	$Id: core.cpp,v 1.58 2007/05/23 14:16:03 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -55,14 +55,14 @@ PACKAGE_LIST mpkgDatabase::get_other_versions(string *package_name)
 	PACKAGE_LIST pkgList;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", package_name);
-	get_packagelist(&sqlSearch, &pkgList, true);
+	get_packagelist(&sqlSearch, &pkgList);
 	return pkgList;
 }	// Seems to be deprecated
 
 PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 {
 	// Maybe optimization possible
-	PACKAGE *candidate;
+	PACKAGE *candidate=NULL;
 	string ver;
 	for (int i=0; i<pkgList->size(); i++)
 	{
@@ -76,6 +76,11 @@ PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 			candidate = pkgList->get_package(i);
 			ver = *pkgList->get_package(i)->get_version();
 		}
+	}
+	if (candidate==NULL)
+	{
+		candidate = new PACKAGE;
+		mError("max version not detected");
 	}
 	return candidate;
 }
@@ -94,7 +99,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlFields.addField("file_name");
 
 	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
-	for (int i=0;i<package->get_files()->size();i++)
+	for (unsigned int i=0;i<package->get_files()->size();i++)
 	{
 
 		fname=*package->get_files()->at(i).get_name();
@@ -195,6 +200,9 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 
 int _cleanBackupCallback(const char *filename, const struct stat *file_status, int filetype)
 {
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
 	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP)!=0 ) rmdir(filename);
 	return 0;
 }
@@ -240,7 +248,7 @@ int mpkgDatabase::add_filelist_record(int package_id, vector<FILES> *filelist)
 {
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlValues;
-	for (int i=0;i<filelist->size();i++)
+	for (unsigned int i=0;i<filelist->size();i++)
 	{
 		sqlValues.clear();
 		sqlValues.addField("file_name", filelist->at(i).get_name());
@@ -266,7 +274,7 @@ int mpkgDatabase::add_locationlist_record(int package_id, vector<LOCATION> *loca
 {
 	SQLTable *sqlLocations = new SQLTable;
 	SQLRecord sqlLocation;
-	for (int i=0;i<locationlist->size();i++)
+	for (unsigned int i=0;i<locationlist->size();i++)
 	{
 		sqlLocation.clear();
 		sqlLocation.addField("server_url", locationlist->at(i).get_server_url());
@@ -286,7 +294,7 @@ int mpkgDatabase::add_dependencylist_record(int package_id, vector<DEPENDENCY> *
 {
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlInsert;
-	for (int i=0;i<deplist->size();i++)
+	for (unsigned int i=0;i<deplist->size();i++)
 	{
 		sqlInsert.clear();
 		sqlInsert.addField("packages_package_id", package_id);
@@ -310,7 +318,7 @@ int mpkgDatabase::add_taglist_record (int package_id, vector<string> *taglist)
 	SQLRecord sqlSearch;
 	SQLRecord sqlFields;
 	sqlFields.addField("tags_id");
-	for (int i=0; i<taglist->size();i++)
+	for (unsigned int i=0; i<taglist->size();i++)
 	{
 		sqlSearch.clear();
 		sqlSearch.addField("tags_name", &taglist->at(i)); 
@@ -397,9 +405,8 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 
 //--------------------Mid-level functions-------------------------
 
-void mpkgDatabase::createDBCache(bool extra)
+void mpkgDatabase::createDBCache()
 {
-	bool updateFList=false;
 	if (db.internalDataChanged)
 	{
 		mDebug("Creating cache");
@@ -409,27 +416,10 @@ void mpkgDatabase::createDBCache(bool extra)
 	}
 }
 
-int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInfo)
+int mpkgDatabase::get_package(int package_id, PACKAGE *package)//, bool GetExtraInfo)
 {
-	/*
-	SQLRecord sqlSearch;
-	sqlSearch.addField("package_id");
-	PACKAGE_LIST p;
-	get_packagelist(&sqlSearch, &p, GetExtraInfo);
-	printf("package size = %d\n", p.size());
-	if (p.size()==1)
-	{
-		*package=*p.get_package(0);
-		return 0;
-	}
-	else
-	{
-		package->clear();
-		return MPKGERROR_NOPACKAGE;
-	}
-	*/
-	createDBCache(GetExtraInfo);
-	for (unsigned int i=0; i<packageDBCache.size(); i++)
+	createDBCache();
+	for (int i=0; i<packageDBCache.size(); i++)
 	{
 		if (packageDBCache.get_package(i)->get_id()==package_id)
 		{
@@ -440,7 +430,7 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool GetExtraInf
 	return MPKGERROR_NOPACKAGE;
 }
 
-int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
+int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist)//, bool GetExtraInfo, bool ultraFast)
 {
 	if (sqlSearch->empty() && !db.internalDataChanged)
 	{
@@ -488,7 +478,6 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	}
 #endif
 
-
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
@@ -519,21 +508,10 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 
 		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, "package_md5"));
 		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, "package_filename"));
-		/*if (GetExtraInfo && !sqlSearch->empty() && sqlSearch->size()<5)
-		{
-			get_filelist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_files());
-		}*/
-		//get_locationlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_locations());
 #ifdef ENABLE_INTERNATIONAL
-		
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
 	}
-	/*
-	if (sqlSearch->empty() || sqlSearch->size()>=5)
-	{
-		if (GetExtraInfo) get_full_filelist(packagelist);
-	}*/
 	get_full_taglist(packagelist);
 	get_full_dependencylist(packagelist);
 	get_full_locationlist(packagelist);
@@ -588,7 +566,7 @@ int mpkgDatabase::get_filelist(int package_id, vector<FILES> *filelist, bool con
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", package_id);
 
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
 	filelist->clear();
 	filelist->resize(sqlTable->getRecordCount());
 	for (int row=0;row<sqlTable->getRecordCount();row++)
@@ -623,12 +601,12 @@ void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
 	printf("query end\n");
 	FILES tmp;
-	unsigned int package_id;
-	unsigned int counter;
-	for (unsigned int i=0; i<sqlTable->size(); i++)
+	int package_id;
+	unsigned int counter=0;
+	for (int i=0; i<sqlTable->size(); i++)
 	{
 		package_id=atoi(sqlTable->getValue(i, "packages_package_id")->c_str());
-		for (unsigned int t=0; t<pkgList->size(); t++)
+		for (int t=0; t<pkgList->size(); t++)
 		{
 			counter++;
 			if (pkgList->get_package(t)->get_id()==package_id)
@@ -641,7 +619,7 @@ void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
 	}
 	printf("linking end\n");
 	delete sqlTable;
-	for (unsigned int i=0; i<pkgList->size(); i++)
+	for (int i=0; i<pkgList->size(); i++)
 	{
 		pkgList->get_package(i)->sync();
 	}
@@ -661,7 +639,7 @@ int mpkgDatabase::get_dependencylist(int package_id, vector<DEPENDENCY> *deplist
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", package_id);
 
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "dependencies", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "dependencies", sqlSearch);
 
 	deplist->clear();
 	deplist->resize(sqlTable->getRecordCount());
@@ -683,9 +661,9 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	db.get_sql_vtable(&deplist, fields, "dependencies", search);
 	string pid_str;
 	DEPENDENCY dep_tmp;
-	for (unsigned int i=0; i<deplist.size(); i++)
+	for (int i=0; i<deplist.size(); i++)
 	{
-		for (unsigned int p=0; p<pkgList->size(); p++)
+		for (int p=0; p<pkgList->size(); p++)
 		{
 			if (pkgList->get_package(p)->get_id()==atoi(deplist.getValue(i, "packages_package_id")->c_str()))
 			{
@@ -713,17 +691,16 @@ void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
 	fields.addField("packages_package_id");
 	fields.addField("tags_tag_id");
 	db.get_sql_vtable(&links, fields, "tags_links", search);
-	int tag_id;
 	string tag_id_str;
-	for (unsigned int i=0; i<links.size(); i++)
+	for (int i=0; i<links.size(); i++)
 	{
-		for (unsigned int p=0; p<pkgList->size(); p++)
+		for (int p=0; p<pkgList->size(); p++)
 		{
 			counter++;
 			if (pkgList->get_package(p)->get_id()==atoi(links.getValue(i, "packages_package_id")->c_str()))
 			{
 				tag_id_str=*links.getValue(i, "tags_tag_id");
-				for (unsigned int t=0; t<tags.size(); t++)
+				for (int t=0; t<tags.size(); t++)
 				{
 					if (*tags.getValue(t, "tags_id")==tag_id_str)
 					{
@@ -747,7 +724,7 @@ int mpkgDatabase::get_taglist(int package_id, vector<string> *taglist)
 	id_sqlFields.addField("tags_tag_id");
 	SQLRecord id_sqlSearch;
 	id_sqlSearch.addField("packages_package_id", package_id);
-	int id_sql_ret=db.get_sql_vtable(id_sqlTable, id_sqlFields, "tags_links", id_sqlSearch);
+	db.get_sql_vtable(id_sqlTable, id_sqlFields, "tags_links", id_sqlSearch);
 
 	taglist->clear();
 	SQLTable *sqlTable;
@@ -772,7 +749,7 @@ int mpkgDatabase::get_taglist(int package_id, vector<string> *taglist)
 	delete id_sqlTable;
 
 	// Step 2. Read the tags with readed ids
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "tags", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "tags", sqlSearch);
 
 /*
 	if (!sqlTable->empty())
@@ -796,7 +773,7 @@ void mpkgDatabase::get_available_tags(vector<string> *output)
 	db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
 	output->clear();
 	output->resize(sqlTable.size());
-	for (unsigned int i=0; i<sqlTable.size(); i++)
+	for (int i=0; i<sqlTable.size(); i++)
 	{
 		output->at(i)=*sqlTable.getValue(i,"tags_name");
 	}
@@ -811,7 +788,7 @@ int mpkgDatabase::get_locationlist(int package_id, vector<LOCATION> *location_li
 	sqlFields.addField("location_path");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("packages_package_id", package_id);
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "locations", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "locations", sqlSearch);
 	location_list->clear();
 	location_list->resize(sqlTable->getRecordCount());
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
@@ -838,10 +815,10 @@ void mpkgDatabase::get_full_locationlist(PACKAGE_LIST *pkgList)
 
 	int package_id;
 	LOCATION tmp;
-	for (unsigned int i=0; i<sqlTable->size(); i++)
+	for (int i=0; i<sqlTable->size(); i++)
 	{
 		package_id = atoi(sqlTable->getValue(i, "packages_package_id")->c_str());
-		for (unsigned int t=0; t<pkgList->size(); t++)
+		for (int t=0; t<pkgList->size(); t++)
 		{
 			if (pkgList->get_package(t)->get_id()==package_id)
 			{
@@ -918,7 +895,7 @@ int mpkgDatabase::get_installed(int package_id)
 	sqlFields.addField("package_installed");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", package_id);
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
 
 	if (sqlTable->empty())
 	{
@@ -947,7 +924,7 @@ int mpkgDatabase::get_action(int package_id)
 	sqlFields.addField("package_action");
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_id", package_id);
-	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
+	db.get_sql_vtable(sqlTable, sqlFields, "packages", sqlSearch);
 
 	if (sqlTable->empty())
 	{
@@ -1012,7 +989,7 @@ int mpkgDatabase::get_available(int package_id)
 		delete sqlTable;
 		return 0;
 	}
-	if (sqlTable->getRecordCount()>0)
+	else
 	{
 		int ret = atoi(sqlTable->getValue(0, "package_available")->c_str());
 		delete sqlTable;
@@ -1122,7 +1099,6 @@ bool SQLRecord::setValue(string fieldname, string *value)
 
 void SQLRecord::addField(string fieldname, string *value)
 {
-	int pos;
 	SQLField tmp;
 	tmp.fieldname=fieldname;
 	tmp.value=*value;
@@ -1213,7 +1189,7 @@ string* SQLTable::getValue(unsigned int num, string fieldname)
 
 SQLRecord* SQLTable::getRecord(unsigned int num)
 {
-	if (num<table.size() && num>=0) return &table[num];
+	if (num<table.size()) return &table[num];
 	else
 	{
 		mError("core.cpp: SQLTable::getRecord():  record number " + IntToStr(num) + "is out of range");

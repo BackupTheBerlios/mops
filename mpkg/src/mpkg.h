@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.32 2007/05/22 16:56:01 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.33 2007/05/23 14:16:03 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -15,8 +15,8 @@ class mpkgDatabase
 {
 	public:
 		// Functions to get data
-		int get_package(int package_id, PACKAGE *package, bool GetExtraInfo=false);
-		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo=false, bool ultraFast=false);
+		int get_package(int package_id, PACKAGE *package);
+		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist);
 #ifdef ENABLE_INTERNATIONAL
 		int get_descriptionlist(int package_id, vector<DESCRIPTION> *desclist, string language="");
 #endif
@@ -79,7 +79,7 @@ class mpkgDatabase
 		PACKAGE_LIST packageDBCache;
 		bool hasFileList;
 	public:
-		void createDBCache(bool extra);
+		void createDBCache();
 		bool check_cache(PACKAGE *package, bool clear_wrong=true);
 		int commit_actions(); // Commits ALL actions planned in database
 		//int set_available(int package_id, int status);

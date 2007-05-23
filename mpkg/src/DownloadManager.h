@@ -13,8 +13,8 @@ typedef IDownload* (*GetHandler)();
 //extern DownloadFactory *g_pDownloadFactory = NULL;
 
 IDownload*  InitializeDownloadObjects(DownloadFactory* factory);
-DownloadResults CommonGetFile( string url, string output, void *callback = NULL); 
-DownloadResults CommonGetFileEx( DownloadsList &list, string *itemname, ActionBus *aaBus=&actionBus, ProgressData *prData=&pData); 
+DownloadResults CommonGetFile( string url, string output);//, void *callback = NULL); 
+DownloadResults CommonGetFileEx( DownloadsList &list, string *itemname);//, ActionBus *aaBus=&actionBus, ProgressData *prData=&pData); 
 
 #endif
 

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.54 2007/05/18 12:04:53 i27249 Exp $
+	$Id: dataunits.cpp,v 1.55 2007/05/23 14:16:03 i27249 Exp $
 */
 
 
@@ -258,6 +258,7 @@ DEPENDENCY::~DEPENDENCY(){
 bool FILES::equalTo(FILES *file)
 {
 	if (file_name!=*file->get_name()) return false;
+	else return true;
 }
 
 // Data retriveal
@@ -343,7 +344,7 @@ void _sortLocations(vector<LOCATION>* locations)
 	vector<LOCATION> sorted;
 	for (int t=0; t<=3; t++)
 	{
-		for (int i=0; i<locations->size(); i++)
+		for (unsigned int i=0; i<locations->size(); i++)
 		{
 			if (locations->at(i).get_type()==t)
 			{
@@ -407,7 +408,7 @@ bool PACKAGE::depsEqualTo(PACKAGE *pkg)
 // Data retriveal
 bool PACKAGE::isItRequired(PACKAGE *testPackage)
 {
-	for (int i=0; i<package_dependencies.size(); i++)
+	for (unsigned int i=0; i<package_dependencies.size(); i++)
 	{
 		if (*package_dependencies[i].get_package_name() == *testPackage->get_name() && \
 				meetVersion(package_dependencies[i].get_version_data(), testPackage->get_version()))
@@ -491,7 +492,7 @@ bool PACKAGE::available(bool includeLocal)
 	else
 	{
 		if (includeLocal) return true;
-		for (int i=0; i<package_locations.size(); i++)
+		for (unsigned int i=0; i<package_locations.size(); i++)
 		{
 			if (package_locations[i].get_type()!=SRV_LOCAL)
 			{
@@ -637,7 +638,7 @@ void PACKAGE::add_dependency(string *package_name, string* dep_condition, string
 	dep.set_package_name(package_name);
 	dep.set_package_version(package_version);
 	dep.set_condition(dep_condition);
-	for (int i=0;i<package_dependencies.size();i++)
+	for (unsigned int i=0;i<package_dependencies.size();i++)
 	{
 		if (*package_dependencies.at(i).get_package_name()==*dep.get_package_name() && \
 		    *package_dependencies.at(i).get_package_version()==*dep.get_package_version())
@@ -799,9 +800,9 @@ void PACKAGE::set_config_files(vector<FILES>* conf_files)
 
 void PACKAGE::sync()
 {
-	for (int i=0; i< config_files.size(); i++)
+	for (unsigned int i=0; i< config_files.size(); i++)
 	{
-		for (int t=0; t<package_files.size(); t++)
+		for (unsigned int t=0; t<package_files.size(); t++)
 		{
 			if (config_files[i].get_name()=='/' + package_files[t].get_name())
 			{
@@ -813,7 +814,7 @@ void PACKAGE::sync()
 
 	if (config_files.empty())
 	{
-		for (int i=0; i < package_files.size(); i++)
+		for (unsigned int i=0; i < package_files.size(); i++)
 		{
 			if (package_files[i].get_type()==FTYPE_CONFIG)
 			{
@@ -874,7 +875,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	
 	if (!priorityInitialized) buildDependencyOrder();
 	int min_priority = 0;
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (packages[i].priority>min_priority) min_priority = packages[i].priority;
 	}
@@ -884,7 +885,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	{	
 		for (int p=0; p<=min_priority; p++)
 		{
-			for (int i=0; i<packages.size(); i++)
+			for (unsigned int i=0; i<packages.size(); i++)
 			{
 				if (packages[i].priority==p) sorted.push_back(packages[i]);
 			}
@@ -894,7 +895,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	{
 		for (int p=min_priority; p>=0; p--)
 		{
-			for (int i=0; i<packages.size(); i++)
+			for (unsigned int i=0; i<packages.size(); i++)
 			{
 				if (packages[i].priority==p) sorted.push_back(packages[i]);
 			}
@@ -960,7 +961,7 @@ int PACKAGE_LIST::getPackageNumberByMD5(string* md5)
 }
 void PACKAGE_LIST::clearVersioning()
 {
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		packages[i].clearVersioning();
 	}
@@ -979,7 +980,7 @@ bool PACKAGE_LIST::equalTo (PACKAGE_LIST *nlist)
 bool PACKAGE_LIST::hasInstalledOnes()
 {
 	if (packages.size()==0) return false;
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (packages[i].installed())
 		{
@@ -991,7 +992,7 @@ bool PACKAGE_LIST::hasInstalledOnes()
 
 PACKAGE* PACKAGE_LIST::getInstalledOne()
 {
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (packages[i].installed()) return &packages[i];
 	}
@@ -1055,10 +1056,10 @@ void PACKAGE_LIST::add_list(PACKAGE_LIST *pkgList, bool skip_identical)
 				{
 					identical_found=true;
 					// Comparing locations and merging
-					for (int l=0; l<pkgList->get_package(i)->get_locations()->size(); l++)
+					for (unsigned int l=0; l<pkgList->get_package(i)->get_locations()->size(); l++)
 					{
 						location_found=false;
-						for (int ls=0; ls<packages[s].get_locations()->size(); ls++)
+						for (unsigned int ls=0; ls<packages[s].get_locations()->size(); ls++)
 						{
 							if (packages[s].get_locations()->at(ls).equalTo(&pkgList->get_package(i)->get_locations()->at(l)))
 							{
@@ -1125,7 +1126,7 @@ PACKAGE* PACKAGE_LIST::findMaxVersion()
 int PACKAGE_LIST::getMaxVersionID(string* package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (*packages[i].get_name() == *package_name && packages[i].hasMaxVersion)
 		{
@@ -1138,7 +1139,7 @@ int PACKAGE_LIST::getMaxVersionID(string* package_name)
 int PACKAGE_LIST::getMaxVersionNumber(string* package_name)
 {
 	if (!versioningInitialized) initVersioning();
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (*packages[i].get_name() == *package_name && packages[i].hasMaxVersion)
 		{
@@ -1301,7 +1302,7 @@ void PACKAGE_LIST::initVersioning()
 	int max_version_id; // номер пакета содержавшего максимальную версию
 	string this_version;
 	string installed_version;
-	for (int i=0; i<packages.size();i++)
+	for (unsigned int i=0; i<packages.size();i++)
 	{
 		//mDebug("initVersioning [stage 2]: step "+IntToStr(i));
 		max_version.clear();
@@ -1323,7 +1324,7 @@ void PACKAGE_LIST::initVersioning()
 		}
 		else
 		{
-			for (int j=0; j<packages[i].alternateVersions.size(); j++)
+			for (unsigned int j=0; j<packages[i].alternateVersions.size(); j++)
 			{
 				this_version = packages[packages[i].alternateVersions[j]].get_fullversion();
 				if (packages[packages[i].alternateVersions[j]].installed())
@@ -1400,7 +1401,7 @@ bool meetVersion(versionData *condition, string *packageVersion)
 }
 
 vector<unsigned int> checkedPackages;
-bool notTested(int num)
+bool notTested(unsigned int num)
 {
 	for (unsigned int i=0; i<checkedPackages.size(); i++)
 	{
@@ -1434,7 +1435,7 @@ int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
 	int max_ret=-1;
 	int pkgNum;
 	//if (dependencies.size()>0) ret = 1;
-	for (int i=0; i<_p->get_dependencies()->size(); i++)
+	for (unsigned int i=0; i<_p->get_dependencies()->size(); i++)
 	{
 		pkgNum = pkgList->getPackageNumberByName(_p->get_dependencies()->at(i).get_package_name());
 		if (pkgNum>=0)

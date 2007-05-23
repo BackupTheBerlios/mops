@@ -1,7 +1,7 @@
 /************************************************************
  * MOPSLinux package management system
  * Message bus implementation
- * $Id: bus.cpp,v 1.14 2007/05/21 14:07:18 i27249 Exp $
+ * $Id: bus.cpp,v 1.15 2007/05/23 14:16:03 i27249 Exp $
  * *********************************************************/
 #include "bus.h"
 string currentStatus;
@@ -44,7 +44,7 @@ unsigned int ProgressData::size()
 double ProgressData::getTotalProgressMax()
 {
 	double ret=0;
-	for (int i=0; i<itemProgressMaximum.size(); i++)
+	for (unsigned int i=0; i<itemProgressMaximum.size(); i++)
 	{
 		ret+=itemProgressMaximum.at(i);
 	}
@@ -54,7 +54,7 @@ double ProgressData::getTotalProgressMax()
 double ProgressData::getTotalProgress()
 {
 	double ret=0;
-	for (int i=0; i<itemProgress.size(); i++)
+	for (unsigned int i=0; i<itemProgress.size(); i++)
 	{
 		ret+=itemProgress.at(i);
 	}
@@ -63,62 +63,62 @@ double ProgressData::getTotalProgress()
 
 void ProgressData::setItemChanged(int itemID)
 {
-	if (itemChanged.size()>itemID) itemChanged.at(itemID)=0;
+	if (itemChanged.size()> (unsigned int) itemID) itemChanged.at(itemID)=0;
 	resetIdleTime(itemID);
 }
 
 void ProgressData::setItemUnchanged(int itemID)
 {
-	if (itemChanged.size()>itemID && itemChanged.at(itemID)<500) itemChanged.at(itemID)++;
+	if (itemChanged.size()>(unsigned int) itemID && itemChanged.at(itemID)<500) itemChanged.at(itemID)++;
 }
 
 void ProgressData::setItemName(int itemID, string name)
 {
-	if (itemName.size()>itemID) itemName.at(itemID)=name;
+	if (itemName.size()>(unsigned int) itemID) itemName.at(itemID)=name;
 	setItemChanged(itemID);
 }
 
 void ProgressData::setItemCurrentAction(int itemID, string action)
 {
-	if (itemCurrentAction.size()>itemID) itemCurrentAction.at(itemID)=action;
+	if (itemCurrentAction.size()>(unsigned int)itemID) itemCurrentAction.at(itemID)=action;
 	setItemChanged(itemID);
 }
 
 void ProgressData::setItemProgress(int itemID, double progress)
 {
-	if (itemProgress.size()>itemID) itemProgress.at(itemID)=progress;
+	if (itemProgress.size()>(unsigned int) itemID) itemProgress.at(itemID)=progress;
 	setItemChanged(itemID);
 }
 
 void ProgressData::setItemProgressMaximum(int itemID, double progress)
 {
-	if (itemProgressMaximum.size()>itemID) itemProgressMaximum.at(itemID)=progress;
+	if (itemProgressMaximum.size()>(unsigned int) itemID) itemProgressMaximum.at(itemID)=progress;
 }
 
 void ProgressData::setItemState(int itemID, int state)
 {
-	if (itemState.size()>itemID) itemState.at(itemID)=state;
+	if (itemState.size()>(unsigned int)itemID) itemState.at(itemID)=state;
 	setItemChanged(itemID);
 }
 
 void ProgressData::increaseIdleTime(int itemID)
 {
-	if (idleTime.size()>itemID) idleTime.at(itemID)++;
+	if (idleTime.size()>(unsigned int)itemID) idleTime.at(itemID)++;
 }
 
 void ProgressData::resetIdleTime(int itemID)
 {
-	if (idleTime.size()>itemID) idleTime.at(itemID)=0;
+	if (idleTime.size()>(unsigned int) itemID) idleTime.at(itemID)=0;
 }
 
 int ProgressData::getIdleTime(int itemID)
 {
-	if (idleTime.size()>itemID) return idleTime.at(itemID);
+	if (idleTime.size()>(unsigned int) itemID) return idleTime.at(itemID);
 	else return 0;
 }
 bool ProgressData::itemUpdated(int itemID)
 {
-	if (itemChanged.size()>itemID && itemChanged.at(itemID)<499) return true;
+	if (itemChanged.size()>(unsigned int) itemID && itemChanged.at(itemID)<499) return true;
 	else
 	{
 		return false;
@@ -126,7 +126,7 @@ bool ProgressData::itemUpdated(int itemID)
 }
 void ProgressData::resetItems(string action, double __currentProgress, double __maxProgress, int state)
 {
-	for (int i=0; i<itemName.size(); i++)
+	for (unsigned int i=0; i<itemName.size(); i++)
 	{
 		setItemState(i, state);
 		setItemCurrentAction(i, action);
@@ -137,7 +137,7 @@ void ProgressData::resetItems(string action, double __currentProgress, double __
 }
 void ProgressData::increaseItemProgress(int itemID)
 {
-	if (itemProgress.size()>itemID)
+	if (itemProgress.size()>(unsigned int) itemID)
 	{
 		itemProgress.at(itemID) = itemProgress.at(itemID) + 1;
 	}
@@ -155,28 +155,28 @@ void ProgressData::setCurrentAction(string action)
 
 string ProgressData::getItemName(int itemID)
 {
-	if (itemName.size()>itemID) return itemName.at(itemID);
+	if (itemName.size()>(unsigned int) itemID) return itemName.at(itemID);
 	else return "noSuchItem";
 }
 
 string ProgressData::getItemCurrentAction(int itemID)
 {
-	if (itemCurrentAction.size()>itemID) return itemCurrentAction.at(itemID);
+	if (itemCurrentAction.size()>(unsigned int)itemID) return itemCurrentAction.at(itemID);
 	else return "noSuchItem";
 }
 double ProgressData::getItemProgress(int itemID)
 {
-	if (itemProgress.size()>itemID) return itemProgress.at(itemID);
+	if (itemProgress.size()>(unsigned int)itemID) return itemProgress.at(itemID);
 	else return 0;
 }
 double ProgressData::getItemProgressMaximum(int itemID)
 {
-	if (itemProgressMaximum.size()>itemID) return itemProgressMaximum.at(itemID);
+	if (itemProgressMaximum.size()>(unsigned int)itemID) return itemProgressMaximum.at(itemID);
 	else return 0;
 }
 int ProgressData::getItemState(int itemID)
 {
-	if (itemState.size()>itemID) return itemState.at(itemID);
+	if (itemState.size()>(unsigned int) itemID) return itemState.at(itemID);
 	else return ITEMSTATE_WAIT;
 }
 
@@ -309,7 +309,6 @@ bool ActionBus::idle()
 
 int ActionBus::currentProcessing()
 {
-	int ret=0;
 	for (unsigned int i=0; i<actions.size(); i++)
 	{
 		if (getActionState(i)==ITEMSTATE_INPROGRESS) return i;
