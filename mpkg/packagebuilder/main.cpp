@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.7 2007/02/15 14:28:22 i27249 Exp $
+ *     $Id: main.cpp,v 1.8 2007/05/23 18:02:18 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -9,13 +9,16 @@
  #include <QListWidget>
  #include <QWidget>
 #include "mainwindow.h"
+#include <QtGui>
  int main(int argc, char *argv[])
  {
-     QApplication app(argc, argv);
+     	QApplication app(argc, argv);
+	QTranslator translator;
+	translator.load("packagebuilder_ru");
+	app.installTranslator(&translator);
+     	Form mw;
 
-     Form mw;
-
-	mw.show();
+	//mw.show();
 	QObject::connect(mw.ui.LoadButton, SIGNAL(clicked()), &mw, SLOT(loadData()));
 	QObject::connect(mw.ui.TagAddButton, SIGNAL(clicked()), &mw, SLOT(addTag()));
 	QObject::connect(mw.ui.TagDeleteButton, SIGNAL(clicked()), &mw, SLOT(deleteTag()));

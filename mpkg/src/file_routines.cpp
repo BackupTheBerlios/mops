@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.24 2007/05/21 23:52:14 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.25 2007/05/23 18:02:18 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -131,7 +131,7 @@ bool FileNotEmpty(string filename)
 }
 		
 
-string ReadFile(string filename, int max_count, bool ignore_failure)
+string ReadFile(string filename, int max_count)
 {
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
@@ -164,7 +164,7 @@ vector<string>ReadFileStrings(string filename)
 	
 	string chunk;
 
-	for (int lim=data.find_first_of("\n"); lim!=std::string::npos; lim=data.find_first_of("\n"))
+	for (unsigned int lim=data.find_first_of("\n"); lim!=std::string::npos; lim=data.find_first_of("\n"))
 	{
 		chunk = data.substr(0,lim);
 		ret.push_back(chunk);

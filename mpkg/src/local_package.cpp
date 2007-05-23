@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.44 2007/05/18 12:04:53 i27249 Exp $
+$Id: local_package.cpp,v 1.45 2007/05/23 18:02:18 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -29,7 +29,7 @@ int slack2xml(string filename, string xml_output)
 	_node.addChild("dependencies");
 	_node.addChild("suggests");
 	_node.addChild("filename");
-	int pos;
+	int pos=0;
 	int name_start=0;
 	string tmp;
 	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
@@ -110,7 +110,7 @@ string LocalPackage::files2xml(string input)
 {
 	mstring output;
 	output="<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>";
-	for (int i=0; i<input.length(); i++)
+	for (unsigned int i=0; i<input.length(); i++)
 	{
 		if (input[i]=='\n') 
 		{

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.32 2007/05/21 23:52:14 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.33 2007/05/23 18:02:18 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -57,7 +57,7 @@ int mpkgSys::build_package()
     return 0;
 }
 
-int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTracker)
+int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepTracker)
 {
 	actionBus.clear();
 	actionBus.addAction(ACTIONID_DBUPDATE);
@@ -112,7 +112,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db, DependencyTracker *DepTrac
 int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool localInstall)
 {
 	PACKAGE tmpPackage;
-	int ret = db->get_package(package_id, &tmpPackage, false);
+	int ret = db->get_package(package_id, &tmpPackage);
 	if (ret == 0)
 	{
 		if (tmpPackage.installed())
@@ -154,7 +154,7 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", &package_name);
 	PACKAGE_LIST candidates;
-	int ret = db->get_packagelist(&sqlSearch, &candidates, false);
+	int ret = db->get_packagelist(&sqlSearch, &candidates);
 	int id=-1;
 	if (ret == 0)
 	{
@@ -187,7 +187,7 @@ int mpkgSys::requestUninstall(PACKAGE *package, mpkgDatabase *db, DependencyTrac
 int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
 {
 	PACKAGE tmpPackage;
-	int ret = db->get_package(package_id, &tmpPackage, false);
+	int ret = db->get_package(package_id, &tmpPackage);
 	bool process=false;
 	if (ret == 0)
 	{
@@ -228,7 +228,7 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 	sqlSearch.addField("package_name", &package_name);
 	sqlSearch.addField("package_installed", 1);
 	PACKAGE_LIST candidates;
-	int ret = db->get_packagelist(&sqlSearch, &candidates, false);
+	int ret = db->get_packagelist(&sqlSearch, &candidates);
 	int id=-1;
 	if (ret == 0)
 	{
@@ -248,6 +248,10 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 
 int mpkgSys::_clean(const char *filename, const struct stat *file_status, int filetype)
 {
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
+
 	switch(filetype)
 	{
 		case FTW_F:
@@ -264,6 +268,10 @@ int mpkgSys::_clean(const char *filename, const struct stat *file_status, int fi
 
 int mpkgSys::_conv_dir(const char *filename, const struct stat *file_status, int filetype)
 {
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
+
 	string _package=filename;
        	string ext;
 	for (unsigned int i=_package.length()-4;i<_package.length();i++)

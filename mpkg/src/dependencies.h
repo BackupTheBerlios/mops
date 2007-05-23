@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.12 2007/05/22 19:57:21 i27249 Exp $
+$Id: dependencies.h,v 1.13 2007/05/23 18:02:18 i27249 Exp $
 */
 
 
@@ -50,22 +50,12 @@ class DependencyTracker
 		int get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage);
 		PACKAGE_LIST renderRemoveQueue(PACKAGE_LIST *removeQueue);
 		PACKAGE_LIST get_dependant_packages(PACKAGE *package);
-		int muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream);
+		void muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream);
 		bool checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList);
 
 		DependencyTracker(mpkgDatabase *mpkgDB);
 		~DependencyTracker();
 
 };
-/*
-class depTreeItem: private mpkgDatabase
-{
-	public:
-		PACKAGE thisItem;
-		PACKAGE_LIST item;
-		vector<depTreeItem> deps;
-		depTreeItem(PACKAGE packageItem);
-		~depTreeItem();
-};*/
 #endif //DEPENDENCIES_H_
 

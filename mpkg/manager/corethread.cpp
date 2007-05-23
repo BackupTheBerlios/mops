@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.60 2007/05/22 19:57:21 i27249 Exp $
+ * $Id: corethread.cpp,v 1.61 2007/05/23 18:02:18 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -61,7 +61,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -69,7 +69,6 @@ void errorBus::run()
 					//---------------CD-ROM ERRORS/EVENTS---------------------//
 					case MPKG_CDROM_WRONG_VOLNAME:
 					case MPKG_CDROM_MOUNT_ERROR:
-						printf("event recvd\n");
 						userReply = QMessageBox::NoButton;
 						txt = tr("Please insert disk with label ").toStdString()+CDROM_VOLUMELABEL+tr(" into ").toStdString()+CDROM_DEVICENAME;
 						emit sendErrorMessage(tr("Please insert a disk"), \
@@ -112,7 +111,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -138,7 +137,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_IGNORE);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -169,7 +168,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_SKIP);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -192,7 +191,7 @@ void errorBus::run()
 							case QMessageBox::Abort:
 								setErrorReturn(MPKG_RETURN_ABORT);
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -242,7 +241,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -301,7 +300,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -337,7 +336,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -360,7 +359,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -381,7 +380,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -402,7 +401,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -426,7 +425,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -450,7 +449,7 @@ void errorBus::run()
 								setErrorReturn(MPKG_RETURN_ABORT);
 								break;
 							default:
-								printf("Unknown reply\n");
+								mError("Unknown reply");
 						}
 						userReply = QMessageBox::NoButton;
 						break;
@@ -719,7 +718,6 @@ void coreThread::run()
 
 void coreThread::tellAreYouRunning()
 {
-	printf("Thread is running and received a signal\n");
 	emit yesImRunning();
 }
 
@@ -731,16 +729,13 @@ void coreThread::loadPackageDatabase()
 
 void coreThread::getAvailableTags()
 {
-	printf("received signal in thread, queueing action\n");
 	_getAvailableTags();
 }
 
 void coreThread::_getAvailableTags()
 {
-	printf("processing retriveal\n");
 	vector<string> output;
 	database->get_available_tags(&output);
-	printf("sending data\n");
 	emit sendAvailableTags(output);
 	currentAction=CA_Idle;
 }
@@ -758,9 +753,9 @@ void coreThread::_loadPackageDatabase()
 	emit loadingStarted();
 	PACKAGE_LIST *tmpPackageList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	if (database->get_packagelist(&sqlSearch, tmpPackageList, false)!=0)
+	if (database->get_packagelist(&sqlSearch, tmpPackageList)!=0)
 	{
-		printf("error returned from get_packagelist\n");
+		mError("error returned from get_packagelist\n");
 		emit errorLoadingDatabase();
 		emit sqlQueryEnd();
 		delete tmpPackageList;
@@ -930,7 +925,7 @@ void coreThread::_commitQueue()
 					purge_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
 				default:
-					printf("Unknown action %d\n", newStatus[i]);
+					mError("Unknown action " + IntToStr(newStatus[i]));
 			}
 		}
 	}
@@ -971,11 +966,6 @@ void coreThread::_commitQueue()
 	}
 	
 	emit showMessageBox(tr("All operations completed"), body);
-}
-
-void coreThread::syncData()
-{
-	printf("syncData shouldn't be used, because it does NOTHING!\n");
 }
 
 void coreThread::cleanCache()

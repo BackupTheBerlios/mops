@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.11 2007/05/18 07:35:33 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.12 2007/05/23 18:02:18 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -15,8 +15,8 @@ void PrepareSql(string *str)
 		return;
 	}
 	if (str->find("\'")==std::string::npos) return;
-	int last_pos=0;
-	int offset = 0;
+	unsigned int last_pos=0;
+	unsigned int offset = 0;
 	while (offset<str->length())
 	{
 		last_pos=str->substr(offset).find_first_of("\'");
@@ -219,11 +219,11 @@ string adjustStringWide(string input, unsigned int char_width)
 	if (char_width < 50) char_width = 50;
 	vector<string> spaces;
 	vector<string> chunks;
-	int lspace;
-	for (int i=0; i<input.size(); i++)
+	int lspace=0;
+	for (int i=0; i < (int) input.size(); i++)
 	{
 		if (input[i]==' ') lspace = i;
-		if (i>=char_width)
+		if (i>=(int) char_width)
 		{
 			if (lspace==0) lspace = i;
 			chunks.push_back(input.substr(0,lspace));
@@ -231,12 +231,12 @@ string adjustStringWide(string input, unsigned int char_width)
 			i=-1;
 			lspace = 0;
 		}
-		if (i==input.size()-1) chunks.push_back(input);
+		if (i==(int) input.size()-1) chunks.push_back(input);
 
 	}
 	
 	string ret;
-	for (int i=0; i<chunks.size(); i++)
+	for (unsigned int i=0; i<chunks.size(); i++)
 	{
 		ret+=chunks[i];
 		ret += "<br>";

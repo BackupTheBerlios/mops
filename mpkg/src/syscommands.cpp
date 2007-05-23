@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
-
+/*
 void runShellCommand(std::string cmd)
 {
 	pid_t child;
@@ -42,4 +42,4 @@ void spawn(char* proc, char* args)
 	//int status;
 
 }
-
+*/

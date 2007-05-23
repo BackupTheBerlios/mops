@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.13 2007/05/21 23:52:14 i27249 Exp $
+* $Id: file_routines.h,v 1.14 2007/05/23 18:02:18 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -31,7 +31,7 @@ string get_tmp_file();
 void delete_tmp_files();
 bool FileExists(string filename);
 bool FileNotEmpty(string filename);
-string ReadFile(string filename, int max_count=0, bool ignore_failure = true);
+string ReadFile(string filename, int max_count=0);
 int WriteFile(string filename, string data);
 int extractFromTgz(string filename, string file_to_extract, string output);
 string getCdromVolname();

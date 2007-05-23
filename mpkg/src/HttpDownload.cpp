@@ -76,8 +76,8 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	// 4. If required next media, eject current and require next disk, next go to 1
 	// 5. If all required media is processed, eject the last and return.
 	
-	int mount_ret;
-	int umount_ret;
+	//int mount_ret;
+	//int umount_ret;
 	
 	// First, check if device mounted in proper directory. 
 	struct mntent *mountList;
@@ -129,7 +129,9 @@ try_mount:
 	}
 
 	string Svolname;
-check_volname:
+	
+	// check_volname:
+	
 	string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
 	system(vol_cmd.c_str());
 	FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
@@ -188,7 +190,6 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	string name;
 	dlItem.itemID=0;
 	dlList.push_back(dlItem);
-	int currentItem=0;
 	unlink(file.c_str()); // Let's download from scratch
 	return this->getFile(dlList, &name, cdromDevice, cdromMountPoint, &actionBus, &z);
 	
@@ -213,7 +214,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 	bool volfound = false;
 	bool isCdromSourced = false;
 	string tmp_volname;
-	for (int i=0; i<list.size(); i++)
+	for (unsigned int i=0; i<list.size(); i++)
 	{
 		if (ppActionBus->_abortActions)
 		{
@@ -223,7 +224,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		tmp_item = &(list.at(i));
 
 		isCdromSourced = false;
-		for (int j=0; j<tmp_item->url_list.size(); j++)
+		for (unsigned int j=0; j<tmp_item->url_list.size(); j++)
 		{
 			if (tmp_item->url_list.at(j).find("cdrom://")!=std::string::npos)
 			{
@@ -234,7 +235,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 				cdItem.volname = tmp_volname;
 				volfound = false;
 				cdromSourcedPackages.push_back(cdItem);
-				for (int c = 0; c<cdromVolumeLabels.size(); c++)
+				for (unsigned int c = 0; c<cdromVolumeLabels.size(); c++)
 				{
 					if (cdromVolumeLabels.at(c) == tmp_volname)
 					{
@@ -249,9 +250,9 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		if (!isCdromSourced) nonCdromSourcedPackages.push_back(i);
 	}
 	DownloadsList sortedDownloadsList;
-	for (int i=0; i<cdromVolumeLabels.size(); i++)
+	for (unsigned int i=0; i<cdromVolumeLabels.size(); i++)
 	{
-		for (int j=0; j<cdromSourcedPackages.size(); j++)
+		for (unsigned int j=0; j<cdromSourcedPackages.size(); j++)
 		{
 			if (cdromSourcedPackages.at(j).volname == cdromVolumeLabels.at(i))
 			{
@@ -259,7 +260,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 			}
 		}
 	}
-	for (int i=0; i<nonCdromSourcedPackages.size(); i++)
+	for (unsigned int i=0; i<nonCdromSourcedPackages.size(); i++)
 	{
 		sortedDownloadsList.push_back(list.at(nonCdromSourcedPackages.at(i)));
 	}
@@ -277,23 +278,23 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 	DL_CDROM_MOUNTPOINT = cdromMountPoint;
 
 	// reset status for retry
-	for (int i = 0; i<list.size(); i++)
+	for (unsigned int i = 0; i<list.size(); i++)
 	{
 		if (list[i].status != DL_STATUS_OK) list[i].status = DL_STATUS_WAIT;
 	}
 
-	CURLcode result;
+	CURLcode result=CURLE_OK;
 	DownloadItem *item;
 	FILE* out;
 	bool is_have_error = false;
 	string dir;
-	for (int i=0; i<list.size(); i++)
+	for (unsigned int i=0; i<list.size(); i++)
 	{
 		prData->setItemProgressMaximum(list.at(i).itemID, list.at(i).expectedSize);
 	}
 
-	for (int i = 0; i < list.size(); i++ ) {
-process:
+	for (unsigned int i = 0; i < list.size(); i++ ) {
+//process:
 		
 		item = &(list.at(i));
 		*itemname = item->name;
@@ -365,7 +366,7 @@ process:
 						{
 							mDebug("Trying to download via CURL");
 							fseek(out,0,SEEK_END);
-							if (size!=0) say("Resuming download from %d\n", size);
+							//if (size!=0) say("Resuming download from %i\n", size);
 							//curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);

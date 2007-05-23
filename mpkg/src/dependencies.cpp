@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.28 2007/05/21 10:08:18 i27249 Exp $
+$Id: dependencies.cpp,v 1.29 2007/05/23 18:02:18 i27249 Exp $
 */
 
 
@@ -59,7 +59,7 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 		}
 		else
 		{
-			for (int t=0; t<known_md5.size(); t++)
+			for (unsigned int t=0; t<known_md5.size(); t++)
 			{
 				if (*pkgList->get_package(i)->get_md5()==known_md5[t])
 				{
@@ -79,7 +79,7 @@ int DependencyTracker::renderData()
 	// Retrieving common package list from database - we will use C++ logic.
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_installed", 1);
-	db->get_packagelist(&sqlSearch, &installedPackages,false);
+	db->get_packagelist(&sqlSearch, &installedPackages);
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
@@ -125,7 +125,7 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	// Returns a list of required packages. Broken ones is marked internally
 	PACKAGE_LIST requiredPackages;
 	PACKAGE tmpPackage;
-	for (int i=0; i<package->get_dependencies()->size(); i++)
+	for (unsigned int i=0; i<package->get_dependencies()->size(); i++)
 	{
 		if (get_dep_package(&package->get_dependencies()->at(i), &tmpPackage)!=0) {
 			mError("package is broken"); package->set_broken();
@@ -146,7 +146,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	PACKAGE_LIST reachablePackages;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", dep->get_package_name());
-	db->get_packagelist(&sqlSearch, &reachablePackages, false);
+	db->get_packagelist(&sqlSearch, &reachablePackages);
 	
 	if (reachablePackages.IsEmpty())
 		return MPKGERROR_NOPACKAGE;
@@ -196,21 +196,18 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 	return dependantPackages;
 }
 
-int DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream)
+void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream)
 {
 	PACKAGE_LIST install_list;
 	PACKAGE_LIST remove_list;
 	PACKAGE_LIST conflict_list;
-	//PACKAGE_LIST installedList;
 	PACKAGE_LIST installQueuedList;
 	PACKAGE_LIST removeQueuedList;
 	SQLRecord sqlSearch;
-	//sqlSearch.addField("package_installed", 1);
-	//db->get_packagelist(&sqlSearch, &installedList, false);
 
 	sqlSearch.clear();
 	sqlSearch.addField("package_action", ST_INSTALL);
-	db->get_packagelist(&sqlSearch, &installQueuedList, false);
+	db->get_packagelist(&sqlSearch, &installQueuedList);
 #ifdef EXTRACHECK_REMOVE_QUEUE
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_IN);
@@ -289,13 +286,12 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 {
 	bool passed;
 	// Step 1. Check if it conflicts with someone in searchlist
-	int alternateID;
 	for (int i=0; i<searchList.size(); i++)
 	{
 		if (pkg->get_name() == searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
 	}
 
-	for (int i=0; i<pkg->get_dependencies()->size(); i++)
+	for (unsigned int i=0; i<pkg->get_dependencies()->size(); i++)
 	{
 		passed=false;
 		for (int t=0; t<searchList.size(); t++)

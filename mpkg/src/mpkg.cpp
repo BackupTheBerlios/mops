@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.86 2007/05/22 16:56:01 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.87 2007/05/23 18:02:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -62,12 +62,12 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 	// В случае необходимости, добавляем location.
 	PACKAGE db_package;
 	vector<LOCATION> new_locations;
-	get_package(pkg_id, &db_package, true);
+	get_package(pkg_id, &db_package);
 	package->set_id(pkg_id);
 
-	for (int j=0; j<package->get_locations()->size(); j++)
+	for (unsigned int j=0; j<package->get_locations()->size(); j++)
 	{
-		for (int i=0; i<db_package.get_locations()->size(); i++)
+		for (unsigned int i=0; i<db_package.get_locations()->size(); i++)
 		{
 			if (!package->get_locations()->at(j).equalTo(&db_package.get_locations()->at(i)))
 			{
@@ -112,7 +112,7 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_INSTALL);
-	if (get_packagelist(&sqlSearch, &install_list,false)!=0) return MPKGERROR_SQLQUERYERROR;
+	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
 
 	for (int i=0; i<remove_list.size(); i++)
@@ -209,7 +209,7 @@ int mpkgDatabase::commit_actions()
 		DownloadsList downloadQueue;
 		DownloadItem tmpDownloadItem;
 		vector<string> itemLocations;
-		double totalDownloadSize=0;
+		//double totalDownloadSize=0;
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
 		pData.setCurrentAction("Checking cache");
 		bool skip=false;
@@ -251,7 +251,7 @@ int mpkgDatabase::commit_actions()
 				tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
 	
 				install_list.get_package(i)->sortLocations();
-				for (int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
+				for (unsigned int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
 				{
 					itemLocations.push_back(*install_list.get_package(i)->get_locations()->at(k).get_server_url() \
 						     + *install_list.get_package(i)->get_locations()->at(k).get_path() \
@@ -272,13 +272,13 @@ int mpkgDatabase::commit_actions()
 		bool do_download = true;
 	
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-		double dlProgress;
-		double dlProgressMax;
+		//double dlProgress;
+		//double dlProgressMax;
 		while(do_download)
 		{
 			do_download = false;
 			pData.downloadAction=true;
-			if (CommonGetFileEx(downloadQueue, &currentItem, &actionBus, &pData) == DOWNLOAD_ERROR)
+			if (CommonGetFileEx(downloadQueue, &currentItem) == DOWNLOAD_ERROR)
 			{
 				mError("Download failed (returned DOWNLOAD_ERROR)");
 				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
@@ -312,7 +312,7 @@ installProcess:
 		actionBus.setCurrentAction(ACTIONID_MD5CHECK);
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
 	
-		bool hasErrors=false;
+		//bool hasErrors=false;
 		skip=false;
 		currentStatus = "Checking files (comparing MD5):";
 		pData.setCurrentAction("Checking md5");
@@ -539,10 +539,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		mDebug("retrieving old config files");
 		get_filelist(purge_id, &old_config_files, true);
 		mDebug("no_purge flag IS SET, config files count = "+IntToStr(package->get_config_files()->size()));
-		for (int i=0; i<package->get_config_files()->size(); i++)
+		for (unsigned int i=0; i<package->get_config_files()->size(); i++)
 		{
 			// Writing new config files, skipping old
-			for (int k=0; k < old_config_files.size(); k++)
+			for (unsigned int k=0; k < old_config_files.size(); k++)
 			{
 				if (*package->get_config_files()->at(i).get_name()==*old_config_files[k].get_name())
 				{
@@ -551,9 +551,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				}
 			}
 		}
-		for (int i=0; i<package->get_files()->size(); i++)
+		for (unsigned int i=0; i<package->get_files()->size(); i++)
 		{
-			for (int k=0; k <= old_config_files.size(); k++)
+			for (unsigned int k=0; k <= old_config_files.size(); k++)
 			{
 				if (k==old_config_files.size()) 
 				{
@@ -644,7 +644,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		vector<FILES> *remove_files=package->get_files();
 		currentStatus = statusHeader + "removing files...";
 		bool removeThis;
-		for (int i=0; i<remove_files->size(); i++)
+		for (unsigned int i=0; i<remove_files->size(); i++)
 		{
 			removeThis = false;
 			if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
@@ -662,7 +662,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		vector<string>empty_dirs;
 		string edir;
 		pData.increaseItemProgress(package->itemID);
-		for (int i=0; i<remove_files->size(); i++)
+		for (unsigned int i=0; i<remove_files->size(); i++)
 		{
 			fname=sys_root + *remove_files->at(i).get_name();
 			for (unsigned int d=0; d<fname.length(); d++)
@@ -701,7 +701,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	{
 		string cmd;
 		string tmpName;
-		for (int i=0; i<restore.size(); i++)
+		for (unsigned int i=0; i<restore.size(); i++)
 		{
 			cmd = "mkdir -p ";
 		       	cmd += SYS_ROOT + restore[i].get_backup_file()->substr(0, restore[i].get_backup_file()->find_last_of("/"));
@@ -767,7 +767,7 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	if (available_tags.size()>0)
 	{
 		fields.addField("tags_tag_id");
-		for (unsigned int i=0; i<available_tags.size(); i++)
+		for (int i=0; i<available_tags.size(); i++)
 		{
 			sqlSearch.clear();
 			sqlSearch.addField("tags_tag_id", available_tags.getValue(i, "tags_id"));
@@ -805,7 +805,7 @@ int mpkgDatabase::cleanFileList(int package_id)
 int mpkgDatabase::update_package_data(int package_id, PACKAGE *package)
 {
 	PACKAGE old_package;
-	if (get_package(package_id, &old_package, false)!=0)
+	if (get_package(package_id, &old_package)!=0)
 	{
 		mDebug("mpkg.cpp: update_package_data(): get_package error: no package or error while querying database");
 		return -1;
@@ -937,7 +937,7 @@ int mpkgDatabase::updateRepositoryData(PACKAGE_LIST *newPackages)
 	// Забираем текущий список пакетов
 	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
-	get_packagelist(&sqlSearch, pkgList, false);
+	get_packagelist(&sqlSearch, pkgList);
 	
 	//say("Merging data\n");
 	// Ищем соответствия
@@ -987,7 +987,7 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 	PACKAGE_LIST *allList = new PACKAGE_LIST;
 	SQLRecord sqlSearch;
 	mDebug("retrievin pkglist");
-	get_packagelist(&sqlSearch, allList, false);
+	get_packagelist(&sqlSearch, allList);
 	mDebug("retrieved package list");
 	PACKAGE_LIST deleteQueue;
 	for (int i=0; i<allList->size(); i++)

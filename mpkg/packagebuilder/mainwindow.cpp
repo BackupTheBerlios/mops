@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.18 2007/05/18 12:04:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.19 2007/05/23 18:02:18 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -19,7 +19,9 @@ Form::Form(QWidget *parent)
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	short_description.resize(2);
 	description.resize(2);
-	ui.setupUi(this);
+	if (parent==0) ui.setupUi(this);
+	else ui.setupUi(parent);
+	ui.DescriptionLanguageComboBox->hide();
 	this->show();
 	loadData();
 }
@@ -32,7 +34,7 @@ void Form::loadData()
 	if (FileExists("install/data.xml")) xmlFilename = "install/data.xml";
 	else
 	{
-		xmlFilename = QFileDialog::getOpenFileName(this, "Choose package index (data.xml):", "./", "");
+		xmlFilename = QFileDialog::getOpenFileName(this, tr("Choose package index") + " (data.xml):", "./", "");
 	}
 
 	QXmlInputSource xmlsrc;
@@ -42,8 +44,12 @@ void Form::loadData()
 	if (xmlReader->parse(xmlsrc))
 	{
 		PackageConfig p(xmlFilename.toStdString().c_str());
-		xml2package(&p.getXMLNode(), &pkg);
+		XMLNode *tmp = new XMLNode;
+		*tmp = p.getXMLNode();
+		xml2package(tmp, &pkg);
+		delete tmp;
 	
+
 
 		// Filling data 
 		ui.NameEdit->setText(pkg.get_name()->c_str());
@@ -52,27 +58,27 @@ void Form::loadData()
 		ui.BuildEdit->setText(pkg.get_build()->c_str());
 		ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
 		
-		for (int i=0; i<pkg.get_descriptions()->size(); i++)
-		{
+		//for (int i=0; i<pkg.get_descriptions()->size(); i++)
+		//{
 			//printf("id=%d, lang = %s\n",i,pkg.get_descriptions()->get_description(i)->get_language().c_str());
-			if (pkg.get_descriptions()->get_description(i)->get_language()=="en")
+		//	if (pkg.get_descriptions()->get_description(i)->get_language()=="en")
 			{
-				short_description[0]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
-				description[0]=pkg.get_descriptions()->get_description(i)->get_text().c_str();
+				short_description[0]=pkg.get_short_description()->c_str();
+				description[0]=pkg.get_description()->c_str();
 			}
-			if (pkg.get_descriptions()->get_description(i)->get_language()=="ru")
+/*			if (pkg.get_descriptions()->get_description(i)->get_language()=="ru")
 			{
 				short_description[1]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
 				description[1]=pkg.get_descriptions()->get_description(i)->get_text().c_str();
 			}
-		}
-		if (!short_description[1].isEmpty() || !description[1].isEmpty())
-		{
-			ui.ShortDescriptionEdit->setText(short_description[1]);
-			ui.DescriptionEdit->setText(description[1]);
+		}*/
+		//if (!short_description[1].isEmpty() || !description[1].isEmpty())
+		//{
+			ui.ShortDescriptionEdit->setText(short_description[0]);
+			ui.DescriptionEdit->setText(description[0]);
 			//printf("ru default\n");
-		}
-		else if (!short_description[0].isEmpty() || !description[0].isEmpty())
+		//}
+		/*else if (!short_description[0].isEmpty() || !description[0].isEmpty())
 		{
 			ui.DescriptionLanguageComboBox->setCurrentIndex(0);
 			ui.ShortDescriptionEdit->setText(short_description[1]);
@@ -85,28 +91,32 @@ void Form::loadData()
 			ui.DescriptionEdit->setText(pkg.get_description().c_str());
 			//printf("no default\n");
 		}
+		*/
 
-		ui.ChangelogEdit->setText(pkg.get_changelog().c_str());
-		ui.MaintainerNameEdit->setText(pkg.get_packager().c_str());
-		ui.MaintainerMailEdit->setText(pkg.get_packager_email().c_str());
+		ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
+		ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
+		ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
 	
 
-		for (int i=0; i<pkg.get_dependencies()->size(); i++)
+		for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
 		{
 			ui.DepTableWidget->insertRow(0);
-			ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_type().c_str()));
-			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_name().c_str()));
-			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_vcondition().c_str()));
-			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->get_dependency(i)->get_package_version().c_str()));
+			ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_type()->c_str()));
+			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
+			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
+			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
 		}
 
-		for (int i=0; i<pkg.get_tags()->size(); i++)
+		for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
 		{
-			tag_tmp=pkg.get_tags()->get_tag(i)->get_name();
+			tag_tmp=pkg.get_tags()->at(i);
 			ui.TagListWidget->addItem(tag_tmp.c_str());
 			tag_tmp.clear();
 		}
 	}
+	else QMessageBox::warning(this, tr("Bad XML!"), \
+				tr("Error opening ") + xmlFilename + tr(": invalid XML structure"), \
+				QMessageBox::Ok, QMessageBox::Ok);
 	ui.DepTableWidget->resizeRowsToContents();
 	ui.DepTableWidget->resizeColumnsToContents();
 	modified=false;
@@ -121,7 +131,7 @@ void Form::saveData()
 	QString xmlDir;
 	if (xmlFilename.isEmpty())
 	{
-		xmlDir = QFileDialog::getExistingDirectory(this, "Choose directory where to save package index files (data.xml):", "."/*, "Package index (data.xml)"*/);
+		xmlDir = QFileDialog::getExistingDirectory(this, tr("Choose directory where to save package index files")+" (data.xml, slack-desc, ...):", "."/*, "Package index (data.xml)"*/);
 		xmlFilename = xmlDir+"/data.xml";
 	}
 	else
@@ -152,8 +162,7 @@ void Form::saveData()
 	node.addChild("description");
 	node.getChildNode("description",0).addAttribute("lang", "en");
 	node.getChildNode("description",0).addText(description[0].toStdString().c_str());
-	unsigned int chunkLength=0;
-	unsigned int spacePosition;
+	unsigned int spacePosition=0;
 	slack_desc = ui.NameEdit->text().toStdString() + ": " + short_description[0].toStdString() + "\n" + ui.NameEdit->text().toStdString() + ": \n";
 	for (unsigned int i=0; i<description[0].toStdString().length(); i++)
 	{
@@ -253,7 +262,7 @@ void Form::saveData()
 	
 	(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
-	setWindowTitle(windowTitle()+" (saved)");
+	setWindowTitle(windowTitle()+tr(" (saved)"));
 	modified=false;
 }
 
@@ -294,7 +303,7 @@ void Form::changeHeader()
 	//printf("headerChange\n");
 	modified=true;
 
-	QString FLabel="MOPSLinux package builder";
+	QString FLabel=tr("MOPSLinux package builder");
 
 	if (!ui.NameEdit->text().isEmpty())
 	{
@@ -313,9 +322,14 @@ void Form::changeHeader()
 
 void Form::changeHeader(const QString & text)
 {
+	if (!text.isEmpty())
+	{
+		setWindowTitle(text);
+		return;
+	}
 	//printf("headerChange\n");
 	modified=true;
-	QString FLabel="MOPSLinux package builder";
+	QString FLabel=tr("MOPSLinux package builder");
 
 	if (!ui.NameEdit->text().isEmpty())
 	{

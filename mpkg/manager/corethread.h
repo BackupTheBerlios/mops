@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.24 2007/05/22 19:57:21 i27249 Exp $
+ * $Id: corethread.h,v 1.25 2007/05/23 18:02:18 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -131,7 +131,6 @@ class coreThread: public QThread
 		void updatePackageDatabase(); 	// Call to update repositories data
 		void loadPackageDatabase();	// Call to load data from database and display
 		void commitQueue(vector<int> nStatus);		// Call to commit actions (install, remove, etc)
-		void syncData();		// Call to sync data between GUI and thread (temporary solution)
 		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
 		void getCdromName();
 	private:

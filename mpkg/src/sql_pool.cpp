@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.39 2007/05/21 10:08:18 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.40 2007/05/23 18:02:18 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -18,11 +18,12 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select location_id, packages_package_id, server_url, location_path from locations limit 1;")!=0 || \
 			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
 			sql_exec("select tags_id, tags_name from tags limit 1;")!=0 || \
-			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links limit 1;")!=0)// || \
+			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links limit 1;")!=0)
+		/* || \
 			sql_exec("select description_id, packages_package_id, description_language, description_text, short_description_text from descriptions limit 1;")!=0 || \
 			sql_exec("select changelog_id, packages_package_id, changelog_language, changelog_text from changelogs limit 1;")!=0 || \
 			sql_exec("select rating_id, rating_value, packages_package_name from ratings limit 1;")!=0 \
-			)
+			)*/
 	{
 		printf("complete - failed\n");
 		return false;

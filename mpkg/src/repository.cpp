@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.43 2007/05/18 10:22:09 i27249 Exp $
+ * $Id: repository.cpp,v 1.44 2007/05/23 18:02:18 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -401,6 +401,10 @@ int xml2package(XMLNode *pkgnode, PACKAGE *data)
 unsigned int pkgcounter;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
+
 	mDebug("processing package "+ (string) filename);
 	string _package=filename;
        	string ext;

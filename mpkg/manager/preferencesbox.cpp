@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.18 2007/05/21 18:35:55 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.19 2007/05/23 18:02:18 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -295,7 +295,6 @@ void PreferencesBox::openInterface()
 
 void PreferencesBox::loadData()
 {
-	printf("loading settings...\n");
 	ui.sysrootEdit->setText(mDb->get_sysroot().c_str());
 	ui.syscacheEdit->setText(mDb->get_syscache().c_str());
 	ui.dbfileEdit->setText(mDb->get_dburl().c_str());
@@ -326,7 +325,6 @@ void PreferencesBox::loadData()
 			break;
 	}	
 	ui.scriptsfolderEdit->setText(mDb->get_scriptsdir().c_str());
-	printf("receiving repositories\n");
 	vector<string> rList;
 	rList = mDb->get_repositorylist();
 	vector<string> drList;
@@ -337,7 +335,6 @@ void PreferencesBox::loadData()
 	oldRepStatus.resize(rList.size()+drList.size());
 	repStatus.clear();
 	repStatus.resize(drList.size()+rList.size());
-	printf("filling table (enabled)\n");
 	vector<RCheckBox*> rCheckBoxes;
 	rCheckBoxes.resize(rList.size() + drList.size());
 
@@ -351,27 +348,16 @@ void PreferencesBox::loadData()
 		ui.repositoryTable->setCellWidget(i,0,rCheckBoxes[i]);
 		ui.repositoryTable->setItem(i, 1, new QTableWidgetItem(rList[i].c_str()));
 	}
-	printf("filling table (disabled), drList->size = %d\n", drList.size());
 	for (unsigned int i=0; i < drList.size(); i++)
 	{
-		printf("cycle pos = %d\n", i);
-		printf("repStatus.push_back(true)\n");
 		repStatus.push_back(true);
-		printf("oldRepStatus.push_back(true)\n");
 		oldRepStatus.push_back(true);
-		printf("RCheckBox *rCheckBox = new RCheckBox(this)\n");
 		rCheckBoxes[i+rList.size()] = new RCheckBox(this);
-		printf("rCheckBox->setCheckState(Qt::Unchecked)\n");
 		rCheckBoxes[i+rList.size()]->setCheckState(Qt::Unchecked);
-		printf("rCheckBox->setRow(%d)\n", i+rList.size());
 		rCheckBoxes[i+rList.size()]->setRow(i+rList.size());
-		printf("setCellWidget(%d, 0, rCheckBox)\n", i+rList.size());
 		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBoxes[i+rList.size()]);
-		printf("setItem(%d, 1, new QTableWidgetItem(drList[%d].c_str() == %s\n", i+rList.size(), i, drList[i].c_str());
 		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
-		printf("loop end\n");
 	}
-	printf("setting dimensions\n");
 	ui.repositoryTable->setColumnWidth(0, 32);
  	ui.repositoryTable->setColumnWidth(1, 900);
 	repositoryChangesMade = false;
@@ -516,11 +502,8 @@ void PreferencesBox::applyConfig()
 
 RCheckBox::RCheckBox(PreferencesBox *parent)
 {
-	printf("setting parent\n");
 	mw = parent;
-	printf("resizing contents\n");
 
-	printf("creating connections\n");
 	QObject::connect(this, SIGNAL(stateChanged(int)), this, SLOT(markChanges()));
 	QObject::connect(this, SIGNAL(stateChanged(int)), mw, SLOT(repTableChanged()));
 

@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.32 2007/05/22 16:56:01 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.33 2007/05/23 18:02:18 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -91,7 +91,7 @@ int mpkg::install(int package_id)
 int mpkg::install(PACKAGE_LIST *pkgList)
 {
 	int ret=0;
-	for (unsigned int i=0; i<pkgList->size(); i++)
+	for (int i=0; i<pkgList->size(); i++)
 	{
 		if (mpkgSys::requestInstall(pkgList->get_package(i), db, DepTracker)!=0) ret--;
 	}
@@ -123,7 +123,7 @@ int mpkg::purge(vector<string> pkg_name)
 // Repository data updating
 int mpkg::update_repository_data()
 {
-	if (mpkgSys::update_repository_data(db, DepTracker) == 0 && db->sqlFlush() == 0)
+	if (mpkgSys::update_repository_data(db) == 0 && db->sqlFlush() == 0)
 	{
 		currentStatus = "Repository data updated";
 		return 0;
@@ -146,10 +146,10 @@ int mpkg::clean_cache()
 }
 
 // Package list retrieving
-int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool GetExtraInfo, bool ultraFast)
+int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist)
 {
 	currentStatus = "Retrieving package list...";
-	int ret = db->get_packagelist(sqlSearch, packagelist, GetExtraInfo, ultraFast);
+	int ret = db->get_packagelist(sqlSearch, packagelist);
 	if (ret == 0) currentStatus = "Retriveal complete";
 	else currentStatus = "Failed retrieving package list!";
 	return ret;
