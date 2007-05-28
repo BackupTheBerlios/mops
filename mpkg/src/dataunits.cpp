@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.55 2007/05/23 14:16:03 i27249 Exp $
+	$Id: dataunits.cpp,v 1.56 2007/05/28 14:17:19 i27249 Exp $
 */
 
 
@@ -424,6 +424,11 @@ bool PACKAGE::isUpdate()
 		return true;
 	}
 	else return false;
+}
+
+bool PACKAGE::deprecated()
+{
+	return !hasMaxVersion;
 }
 
 int PACKAGE::get_id()

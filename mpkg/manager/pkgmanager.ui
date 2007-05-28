@@ -630,20 +630,6 @@
     <addaction name="actionMini_FAQ" />
     <addaction name="actionAbout" />
    </widget>
-   <widget class="QMenu" name="menuFilters" >
-    <property name="title" >
-     <string>Filters</string>
-    </property>
-    <addaction name="actionShow_available" />
-    <addaction name="actionShow_installed" />
-    <addaction name="actionShow_broken" />
-    <addaction name="actionShow_configexist" />
-    <addaction name="actionShow_queue" />
-    <addaction name="actionCustom_filter" />
-    <addaction name="actionShow_install" />
-    <addaction name="actionShow_purge" />
-    <addaction name="actionShow_unavailable" />
-   </widget>
    <widget class="QMenu" name="menuFile" >
     <property name="title" >
      <string>File</string>
@@ -659,6 +645,21 @@
     <addaction name="actionClean_cache" />
     <addaction name="separator" />
     <addaction name="actionQuit" />
+   </widget>
+   <widget class="QMenu" name="menuFilters" >
+    <property name="title" >
+     <string>Filters</string>
+    </property>
+    <addaction name="actionShow_available" />
+    <addaction name="actionShow_installed" />
+    <addaction name="actionShow_broken" />
+    <addaction name="actionShow_configexist" />
+    <addaction name="actionShow_queue" />
+    <addaction name="actionCustom_filter" />
+    <addaction name="actionShow_install" />
+    <addaction name="actionShow_purge" />
+    <addaction name="actionShow_unavailable" />
+    <addaction name="actionShow_deprecated" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuRepositories" />
@@ -948,6 +949,23 @@
    </property>
    <property name="text" >
     <string>Update data</string>
+   </property>
+  </action>
+  <action name="actionShow_deprecated" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="checked" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset>/usr/share/mpkg/icons/deprecated_available.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Show deprecated</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+5</string>
    </property>
   </action>
  </widget>

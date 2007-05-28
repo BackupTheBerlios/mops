@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.37 2007/05/18 10:22:09 i27249 Exp $
+	$Id: dataunits.h,v 1.38 2007/05/28 14:17:19 i27249 Exp $
 */
 
 
@@ -216,6 +216,7 @@ class PACKAGE
 	bool newPackage;	// Используется пока что только при обновлении. Есть мысль использовать в GUI (еще не знаю по какому принципу)
 	string installedVersion;
 
+	bool deprecated();
 	// Comparsion
 	bool equalTo(PACKAGE *pkg);
 	bool locationsEqualTo(PACKAGE *pkg);

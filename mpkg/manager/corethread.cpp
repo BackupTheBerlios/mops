@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.61 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: corethread.cpp,v 1.62 2007/05/28 14:17:19 i27249 Exp $
  * *************************************************************************/
 #define USLEEP 5
 #include "corethread.h"
@@ -861,6 +861,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 		case ST_INSTALL:
 			package_icon="install.png";
 			break;
+		case ST_UPDATE:
 		case ST_REMOVE:
 			package_icon="remove.png";
 			break;
@@ -868,6 +869,7 @@ void coreThread::insertPackageIntoTable(unsigned int package_num)
 			package_icon="purge.png";
 			break;
 	}
+	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
 			+_p->get_fullversion()\
 			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
@@ -902,7 +904,7 @@ void coreThread::commitQueue(vector<int> nStatus)
 void coreThread::_commitQueue()
 {
 	currentStatus = tr("Committing...").toStdString();
-	vector<string> install_queue;
+	PACKAGE_LIST install_queue;
 	vector<string> remove_queue;
 	vector<string> purge_queue;
 	vector<int> reset_queue;
@@ -916,8 +918,9 @@ void coreThread::_commitQueue()
 					reset_queue.push_back(packageList->get_package(i)->get_id());
 					break;
 				case ST_INSTALL:
-					install_queue.push_back(*packageList->get_package(i)->get_name());
+					install_queue.add(packageList->get_package(i));//->get_name());
 					break;
+				case ST_UPDATE:
 				case ST_REMOVE:
 					remove_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
@@ -925,12 +928,12 @@ void coreThread::_commitQueue()
 					purge_queue.push_back(*packageList->get_package(i)->get_name());
 					break;
 				default:
-					mError("Unknown action " + IntToStr(newStatus[i]));
+					mError((string) __func__ + "Unknown action " + IntToStr(newStatus[i]));
 			}
 		}
 	}
 	database->uninstall(remove_queue);
-	database->install(install_queue);
+	database->install(&install_queue);
 	database->purge(purge_queue);
 	for (unsigned int i = 0; i<reset_queue.size(); i++)
 	{

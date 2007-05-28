@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.96 2007/05/23 13:24:14 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.97 2007/05/28 14:17:19 i27249 Exp $
  *
  ****************************************************************/
 
@@ -141,6 +141,7 @@ void MainWindow::generateStat()
 	installedCount = 0;
 	installQueueCount = 0;
 	removeQueueCount = 0;
+	updateQueueCount = 0;
 	willBeFreed = 0;
 	willBeOccupied = 0;
 	if (!initializeOk)
@@ -169,16 +170,24 @@ void MainWindow::generateStat()
 			removeQueueCount++;
 			willBeFreed = willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
+		if (newStatus[i] == ST_UPDATE)
+		{
+			updateQueueCount++;
+			willBeFreed = willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
+		}
+
 		if (newStatus[i]==ST_PURGE)
 		{
 			removeQueueCount++;
 			if (packagelist->get_package(i)->installed()) willBeFreed=willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
 	}
+	installQueueCount -= updateQueueCount;
 	QString countStat = tr("Installed: ") + IntToStr(installedCount).c_str() +\
 			    tr(", Available: ")+IntToStr(totalAvailableCount).c_str()+\
 			    tr(", To install: ")+IntToStr(installQueueCount).c_str()+\
-			    tr(", To remove: ")+IntToStr(removeQueueCount).c_str();
+			    tr(", To remove: ")+IntToStr(removeQueueCount).c_str()+\
+			    tr(", To update: ")+IntToStr(updateQueueCount).c_str();
 	if (willBeFreed>willBeOccupied) countStat += tr(", Will be freed: ") + humanizeSize(willBeFreed - willBeOccupied).c_str();
 	if (willBeFreed<willBeOccupied) countStat+= tr(", Will be occupied: ") + humanizeSize(willBeOccupied - willBeFreed).c_str();
 
@@ -195,12 +204,14 @@ void MainWindow::applyPackageFilter ()
 	bool statusOk = false;
 	bool categoryOk = false;
 	bool cloneOk = true;
+	bool deprecatedOk = false;
 	vector<string> tmpTagList;
 	string tagvalue;
 	int action;
 	bool available;
 	bool installed;
 	bool configexist;
+	bool deprecated;
 
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
@@ -228,7 +239,7 @@ void MainWindow::applyPackageFilter ()
 			available = packagelist->get_package(i)->available();
 			installed = packagelist->get_package(i)->installed();
 			configexist = packagelist->get_package(i)->configexist();
-
+			deprecated = packagelist->get_package(i)->deprecated();
 			statusOk=false;
 
 			if (ui.actionShow_installed->isChecked() && installed)
@@ -259,6 +270,17 @@ void MainWindow::applyPackageFilter ()
 		} // if(nameOk)
 		if (statusOk)
 		{
+			if (deprecated)
+			{
+				if (ui.actionShow_deprecated->isChecked())
+				{
+					ui.packageTable->setRowHidden(i, false);
+					deprecatedOk = true;
+				}
+				else deprecatedOk = false;
+			}
+			else deprecatedOk=true;
+
 
 //			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
 			if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
@@ -299,7 +321,7 @@ void MainWindow::applyPackageFilter ()
 				} // else (tagvalue)
 			} // if (statusOk)*/
 		}
-		if (nameOk && statusOk && categoryOk && cloneOk)
+		if (nameOk && statusOk && categoryOk && cloneOk && deprecatedOk)
 		{
 			pkgCount++;
 			ui.packageTable->setRowHidden(i, false);
@@ -965,7 +987,7 @@ void MainWindow::commitChanges()
 			installList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
 				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
 		}
-		if (newStatus[i]==ST_REMOVE || newStatus[i] == ST_PURGE)
+		if (newStatus[i]==ST_REMOVE || newStatus[i] == ST_PURGE || newStatus[i] == ST_UPDATE)
 		{
 			removeList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
 				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
@@ -981,8 +1003,9 @@ void MainWindow::commitChanges()
 	
 	msgBox.setDetailedText(details);
 	
-	QString text = 	tr("Will be installed: ")+IntToStr(installQueueCount).c_str() + \
-			tr(" packages\n") + tr("Will be removed: ") + IntToStr(removeQueueCount).c_str() + tr(" packages\n");
+	QString text = 	tr("Will be installed: ")+IntToStr(installQueueCount).c_str() + tr(" packages\n") + \
+			tr("Will be removed: ") + IntToStr(removeQueueCount).c_str() + tr(" packages\n") + \
+			tr("Will be updated: ") + IntToStr(updateQueueCount).c_str() + tr(" packages\n");
 	
 	if (willBeOccupied > willBeFreed)
 	{
@@ -1106,8 +1129,32 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		return;
 	}
 	PACKAGE *_p = packagelist->get_package(i);
+
 	if (force_state>=0)
 	{
+		if (force_state == ST_NONE)
+		{
+			newStatus[i]==force_state;
+		}
+		if (!_p->installed() && !_p->installedVersion.empty() && force_state == ST_INSTALL)
+		{
+			for (int t=0; t<packagelist->size(); t++)
+			{
+				if (*packagelist->get_package(t)->get_name()==*_p->get_name())
+				{
+					markChanges(t, Qt::Unchecked, ST_UPDATE);
+					break;
+				}
+			}
+		}
+
+		if (_p->installed() && force_state == ST_UPDATE)
+		{
+			newStatus[i]=force_state;
+			currentStatus=tr("Package queued to update").toStdString();
+			state = Qt::Unchecked;
+		}
+
 		if (_p->installed() && force_state == ST_REMOVE)
 		{
 			newStatus[i]=force_state;
@@ -1129,48 +1176,50 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 	}
 	else
 	{
-	if (_p->installed())
+		if (_p->installed())
 		{
-		switch(_p->action())
-		{
-			case ST_NONE:
-				if (state == Qt::Checked)
-				{
-					newStatus[i]=ST_NONE;
-					currentStatus=tr("Package keeped in system").toStdString();
-				}
-				else
-				{
-					newStatus[i]=ST_REMOVE;
-					currentStatus=tr("Package queued to remove").toStdString();
-				}
-				break;
-			case ST_REMOVE:
-				if (state == Qt::Checked)
-				{
-					newStatus[i]=ST_NONE;
-					currentStatus=tr("Package removed from remove queue").toStdString();
-				}
-				else
-				{
-					newStatus[i]=ST_REMOVE;
-					currentStatus=tr("Package queued to remove").toStdString();
-				}
-				break;
-			case ST_PURGE:
-				if (state == Qt::Checked)
-				{
-					newStatus[i]=ST_NONE;
-					currentStatus=tr("Package removed from purge queue").toStdString();
-				}
-				else
-				{
-					newStatus[i]=ST_PURGE;
-					currentStatus=tr("Package queued to purge").toStdString();
-				}
-				break;
-			default:
-				currentStatus=tr("Unknown condition").toStdString();
+
+			switch(_p->action())
+			{
+				case ST_NONE:
+					if (state == Qt::Checked)
+					{
+						newStatus[i]=ST_NONE;
+						currentStatus=tr("Package keeped in system").toStdString();
+					}
+					else
+					{
+						newStatus[i]=ST_REMOVE;
+						currentStatus=tr("Package queued to remove").toStdString();
+					}
+					break;
+				case ST_UPDATE:
+				case ST_REMOVE:
+					if (state == Qt::Checked)
+					{
+						newStatus[i]=ST_NONE;
+						currentStatus=tr("Package removed from remove queue").toStdString();
+					}
+					else
+					{
+						newStatus[i]=ST_REMOVE;
+						currentStatus=tr("Package queued to remove").toStdString();
+					}
+					break;
+				case ST_PURGE:
+					if (state == Qt::Checked)
+					{
+						newStatus[i]=ST_NONE;
+						currentStatus=tr("Package removed from purge queue").toStdString();
+					}
+					else
+					{
+						newStatus[i]=ST_PURGE;
+						currentStatus=tr("Package queued to purge").toStdString();
+					}
+					break;
+				default:
+					currentStatus=tr("Unknown condition").toStdString();
 			}
 		} // if(_p->installed())
 		else
@@ -1179,6 +1228,21 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 			{
 				case ST_INSTALL:
 				case ST_NONE:
+					if (!_p->installed() && !_p->installedVersion.empty())
+					{
+						for (int t=0; t<packagelist->size(); t++)
+						{
+							if (*packagelist->get_package(t)->get_name() == *_p->get_name() && \
+									packagelist->get_package(t)->installed() && \
+									newStatus[t]==ST_NONE)
+							{
+								markChanges(t, Qt::Unchecked, ST_UPDATE);
+								break;
+							}
+						}
+					}
+
+
 					if (state==Qt::Checked)
 					{
 						newStatus[i]=ST_INSTALL;
@@ -1187,7 +1251,18 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 					else
 					{
 						newStatus[i]=ST_NONE;
+						for (unsigned int t=0; t<newStatus.size(); t++)
+						{
+							if (newStatus[t]==ST_UPDATE && *packagelist->get_package(t)->get_name() == *packagelist->get_package(i)->get_name())
+							{
+								newStatus[t]=ST_NONE;
+								markChanges(t, Qt::Checked, ST_NONE);
+								break;
+							}
+						}
+							
 						currentStatus=tr("Package unqueued").toStdString();
+
 					}
 					break;
 				case ST_PURGE:
@@ -1224,6 +1299,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		case ST_INSTALL:
 			package_icon="install.png";
 			break;
+		case ST_UPDATE:
 		case ST_REMOVE:
 			package_icon="remove.png";
 			break;
@@ -1233,7 +1309,8 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 	}
 	string cloneHeader;
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
-		
+	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
+
 	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
 		+_p->get_fullversion()\
 		+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\

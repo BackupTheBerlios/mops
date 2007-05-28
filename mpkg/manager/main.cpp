@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.25 2007/05/21 18:35:55 i27249 Exp $
+ *     $Id: main.cpp,v 1.26 2007/05/28 14:17:19 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.actionAdd_remove_repositories, SIGNAL(triggered()), &mw, SLOT(showAddRemoveRepositories()));
 	QObject::connect(mw.ui.actionClean_cache, SIGNAL(triggered()), &mw, SLOT(cleanCache()));
 	QObject::connect(mw.ui.actionShow_installed, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+	QObject::connect(mw.ui.actionShow_deprecated, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
+
 	QObject::connect(mw.ui.actionShow_available, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 	QObject::connect(mw.ui.actionShow_queue, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));
 	QObject::connect(mw.ui.actionShow_configexist, SIGNAL(triggered()), &mw, SLOT(applyPackageFilter()));

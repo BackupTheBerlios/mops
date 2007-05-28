@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.46 2007/05/23 13:24:14 i27249 Exp $
+ * $Id: mainwindow.h,v 1.47 2007/05/28 14:17:19 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -142,6 +142,7 @@ class MainWindow: public QMainWindow
 		unsigned int installedCount;
 		unsigned int installQueueCount;
 		unsigned int removeQueueCount;
+		unsigned int updateQueueCount;
 		double willBeFreed;
 		double willBeOccupied;
 
