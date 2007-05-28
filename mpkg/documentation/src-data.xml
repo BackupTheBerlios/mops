@@ -75,10 +75,5 @@
 		<default_arch>i486</default_arch>
 		<default_optimization>O2</default_optimization>
 		<extra_gcc_optimizations>-fomit-frame-pointer -pipe -mfpmath=sse</extra_gcc_optimizations>
-		<configure_options>
-			<option name="--enable-qca" param_type="none"/>
-			<option name="--sysconf_dir" param_type="string"/>
-			<option name="--use-qt3" param_type="bool"/>
-		</configure_options>
 	</source>
 </package>
