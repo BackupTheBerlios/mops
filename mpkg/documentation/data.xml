@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		azureus
+	</name>
+	<version>
+		2.5.0.4
+	</version>
+	<arch>
+		noarch
+	</arch>
+	<build>
+		1
+	</build>
+	<description lang="en">
+		A very popular bittorrent client written on JAVA. It&apos;s stable and fast.
+	</description>
+	<description lang="ru">
+	</description>
+	<short_description lang="en">
+		Torrent client written on JAVA
+	</short_description>
+	<short_description lang="ru">
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				jre
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1_5
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			network
+		</tag>
+		<tag>
+			xapps
+		</tag>
+		<tag>
+			java
+		</tag>
+		<tag>
+			desktop
+		</tag>
+	</tags>
+	<changelog>
+		No changes, initial release
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+</package>

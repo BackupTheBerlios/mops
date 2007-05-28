@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		psi
+	</name>
+	<version>
+		0.11-rc1
+	</version>
+	<build>
+		1
+	</build>
+	<description lang="en">
+		PSI is a qt4-based jabber client
+	</description>
+	<short_description lang="en">
+		QT4-based jabber client
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				qt4
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				4.2.3
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			network
+		</tag>
+		<tag>
+			xapps
+		</tag>
+		<tag>
+			jabber
+		</tag>
+		<tag>
+			desktop
+		</tag>
+	</tags>
+	<homepage>www.psi-im.org</homepage>
+	<changelog>
+		See changelog on website
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+	<source>
+		<sources_archive_name>psi-svn20070525.tar.bz2</sources_archive_name>
+		<patches>
+			<patch num="1">psi-svn_fixup.diff.gz</patch>
+			<patch num="2">psi-svn_ru.diff.gz</patch>
+		</patches>
+		<src_build_dependencies>
+			<dep>
+				<name>qt4</name>
+				<condition>
+					atleast
+				</condition>
+				<version>
+					4.2.3
+				</version>
+			</dep>
+		</src_build_dependencies>
+		<default_arch>i486</default_arch>
+		<default_optimization>O2</default_optimization>
+		<extra_gcc_optimizations>-fomit-frame-pointer -pipe -mfpmath=sse</extra_gcc_optimizations>
+		<configure_options>
+			<option name="--enable-qca" param_type="none"/>
+			<option name="--sysconf_dir" param_type="string"/>
+			<option name="--use-qt3" param_type="bool"/>
+		</configure_options>
+	</source>
+</package>
