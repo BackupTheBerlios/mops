@@ -17,9 +17,12 @@ package ru.rpunet.webmops.web;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.DontValidate;
@@ -27,7 +30,11 @@ import net.sourceforge.stripes.action.FileBean;
 import net.sourceforge.stripes.action.ForwardResolution;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
+import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
+import net.sourceforge.stripes.validation.ValidationError;
+import net.sourceforge.stripes.validation.ValidationErrors;
+import net.sourceforge.stripes.validation.ValidationMethod;
 import ru.rpunet.webmops.dao.PackageManager;
 import ru.rpunet.webmops.model.Package;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
@@ -46,6 +53,8 @@ import ru.rpunet.webmops.utils.WebmopsActionBean;
  *
  */
 public class UploadPackageActionBean extends WebmopsActionBean {
+	
+	private static Log log = LogFactory.getLog(UploadPackageActionBean.class);
 	
 	private Package pkg;
 	
@@ -123,14 +132,19 @@ public class UploadPackageActionBean extends WebmopsActionBean {
 		
 		try {
 			reader = new BufferedReader(new InputStreamReader(packageFile.getInputStream()));
-			String line = null;
+			//String line = null;
+			File f = new File("/tmp/packages/" + packageFile.getFileName());
+			log.debug("Uploaded file " + packageFile.getFileName() + " (" + packageFile.getContentType() +")");
+			packageFile.save(f);
+			
+			/*
 			// TODO: fix repository location
 			out = new BufferedWriter(new FileWriter("/tmp/packages/" + packageFile.getFileName()));
 			
 			while ((line = reader.readLine()) != null) {
 				out.write(line + "\n");
 			}
-			
+			*/
 			String filename = packageFile.getFileName();
 			
 			pkg = new Package();
@@ -160,6 +174,17 @@ public class UploadPackageActionBean extends WebmopsActionBean {
 		}
 		
 		return new RedirectResolution("/PackageInfo.action?id=" + pkg.getId());
+	}
+	
+	@ValidationMethod
+	public void validate(ValidationErrors errors) {
+		PackageManager packageDAO = new PackageManager();
+		if (packageDAO.findPackagesByName(name) != null && packageDAO.findPackageByVer(version, build) != null) {
+			/*errors.add("", new LocalizableError("packageExists"));
+			errors.add("version", new LocalizableError("packageExists"));
+			errors.add("build", new LocalizableError("packageExists"));*/
+			errors.addGlobalError(new LocalizableError("packageExists"));
+		}
 	}
 	
 }

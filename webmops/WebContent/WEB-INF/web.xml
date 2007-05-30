@@ -15,6 +15,22 @@
 	</welcome-file-list>
 
 	<!-- 
+		Open Session In View
+	 -->
+	<filter>
+		<display-name>Hbn Filter</display-name>
+		<filter-name>HibernateSessionInViewFilter</filter-name>
+		<filter-class>
+			ru.rpunet.webmops.utils.HibernateSessionInViewFilter
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>HibernateSessionInViewFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<!-- 
 		Stripes filter configuration
 	-->
 	<filter>
@@ -67,21 +83,7 @@
 		</init-param>
 	</filter>
 
-	<!-- 
-		Open Session In View
-	 -->
-	<filter>
-		<display-name>Hbn Filter</display-name>
-		<filter-name>HibernateSessionInViewFilter</filter-name>
-		<filter-class>
-			ru.rpunet.webmops.utils.HibernateSessionInViewFilter
-		</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>HibernateSessionInViewFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-		<dispatcher>REQUEST</dispatcher>
-	</filter-mapping>
+
 
 	<filter-mapping>
 		<filter-name>StripesFilter</filter-name>

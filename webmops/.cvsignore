@@ -5,3 +5,4 @@ build
 .externalToolBuilders
 *.class
 WebContent/WEB-INF/classes/ru/*
+*.war

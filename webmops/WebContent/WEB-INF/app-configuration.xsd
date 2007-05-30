@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="allow-registation">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:NMTOKEN" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="allow-trusted">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:NMTOKEN" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="anonymous">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="url" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="application-config">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="security" />
+        <xs:element ref="settings" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="avatar">
+    <xs:complexType>
+      <xs:attribute name="w" type="xs:NMTOKEN" use="required" />
+      <xs:attribute name="h" type="xs:NMTOKEN" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="group">
+    <xs:complexType mixed="true">
+      <xs:attribute name="name" type="xs:NMTOKEN" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="groups">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="group" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="moderator">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="url" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="premoderation">
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:NMTOKEN" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="security">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="anonymous" />
+        <xs:element ref="user" />
+        <xs:element ref="moderator" />
+        <xs:element ref="groups" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="settings">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="allow-trusted" />
+        <xs:element ref="premoderation" />
+        <xs:element ref="allow-registation" />
+        <xs:element ref="tmp-upload" />
+        <xs:element ref="avatar" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="tmp-upload">
+    <xs:complexType mixed="true" />
+  </xs:element>
+
+  <xs:element name="url">
+    <xs:complexType mixed="true" />
+  </xs:element>
+
+  <xs:element name="user">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="url" maxOccurs="unbounded" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

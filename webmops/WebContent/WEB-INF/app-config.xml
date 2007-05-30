@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application-config>
+	<security>
+		<!-- 
+			allow anonymous access to this urls
+		 -->
+		<anonymous>
+			<url>/List.action</url>
+			<url>/Registed.action</url>
+			<url>/Login.action</url>
+			<url>/Search.action</url>
+			<url>/PackageInfo.action</url>
+			<url>/ShowFiles.action</url>
+			<url>/Default.action</url>
+			<url>/CssResourcesLoader.action</url>
+		</anonymous>
+		
+		<!-- 
+			allow registered users access to this urls
+			users extends anonymous
+		 -->
+		 <user>
+		 	<url>/Logout.action</url>
+			<url>/UploadPackage.action</url>
+			<url>/users/Profile.action</url>
+			<url>/users/EditProfile.action</url>
+			<url>/users/UploadPhoto.action</url>
+			<url>/users/ListPackages.action</url>
+			<url>/users/RemovePackage.action</url>
+		 </user>
+		 
+		 <!-- 
+		 	allow moderator access
+		  -->
+		  <moderator>
+				<url>/EditPackage.action</url>
+				<url>/DeletePackage.action</url>
+				<url>/RebuildIndex.action</url>
+				<url>/ViewPackage.action</url>
+				<url>/AllowPackage.action</url>
+				<url>/users/List.action</url>
+				<url>/users/BlockUser.action</url>
+				<url>/users/EditUser.action</url>
+		  </moderator>
+		  
+		  <!-- 
+		  	administrator has access to everything
+		   -->
+			
+			<groups>
+				<group name="anonymous">Guest</group>
+				<group name="moderator">Moderator</group>
+				<group name="user">User</group>
+				<group name="administrator">Administrator</group>
+			</groups>		   
+	</security>
+	
+	<settings>
+		<!-- 
+			allow trusted users to upload packages without premoderation
+		 -->
+		<allow-trusted value="true" />
+		
+		<!-- 
+			allow premoderation
+		 -->
+		<premoderation value="false" />
+		
+		<!-- 
+			allow new user registration
+		 -->
+		<allow-registation value="true" />
+		
+		<!-- 
+			temp dir for uploaded packages
+		 -->
+		<tmp-upload>/tmp/packages</tmp-upload>
+		
+		<!-- 
+			limits for user avatar
+		 -->
+		<avatar w="150" h="150" />
+	</settings>
+	
+</application-config>

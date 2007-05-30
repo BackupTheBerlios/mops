@@ -74,4 +74,22 @@ public class PackageManager {
 		
 		return pkgs;
 	}
+
+
+	/**
+	 * Search package by version and build
+	 * @param version package version
+	 * @param build package build
+	 * @return package 
+	 */
+	@SuppressWarnings("unchecked")
+	public List<Package> findPackageByVer(String version, String build) {
+		List<Package> pkg = (List<Package>) session.createCriteria(Package.class)
+					.add(Restrictions.like("version", version))
+					.add(Restrictions.like("build", build))
+					.list();
+		return pkg;
+	}
+	
+	
 }

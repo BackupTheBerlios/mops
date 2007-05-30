@@ -6,8 +6,10 @@
 		<div id="notice-box">
 			Important! Only Slackware packages are supported.
 		</div>
+		<stripes:errors globalErrorsOnly="true"/>
+		
 		<stripes:form beanclass="ru.rpunet.webmops.web.UploadPackageActionBean" focus="name">
-			<stripes:errors />
+			<stripes:errors beanclass="ru.rpunet.webmops.web.UploadPackageActionBean" />
 			Name: <stripes:text name="name" /><br />
 			Version: <stripes:text name="version" /><br />
 			Arch: <stripes:text name="arch" value="i386" /><br />

@@ -15,10 +15,14 @@
    
 package ru.rpunet.webmops.utils;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.hibernate.cfg.*;
 
 public class HibernateUtil {
+	private static Log log = LogFactory.getLog(HibernateUtil.class);
+	
 	private static SessionFactory sessionFactory;
 
 	static {
