@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.63 2007/05/30 12:51:19 i27249 Exp $
+ * $Id: corethread.cpp,v 1.64 2007/05/30 14:29:08 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -201,7 +201,6 @@ void coreThread::_loadPackageDatabase()
 			{
 				readyState=true;
 				actionBus.setActionState(ACTIONID_DBLOADING, ITEMSTATE_ABORTED);
-				printf("Aborted\n");
 
 				break;
 			}
@@ -218,7 +217,6 @@ void coreThread::_loadPackageDatabase()
 	pData.clear();
 	
 	actionBus._abortComplete = true;
-	printf("Abort complete\n");
 }
 
 void coreThread::getCdromName()

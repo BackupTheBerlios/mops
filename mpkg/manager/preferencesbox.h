@@ -1,6 +1,6 @@
 /**************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.h,v 1.11 2007/05/14 13:45:54 i27249 Exp $
+ * $Id: preferencesbox.h,v 1.12 2007/05/30 14:29:08 i27249 Exp $
  * **********************************************************************/
 #ifndef PREF_BOX_H
 #define PREF_BOX_H
@@ -61,7 +61,7 @@ class RCheckBox: public QCheckBox
 {
 	Q_OBJECT
 	public:
-		RCheckBox(PreferencesBox *parent);
+		RCheckBox(PreferencesBox *parent, int rowNum);
 	public slots:
 		void markChanges();
 		void setRow(int rowNum);

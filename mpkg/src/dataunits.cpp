@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.57 2007/05/30 12:51:19 i27249 Exp $
+	$Id: dataunits.cpp,v 1.58 2007/05/30 14:29:08 i27249 Exp $
 */
 
 
@@ -1029,16 +1029,21 @@ PACKAGE* PACKAGE_LIST::getPackageByTableID(unsigned int id)
 void PACKAGE_LIST::setTableID(int pkgNum, int id)
 {
 	tableID[id]=pkgNum;
+	reverseTableID[pkgNum]=id;
 }
 
 int PACKAGE_LIST::getTableID(int pkgNum)
 {
+	return reverseTableID[pkgNum];
+	/*
 	for (unsigned int i=0; i<packages.size(); i++)
 	{
+		printf("[%d] tableID[%d]==%d\n", pkgNum, i, tableID[i]);
 		if (tableID[i]==pkgNum) return i;
+		
 	}
 	mError("No such package!\n");
-	return 0;
+	return 0;*/
 }
 
 int PACKAGE_LIST::getRealNum(int id)
@@ -1121,6 +1126,7 @@ void PACKAGE_LIST::clear(unsigned int new_size)
 	packages.clear();
     	packages.resize(new_size);
 	tableID.clear();
+	reverseTableID.clear();
 }
 
 void PACKAGE_LIST::set_size(unsigned int new_size)

@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.48 2007/05/30 12:51:19 i27249 Exp $
+ * $Id: mainwindow.h,v 1.49 2007/05/30 14:29:08 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -69,7 +69,7 @@ class MainWindow: public QMainWindow
 		void showProgressWindow(bool flag);
 		void hideEntireTable();
 		void showErrorMessage(QString headerText, QString bodyText, QMessageBox::StandardButtons buttons, QMessageBox::StandardButton defaultButton);
-		void initCategories();
+		void initCategories(bool initial=false);
 		void filterCategory(int category_id);
 		void applyPackageFilter();
 		void setTableSize();

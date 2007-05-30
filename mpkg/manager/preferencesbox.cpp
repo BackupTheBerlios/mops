@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.19 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.20 2007/05/30 14:29:08 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -342,7 +342,7 @@ void PreferencesBox::loadData()
 	{
 		repStatus.push_back(true);
 		oldRepStatus.push_back(true);
-		rCheckBoxes[i] = new RCheckBox(this);
+		rCheckBoxes[i] = new RCheckBox(this, i);
 		rCheckBoxes[i]->setCheckState(Qt::Checked);
 		rCheckBoxes[i]->setRow(i);
 		ui.repositoryTable->setCellWidget(i,0,rCheckBoxes[i]);
@@ -352,14 +352,14 @@ void PreferencesBox::loadData()
 	{
 		repStatus.push_back(true);
 		oldRepStatus.push_back(true);
-		rCheckBoxes[i+rList.size()] = new RCheckBox(this);
+		rCheckBoxes[i+rList.size()] = new RCheckBox(this, i+rList.size());
 		rCheckBoxes[i+rList.size()]->setCheckState(Qt::Unchecked);
 		rCheckBoxes[i+rList.size()]->setRow(i+rList.size());
 		ui.repositoryTable->setCellWidget(i+rList.size(),0,rCheckBoxes[i+rList.size()]);
 		ui.repositoryTable->setItem(i+rList.size(), 1, new QTableWidgetItem(drList[i].c_str()));
 	}
 	ui.repositoryTable->setColumnWidth(0, 32);
- 	ui.repositoryTable->setColumnWidth(1, 900);
+ 	ui.repositoryTable->setColumnWidth(1, 500);
 	repositoryChangesMade = false;
 }
 
@@ -423,7 +423,7 @@ void PreferencesBox::applyRepositoryChanges()
 	int insert_pos=ui.repositoryTable->rowCount();
 	if (editMode==REP_ADDMODE)
 	{
-		RCheckBox *rCheckBox = new RCheckBox(this);
+		RCheckBox *rCheckBox = new RCheckBox(this, insert_pos);
 		rCheckBox->setCheckState(Qt::Checked);
 		insert_pos = ui.repositoryTable->rowCount();
 		ui.repositoryTable->setRowCount(insert_pos+1);
@@ -495,13 +495,19 @@ void PreferencesBox::applyConfig()
 	mDb->set_repositorylist(rList, drList);
 	if (repositoryChangesMade)
 	{
-		if (QMessageBox::warning(this, tr("Repository list changed"), tr("You have modified repository list. Update package data?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes)==QMessageBox::Yes) emit updatePackageData();
+		if (QMessageBox::warning(this, tr("Repository list changed"), tr("You have modified repository list. Update package data?"), \
+					QMessageBox::Yes | QMessageBox::No, \
+					QMessageBox::Yes) == QMessageBox::Yes)
+		{
+			emit updatePackageData();
+		}
 	}
 	repositoryChangesMade = false;
 }
 
-RCheckBox::RCheckBox(PreferencesBox *parent)
+RCheckBox::RCheckBox(PreferencesBox *parent, int rowNum)
 {
+	row=rowNum;
 	mw = parent;
 
 	QObject::connect(this, SIGNAL(stateChanged(int)), this, SLOT(markChanges()));

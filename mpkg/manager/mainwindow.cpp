@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.98 2007/05/30 12:51:19 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.99 2007/05/30 14:29:08 i27249 Exp $
  *
  ****************************************************************/
 
@@ -197,7 +197,7 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
-
+	//initCategories();
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
 	QString nameMask;
@@ -287,9 +287,9 @@ void MainWindow::applyPackageFilter ()
 		if (nameOk && statusOk && categoryOk && cloneOk && deprecatedOk)
 		{
 			pkgCount++;
-			ui.packageTable->setRowHidden(packagelist->getRealNum(i), false);
+			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
 		}
-		else ui.packageTable->setRowHidden(packagelist->getRealNum(i), true);
+		else ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
 #ifdef CATEGORY_HIGHLIGHTING
 		// The last enhancement - category highlight =)
 		tmpTagList = *packagelist->get_package(i)->get_tags();
@@ -702,11 +702,13 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 	}
 	availableTags.push_back("_misc_");
 
-	initCategories();
+	initCategories(true);
 }
 
-void MainWindow::initCategories()
+void MainWindow::initCategories(bool initial)
 {
+	//ui.listWidget->disconnect();
+	//ui.listWidget->blockSignals(true);
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 
 	XMLResults xmlErrCode;
@@ -719,6 +721,7 @@ void MainWindow::initCategories()
 	ui.listWidget->clear();
 
 	bool named = false;
+	//ui.listWidget->setRowCount(availableTags.size());
 	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
 
@@ -729,22 +732,32 @@ void MainWindow::initCategories()
 			{
 				named=true;
 				QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
-				__item->setText(_categories.getChildNode("group",t).getAttribute("name"));
+				ListLabel *L_item = new ListLabel(ui.listWidget, i);
+				L_item->setText("<b>"+(QString) _categories.getChildNode("group",t).getAttribute("name")+(QString) "</b>");
 		    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", t).getAttribute("icon"))));
+				ui.listWidget->setItemWidget(__item, L_item);
 			}
 		}
 		if (!named)
 		{
+			ListLabel *L_item = new ListLabel(ui.listWidget, i);
 			QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
-			__item->setText(availableTags[i].c_str());
+			L_item->setText(availableTags[i].c_str());
 	    		__item->setIcon(QIcon("/usr/share/mpkg/icons/icons/taskbar.png"));
+			ui.listWidget->setItemWidget(__item, L_item);
+
+
 		}
 
 	}
 
-	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
-	ui.listWidget->setCurrentRow(1);
-	ui.listWidget->scrollToItem(ui.listWidget->item(0));
+		QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
+	//ui.listWidget->blockSignals(false);
+	if (initial)
+	{
+		ui.listWidget->setCurrentRow(1);
+		ui.listWidget->scrollToItem(ui.listWidget->item(0));
+	}
 }
 
 void MainWindow::hideEntireTable()
@@ -854,14 +867,14 @@ void MainWindow::quickPackageSearch()
 	QString tmp;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
-		tmp = tmp.fromStdString(*packagelist->get_package(i)->get_name());
+		tmp = tmp.fromStdString(*packagelist->getPackageByTableID(i)->get_name());
 		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
-			ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
+			ui.packageTable->setRowHidden(i, true);
 		}
 		else
 		{
-			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
+			ui.packageTable->setRowHidden(i, false);
 		}
 	}
 }
