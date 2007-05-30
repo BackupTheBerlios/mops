@@ -24,17 +24,17 @@ Check your settings</source>
         <translation>Данные загружены, прорисовываем таблицы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="96"/>
+        <location filename="mainwindow.cpp" line="97"/>
         <source>Idle</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="200"/>
+        <location filename="mainwindow.cpp" line="201"/>
         <source>Packages</source>
         <translation>Пакеты</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="356"/>
+        <location filename="mainwindow.cpp" line="319"/>
         <source> packages)</source>
         <translation> пакетов)</translation>
     </message>
@@ -44,172 +44,172 @@ Check your settings</source>
         <translation type="obsolete"> для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="411"/>
+        <location filename="mainwindow.cpp" line="375"/>
         <source>Depends on:</source>
         <translation>Зависит от:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="419"/>
+        <location filename="mainwindow.cpp" line="390"/>
         <source>Installed version:</source>
         <translation>Установленная версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="420"/>
+        <location filename="mainwindow.cpp" line="391"/>
         <source>It is max version:</source>
         <translation>Это последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="421"/>
+        <location filename="mainwindow.cpp" line="392"/>
         <source>Max version:</source>
         <translation>Последняя версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="857"/>
+        <location filename="mainwindow.cpp" line="886"/>
         <source>Description:</source>
         <translation>Описание:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="471"/>
+        <location filename="mainwindow.cpp" line="443"/>
         <source>You need to be root to run package manager</source>
         <translation>Для запуска менеджера пакетов требуются привилегии root</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="499"/>
+        <location filename="mainwindow.cpp" line="471"/>
         <source>Install</source>
         <translation>Установить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="500"/>
+        <location filename="mainwindow.cpp" line="472"/>
         <source>Remove</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="501"/>
+        <location filename="mainwindow.cpp" line="473"/>
         <source>Purge</source>
         <translation>Удалить полностью</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="854"/>
+        <location filename="mainwindow.cpp" line="883"/>
         <source>Architecture:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="868"/>
+        <location filename="mainwindow.cpp" line="897"/>
         <source>Build:</source>
         <translation>Сборка:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="866"/>
+        <location filename="mainwindow.cpp" line="895"/>
         <source>Version:</source>
         <translation>Версия:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="867"/>
+        <location filename="mainwindow.cpp" line="896"/>
         <source>Arch:</source>
         <translation>Архитектура:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="869"/>
+        <location filename="mainwindow.cpp" line="898"/>
         <source>Package size:</source>
         <translation>Размер пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="870"/>
+        <location filename="mainwindow.cpp" line="899"/>
         <source>Installed size:</source>
         <translation>Размер после установки:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="871"/>
+        <location filename="mainwindow.cpp" line="900"/>
         <source>Filename:</source>
         <translation>Имя файла:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="872"/>
+        <location filename="mainwindow.cpp" line="901"/>
         <source>MD5 sum:</source>
         <translation>Контрольная сумма:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="873"/>
+        <location filename="mainwindow.cpp" line="902"/>
         <source>Maintainer:</source>
         <translation>Сборщик пакета:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="875"/>
+        <location filename="mainwindow.cpp" line="904"/>
         <source>Status:</source>
         <translation>Статус:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="876"/>
+        <location filename="mainwindow.cpp" line="905"/>
         <source>Tags:</source>
         <translation>Тэги:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="904"/>
+        <location filename="mainwindow.cpp" line="933"/>
         <source>Name</source>
         <translation>Имя</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="942"/>
+        <location filename="mainwindow.cpp" line="971"/>
         <source>Some actions doesn&apos;t completed</source>
         <translation>Некоторые операции еще не завершены</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="943"/>
+        <location filename="mainwindow.cpp" line="972"/>
         <source>Some actions hasn&apos;t completed yet. Abort and exit?</source>
         <translation>Не все операции завершены к данному моменту. Вы хотите отменить все и выйти?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="949"/>
+        <location filename="mainwindow.cpp" line="978"/>
         <source>Aborting actions...</source>
         <translation>Отменяем операции...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="956"/>
+        <location filename="mainwindow.cpp" line="985"/>
         <source>Exiting...</source>
         <translation>Выходим...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1206"/>
+        <location filename="mainwindow.cpp" line="1195"/>
         <source>Package queued to remove</source>
         <translation>Пакет добавлен в очередь для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1277"/>
+        <location filename="mainwindow.cpp" line="1266"/>
         <source>Package queued to purge</source>
         <translation>Пакет поставлен в очередь для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1272"/>
+        <location filename="mainwindow.cpp" line="1261"/>
         <source>Package queued to install</source>
         <translation>Пакет поставлен в очередь для установки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1188"/>
+        <location filename="mainwindow.cpp" line="1177"/>
         <source>Package keeped in system</source>
         <translation>Пакет оставлен в системе</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1201"/>
+        <location filename="mainwindow.cpp" line="1190"/>
         <source>Package removed from remove queue</source>
         <translation>Пакет удален из очереди для удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1213"/>
+        <location filename="mainwindow.cpp" line="1202"/>
         <source>Package removed from purge queue</source>
         <translation>Пакет удален из очереди для полного удаления</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1281"/>
+        <location filename="mainwindow.cpp" line="1270"/>
         <source>Unknown condition</source>
         <translation>Неясно</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1264"/>
+        <location filename="mainwindow.cpp" line="1253"/>
         <source>Package unqueued</source>
         <translation>Пакет удален из очереди</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1311"/>
+        <location filename="mainwindow.cpp" line="1300"/>
         <source>update</source>
         <translation>обновление</translation>
     </message>
@@ -444,62 +444,62 @@ Check your settings</source>
         <translation>Обновить данные</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="186"/>
+        <location filename="mainwindow.cpp" line="187"/>
         <source>Installed: </source>
         <translation>Установлено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="187"/>
+        <location filename="mainwindow.cpp" line="188"/>
         <source>, Available: </source>
         <translation>, Доступно: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="188"/>
+        <location filename="mainwindow.cpp" line="189"/>
         <source>, To install: </source>
         <translation>, Для установки: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="189"/>
+        <location filename="mainwindow.cpp" line="190"/>
         <source>, To remove: </source>
         <translation>, к удалению: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="191"/>
+        <location filename="mainwindow.cpp" line="192"/>
         <source>, Will be freed: </source>
         <translation>, Будет освобождено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="192"/>
+        <location filename="mainwindow.cpp" line="193"/>
         <source>, Will be occupied: </source>
         <translation>, Будет занято: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="971"/>
+        <location filename="mainwindow.cpp" line="1000"/>
         <source>Insufficient disk space</source>
         <translation>Недостаточно места на диске</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="972"/>
+        <location filename="mainwindow.cpp" line="1001"/>
         <source>It seems that only </source>
         <translation>Похоже, что только </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="973"/>
+        <location filename="mainwindow.cpp" line="1002"/>
         <source> is available on /, but we need </source>
         <translation type="unfinished"> пакетов, будет удалено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="974"/>
+        <location filename="mainwindow.cpp" line="1003"/>
         <source>, please free additional </source>
         <translation>, пожалуйста, освободите </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="975"/>
+        <location filename="mainwindow.cpp" line="1004"/>
         <source> to perform all requested operations. Are you sure you want to continue anyway?</source>
         <translation> для выполнения всех запрошенных операций. Вы уверены что хотите продолжить не взирая на это?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1006"/>
+        <location filename="mainwindow.cpp" line="1035"/>
         <source>Will be installed: </source>
         <translation>Будет установлено: </translation>
     </message>
@@ -509,7 +509,7 @@ Check your settings</source>
         <translation type="obsolete"> пакетов, будет освобождено места на диске: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1019"/>
+        <location filename="mainwindow.cpp" line="1048"/>
         <source>Action summary</source>
         <translation>Подтвердите выполнение операций</translation>
     </message>
@@ -519,69 +519,69 @@ Check your settings</source>
         <translation>Быстрый поиск:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1001"/>
+        <location filename="mainwindow.cpp" line="1030"/>
         <source>Next packages will be installed:</source>
         <translation>Будут установлены следующие пакеты:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1002"/>
+        <location filename="mainwindow.cpp" line="1031"/>
         <source>Next packages will be removed:</source>
         <translation>Следующие пакеты будут удалены:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1008"/>
+        <location filename="mainwindow.cpp" line="1037"/>
         <source> packages
 </source>
         <translation> пакетов
 </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1007"/>
+        <location filename="mainwindow.cpp" line="1036"/>
         <source>Will be removed: </source>
         <translation>Будет удалено: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1012"/>
+        <location filename="mainwindow.cpp" line="1041"/>
         <source>Disk space will be occupied: </source>
         <translation>Необходимое дисковое пространство: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1016"/>
+        <location filename="mainwindow.cpp" line="1045"/>
         <source>Disk space will be freed: </source>
         <translation>Будет освобождено на диске: </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="190"/>
+        <location filename="mainwindow.cpp" line="191"/>
         <source>, To update: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="392"/>
+        <location filename="mainwindow.cpp" line="355"/>
         <source>true</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="393"/>
+        <location filename="mainwindow.cpp" line="356"/>
         <source>false</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="587"/>
+        <location filename="mainwindow.cpp" line="560"/>
         <source>Please confirm abort</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="587"/>
+        <location filename="mainwindow.cpp" line="560"/>
         <source>Are you sure you want to abort current operations?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1008"/>
+        <location filename="mainwindow.cpp" line="1037"/>
         <source>Will be updated: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1154"/>
+        <location filename="mainwindow.cpp" line="1143"/>
         <source>Package queued to update</source>
         <translation type="unfinished"></translation>
     </message>
@@ -633,6 +633,11 @@ Check your settings</source>
     <message>
         <location filename="pkgmanager.ui" line="968"/>
         <source>Ctrl+5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="929"/>
+        <source></source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -742,92 +747,92 @@ Developed in RPUNet (www.rpunet.ru) by:
 <context>
     <name>coreThread</name>
     <message>
-        <location filename="corethread.cpp" line="752"/>
+        <location filename="corethread.cpp" line="138"/>
         <source>Loading package database</source>
         <translation>Загрузка базы пакетов</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="765"/>
+        <location filename="corethread.cpp" line="151"/>
         <source>Building version list</source>
         <translation>Вычисление связей</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="785"/>
+        <location filename="corethread.cpp" line="187"/>
         <source>Loading packages into table</source>
         <translation>Заполнение таблицы</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="809"/>
+        <location filename="corethread.cpp" line="215"/>
         <source>Loading finished</source>
         <translation>Загрузка завершена</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="831"/>
+        <location filename="corethread.cpp" line="240"/>
         <source>Loading packages into table: </source>
         <translation>Загрузка информации о пакетах: </translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="843"/>
+        <location filename="corethread.cpp" line="252"/>
         <source>update</source>
         <translation>обновление</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="888"/>
+        <location filename="corethread.cpp" line="303"/>
         <source>Updating package database from repositories...</source>
         <translation>Обновление данных из репозиториев...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="906"/>
+        <location filename="corethread.cpp" line="321"/>
         <source>Committing...</source>
         <translation>Применение изменений...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="942"/>
+        <location filename="corethread.cpp" line="357"/>
         <source>Committing changes...</source>
         <translation>Применение изменений...</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="971"/>
+        <location filename="corethread.cpp" line="386"/>
         <source>All operations completed</source>
         <translation>Все операции завершены</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="976"/>
+        <location filename="corethread.cpp" line="391"/>
         <source>Cleaning package cache</source>
         <translation>Очистка кеша загрузок</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="978"/>
+        <location filename="corethread.cpp" line="393"/>
         <source>Cleanup complete</source>
         <translation>Очистка завершена</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="955"/>
+        <location filename="corethread.cpp" line="370"/>
         <source>All operations completed successfully</source>
         <translation>Все операции были успешно завершены</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="958"/>
+        <location filename="corethread.cpp" line="373"/>
         <source>Operations completed with errors: unresolved dependencies</source>
         <translation>Некоторые операции завершились с ошибками: неразрешенные зависимости</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="961"/>
+        <location filename="corethread.cpp" line="376"/>
         <source>Error while processing operations: internal SQL error</source>
         <translation>При выполнении операции произошла критическая ошибка в SQL</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="964"/>
+        <location filename="corethread.cpp" line="379"/>
         <source>Processing aborted</source>
         <translation>Операция отменена</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="967"/>
+        <location filename="corethread.cpp" line="382"/>
         <source>Operations completed with errors</source>
         <translation>В процессе выполнения операций произошла неизвестная ошибка</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="778"/>
+        <location filename="corethread.cpp" line="162"/>
         <source>Preparing dependency engine</source>
         <translation>Инициализация системы зависимостей</translation>
     </message>
@@ -848,209 +853,209 @@ Developed in RPUNet (www.rpunet.ru) by:
 <context>
     <name>errorBus</name>
     <message>
-        <location filename="corethread.cpp" line="95"/>
+        <location filename="errorbus.cpp" line="91"/>
         <source>Download error</source>
         <translation>Ошибка закачки</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="45"/>
+        <location filename="errorbus.cpp" line="41"/>
         <source>Some files failed to download. What to do?</source>
         <translation>При закачке некоторых файлов произошла ошибка. Что делать?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="73"/>
+        <location filename="errorbus.cpp" line="69"/>
         <source>Please insert disk with label </source>
         <translation>Вставьте диск с меткой тома </translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="73"/>
+        <location filename="errorbus.cpp" line="69"/>
         <source> into </source>
         <translation> в </translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="74"/>
+        <location filename="errorbus.cpp" line="70"/>
         <source>Please insert a disk</source>
         <translation>Вставьте диск</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="95"/>
+        <location filename="errorbus.cpp" line="91"/>
         <source>Unable to download repository index. WTF?</source>
         <translation>Ошибка при получении индекса из репозитория. WTF?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="121"/>
+        <location filename="errorbus.cpp" line="117"/>
         <source>Parse error</source>
         <translation>Кривой файл</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="121"/>
+        <location filename="errorbus.cpp" line="117"/>
         <source>Error parsing repository index!</source>
         <translation>Ошибка при чтении индекса репозитория - кривой файл!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="158"/>
+        <location filename="errorbus.cpp" line="154"/>
         <source>Repository index error</source>
         <translation>Ошибка в индексе репозитория</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="158"/>
+        <location filename="errorbus.cpp" line="154"/>
         <source>Error retrieving repository index!</source>
         <translation>Ошибка при получении индекса репозитория!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="181"/>
+        <location filename="errorbus.cpp" line="177"/>
         <source>Out of space!</source>
         <translation>Кончилось место на файловой системе!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="181"/>
+        <location filename="errorbus.cpp" line="177"/>
         <source>Error installing packages - out of space.
 Free some disk space and try again</source>
         <translation>Ошибка при установке: кончилось место на диске.
 Освободите достаточное количество и повторите операцию снова</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="201"/>
+        <location filename="errorbus.cpp" line="197"/>
         <source>Script error</source>
         <translation>Ошибка в скрипте</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="201"/>
+        <location filename="errorbus.cpp" line="197"/>
         <source>Error executing script</source>
         <translation>При выполнении установочного скрипта пакета произошла ошибка</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="210"/>
+        <location filename="errorbus.cpp" line="206"/>
         <source>Package extraction error</source>
         <translation>Ошибка при распаковке пакета</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="210"/>
+        <location filename="errorbus.cpp" line="206"/>
         <source>Error extracting package.</source>
         <translation>Не удается распаковать пакет.</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="220"/>
+        <location filename="errorbus.cpp" line="216"/>
         <source>Error extracting metadata</source>
         <translation>Ошибка извлечения метаданных</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="220"/>
+        <location filename="errorbus.cpp" line="216"/>
         <source>Error while extracting metadata from package. Seems that package is broken</source>
         <translation>При извлечении метаданных из пакета произошла ошибка. Скорее всего, пакет изначально кривой</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="230"/>
+        <location filename="errorbus.cpp" line="226"/>
         <source>File conflict detected</source>
         <translation>Обнаружен конфликт файлов</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="230"/>
+        <location filename="errorbus.cpp" line="226"/>
         <source>Unresolvable file conflict detected. You can force installation, but it is DANGEROUS (it may broke some components)</source>
         <translation>Обнаружен неразрешимый конфликт файлов. Вы можете форсировать установку, но помните, что это может вызвать непредсказуемые последствия</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="254"/>
+        <location filename="errorbus.cpp" line="250"/>
         <source>Some components not found!</source>
         <translation>Не найдены некоторые компоненты программы!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="254"/>
+        <location filename="errorbus.cpp" line="250"/>
         <source>Some components were not found, the program can fail during runtime. Continue?</source>
         <translation>Не удалось найти некоторые компоненты программы. Это может вызвать неадекватное поведение программы. Продолжить?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="275"/>
+        <location filename="errorbus.cpp" line="271"/>
         <source>Access denied</source>
         <translation>А вот и нельзя....</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="275"/>
+        <location filename="errorbus.cpp" line="271"/>
         <source>You should run this program as root</source>
         <translation>Данную программу следует запускать с правами root</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="310"/>
+        <location filename="errorbus.cpp" line="306"/>
         <source>SQL database error</source>
         <translation>Ошибка в SQL</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="287"/>
+        <location filename="errorbus.cpp" line="283"/>
         <source>Incorrect database structure. Create from scratch?</source>
         <translation>Некорректная структура базы данных. Пересоздать?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="310"/>
+        <location filename="errorbus.cpp" line="306"/>
         <source>Unable to open database. This is critical, cannot continue</source>
         <translation>Не удается открыть базу данных. Это критическая ошибка, продолжение работы невозможно</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="322"/>
+        <location filename="errorbus.cpp" line="318"/>
         <source>Error in configuration files</source>
         <translation>Ошибка в конфигурационных файлах</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="323"/>
+        <location filename="errorbus.cpp" line="319"/>
         <source>Error in configuration files. Try to recreate? WARNING: all your settings will be lost!|</source>
         <translation type="unfinished">Обнаружена ошибка в конфигурационных файлах. Попробовать создать заново с настройками по умолчанию? ВНИМАНИЕ! Все ваши старые настройки будут утеряны!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="345"/>
+        <location filename="errorbus.cpp" line="341"/>
         <source>Error writing configuration files</source>
         <translation>Ошибка при записи конфигурационных файлов</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="346"/>
+        <location filename="errorbus.cpp" line="342"/>
         <source>Error writing configuration files. Retry?</source>
         <translation>Ошибка при записи конфигурационных файлов, попробовать еще раз?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="369"/>
+        <location filename="errorbus.cpp" line="365"/>
         <source>Internal error</source>
         <translation>Внутренняя ошибка</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="370"/>
+        <location filename="errorbus.cpp" line="366"/>
         <source>SQL query error detected. This is critical internal error, we exit now.</source>
         <translation>Произошла ошибка при выполнении SQL-запроса. Это является ошибкой в программе, пожалуйста, сообщите разработчикам при каких действиях это случилось.</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="390"/>
+        <location filename="errorbus.cpp" line="386"/>
         <source>Error creating a temporary file</source>
         <translation>Ошибка создания временного файла</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="391"/>
+        <location filename="errorbus.cpp" line="387"/>
         <source>Error while creating a temp file. In most cases this mean that no free file descriptors available. This is critical, cannot continue</source>
         <translation>При создании временного файла произошла ошибка. Возможно, кончилось место на диске</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="411"/>
+        <location filename="errorbus.cpp" line="407"/>
         <source>Error writing file</source>
         <translation>Ошибка при записи в файл</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="412"/>
+        <location filename="errorbus.cpp" line="408"/>
         <source>File write error! Check for free space. Retry?</source>
         <translation>При осуществлении записи в файл произошла ошибка. Проверьте доступность свободного места на диске. Попробовать еще раз?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="435"/>
+        <location filename="errorbus.cpp" line="431"/>
         <source>Error reading file</source>
         <translation>Ошибка чтения файла</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="436"/>
+        <location filename="errorbus.cpp" line="432"/>
         <source>File read error! Retry?</source>
         <translation>При чтении файла произошла ошибка. Повторить попытку?</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="458"/>
+        <location filename="errorbus.cpp" line="454"/>
         <source>Unknown error!!!</source>
         <translation>ЭТОГО НЕ МОЖЕТ БЫТЬ!!!</translation>
     </message>
     <message>
-        <location filename="corethread.cpp" line="458"/>
+        <location filename="errorbus.cpp" line="454"/>
         <source>Unknown error occured!!</source>
         <translation>Этого не может быть!!!</translation>
     </message>

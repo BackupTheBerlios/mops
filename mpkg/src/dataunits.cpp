@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.56 2007/05/28 14:17:19 i27249 Exp $
+	$Id: dataunits.cpp,v 1.57 2007/05/30 12:51:19 i27249 Exp $
 */
 
 
@@ -1021,9 +1021,34 @@ PACKAGE* PACKAGE_LIST::get_package(int num)
 		return &packages[num];
 }
 
+PACKAGE* PACKAGE_LIST::getPackageByTableID(unsigned int id)
+{
+	return &packages[tableID[id]];
+}
+
+void PACKAGE_LIST::setTableID(int pkgNum, int id)
+{
+	tableID[id]=pkgNum;
+}
+
+int PACKAGE_LIST::getTableID(int pkgNum)
+{
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (tableID[i]==pkgNum) return i;
+	}
+	mError("No such package!\n");
+	return 0;
+}
+
+int PACKAGE_LIST::getRealNum(int id)
+{
+	return tableID[id];
+}
 void PACKAGE_LIST::set_package(int num, PACKAGE* package)
 {
 		packages[num]=*package;
+		setTableID(num, num);
 }
 
 int PACKAGE_LIST::size()
@@ -1034,6 +1059,7 @@ int PACKAGE_LIST::size()
 void PACKAGE_LIST::add(PACKAGE* package)
 {
     packages.push_back(*package);
+    setTableID(packages.size()-1, packages.size()-1);
 }
 void PACKAGE_LIST::push_back(PACKAGE_LIST plist)
 {
@@ -1094,11 +1120,17 @@ void PACKAGE_LIST::clear(unsigned int new_size)
 {
 	packages.clear();
     	packages.resize(new_size);
+	tableID.clear();
 }
 
 void PACKAGE_LIST::set_size(unsigned int new_size)
 {
 	packages.resize(new_size);
+	for (unsigned int i=0; i<new_size; i++)
+	{
+		setTableID(i,i);
+	}
+
 }
 
 bool PACKAGE_LIST::IsEmpty()

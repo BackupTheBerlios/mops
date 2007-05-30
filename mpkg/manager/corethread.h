@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.25 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: corethread.h,v 1.26 2007/05/30 12:51:19 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -43,7 +43,11 @@
 #define CA_GetAvailableTags 6
 #define CA_GetRequiredPackages 7
 #define CA_GetDependantPackages 8
+#define CA_LoadItems 9
 // Default group definitions
+#define USLEEP 5
+#define IDLE_RES 600
+#define RUNNING_RES 200
 
 
 
@@ -123,6 +127,7 @@ class coreThread: public QThread
 		~coreThread();
 
 	public slots:
+		void loadItems(vector<bool> _showMask);
 		void getRequiredPackages(unsigned int package_num);
 		void getDependantPackages(unsigned int package_num);
 		void getAvailableTags();
@@ -133,16 +138,19 @@ class coreThread: public QThread
 		void commitQueue(vector<int> nStatus);		// Call to commit actions (install, remove, etc)
 		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
 		void getCdromName();
+		void recvReadyFlag();
+
 	private:
 		unsigned long idleTime;
 		unsigned long idleThreshold;
-
+		vector<bool>showMask;
 		unsigned int TIMER_RES;
+		void _loadPackageData();
 		void _getRequiredPackages();
 		void _getDependantPackages();
 		void _loadPackageDatabase();	// loading data from database - real implementation
 		void _updatePackageDatabase();	// updating data from repositories - real implementation
-		void insertPackageIntoTable(unsigned int package_num); // Displaying function
+		void insertPackageIntoTable(int tablePos, unsigned int package_num); // Displaying function
 		void _getCdromName();
 		void _commitQueue();
 		void _getAvailableTags();
@@ -180,7 +188,7 @@ class coreThread: public QThread
 		void fitTable();
 		void clearTable();
 		void setTableSize(unsigned int size);
-		void setTableItem(unsigned int row, bool checkState, string cellItemText);
+		void setTableItem(unsigned int row, int packageID, bool checkState, string cellItemText);
 		void setTableItemVisible(unsigned int row, bool visible);
 
 		// Data sync
@@ -195,6 +203,7 @@ class coreThread: public QThread
 		mpkg *database;
 		PACKAGE_LIST *packageList;
 		vector<int> newStatus;
+		bool readyState;
 };
 
 #endif

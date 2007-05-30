@@ -25,6 +25,8 @@ FORMS += aboutbox.ui \
 
 SOURCES += aboutbox.cpp \
            corethread.cpp \
+	   errorbus.cpp \
+	   statusthread.cpp \
            db.cpp \
            loading.cpp \
            main.cpp \
@@ -33,7 +35,6 @@ SOURCES += aboutbox.cpp \
            tablelabel.cpp
 
 LIBS += -lmpkg
-
 
 CODECFORTR = "UTF-8"
 CODECFORSRC = "UTF-8"

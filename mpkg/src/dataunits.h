@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.38 2007/05/28 14:17:19 i27249 Exp $
+	$Id: dataunits.h,v 1.39 2007/05/30 12:51:19 i27249 Exp $
 */
 
 
@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 using namespace std;
 
 // Server type definitions
@@ -315,6 +316,7 @@ class PACKAGE_LIST
 {
     private:
 	vector<PACKAGE> packages;
+	map<int, int> tableID;
     public:
 	bool priorityInitialized;
 	void sortByPriority(bool reverse_order=false);
@@ -329,6 +331,10 @@ class PACKAGE_LIST
 	PACKAGE *getMaxVersion();
 	bool versioningInitialized;
 	PACKAGE* get_package(int num);
+	PACKAGE* getPackageByTableID(unsigned int id);
+	void setTableID(int pkgNum, int id);
+	int getTableID(int pkgNum);
+	int getRealNum(int id);
 	void set_package(int num, PACKAGE* package);
 	bool equalTo(PACKAGE_LIST *nlist);
 	void add(PACKAGE *package);

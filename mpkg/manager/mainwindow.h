@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.47 2007/05/28 14:17:19 i27249 Exp $
+ * $Id: mainwindow.h,v 1.48 2007/05/30 12:51:19 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -36,6 +36,8 @@ class MainWindow: public QMainWindow
 		PreferencesBox *prefBox;
 
 	signals:
+		void imReady();
+		void requestPackages(vector<bool> _showMask);
 		void getAvailableTags();
 		void redrawReady(bool flag);
 		void loadPackageDatabase();
@@ -101,7 +103,7 @@ class MainWindow: public QMainWindow
 		void selectAll();
 		void deselectAll();
 		void setTableSize(unsigned int size);
-		void setTableItem(unsigned int row, bool checkState, string cellItemText);
+		void setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText);
 		void setTableItemVisible(unsigned int row, bool visible);
 
 		void showPreferences();
@@ -113,7 +115,7 @@ class MainWindow: public QMainWindow
 		void resetQueue();
 		void cleanCache();
 		void showAddRemoveRepositories();
-		void setInstalledFilter();
+//		void setInstalledFilter();
 		void clearForm();
 		void updateData();
 		void markToInstall();
@@ -121,7 +123,6 @@ class MainWindow: public QMainWindow
 		void showPackageInfo();
 		void markChanges(int x, Qt::CheckState state, int force_state=-1);
 		void quickPackageSearch();
-		void showAllPackages();
 
 	public:
 		Ui::MainWindow ui;

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.97 2007/05/28 14:17:19 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.98 2007/05/30 12:51:19 i27249 Exp $
  *
  ****************************************************************/
 
@@ -91,8 +91,9 @@ void MainWindow::loadingFinished()
 	ui.packageTable->show();
 	ui.selectAllButton->show();
 	ui.deselectAllButton->show();
-
+	
 	setTableSize();
+	emit imReady();
 	currentStatus = tr("Idle").toStdString();
 }
 
@@ -216,7 +217,7 @@ void MainWindow::applyPackageFilter ()
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
-	for (int i=0; i<ui.packageTable->rowCount(); i++)
+	for (int i=0; i<packagelist->size(); i++)
 	{
 		nameOk = false;
 		statusOk = false;
@@ -281,52 +282,14 @@ void MainWindow::applyPackageFilter ()
 			}
 			else deprecatedOk=true;
 
-
-//			tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
-			if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
-			{
-				tagvalue = availableTags[currentCategoryID];
-			}
-			else tagvalue = "";
-			if (tagvalue == "_updates_")
-			{
-				if (packagelist->get_package(i)->isUpdate()) categoryOk = true;
-				else categoryOk = false;
-			}
-			else
-			{
-				if (tagvalue == "_all_")
-				{
-					categoryOk = true;
-				}
-				else
-					{
-					categoryOk = false;
-					tmpTagList = *packagelist->get_package(i)->get_tags();
-					for (unsigned int t = 0; t < tmpTagList.size(); t++)
-					{
-						if (tmpTagList[t] == tagvalue)
-						{
-							categoryOk = true;
-						}
-					} // for (... tmpTagList ...)	
-					if (tmpTagList.size() == 0 && tagvalue != "_misc_")
-					{
-						categoryOk = false;
-					}
-					else
-					{
-						if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
-					}
-				} // else (tagvalue)
-			} // if (statusOk)*/
+			categoryOk = true;
 		}
 		if (nameOk && statusOk && categoryOk && cloneOk && deprecatedOk)
 		{
 			pkgCount++;
-			ui.packageTable->setRowHidden(i, false);
+			ui.packageTable->setRowHidden(packagelist->getRealNum(i), false);
 		}
-		else ui.packageTable->setRowHidden(i, true);
+		else ui.packageTable->setRowHidden(packagelist->getRealNum(i), true);
 #ifdef CATEGORY_HIGHLIGHTING
 		// The last enhancement - category highlight =)
 		tmpTagList = *packagelist->get_package(i)->get_tags();
@@ -393,9 +356,10 @@ string MainWindow::bool2str(bool data)
 	else return tr("false").toStdString();
 }
 
-void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItemText)
+void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
-
+	//printf("pNum: %d | row: %d\n", packageNum, row);
+	packagelist->setTableID(packageNum, row);
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
 	else stat->setCheckState(Qt::Unchecked);
@@ -406,28 +370,36 @@ void MainWindow::setTableItem(unsigned int row, bool checkState, string cellItem
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
 	string depData;
-	if (packagelist->get_package(row)->get_dependencies()->size()>0)
+	if (packagelist->get_package(packageNum)->get_dependencies()->size()>0)
 	{
 		depData = "<b> "+tr("Depends on:").toStdString()+" </b>";
-		for (unsigned int i=0; i<packagelist->get_package(row)->get_dependencies()->size(); i++)
+		for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_dependencies()->size(); i++)
 		{
-			depData += "<br>"+packagelist->get_package(row)->get_dependencies()->at(i).getDepInfo();
+			depData += "<br>"+packagelist->get_package(packageNum)->get_dependencies()->at(i).getDepInfo();
 		}
 		depData+="<br>";
 	}
 
-	cellItemText+="<html><b>"+tr("Installed version:").toStdString()+" </b>" + packagelist->get_package(row)->installedVersion + \
-		       "<br><b>"+tr("It is max version:").toStdString()+" </b>" + bool2str(packagelist->get_package(row)->hasMaxVersion)+\
-		       "<br><b>"+tr("Max version:").toStdString()+" </b>" + packagelist->get_package(row)->maxVersion + \
-			"<br>" + depData + \
+	string tagList = "<br><b>" + tr("Tags:").toStdString() + "</b>";
+	for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_tags()->size(); i++)
+	{
+		tagList+= "<br>" + packagelist->get_package(packageNum)->get_tags()->at(i);
+	}
+	tagList += "<br>";
+
+	cellItemText+="<html><b>"+tr("Installed version:").toStdString()+" </b>" + packagelist->get_package(packageNum)->installedVersion + \
+		       "<br><b>"+tr("It is max version:").toStdString()+" </b>" + bool2str(packagelist->get_package(packageNum)->hasMaxVersion)+\
+		       "<br><b>"+tr("Max version:").toStdString()+" </b>" + packagelist->get_package(packageNum)->maxVersion + \
+			"<br>" + depData + tagList + \
 			"<b>"+tr("Description:").toStdString()+" </b><br>" + \
-		       adjustStringWide(*packagelist->get_package(row)->get_description(), packagelist->get_package(row)->get_short_description()->size())+ \
+		       adjustStringWide(*packagelist->get_package(packageNum)->get_description(), packagelist->get_package(packageNum)->get_short_description()->size())+ \
 		       		       "</html>";
 	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	QObject::connect(stat, SIGNAL(stateChanged(int)), this, SLOT(applyPackageFilter()));
-	ui.packageTable->setRowHeight(row-1, 45);
+	ui.packageTable->setRowHeight(row, 45);
+	//emit imReady();
 }
 
 
@@ -509,6 +481,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	packagelist = new PACKAGE_LIST;
 	ui.progressTable->hide();
 	// Building thread connections
+	QObject::connect(this, SIGNAL(imReady()), thread, SLOT(recvReadyFlag()));
 	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
 	QObject::connect(StatusThread, SIGNAL(setSkipButton(bool)), this, SLOT(setSkipButton(bool)));
 	QObject::connect(StatusThread, SIGNAL(setIdleButtons(bool)), this, SLOT(setIdleButtons(bool)));
@@ -531,12 +504,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
 	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()));
 	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)));
-	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, bool, string)), this, SLOT(setTableItem(unsigned int, bool, string)));
+	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, int, bool, string)), this, SLOT(setTableItem(unsigned int, int, bool, string)));
 	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)));
 	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
 	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
 	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
-
+	QObject::connect(this, SIGNAL(requestPackages(vector<bool>)), thread, SLOT(loadItems(vector<bool>)));
 	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()));
 	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
 	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)));
@@ -784,7 +757,66 @@ void MainWindow::hideEntireTable()
 
 void MainWindow::filterCategory(int category_id)
 {
+	if (!actionBus.idle()) actionBus.abortActions();
 	currentCategoryID = category_id;
+	// code to filter packages should be here
+	vector<bool> request;
+	vector<string> tmpTagList;
+	string tagvalue;
+	request.resize(packagelist->size());
+	for (unsigned int i=0; i<request.size(); i++)
+	{
+		request[i]=false;
+		//if (_categories.nChildNode("group")>=currentCategoryID) tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
+		//else mError("Overflow in XML");
+		if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
+		{
+			tagvalue = availableTags[currentCategoryID];
+		}
+		else tagvalue = "";
+		if (tagvalue == "_updates_")
+		{
+			if (packagelist->get_package(i)->isUpdate()) request[i] = true;
+			else request[i] = false;
+		}
+		else
+		{
+			if (tagvalue == "_all_")
+			{
+				request[i] = true;
+			}
+			else
+			{
+				request[i] = false;
+				tmpTagList = *packagelist->get_package(i)->get_tags();
+				for (unsigned int t = 0; t < tmpTagList.size(); t++)
+				{
+					if (tmpTagList[t] == tagvalue)
+					{
+						request[i] = true;
+					}
+				} // for (... tmpTagList ...)	
+				if (tmpTagList.size() == 0 && tagvalue != "_misc_")
+				{
+					request[i] = false;
+				}
+				else
+				{
+					if (tmpTagList.size() == 0 && tagvalue == "_misc_") request[i] = true;
+				}
+			}
+		}
+
+	}
+	if (actionBus._abortActions)
+	{
+		while (!actionBus._abortComplete)
+		{
+		//	printf("waiting...\n");
+			usleep(10);
+		}
+	}
+	emit requestPackages(request);
 	applyPackageFilter();
 }
 
@@ -799,11 +831,15 @@ MainWindow::~MainWindow()
 	thread->callQuit();
 	StatusThread->halt();
 	ErrorBus->Stop();
+	thread->wait();
+	StatusThread->wait();
+	ErrorBus->wait();
+	/*
 	while (StatusThread->isRunning() || thread->isRunning() || ErrorBus->isRunning())
 	{
 		say("Waiting for threads to exit...\n");
 		sleep(1);
-	}
+	}*/
 
 }
 
@@ -821,22 +857,15 @@ void MainWindow::quickPackageSearch()
 		tmp = tmp.fromStdString(*packagelist->get_package(i)->get_name());
 		if (!tmp.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
-			ui.packageTable->setRowHidden(i, true);
+			ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
 		}
 		else
 		{
-			ui.packageTable->setRowHidden(i, false);
+			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
 		}
 	}
 }
 
-void MainWindow::showAllPackages()
-{
-	for (int i=0; i<ui.packageTable->rowCount(); i++)
-	{
-		ui.packageTable->setRowHidden(i,false);
-	}
-}
 void MainWindow::resetQueue()
 {
 	for (unsigned int i=0; i<newStatus.size(); i++)
@@ -849,7 +878,7 @@ void MainWindow::resetQueue()
 void MainWindow::showPackageInfo()
 {
 	long id = ui.packageTable->currentRow();
-	PACKAGE *pkg = packagelist->get_package(id);
+	PACKAGE *pkg = packagelist->getPackageByTableID(id);
 	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>"+\
 		       tr("Architecture:").toStdString()+"</b> "+*pkg->get_arch()+"<br><b>" + \
 		       tr("Build:").toStdString()+"</b> "+*pkg->get_build();
@@ -1031,49 +1060,6 @@ void MainWindow::resetChanges()
 void MainWindow::showAddRemoveRepositories(){
 	prefBox->openRepositories();
 }
-void MainWindow::setInstalledFilter()
-{
-	int action=0;
-	bool available=0;
-	bool installed=0;
-	bool configexist=0;
-	bool showIt;
-	for (int i=0; i<ui.packageTable->rowCount(); i++)
-	{
-		showIt = false;
-		action = packagelist->get_package(i)->action();
-		available = packagelist->get_package(i)->available();
-		installed = packagelist->get_package(i)->installed();
-		configexist = packagelist->get_package(i)->configexist();
-
-
-		if (ui.actionShow_installed->isChecked() && installed)
-		{
-			ui.packageTable->setRowHidden(i, false);
-			showIt = true;
-		}
-		if (ui.actionShow_available->isChecked() && available)
-		{
-			ui.packageTable->setRowHidden(i, false);
-			showIt = true;
-		}
-		if (ui.actionShow_configexist->isChecked() && !installed && configexist)
-		{
-			ui.packageTable->setRowHidden(i, false);
-			showIt = true;
-		}
-		if (ui.actionShow_queue->isChecked() && action!=ST_NONE)
-		{
-			ui.packageTable->setRowHidden(i, false);
-			showIt = true;
-		}
-
-		if (!showIt)
-		{
-			ui.packageTable->setRowHidden(i, true);
-		}
-	}
-}
 
 void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
 {
@@ -1123,12 +1109,15 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 	{
 		emit getDependantPackages(x);
 	}
-	unsigned long i = x;
+	//unsigned long i = x;
+	PACKAGE *_p = packagelist->getPackageByTableID(x);
+	unsigned long i = packagelist->getRealNum(x);
 	if (i >= newStatus.size())
 	{
+		mError ("overflow");
 		return;
 	}
-	PACKAGE *_p = packagelist->get_package(i);
+
 
 	if (force_state>=0)
 	{
@@ -1253,7 +1242,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 						newStatus[i]=ST_NONE;
 						for (unsigned int t=0; t<newStatus.size(); t++)
 						{
-							if (newStatus[t]==ST_UPDATE && *packagelist->get_package(t)->get_name() == *packagelist->get_package(i)->get_name())
+							if (newStatus[t]==ST_UPDATE && *packagelist->get_package(t)->get_name() == *_p->get_name())
 							{
 								newStatus[t]=ST_NONE;
 								markChanges(t, Qt::Checked, ST_NONE);
@@ -1316,7 +1305,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 		+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 	       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
 
-	setTableItem(x, state, pName);		
+	setTableItem(x, i, state, pName);		
 }
 
 void MainWindow::loadData()
