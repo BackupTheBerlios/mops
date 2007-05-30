@@ -1,0 +1,7 @@
+.classpath
+.project
+.settings
+build
+.externalToolBuilders
+*.class
+WebContent/WEB-INF/classes/ru/*

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>webmops</display-name>
+	<welcome-file-list>
+		<welcome-file>Default.action</welcome-file>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+	</welcome-file-list>
+
+	<!-- 
+		Stripes filter configuration
+	-->
+	<filter>
+		<display-name>Stripes Filter</display-name>
+		<filter-name>StripesFilter</filter-name>
+		<filter-class>
+			net.sourceforge.stripes.controller.StripesFilter
+		</filter-class>
+		<!-- 
+			custom security interceptor
+		 -->
+		<init-param>
+	    	<param-name>Interceptor.Classes</param-name>
+	    	<param-value>
+	        ru.rpunet.webmops.utils.SecurityInterceptor,
+	        net.sourceforge.stripes.controller.BeforeAfterMethodInterceptor
+	    	</param-value>
+		</init-param>
+
+		<!-- 
+			custom ActionBeanContext
+		-->
+		<init-param>
+			<param-name>ActionBeanContext.Class</param-name>
+			<param-value>
+				ru.rpunet.webmops.utils.WebmopsActionBeanContext
+			</param-value>
+		</init-param>
+
+		<!-- 
+			custom error tag renderer
+		-->
+		<init-param>
+			<param-name>TagErrorRenderer.Class</param-name>
+			<param-value>
+				ru.rpunet.webmops.tags.CustomTagErrorRenderer
+			</param-value>
+		</init-param>
+
+		<!--
+			look only in ru.rpunet.webmops for ActionBean classes
+		-->
+		<init-param>
+			<param-name>ActionResolver.PackageFilters</param-name>
+			<param-value>ru.rpunet.webmops.*</param-value>
+		</init-param>
+		<init-param>
+			<param-name>ActionResolver.UrlFilter</param-name>
+			<param-value>WEB-INF/classes</param-value>
+		</init-param>
+	</filter>
+
+	<!-- 
+		Open Session In View
+	 -->
+	<filter>
+		<display-name>Hbn Filter</display-name>
+		<filter-name>HibernateSessionInViewFilter</filter-name>
+		<filter-class>
+			ru.rpunet.webmops.utils.HibernateSessionInViewFilter
+		</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>HibernateSessionInViewFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>StripesFilter</filter-name>
+		<url-pattern>*.jsp</url-pattern>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>StripesFilter</filter-name>
+		<servlet-name>StripesDispatcher</servlet-name>
+		<dispatcher>REQUEST</dispatcher>
+	</filter-mapping>
+
+	<servlet>
+		<servlet-name>StripesDispatcher</servlet-name>
+		<servlet-class>
+			net.sourceforge.stripes.controller.DispatcherServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>StripesDispatcher</servlet-name>
+		<url-pattern>*.action</url-pattern>
+	</servlet-mapping>
+
+</web-app>

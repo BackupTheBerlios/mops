@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="250"
+   height="70"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45"
+   sodipodi:modified="TRUE"
+   version="1.0"
+   inkscape:export-filename="/home/andrew/mpkgweb-logo.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient3225">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop3227" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3229" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient3209">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop3211" />
+      <stop
+         id="stop3217"
+         offset="0.5"
+         style="stop-color:#000000;stop-opacity:1;" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop3213" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3209"
+       id="linearGradient3223"
+       gradientUnits="userSpaceOnUse"
+       x1="115.24675"
+       y1="26.230385"
+       x2="115.24675"
+       y2="54.866306"
+       gradientTransform="translate(0,-52.419922)" />
+    <mask
+       maskUnits="userSpaceOnUse"
+       id="mask3219">
+      <rect
+         style="opacity:1;fill:url(#linearGradient3223);fill-opacity:1"
+         y="-26.189537"
+         x="13.383"
+         height="17.42"
+         width="223.233"
+         id="rect3221"
+         transform="scale(1,-1)" />
+    </mask>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3225"
+       id="linearGradient3231"
+       x1="13.383301"
+       y1="18.709961"
+       x2="236.6167"
+       y2="18.709961"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="3.112"
+     inkscape:cx="125"
+     inkscape:cy="35"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     width="250px"
+     height="70px"
+     showgrid="true"
+     showguides="false"
+     inkscape:window-width="872"
+     inkscape:window-height="624"
+     inkscape:window-x="0"
+     inkscape:window-y="49" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"
+       x="11.616699"
+       y="23.675781"
+       id="text2160"><tspan
+         sodipodi:role="line"
+         id="tspan2162"
+         x="11.616699"
+         y="23.675781"
+         style="font-size:18px;fill:#ffffff">MOPS Linux packages db</tspan></text>
+    <use
+       x="0"
+       y="0"
+       xlink:href="#text2160"
+       id="use2164"
+       transform="matrix(1,0,0,-1,0,52.419922)"
+       width="250"
+       height="70"
+       mask="url(#mask3219)"
+       style="fill-opacity:1.0;fill:url(#linearGradient3231);opacity:0.42941176" />
+  </g>
+</svg>
