@@ -43,40 +43,7 @@ public class SecurityInterceptor implements Interceptor {
 
 	private static Log log = LogFactory.getLog(SecurityInterceptor.class);
 	
-	private static List<String> anonymousUrls = new ArrayList<String>();
-	private static List<String> usersUrls = new ArrayList<String>();
-	private static List<String> moderatorsUrls = new ArrayList<String>();
 	
-	static {
-		anonymousUrls.add("/List.action");
-		anonymousUrls.add("/Registed.action");
-		anonymousUrls.add("/Login.action");
-		anonymousUrls.add("/Search.action");
-		anonymousUrls.add("/PackageInfo.action");
-		anonymousUrls.add("/ShowFiles.action");
-		anonymousUrls.add("/Default.action");
-		anonymousUrls.add("/CssResourcesLoader.action");
-		
-		usersUrls = anonymousUrls;
-		usersUrls.add("/Logout.action");
-		usersUrls.add("/UploadPackage.action");
-		usersUrls.add("/users/Profile.action");
-		usersUrls.add("/users/EditProfile.action");
-		usersUrls.add("/users/UploadPhoto.action");
-		usersUrls.add("/users/ListPackages.action");
-		usersUrls.add("/users/RemovePackage.action");
-		
-		moderatorsUrls = usersUrls;
-		moderatorsUrls.add("/EditPackage.action");
-		moderatorsUrls.add("/DeletePackage.action");
-		moderatorsUrls.add("/RebuildIndex.action");
-		moderatorsUrls.add("/ViewPackage.action");
-		moderatorsUrls.add("/AllowPackage.action");
-		moderatorsUrls.add("/users/List.action");
-		moderatorsUrls.add("/users/BlockUser.action");
-		moderatorsUrls.add("/users/EditUser.action");
-
-	}
 	
 	public Resolution intercept(ExecutionContext ctx) throws Exception {
 		String path = ctx.getActionBeanContext().getRequest().getRequestURI();
@@ -108,18 +75,32 @@ public class SecurityInterceptor implements Interceptor {
 	protected boolean isPermitted(WebmopsActionBeanContext ctx, ActionBean bean) {
 		log.debug("Checking permissions.");
 		Person user = ctx.getUser();
+		String path = ctx.getRequest().getRequestURI();
 		
-		
-		if ( user.getLogin() == "anonymous" && user.getLogin() == null ) {
-			log.debug("processing for anonymous");
-			if ( anonymousUrls.contains(ctx.getRequest().getRequestURL()) ) {
+		if (user == null) {
+			// anonymous user
+			if ( AppConfigurator.getConfig().getAnonymousUrls().contains(path) )
 				return true;
-			} else {
-				return false;
-			}
+			else
+				return false;	
 		}
 		
-		return true;
+		if ( user.getGroup().equalsIgnoreCase("user") ) {
+			// current user is in 'users' group
+			if (AppConfigurator.getConfig().getUsersUrls().contains(path))
+				return true;
+			else
+				return false;
+		} else if ( user.getGroup().equalsIgnoreCase("moderator")) {
+			if (AppConfigurator.getConfig().getModeratorsUrls().contains(path))
+				return true;
+			else
+				return false;
+		} else if ( user.getGroup().equalsIgnoreCase("administrator") ) {
+			return true;
+		}
+		
+		return false;
 	}
  
 }

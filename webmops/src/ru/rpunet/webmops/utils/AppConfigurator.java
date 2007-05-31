@@ -15,6 +15,9 @@
 
 package ru.rpunet.webmops.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * static configuration 
  * 
@@ -25,8 +28,47 @@ public class AppConfigurator {
 
 	private static ApplicationConfiguration config = new ApplicationConfiguration();
 	
+	private static List<String> anonymousUrls = new ArrayList<String>();
+	private static List<String> usersUrls = new ArrayList<String>();
+	private static List<String> moderatorsUrls = new ArrayList<String>();
+	
+	static {
+		anonymousUrls.add("/List.action");
+		anonymousUrls.add("/users/Registed.action");
+		anonymousUrls.add("/users/Login.action");
+		anonymousUrls.add("/Search.action");
+		anonymousUrls.add("/PackageInfo.action");
+		anonymousUrls.add("/ShowFiles.action");
+		anonymousUrls.add("/Default.action");
+		anonymousUrls.add("/CssResourcesLoader.action");
+		
+		usersUrls = anonymousUrls;
+		usersUrls.add("/Logout.action");
+		usersUrls.add("/UploadPackage.action");
+		usersUrls.add("/users/Profile.action");
+		usersUrls.add("/users/EditProfile.action");
+		usersUrls.add("/users/UploadPhoto.action");
+		usersUrls.add("/users/ListPackages.action");
+		usersUrls.add("/users/RemovePackage.action");
+		
+		moderatorsUrls = usersUrls;
+		moderatorsUrls.add("/EditPackage.action");
+		moderatorsUrls.add("/DeletePackage.action");
+		moderatorsUrls.add("/RebuildIndex.action");
+		moderatorsUrls.add("/ViewPackage.action");
+		moderatorsUrls.add("/AllowPackage.action");
+		moderatorsUrls.add("/users/List.action");
+		moderatorsUrls.add("/users/BlockUser.action");
+		moderatorsUrls.add("/users/EditUser.action");
+
+	}
+	
 	static {
 		config.load();
+		config.setAnonymousUrls(anonymousUrls);
+		config.setUsersUrls(usersUrls);
+		config.setModeratorsUrls(moderatorsUrls);
+		
 	}
 	
 	public static ApplicationConfiguration getConfig() {

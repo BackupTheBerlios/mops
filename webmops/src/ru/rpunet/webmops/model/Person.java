@@ -52,6 +52,16 @@ public class Person implements Serializable {
 	private String password;
 	
 	private String email;
+	
+	private String group;
+	
+	public String getGroup() {
+		return this.group;
+	}
+	
+	public void setGroup(String group) {
+		this.group = group;
+	}
 
 	public String getEmail() {
 		return email;
