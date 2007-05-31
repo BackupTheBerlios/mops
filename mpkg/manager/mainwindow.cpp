@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.101 2007/05/31 12:04:17 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.102 2007/05/31 14:17:34 i27249 Exp $
  *
  ****************************************************************/
 
@@ -10,8 +10,6 @@
 #include "mainwindow.h"
 #include <QDir>
 #include <QFileDialog>
-#include <QtXml/QXmlSimpleReader>
-#include <QtXml/QXmlInputSource>
 #include "aboutbox.h"
 #include "preferencesbox.h"
 #include "loading.h"
@@ -19,6 +17,163 @@
 #include <stdio.h>
 #include "tablelabel.h"
 #include <unistd.h>
+
+MainWindow::MainWindow(QMainWindow *parent)
+{
+	totalInstalledSize=0;
+	totalAvailableSize=0;
+	totalAvailableCount = 0;
+	installedCount = 0;
+	installQueueCount = 0;
+	removeQueueCount = 0;
+	willBeFreed = 0;
+	willBeOccupied = 0;
+
+	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
+	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf-8"));
+
+	initializeOk=false;
+	consoleMode=false; // Setting event tracking to GUI mode
+	currentCategoryID=1;
+	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
+	qRegisterMetaType<QMessageBox::StandardButtons>("QMessageBox::StandardButtons");
+
+	ErrorBus = new errorBus;
+	QObject::connect(this, SIGNAL(startErrorBus()), ErrorBus, SLOT(Start()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)));
+	QObject::connect(ErrorBus, SIGNAL(sendErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), \
+				this, SLOT(showErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)));
+
+
+	emit startErrorBus();
+	if (getuid()!=0)
+	{
+		QMessageBox::critical(this, tr("MOPSLinux package manager"),
+                   tr("You need to be root to run package manager"),
+                   QMessageBox::Ok,
+                   QMessageBox::Ok);
+		exit(0);
+
+	}
+
+	if (parent == 0) ui.setupUi(this);
+	else ui.setupUi(parent);
+	ui.applyButton->setEnabled(false);
+	ui.quickPackageSearchEdit->hide();
+	ui.quickSearchLabel->hide();
+	ui.clearSearchButton->hide();
+	ui.packageTable->hide();
+	movie = new QMovie("/usr/share/mpkg/icons/indicator.mng");
+	ui.indicatorLabel->setMovie(movie);
+	movie->start();
+	ui.progressTable->setColumnWidth(0,190);
+	ui.progressTable->setColumnWidth(1,350);
+	ui.progressTable->setColumnHidden(2,true);
+
+	clearForm();
+	disableProgressBar(); disableProgressBar2();
+	
+	tableMenu = new QMenu;
+	installPackageAction = tableMenu->addAction(tr("Install"));
+	removePackageAction = tableMenu->addAction(tr("Remove"));
+	purgePackageAction = tableMenu->addAction(tr("Purge"));
+
+	qRegisterMetaType<string>("string");
+	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
+	qRegisterMetaType< vector<int> >("vector<int>");
+	qRegisterMetaType< vector<string> >("vector<string>");
+	StatusThread = new statusThread;
+	thread = new coreThread; // Creating core thread
+	packagelist = new PACKAGE_LIST;
+	ui.progressTable->hide();
+	// Building thread connections
+	QObject::connect(this, SIGNAL(imReady()), thread, SLOT(recvReadyFlag()));
+	QObject::connect(this, SIGNAL(fillReady()), thread, SLOT(recvFillReady()));
+
+	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
+	QObject::connect(StatusThread, SIGNAL(setSkipButton(bool)), this, SLOT(setSkipButton(bool)));
+	QObject::connect(StatusThread, SIGNAL(setIdleButtons(bool)), this, SLOT(setIdleButtons(bool)));
+	QObject::connect(ui.abortButton, SIGNAL(clicked()), this, SLOT(abortActions()));
+	QObject::connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skipAction()));
+	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
+	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
+	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
+	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()));
+	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
+	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
+	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
+	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
+	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
+	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
+	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
+	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
+	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
+	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()));
+	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)));
+	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, int, bool, string)), this, SLOT(setTableItem(unsigned int, int, bool, string)));
+	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)));
+	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
+	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(requestPackages(vector<bool>)), thread, SLOT(loadItems(vector<bool>)));
+	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()));
+	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
+	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)));
+	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::DirectConnection);
+	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()));
+	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()));
+	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)));
+	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
+	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
+	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
+	QObject::connect(this, SIGNAL(getAvailableTags()), thread, SLOT(getAvailableTags()));
+	QObject::connect(thread, SIGNAL(sendAvailableTags(vector<string>)), this, SLOT(receiveAvailableTags(vector<string>)));
+	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()));
+	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()));
+	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)));
+	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)));
+	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()));
+	QObject::connect(thread, SIGNAL(showMessageBox(QString, QString)), this, SLOT(showMessageBox(QString, QString)));
+	// Startup initialization
+	emit startThread(); // Starting thread (does nothing imho....)
+	emit startStatusThread();
+	prefBox = new PreferencesBox(mDb);
+	QObject::connect(prefBox, SIGNAL(updatePackageData()), thread, SLOT(updatePackageDatabase()));
+	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
+	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
+
+	QObject::connect(this, SIGNAL(getRequiredPackages(unsigned int)), thread, SLOT(getRequiredPackages(unsigned int)));
+	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
+	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
+	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
+
+	this->show();
+	// Wait threads to start
+	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
+	{
+		say("Waiting for threads to start...\n");
+		sleep(1);
+	}
+
+	emit getAvailableTags();
+	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
+}
+
+MainWindow::~MainWindow()
+{
+	thread->callQuit();
+	StatusThread->halt();
+	ErrorBus->Stop();
+	thread->wait();
+	StatusThread->wait();
+	ErrorBus->wait();
+}
+
+
 void MainWindow::setSkipButton(bool flag)
 {
 	ui.skipButton->setVisible(flag);
@@ -197,9 +352,9 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
+	if (!initializeOk) return;
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
-	QString nameMask;
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
@@ -215,23 +370,19 @@ void MainWindow::applyPackageFilter ()
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
+	for (unsigned int a=0; a<availableTags.size(); a++)
+	{
+		highlightMap[availableTags[a]]=false;
+	}
+
 	for (int i=0; i<packagelist->size(); i++)
 	{
 		nameOk = false;
 		statusOk = false;
 		categoryOk = false;
 
-		nameMask = nameMask.fromStdString(*packagelist->get_package(i)->get_name());
-		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
-		{
-			//printf("found in %s\n", nameMask.toStdString().c_str());
-			nameOk = true;
-		}
-		else
-		{
-			nameOk = false;
-		}
-
+		nameOk = nameComplain(i, ui.quickPackageSearchEdit->text());
+	
 		if (nameOk)
 		{
 			action = packagelist->get_package(i)->action();
@@ -281,20 +432,20 @@ void MainWindow::applyPackageFilter ()
 			else deprecatedOk=true;
 
 		}
-		//printf("state for %s: name = %d, status=%d, deprecatedOk = %d, category complain = %d \n", packagelist->get_package(i)->get_name()->c_str(), \
-				nameOk, \
-				statusOk, \
-				deprecatedOk,\
-				isCategoryComplain(i, currentCategoryID));
+		for (unsigned int a=0; a<availableTags.size(); a++)
+		{
+			if (isCategoryComplain(i, a) && availableTags[a]!="_all_" && nameOk)
+			{
+				highlightMap[availableTags[a]]=true;
+			}
+		}
 		if (nameOk && statusOk && deprecatedOk && isCategoryComplain(i, currentCategoryID))
 		{
-			//printf("Package %s accepted\n",packagelist->get_package(i)->get_name()->c_str() );
 			pkgCount++;
 			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
 		}
 		else 
 		{
-			//printf("Package %s is not accepted, table_ID = %d\n", packagelist->get_package(i)->get_name()->c_str(), packagelist->getTableID(i));
 			if (isCategoryComplain(i, currentCategoryID)) ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
 		}
 	} // for (...)	
@@ -302,6 +453,7 @@ void MainWindow::applyPackageFilter ()
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
+	highlightCategoryList();
 }
 
 
@@ -309,11 +461,6 @@ void MainWindow::clearTable()
 {
 	ui.packageTable->clearContents();
 	ui.packageTable->setRowCount(0);
-/*	for (unsigned int i=0; i<pkgVisible.size(); i++)
-	{
-		pkgVisible[i]=false;
-	}
-	*/
 }
 
 void MainWindow::setTableSize(unsigned int size)
@@ -347,7 +494,6 @@ string MainWindow::bool2str(bool data)
 
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
-	//pkgVisible[packageNum]=true;
 	packagelist->setTableID(packageNum, row);
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
@@ -388,7 +534,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	QObject::connect(stat, SIGNAL(stateChanged(int)), this, SLOT(applyPackageFilter()));
 	ui.packageTable->setRowHeight(row, 45);
-	//emit imReady();
+	//thread->recvFillReady();
 }
 
 
@@ -398,148 +544,6 @@ void MainWindow::setTableItemVisible(unsigned int row, bool visible)
 }
 
 
-MainWindow::MainWindow(QMainWindow *parent)
-{
-	totalInstalledSize=0;
-	totalAvailableSize=0;
-	totalAvailableCount = 0;
-	installedCount = 0;
-	installQueueCount = 0;
-	removeQueueCount = 0;
-	willBeFreed = 0;
-	willBeOccupied = 0;
-
-	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
-	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf-8"));
-
-	initializeOk=false;
-	consoleMode=false; // Setting event tracking to GUI mode
-	currentCategoryID=1;
-	qRegisterMetaType<QMessageBox::StandardButton>("QMessageBox::StandardButton");
-	qRegisterMetaType<QMessageBox::StandardButtons>("QMessageBox::StandardButtons");
-
-	ErrorBus = new errorBus;
-	QObject::connect(this, SIGNAL(startErrorBus()), ErrorBus, SLOT(Start()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(sendUserReply(QMessageBox::StandardButton)), ErrorBus, SLOT(receiveUserReply(QMessageBox::StandardButton)));
-	QObject::connect(ErrorBus, SIGNAL(sendErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)), \
-				this, SLOT(showErrorMessage(QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)));
-
-
-	emit startErrorBus();
-	if (getuid()!=0)
-	{
-		QMessageBox::critical(this, tr("MOPSLinux package manager"),
-                   tr("You need to be root to run package manager"),
-                   QMessageBox::Ok,
-                   QMessageBox::Ok);
-		exit(0);
-
-	}
-
-	if (parent == 0) ui.setupUi(this);
-	else ui.setupUi(parent);
-	ui.applyButton->setEnabled(false);
-	ui.quickPackageSearchEdit->hide();
-	ui.quickSearchLabel->hide();
-	ui.clearSearchButton->hide();
-	ui.packageTable->hide();
-	movie = new QMovie("/usr/share/mpkg/icons/indicator.mng");
-	ui.indicatorLabel->setMovie(movie);
-	movie->start();
-	ui.progressTable->setColumnWidth(0,190);
-	ui.progressTable->setColumnWidth(1,350);
-	ui.progressTable->setColumnHidden(2,true);
-
-	clearForm();
-	disableProgressBar(); disableProgressBar2();
-	
-	tableMenu = new QMenu;
-	installPackageAction = tableMenu->addAction(tr("Install"));
-	removePackageAction = tableMenu->addAction(tr("Remove"));
-	purgePackageAction = tableMenu->addAction(tr("Purge"));
-
-	qRegisterMetaType<string>("string");
-	qRegisterMetaType<PACKAGE_LIST>("PACKAGE_LIST");
-	qRegisterMetaType< vector<int> >("vector<int>");
-	qRegisterMetaType< vector<string> >("vector<string>");
-	StatusThread = new statusThread;
-	thread = new coreThread; // Creating core thread
-	packagelist = new PACKAGE_LIST;
-	ui.progressTable->hide();
-	// Building thread connections
-	QObject::connect(this, SIGNAL(imReady()), thread, SLOT(recvReadyFlag()));
-	QObject::connect(StatusThread, SIGNAL(showProgressWindow(bool)), this, SLOT(showProgressWindow(bool)));
-	QObject::connect(StatusThread, SIGNAL(setSkipButton(bool)), this, SLOT(setSkipButton(bool)));
-	QObject::connect(StatusThread, SIGNAL(setIdleButtons(bool)), this, SLOT(setIdleButtons(bool)));
-	QObject::connect(ui.abortButton, SIGNAL(clicked()), this, SLOT(abortActions()));
-	QObject::connect(ui.skipButton, SIGNAL(clicked()), this, SLOT(skipAction()));
-	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
-	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
-	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
-	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()));
-	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
-	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
-	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
-	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
-	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
-	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
-	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
-	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
-	QObject::connect(thread, SIGNAL(setProgressBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
-	QObject::connect(thread, SIGNAL(clearTable()), this, SLOT(clearTable()));
-	QObject::connect(thread, SIGNAL(setTableSize(unsigned int)), this, SLOT(setTableSize(unsigned int)));
-	QObject::connect(thread, SIGNAL(setTableItem(unsigned int, int, bool, string)), this, SLOT(setTableItem(unsigned int, int, bool, string)));
-	QObject::connect(thread, SIGNAL(setTableItemVisible(unsigned int, bool)), this, SLOT(setTableItemVisible(unsigned int, bool)));
-	QObject::connect(this, SIGNAL(loadPackageDatabase()), thread, SLOT(loadPackageDatabase()));
-	QObject::connect(this, SIGNAL(startThread()), thread, SLOT(start()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(startStatusThread()), StatusThread, SLOT(start()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(requestPackages(vector<bool>)), thread, SLOT(loadItems(vector<bool>)));
-	QObject::connect(this, SIGNAL(syncData()), thread, SLOT(getPackageList()));
-	QObject::connect(thread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
-	QObject::connect(thread, SIGNAL(sendPackageList(PACKAGE_LIST, vector<int>)), this, SLOT(receivePackageList(PACKAGE_LIST, vector<int>)));
-	QObject::connect(thread, SIGNAL(loadData()), this, SLOT(loadData()), Qt::DirectConnection);
-	QObject::connect(this, SIGNAL(updateDatabase()), thread, SLOT(updatePackageDatabase()));
-	QObject::connect(this, SIGNAL(quitThread()), thread, SLOT(callQuit()));
-	QObject::connect(this, SIGNAL(commit(vector<int>)), thread, SLOT(commitQueue(vector<int>)));
-	QObject::connect(thread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
-	QObject::connect(StatusThread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
-	QObject::connect(StatusThread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
-	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
-	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
-	QObject::connect(this, SIGNAL(getAvailableTags()), thread, SLOT(getAvailableTags()));
-	QObject::connect(thread, SIGNAL(sendAvailableTags(vector<string>)), this, SLOT(receiveAvailableTags(vector<string>)));
-	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()));
-	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()));
-	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)));
-	QObject::connect(StatusThread, SIGNAL(initProgressBar2(unsigned int)), this, SLOT(initProgressBar2(unsigned int)));
-	QObject::connect(this, SIGNAL(callCleanCache()), thread, SLOT(cleanCache()));
-	QObject::connect(thread, SIGNAL(showMessageBox(QString, QString)), this, SLOT(showMessageBox(QString, QString)));
-	// Startup initialization
-	emit startThread(); // Starting thread (does nothing imho....)
-	emit startStatusThread();
-	prefBox = new PreferencesBox(mDb);
-	QObject::connect(prefBox, SIGNAL(updatePackageData()), thread, SLOT(updatePackageDatabase()));
-	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
-	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
-
-	QObject::connect(this, SIGNAL(getRequiredPackages(unsigned int)), thread, SLOT(getRequiredPackages(unsigned int)));
-	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
-	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
-	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
-
-	this->show();
-	// Wait threads to start
-	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
-	{
-		say("Waiting for threads to start...\n");
-		sleep(1);
-	}
-
-	emit getAvailableTags();
-	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
-}
 
 void MainWindow::abortActions()
 {
@@ -693,23 +697,19 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 
 void MainWindow::initCategories(bool initial)
 {
-	//ui.listWidget->disconnect();
-	//ui.listWidget->blockSignals(true);
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
-
 	XMLResults xmlErrCode;
 	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
-		// Init defaults here...
 		return;
 	}
 	ui.listWidget->clear();
 
 	bool named = false;
-	//ui.listWidget->setRowCount(availableTags.size());
 	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
+		highlightMap[availableTags[i]]=false;
 
 		named=false;
 		for (int t = 0; t< _categories.nChildNode("group");t++)
@@ -734,11 +734,9 @@ void MainWindow::initCategories(bool initial)
 
 
 		}
-
 	}
 
-		QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
-	//ui.listWidget->blockSignals(false);
+	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	if (initial)
 	{
 		ui.listWidget->setCurrentRow(1);
@@ -826,33 +824,11 @@ void MainWindow::setStatus(QString status)
 }
 
 
-MainWindow::~MainWindow()
-{
-	thread->callQuit();
-	StatusThread->halt();
-	ErrorBus->Stop();
-	thread->wait();
-	StatusThread->wait();
-	ErrorBus->wait();
-	/*
-	while (StatusThread->isRunning() || thread->isRunning() || ErrorBus->isRunning())
-	{
-		say("Waiting for threads to exit...\n");
-		sleep(1);
-	}*/
-
-}
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
 	*packagelist=pkgList;
 	newStatus = nStatus;
-	/*pkgVisible.clear();
-	pkgVisible.resize(packagelist->size());
-	for (unsigned int i=0; i<pkgVisible.size(); i++)
-	{
-		pkgVisible[i]=false;
-	}*/
 }
 
 void MainWindow::quickPackageSearch()
@@ -1342,9 +1318,63 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 	Bar->setValue(stepValue);
 }
 
-void MainWindow::markToInstall()
+bool MainWindow::nameComplain(int package_num, QString text)
 {
-	
+	QString nameMask;	
+	nameMask = nameMask.fromStdString(*packagelist->get_package(package_num)->get_name());
+	return nameMask.contains(text, Qt::CaseInsensitive);
+}
+void MainWindow::highlightCategoryList()
+{
+	bool named;
+	QString itemIcon;
+	QString itemText;
+	QString textStyle = "<b>";
+	QString _textStyle = "</b>";
+	itemIcon = "/usr/share/mpkg/icons/void.png";
+
+	for (unsigned int i=0; i<availableTags.size(); i++)
+	{
+		if (highlightMap[availableTags[i]])
+		{
+			textStyle = "<b>";
+			_textStyle = "</b>";
+		}
+		else
+		{
+			textStyle.clear();
+			_textStyle.clear();
+		}
+
+
+		named=false;
+		for (int t = 0; t< _categories.nChildNode("group");t++)
+		{
+			if (availableTags[i]==(string) _categories.getChildNode("group",t).getAttribute("tag"))
+			{
+
+				named=true;
+				ListLabel *L_item = new ListLabel(ui.listWidget, i);
+				itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle +\
+				   (QString) _categories.getChildNode("group",t).getAttribute("name") +\
+				   _textStyle + "</td></tr></tbody></table>";
+
+				L_item->setText(itemText);
+				ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
+
+			}
+		}
+		if (!named)
+		{
+			ListLabel *L_item = new ListLabel(ui.listWidget, i);
+			itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle  +\
+				   availableTags[i].c_str() + _textStyle + "</td></tr></tbody></table>";
+
+			L_item->setText(itemText);
+			ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
+		}
+	}
+
 }
 
 void CheckBox::markChanges()

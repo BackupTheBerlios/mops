@@ -1,12 +1,13 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.66 2007/05/31 12:04:17 i27249 Exp $
+ * $Id: corethread.cpp,v 1.67 2007/05/31 14:17:34 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
 coreThread::coreThread()
 {
+	fillReadyState=true;
 	readyState=true;
 	packageList = new PACKAGE_LIST;
 	TIMER_RES=50;
@@ -283,14 +284,18 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 			+ " tableID:" + IntToStr(packageList->getTableID(package_num)) \
 			+ " <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
-	//while (!readyState) usleep(1);
-	//readyState = false;
-	//printf("%s: tablePos = %d\n", __func__, tablePos);
+	//while (!fillReadyState) usleep(1);
+	//fillReadyState = false;
 	emit setTableItem(tablePos, package_num, checked, pName);
 }
 void coreThread::recvReadyFlag()
 {
 	readyState = true;
+}
+
+void coreThread::recvFillReady()
+{
+	fillReadyState=true;
 }
 PACKAGE_LIST *coreThread::getPackageList()
 {

@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.26 2007/05/30 12:51:19 i27249 Exp $
+ * $Id: corethread.h,v 1.27 2007/05/31 14:17:34 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -139,6 +139,7 @@ class coreThread: public QThread
 		void tellAreYouRunning();	// Debug call: prints "yes i'm running" to console
 		void getCdromName();
 		void recvReadyFlag();
+		void recvFillReady();
 
 	private:
 		unsigned long idleTime;
@@ -204,6 +205,7 @@ class coreThread: public QThread
 		PACKAGE_LIST *packageList;
 		vector<int> newStatus;
 		bool readyState;
+		bool fillReadyState;
 };
 
 #endif

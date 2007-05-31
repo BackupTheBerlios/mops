@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.26 2007/05/28 14:17:19 i27249 Exp $
+ *     $Id: main.cpp,v 1.27 2007/05/31 14:17:34 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 	QObject::connect(mw.ui.actionUpdate_data, SIGNAL(triggered()), &mw, SLOT(updateData()));
 	QObject::connect(mw.ui.packageTable, SIGNAL(itemSelectionChanged()), &mw, SLOT(showPackageInfo()));
 	QObject::connect(mw.ui.quickPackageSearchEdit, SIGNAL(textEdited(const QString &)), &mw, SLOT(applyPackageFilter()));
+
 
 
 	return app.exec();

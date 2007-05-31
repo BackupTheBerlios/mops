@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.51 2007/05/31 12:04:17 i27249 Exp $
+ * $Id: mainwindow.h,v 1.52 2007/05/31 14:17:34 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -29,6 +29,7 @@ class MainWindow: public QMainWindow
 
 		bool isCategoryComplain(int package_num, int category_id);
 		double installQueueSize;
+		bool nameComplain(int package_num, QString text);
 		bool initializeOk;
 		MainWindow (QMainWindow *parent = 0);
 		~MainWindow();
@@ -38,6 +39,7 @@ class MainWindow: public QMainWindow
 		PreferencesBox *prefBox;
 
 	signals:
+		void fillReady();
 		void imReady();
 		void requestPackages(vector<bool> _showMask);
 		void getAvailableTags();
@@ -55,6 +57,7 @@ class MainWindow: public QMainWindow
 		void getRequiredPackages(unsigned int package_num);
 		void getDependantPackages(unsigned int package_num);
 	public slots:
+		void highlightCategoryList();
 		void generateStat();
 		void receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req);
 		void receiveDependantPackages(unsigned int pacakge_num, PACKAGE_LIST dep);
@@ -116,7 +119,6 @@ class MainWindow: public QMainWindow
 //		void setInstalledFilter();
 		void clearForm();
 		void updateData();
-		void markToInstall();
 		void execMenu();
 		void showPackageInfo();
 		void markChanges(int x, Qt::CheckState state, int force_state=-1);
@@ -135,6 +137,7 @@ class MainWindow: public QMainWindow
 		XMLNode _categories;
 		
 	private:
+		map <string, bool> highlightMap;
 		double totalInstalledSize;
 		double totalAvailableSize;
 		unsigned int totalAvailableCount;
@@ -155,7 +158,6 @@ class MainWindow: public QMainWindow
 		vector<string> purge_queue;
 		vector<bool>stateChanged;
 		vector<int>newStatus;
-		vector<bool>pkgVisible;
 		vector<string> availableTags;
 		void initPackageTable();
 		int currentCategoryID;
