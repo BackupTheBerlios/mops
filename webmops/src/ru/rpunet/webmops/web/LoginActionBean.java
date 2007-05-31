@@ -18,6 +18,7 @@ package ru.rpunet.webmops.web;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
 import net.sourceforge.stripes.action.DefaultHandler;
@@ -27,7 +28,9 @@ import net.sourceforge.stripes.action.HandlesEvent;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
 import net.sourceforge.stripes.action.UrlBinding;
+import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
+import net.sourceforge.stripes.validation.ValidationError;
 
 /**
  * @author Andrew Diakin
@@ -43,6 +46,8 @@ public class LoginActionBean extends WebmopsActionBean {
 	
 	@Validate(required=true)
 	private String password;
+	
+	public String targetUrl;
 	
 	public String getLogin() {
 		return this.login;
@@ -69,14 +74,28 @@ public class LoginActionBean extends WebmopsActionBean {
 	@HandlesEvent("doLogin")
 	public Resolution doLogin() {
 		log.info("Validating user.");
+	
+		PersonManager pm = new PersonManager();
+		Person user = pm.findPerson(login);
 		
-		Person user = new Person();
-		log.info("Setting user to anonymous");
-		
-		user.setLogin("anonymous");
-		getContext().setUser(user);
-		
-		return new RedirectResolution("/Default.action");
+		if ( user == null ) {
+			ValidationError error = new LocalizableError("userDoesNotExist");
+			getContext().getValidationErrors().add("login", error);
+			return getContext().getSourcePageResolution();
+		} else if ( !user.getPassword().equals(password) ) {
+			ValidationError error = new LocalizableError("incorrectPassword");
+			getContext().getValidationErrors().add("password", error);
+			return getContext().getSourcePageResolution();
+		} else {
+			log.info("User logger as " + user.getLogin());
+			getContext().setUser(user);
+			
+			if ( this.targetUrl != null ) {
+				return new RedirectResolution(this.targetUrl);
+			} else {
+				return new RedirectResolution("/Default.action");
+			}
+		}
 	}
 	
 }

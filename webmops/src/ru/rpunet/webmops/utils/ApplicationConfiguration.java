@@ -146,82 +146,10 @@ public class ApplicationConfiguration {
 	}
 	
 	public void load(String configFileName) {
-		log.debug("Loading app-config.xml");
-		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		Document document = null;
-		
-		try {
-			DocumentBuilder builder = docFactory.newDocumentBuilder();
-			document = builder.parse(new File(configFileName));
-			
-			Element root = (Element) document.getFirstChild();
-			
-			NodeList nodeList = root.getChildNodes();
-			for ( int i = 0; i < nodeList.getLength(); i++) {
-				Node node = nodeList.item(i);
-				processNode(node);
-			}
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		
 	}
 	
-	private void processNode(Node node) {
-		log.debug("Processing " + node.getNodeName());
-		if (node.getNodeName().equalsIgnoreCase("security")) {
-			loadSecuritySettings(node);
-		}
-		
-		if ( node.getNodeName().equalsIgnoreCase("settings") ) {
-			loadSetting(node);
-		}
-	}
-	
-	private void loadSetting(Node node) {
-		
-		
-	}
-	
-	private void loadSecuritySettings(Node node) {
-		log.debug("Loading security settings");
-		Node an = node.getFirstChild();
-		String _url = null;
-		int i = 0;
-		
-		if (an.getNodeName().equalsIgnoreCase("anonymous")) {
-			// reading anonymous settings
-			NodeList anList = an.getChildNodes();
-			for (i = 0; i < anList.getLength(); i++) {
-				if ( anonymousUrls == null )
-					anonymousUrls = new ArrayList<String>();
-				
-				_url = anList.item(i).getNodeValue();
-				log.debug("Adding " + _url + " to anonymous urls list.");
-				anonymousUrls.add(anList.item(i).getNodeValue());
-			}
-		}
-		
-		if ( an.getNodeName().equalsIgnoreCase("user") ) {
-			// reading user settings
-			NodeList uList = an.getChildNodes();
-			for (i = 0; i < uList.getLength(); i++) {
-				if ( usersUrls == null ) {
-					if (anonymousUrls != null) {
-						usersUrls = anonymousUrls;
-					} else {
-						usersUrls = new ArrayList<String>();
-					}
-				}
-				
-				_url = uList.item(i).getNodeValue();
-				log.debug("Adding " + _url + " to users urls list.");
-				anonymousUrls.add(uList.item(i).getNodeValue());
-					
-			}
-		}
-	}
+
 	
 	public void load() {
 		load(configFileName);

@@ -37,5 +37,6 @@
         <mapping class="ru.rpunet.webmops.model.File" />
         <mapping class="ru.rpunet.webmops.model.Distribution" />
         <mapping class="ru.rpunet.webmops.model.Mirror" />
+        <mapping class="ru.rpunet.webmops.model.Person" />
     </session-factory>
 </hibernate-configuration>

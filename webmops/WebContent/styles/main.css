@@ -1,4 +1,21 @@
 /**
+ dashboard
+*/
+.common-list {
+	border: solid 1px #eee;
+	border-collapse: collapse;
+	padding: 3px;
+}
+
+.dashboard-header {
+	background-color: #3c78b5;
+	color: #fff;
+	text-align: center;
+	font-size: 100%;
+}
+
+
+/**
  autocomplete packages search
 */
 div.autocomplete {

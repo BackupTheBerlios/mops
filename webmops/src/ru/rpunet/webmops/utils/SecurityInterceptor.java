@@ -15,9 +15,6 @@
 
 package ru.rpunet.webmops.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,59 +40,69 @@ public class SecurityInterceptor implements Interceptor {
 
 	private static Log log = LogFactory.getLog(SecurityInterceptor.class);
 	
-	
-	
+
 	public Resolution intercept(ExecutionContext ctx) throws Exception {
+		
+		if ( AppConfigurator.isConfigured() ) {
+			log.info("Application configured.");
+		}
+		
 		String path = ctx.getActionBeanContext().getRequest().getRequestURI();
+		path = path.replace("/" + ctx.getActionBeanContext().getServletContext().getServletContextName(), "");
 		log.debug("Processing security filter for " + path + ".");
+	
 		
 		Resolution resolution = ctx.proceed();
 		
-		if ( isLoggedIn(ctx.getActionBeanContext()) ) {
-			log.debug("User logged.");
+		try {
 			if ( isPermitted((WebmopsActionBeanContext) ctx.getActionBeanContext(), ctx.getActionBean()) ) {
 				return resolution;
-			} else {
-				return new RedirectResolution("/Unauthorized.jsp");
 			}
-		} else {
-			log.debug("User not logged in.");
-			if ( !path.contains("/users/Login.action") && !path.contains("CssResourcesLoader.action"))
-				return new RedirectResolution("/users/Login.action");
-			
-			return resolution;			
+		} catch (NotAuthenticatedException ex) {
+			return new RedirectResolution("/users/Login.action?targetUrl=" + path);
+		} catch (NotAuthorisedException ex) {
+			return new RedirectResolution("/PermissionDenied.jsp");
+		} finally {
+			// if everithing else failed... 
+			resolution = new RedirectResolution("/ApplicationError.jsp");
 		}
 		
+		return resolution;
 	}
 	
 	protected boolean isLoggedIn(ActionBeanContext ctx) {
 		return ((WebmopsActionBeanContext) ctx).getUser() != null;		
 	}
 	
-	protected boolean isPermitted(WebmopsActionBeanContext ctx, ActionBean bean) {
-		log.debug("Checking permissions.");
+	protected boolean isPermitted(WebmopsActionBeanContext ctx, ActionBean bean) 
+			throws NotAuthenticatedException, NotAuthorisedException {
 		Person user = ctx.getUser();
 		String path = ctx.getRequest().getRequestURI();
+		String contextPath = ctx.getServletContext().getServletContextName();
+		// remove contextPath from requested url
+		path = path.replace("/" + contextPath, "");
+		log.debug("Checking permissions for user " + user + " (" + path + ") (" + contextPath + ")");
 		
 		if (user == null) {
 			// anonymous user
+			log.debug("user anonymous");
 			if ( AppConfigurator.getConfig().getAnonymousUrls().contains(path) )
 				return true;
 			else
-				return false;	
-		}
-		
-		if ( user.getGroup().equalsIgnoreCase("user") ) {
+				throw new NotAuthenticatedException("Anonymous user access denied");	
+		} else if ( user.getGroup().equalsIgnoreCase("user") ) {
 			// current user is in 'users' group
 			if (AppConfigurator.getConfig().getUsersUrls().contains(path))
 				return true;
 			else
-				return false;
+				throw new NotAuthorisedException("User access denied");
+			
 		} else if ( user.getGroup().equalsIgnoreCase("moderator")) {
 			if (AppConfigurator.getConfig().getModeratorsUrls().contains(path))
 				return true;
 			else
-				return false;
+				throw new NotAuthorisedException("Access denied");
+			
 		} else if ( user.getGroup().equalsIgnoreCase("administrator") ) {
 			return true;
 		}

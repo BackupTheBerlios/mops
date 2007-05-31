@@ -15,37 +15,73 @@
 
 package ru.rpunet.webmops.web.admin;
 
-import net.sourceforge.stripes.action.ActionBean;
-import net.sourceforge.stripes.action.ActionBeanContext;
+import java.util.List;
+
+import net.sourceforge.stripes.action.Before;
 import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.ForwardResolution;
 import net.sourceforge.stripes.action.Resolution;
+import net.sourceforge.stripes.controller.LifecycleStage;
+import ru.rpunet.webmops.dao.DistributionManager;
+import ru.rpunet.webmops.dao.MirrorManager;
+import ru.rpunet.webmops.dao.PersonManager;
+import ru.rpunet.webmops.model.Distribution;
+import ru.rpunet.webmops.model.Mirror;
+import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.WebmopsActionBean;
 
 /**
- * Admin dashboard
- * 
  * @author Andrew Diakin
  *
  */
-public class DashboardActionBean implements ActionBean {
-
-	private ActionBeanContext context;	
+public class DashboardActionBean extends WebmopsActionBean {
 	
+	private PersonManager personDAO;
+	private MirrorManager mirrorDAO;
+	private DistributionManager distDAO;
 	
+	private List<Person> users;
+	private List<Mirror> mirrors;
+	private List<Distribution> dists;
 	
-	public ActionBeanContext getContext() {
-		return this.context;
+	public int getMirrorsCount() {
+		return this.mirrors.size();
+	}
+	
+	public int getUsersCount() {
+		return this.users.size();
+	}
+	
+	public int getDistsCount() {
+		return this.dists.size();
+	}
+	
+	public List<Distribution> getDists() {
+		return dists;
 	}
 
-	
-	public void setContext(ActionBeanContext arg0) {
-		this.context = arg0;
+	public List<Mirror> getMirrors() {
+		return mirrors;
+	}
+
+	public List<Person> getUsers() {
+		return users;
+	}
+
+	@Before(LifecycleStage.BindingAndValidation)
+	public void preload() {
+		personDAO = new PersonManager();
+		mirrorDAO = new MirrorManager();
+		distDAO = new DistributionManager();
+		
+		users = personDAO.findAllPersons();
+		mirrors = mirrorDAO.findAll();
+		dists = distDAO.findAll();
 	}
 	
 	@DefaultHandler
 	public Resolution index() {
-		
 		return new ForwardResolution("/admin/Dashboard.jsp");
 	}
-
+	
 }

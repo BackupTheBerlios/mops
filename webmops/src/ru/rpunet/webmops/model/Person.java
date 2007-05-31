@@ -18,11 +18,13 @@ package ru.rpunet.webmops.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
 import javax.persistence.Id;
+import javax.persistence.UniqueConstraint;
 
 /**
  * Person entity
@@ -31,7 +33,10 @@ import javax.persistence.Id;
  *
  */
 @Entity
-@Table(name="users")
+@Table(
+		name="users",
+		uniqueConstraints=
+			@UniqueConstraint(columnNames={"login", "email"}))
 public class Person implements Serializable {
 
 	/**
@@ -49,12 +54,27 @@ public class Person implements Serializable {
 	
 	private String login;
 	
+	@Column(name="pwd")
 	private String password;
 	
 	private String email;
 	
+	@Column(name="userGroup")
 	private String group;
 	
+	private int active = 1;
+	
+	public boolean isActive() {
+		return active > 0;
+	}
+
+	public void setActive(boolean active) {
+		if (active)
+			this.active = 1;
+		else
+			this.active = 0;
+	}
+
 	public String getGroup() {
 		return this.group;
 	}
@@ -107,5 +127,8 @@ public class Person implements Serializable {
 		return Id;
 	}
 	
+	public String toString() {
+		return "User " + this.login + " id " + this.Id;
+	}
 	
 }

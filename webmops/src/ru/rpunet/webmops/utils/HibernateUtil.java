@@ -15,14 +15,10 @@
    
 package ru.rpunet.webmops.utils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.hibernate.cfg.*;
 
 public class HibernateUtil {
-	private static Log log = LogFactory.getLog(HibernateUtil.class);
-	
 	private static SessionFactory sessionFactory;
 
 	static {
@@ -31,6 +27,7 @@ public class HibernateUtil {
 		cfg.addAnnotatedClass(ru.rpunet.webmops.model.File.class);
 		cfg.addAnnotatedClass(ru.rpunet.webmops.model.Distribution.class);
 		cfg.addAnnotatedClass(ru.rpunet.webmops.model.Mirror.class);
+		cfg.addAnnotatedClass(ru.rpunet.webmops.model.Person.class);
 		cfg.configure();
 		sessionFactory = cfg.buildSessionFactory();
 	}

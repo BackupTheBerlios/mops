@@ -14,16 +14,12 @@ public class NotAuthorisedException extends Exception {
 	 */
 	private static final long serialVersionUID = 2140999798071356384L;
 
-	private String reason;
-	
-	public NotAuthorisedException() {}
-	
-	public NotAuthorisedException(String reason) {
-		this.reason = reason;
+	public NotAuthorisedException() {
+		super();
 	}
 	
-	public String toString() {
-		return reason;
+	public NotAuthorisedException(String reason) {
+		super(reason);
 	}
 	
 }
