@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.67 2007/05/31 14:17:34 i27249 Exp $
+ * $Id: corethread.cpp,v 1.68 2007/05/31 17:03:51 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -308,7 +308,8 @@ void coreThread::_updatePackageDatabase()
 	currentStatus = tr("Updating package database from repositories...").toStdString();
 	emit loadingStarted();
 	database->update_repository_data();
-	currentAction = CA_LoadDatabase;
+	//currentAction = CA_LoadDatabase;
+	currentAction = CA_LoadItems;
 }
 
 void coreThread::updatePackageDatabase()

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.102 2007/05/31 14:17:34 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.103 2007/05/31 17:03:51 i27249 Exp $
  *
  ****************************************************************/
 
@@ -165,6 +165,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 MainWindow::~MainWindow()
 {
+	ui.packageTable->clearContents();
 	thread->callQuit();
 	StatusThread->halt();
 	ErrorBus->Stop();
@@ -412,7 +413,7 @@ void MainWindow::applyPackageFilter ()
 				ui.packageTable->setRowHidden(i, false);
 				statusOk = true;
 			}
-			if (ui.actionShow_unavailable->isChecked())
+			if (ui.actionShow_unavailable->isChecked() && !available && !installed)
 			{
 				ui.packageTable->setRowHidden(i,false);
 				statusOk=true;
@@ -494,6 +495,10 @@ string MainWindow::bool2str(bool data)
 
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
+	if (nameComplain(packageNum, ui.quickPackageSearchEdit->text()))
+	{
+		ui.packageTable->setRowHidden(row, false);
+	}
 	packagelist->setTableID(packageNum, row);
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
@@ -534,6 +539,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	QObject::connect(stat, SIGNAL(stateChanged(int)), this, SLOT(applyPackageFilter()));
 	ui.packageTable->setRowHeight(row, 45);
+	//ui.packageTable->setRowHidden(row, true);
 	//thread->recvFillReady();
 }
 
@@ -719,7 +725,7 @@ void MainWindow::initCategories(bool initial)
 				named=true;
 				QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
 				ListLabel *L_item = new ListLabel(ui.listWidget, i);
-				L_item->setText("<b>"+(QString) _categories.getChildNode("group",t).getAttribute("name")+(QString) "</b>");
+				L_item->setText((QString) _categories.getChildNode("group",t).getAttribute("name"));
 		    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", t).getAttribute("icon"))));
 				ui.listWidget->setItemWidget(__item, L_item);
 			}
@@ -796,6 +802,7 @@ bool MainWindow::isCategoryComplain(int package_num, int category_id)
 
 void MainWindow::filterCategory(int category_id)
 {
+
 	if (!actionBus.idle()) actionBus.abortActions();
 	currentCategoryID = category_id;
 	vector<bool> request;
@@ -1335,7 +1342,7 @@ void MainWindow::highlightCategoryList()
 
 	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
-		if (highlightMap[availableTags[i]])
+		if (!ui.quickPackageSearchEdit->text().isEmpty() && highlightMap[availableTags[i]])
 		{
 			textStyle = "<b>";
 			_textStyle = "</b>";
