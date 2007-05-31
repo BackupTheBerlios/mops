@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.103 2007/05/31 17:03:51 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.104 2007/05/31 19:47:13 i27249 Exp $
  *
  ****************************************************************/
 
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	removeQueueCount = 0;
 	willBeFreed = 0;
 	willBeOccupied = 0;
-
+	lockPackageList(false);
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	QTextCodec::setCodecForTr(QTextCodec::codecForName("utf-8"));
 
@@ -131,7 +131,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(StatusThread, SIGNAL(setBarValue(unsigned int)), this, SLOT(setProgressBarValue(unsigned int)));
 	QObject::connect(StatusThread, SIGNAL(initProgressBar(unsigned int)), this, SLOT(initProgressBar(unsigned int)));
 	QObject::connect(this, SIGNAL(getAvailableTags()), thread, SLOT(getAvailableTags()));
-	QObject::connect(thread, SIGNAL(sendAvailableTags(vector<string>)), this, SLOT(receiveAvailableTags(vector<string>)));
+	QObject::connect(thread, SIGNAL(sendAvailableTags(vector<string>)), this, SLOT(receiveAvailableTags(vector<string>)), Qt::QueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(enableProgressBar2()), this, SLOT(enableProgressBar2()));
 	QObject::connect(StatusThread, SIGNAL(disableProgressBar2()), this, SLOT(disableProgressBar2()));
 	QObject::connect(StatusThread, SIGNAL(setBarValue2(unsigned int)), this, SLOT(setProgressBarValue2(unsigned int)));
@@ -156,7 +156,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
 	{
 		say("Waiting for threads to start...\n");
-		sleep(1);
+		usleep(1);
 	}
 
 	emit getAvailableTags();
@@ -250,6 +250,7 @@ void MainWindow::loadingFinished()
 	
 	setTableSize();
 	emit imReady();
+	//initCategories();
 	currentStatus = tr("Idle").toStdString();
 }
 
@@ -305,6 +306,7 @@ void MainWindow::generateStat()
 	{
 		return;
 	}
+	waitUnlock();
 	for (int i=0; i<packagelist->size(); i++)
 	{
 		if (packagelist->get_package(i)->installed())
@@ -375,7 +377,7 @@ void MainWindow::applyPackageFilter ()
 	{
 		highlightMap[availableTags[a]]=false;
 	}
-
+	waitUnlock();
 	for (int i=0; i<packagelist->size(); i++)
 	{
 		nameOk = false;
@@ -495,6 +497,7 @@ string MainWindow::bool2str(bool data)
 
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
+	waitUnlock();
 	if (nameComplain(packageNum, ui.quickPackageSearchEdit->text()))
 	{
 		ui.packageTable->setRowHidden(row, false);
@@ -689,6 +692,7 @@ void MainWindow::cleanCache()
 
 void MainWindow::receiveAvailableTags(vector<string> tags)
 {
+	lockPackageList(true);
 	availableTags.clear();
 	availableTags.push_back("_all_");
 	availableTags.push_back("_updates_");
@@ -698,6 +702,7 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 	}
 	availableTags.push_back("_misc_");
 
+	lockPackageList(false);
 	initCategories(true);
 }
 
@@ -709,6 +714,12 @@ void MainWindow::initCategories(bool initial)
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
 		return;
+	}
+	bool lockSta=false;
+	if (initializeOk) 
+	{
+		initializeOk=false;
+		lockSta=true;
 	}
 	ui.listWidget->clear();
 
@@ -741,6 +752,7 @@ void MainWindow::initCategories(bool initial)
 
 		}
 	}
+	////if (lockSta) initializeOk=true;
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	if (initial)
@@ -759,6 +771,8 @@ void MainWindow::hideEntireTable()
 }
 bool MainWindow::isCategoryComplain(int package_num, int category_id)
 {
+	waitUnlock();
+
 	string tagvalue;
 	bool ret=false;
 	if (category_id>=0 && availableTags.size()>(unsigned int) category_id)
@@ -803,6 +817,9 @@ bool MainWindow::isCategoryComplain(int package_num, int category_id)
 void MainWindow::filterCategory(int category_id)
 {
 
+	printf("packagelist size = %d\n", packagelist->size());
+	waitUnlock();
+
 	if (!actionBus.idle()) actionBus.abortActions();
 	currentCategoryID = category_id;
 	vector<bool> request;
@@ -830,16 +847,33 @@ void MainWindow::setStatus(QString status)
 	ui.statusbar->showMessage(status);
 }
 
+void MainWindow::lockPackageList(bool state)
+{
+	__pkgLock=state;
+}
+
+void MainWindow::waitUnlock()
+{
+	while (__pkgLock)
+	{
+		usleep(1);
+	}
+}
 
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
+	lockPackageList(true);
 	*packagelist=pkgList;
 	newStatus = nStatus;
+	lockPackageList(false);
+
 }
 
 void MainWindow::quickPackageSearch()
 {
+	waitUnlock();
+
 	QString tmp;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
@@ -866,6 +900,8 @@ void MainWindow::resetQueue()
 
 void MainWindow::showPackageInfo()
 {
+	waitUnlock();
+
 	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->getPackageByTableID(id);
 	string info = "<html><h1>"+*pkg->get_name()+" "+*pkg->get_version()+"</h1><p><b>"+\
@@ -983,6 +1019,8 @@ void MainWindow::showCoreSettings()
 }
 void MainWindow::commitChanges()
 {
+	waitUnlock();
+
 	if (willBeOccupied - willBeFreed - get_disk_freespace() > 0)
 	{
 		if (QMessageBox::warning(this, \
@@ -1052,6 +1090,7 @@ void MainWindow::showAddRemoveRepositories(){
 
 void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
 {
+	waitUnlock();
 
 	if (req.size()==1) return;
 	int this_id=packagelist->get_package(package_num)->get_id();
@@ -1070,6 +1109,8 @@ void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST 
 
 void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
 {
+	waitUnlock();
+
 	if (dep.size()==1) return;
 	int this_id=packagelist->get_package(package_num)->get_id();
 	for (int i=0; i<packagelist->size(); i++)
@@ -1088,6 +1129,7 @@ void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST
 
 void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
+waitUnlock();
 
 	generateStat();
 	if (state == Qt::Checked)
@@ -1327,58 +1369,79 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 
 bool MainWindow::nameComplain(int package_num, QString text)
 {
+waitUnlock();
+
 	QString nameMask;	
 	nameMask = nameMask.fromStdString(*packagelist->get_package(package_num)->get_name());
 	return nameMask.contains(text, Qt::CaseInsensitive);
 }
 void MainWindow::highlightCategoryList()
 {
-	bool named;
+	bool named, hlThis=false;
 	QString itemIcon;
 	QString itemText;
 	QString textStyle = "<b>";
 	QString _textStyle = "</b>";
 	itemIcon = "/usr/share/mpkg/icons/void.png";
-
+	if (highlightState.size()!=availableTags.size())
+	{
+		highlightState.clear();
+		highlightState.resize(availableTags.size());
+		for (unsigned int i=0; i<highlightState.size(); i++)
+		{
+			highlightState[i]=false;
+		}
+	}
 	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
 		if (!ui.quickPackageSearchEdit->text().isEmpty() && highlightMap[availableTags[i]])
 		{
+			if (!highlightState[i])
+			{
+				hlThis=true;
+				highlightState[i]=true;
+			}
 			textStyle = "<b>";
 			_textStyle = "</b>";
 		}
 		else
 		{
+			if (highlightState[i])
+			{
+				hlThis=true;
+				highlightState[i]=false;
+			}
 			textStyle.clear();
 			_textStyle.clear();
 		}
 
 
 		named=false;
-		for (int t = 0; t< _categories.nChildNode("group");t++)
+		if (hlThis)
 		{
-			if (availableTags[i]==(string) _categories.getChildNode("group",t).getAttribute("tag"))
+			for (int t = 0; t< _categories.nChildNode("group");t++)
 			{
+				if (availableTags[i]==(string) _categories.getChildNode("group",t).getAttribute("tag"))
+				{
+					named=true;
+					ListLabel *L_item = new ListLabel(ui.listWidget, i);
+					itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle +\
+					   (QString) _categories.getChildNode("group",t).getAttribute("name") +\
+					   _textStyle + "</td></tr></tbody></table>";
 
-				named=true;
+					L_item->setText(itemText);
+					ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
+				}
+			}
+			if (!named)
+			{
 				ListLabel *L_item = new ListLabel(ui.listWidget, i);
-				itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle +\
-				   (QString) _categories.getChildNode("group",t).getAttribute("name") +\
-				   _textStyle + "</td></tr></tbody></table>";
+				itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle  +\
+					   availableTags[i].c_str() + _textStyle + "</td></tr></tbody></table>";
 
 				L_item->setText(itemText);
 				ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
-
 			}
-		}
-		if (!named)
-		{
-			ListLabel *L_item = new ListLabel(ui.listWidget, i);
-			itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle  +\
-				   availableTags[i].c_str() + _textStyle + "</td></tr></tbody></table>";
-
-			L_item->setText(itemText);
-			ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
 		}
 	}
 

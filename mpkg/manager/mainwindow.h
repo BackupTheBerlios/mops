@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.52 2007/05/31 14:17:34 i27249 Exp $
+ * $Id: mainwindow.h,v 1.53 2007/05/31 19:47:13 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -137,6 +137,8 @@ class MainWindow: public QMainWindow
 		XMLNode _categories;
 		
 	private:
+		void lockPackageList(bool state);
+		void waitUnlock();
 		map <string, bool> highlightMap;
 		double totalInstalledSize;
 		double totalAvailableSize;
@@ -147,7 +149,7 @@ class MainWindow: public QMainWindow
 		unsigned int updateQueueCount;
 		double willBeFreed;
 		double willBeOccupied;
-
+		bool __pkgLock;
 		string bool2str(bool data);
 		QMovie *movie; 
 		mpkg *mDb;
@@ -156,6 +158,7 @@ class MainWindow: public QMainWindow
 		vector<string> install_queue;
 		vector<string> remove_queue;
 		vector<string> purge_queue;
+		vector<bool>highlightState;
 		vector<bool>stateChanged;
 		vector<int>newStatus;
 		vector<string> availableTags;
