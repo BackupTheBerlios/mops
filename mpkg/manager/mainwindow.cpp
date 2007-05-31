@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.99 2007/05/30 14:29:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.100 2007/05/31 11:28:00 i27249 Exp $
  *
  ****************************************************************/
 
@@ -197,6 +197,7 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
+	printf("ApplyPackageFilter\n");
 	//initCategories();
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
@@ -204,7 +205,6 @@ void MainWindow::applyPackageFilter ()
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
-	bool cloneOk = true;
 	bool deprecatedOk = false;
 	vector<string> tmpTagList;
 	string tagvalue;
@@ -222,11 +222,13 @@ void MainWindow::applyPackageFilter ()
 		nameOk = false;
 		statusOk = false;
 		categoryOk = false;
-		cloneOk = true;
 
 		nameMask = nameMask.fromStdString(*packagelist->get_package(i)->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
+
+			if (packagelist->getTableID(i)==0) printf("found in %s: id=%d, tableID = %d\n", packagelist->get_package(i)->get_name()->c_str(), i, packagelist->getTableID(i));
+
 			nameOk = true;
 		}
 		else
@@ -281,20 +283,69 @@ void MainWindow::applyPackageFilter ()
 				else deprecatedOk = false;
 			}
 			else deprecatedOk=true;
+		
+			//for (unsigned int i=0; i<packagelist.size(); i++)
+			//{
+			//}
 
-			categoryOk = true;
+			//categoryOk = true;
+
 		}
-		if (nameOk && statusOk && categoryOk && cloneOk && deprecatedOk)
+		if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
+		{
+			tagvalue = availableTags[currentCategoryID];
+		}
+		else tagvalue = "";
+		if (tagvalue == "_updates_")
+		{
+			if (packagelist->get_package(i)->isUpdate()) categoryOk = true;
+			else categoryOk = false;
+		}
+		else
+		{
+			if (tagvalue == "_all_")
+			{
+				categoryOk = true;
+			}
+			else
+			{
+				categoryOk = false;
+				tmpTagList.clear();
+				tmpTagList = *packagelist->get_package(i)->get_tags();
+				printf("[%d] tmpTagList of %s is %d length\n", i, packagelist->get_package(i)->get_name()->c_str(), packagelist->get_package(i)->get_tags()->size());
+				for (unsigned int t = 0; t < tmpTagList.size(); t++)
+				{
+					if (tmpTagList[t] == tagvalue)
+					{
+						categoryOk = true;
+					}
+				} // for (... tmpTagList ...)	
+				if (tmpTagList.empty() && tagvalue != "_misc_")
+				{
+					printf("[%d] no tags in %s\n",i, packagelist->get_package(i)->get_name()->c_str());
+					categoryOk = false;
+				}
+				else
+				{
+					if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
+				}
+			}
+		}
+		if (nameOk && statusOk && deprecatedOk)
 		{
 			pkgCount++;
 			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
 		}
-		else ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
+		else 
+		{
+			if (categoryOk) ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
+			else printf("%s not in this cat\n", packagelist->get_package(i)->get_name()->c_str());
+		}
 #ifdef CATEGORY_HIGHLIGHTING
 		// The last enhancement - category highlight =)
 		tmpTagList = *packagelist->get_package(i)->get_tags();
 
-		if (statusOk && nameOk && cloneOk && !ui.quickPackageSearchEdit->text().isEmpty())
+		if (statusOk && nameOk && !ui.quickPackageSearchEdit->text().isEmpty())
 		{
 			string tmpcat;
 			for (int k=0; k<tmpTagList.size(); k++)
@@ -325,6 +376,11 @@ void MainWindow::clearTable()
 {
 	ui.packageTable->clearContents();
 	ui.packageTable->setRowCount(0);
+/*	for (unsigned int i=0; i<pkgVisible.size(); i++)
+	{
+		pkgVisible[i]=false;
+	}
+	*/
 }
 
 void MainWindow::setTableSize(unsigned int size)
@@ -358,7 +414,8 @@ string MainWindow::bool2str(bool data)
 
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
-	//printf("pNum: %d | row: %d\n", packageNum, row);
+	//pkgVisible[packageNum]=true;
+	printf("pNum: %d | row: %d\n", packageNum, row);
 	packagelist->setTableID(packageNum, row);
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
@@ -449,10 +506,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
-#ifdef RELEASE
-	ui.selectAllButton->hide();
-	ui.deselectAllButton->hide();
-#endif
+	ui.applyButton->setEnabled(false);
 	ui.quickPackageSearchEdit->hide();
 	ui.quickSearchLabel->hide();
 	ui.clearSearchButton->hide();
@@ -772,7 +826,6 @@ void MainWindow::filterCategory(int category_id)
 {
 	if (!actionBus.idle()) actionBus.abortActions();
 	currentCategoryID = category_id;
-	// code to filter packages should be here
 	vector<bool> request;
 	vector<string> tmpTagList;
 	string tagvalue;
@@ -780,8 +833,6 @@ void MainWindow::filterCategory(int category_id)
 	for (unsigned int i=0; i<request.size(); i++)
 	{
 		request[i]=false;
-		//if (_categories.nChildNode("group")>=currentCategoryID) tagvalue = (string) _categories.getChildNode("group", currentCategoryID).getAttribute("tag");
-		//else mError("Overflow in XML");
 		if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
 		{
 			tagvalue = availableTags[currentCategoryID];
@@ -860,6 +911,12 @@ void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
 	*packagelist=pkgList;
 	newStatus = nStatus;
+	/*pkgVisible.clear();
+	pkgVisible.resize(packagelist->size());
+	for (unsigned int i=0; i<pkgVisible.size(); i++)
+	{
+		pkgVisible[i]=false;
+	}*/
 }
 
 void MainWindow::quickPackageSearch()
@@ -1319,6 +1376,8 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 	       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
 
 	setTableItem(x, i, state, pName);		
+	ui.applyButton->setEnabled(true);
+
 }
 
 void MainWindow::loadData()

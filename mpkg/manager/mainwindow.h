@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.49 2007/05/30 14:29:08 i27249 Exp $
+ * $Id: mainwindow.h,v 1.50 2007/05/31 11:28:00 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -157,6 +157,7 @@ class MainWindow: public QMainWindow
 		vector<string> purge_queue;
 		vector<bool>stateChanged;
 		vector<int>newStatus;
+		vector<bool>pkgVisible;
 		vector<string> availableTags;
 		void initPackageTable();
 		int currentCategoryID;

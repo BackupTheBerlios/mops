@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.64 2007/05/30 14:29:08 i27249 Exp $
+ * $Id: corethread.cpp,v 1.65 2007/05/31 11:28:00 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -245,6 +245,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 		checked = true;
 	}
 
+	packageList->setTableID(package_num, tablePos);
 	PACKAGE *_p = packageList->get_package(package_num);
 	string cloneHeader;
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
@@ -278,12 +279,13 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 	}
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
-			+_p->get_fullversion()\
-			+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
+			+_p->get_fullversion() \
+			+ " tableID:" + IntToStr(packageList->getTableID(package_num)) \
+			+ " <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
 	//while (!readyState) usleep(1);
 	//readyState = false;
-	packageList->setTableID(package_num, tablePos);
+	printf("%s: tablePos = %d\n", __func__, tablePos);
 	emit setTableItem(tablePos, package_num, checked, pName);
 }
 void coreThread::recvReadyFlag()
