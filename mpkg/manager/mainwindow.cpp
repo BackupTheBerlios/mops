@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.100 2007/05/31 11:28:00 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.101 2007/05/31 12:04:17 i27249 Exp $
  *
  ****************************************************************/
 
@@ -197,8 +197,6 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
-	printf("ApplyPackageFilter\n");
-	//initCategories();
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
 	QString nameMask;
@@ -226,9 +224,7 @@ void MainWindow::applyPackageFilter ()
 		nameMask = nameMask.fromStdString(*packagelist->get_package(i)->get_name());
 		if (nameMask.contains(ui.quickPackageSearchEdit->text(), Qt::CaseInsensitive))
 		{
-
-			if (packagelist->getTableID(i)==0) printf("found in %s: id=%d, tableID = %d\n", packagelist->get_package(i)->get_name()->c_str(), i, packagelist->getTableID(i));
-
+			//printf("found in %s\n", nameMask.toStdString().c_str());
 			nameOk = true;
 		}
 		else
@@ -283,88 +279,25 @@ void MainWindow::applyPackageFilter ()
 				else deprecatedOk = false;
 			}
 			else deprecatedOk=true;
-		
-			//for (unsigned int i=0; i<packagelist.size(); i++)
-			//{
-			//}
-
-			//categoryOk = true;
 
 		}
-		if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
+		//printf("state for %s: name = %d, status=%d, deprecatedOk = %d, category complain = %d \n", packagelist->get_package(i)->get_name()->c_str(), \
+				nameOk, \
+				statusOk, \
+				deprecatedOk,\
+				isCategoryComplain(i, currentCategoryID));
+		if (nameOk && statusOk && deprecatedOk && isCategoryComplain(i, currentCategoryID))
 		{
-			tagvalue = availableTags[currentCategoryID];
-		}
-		else tagvalue = "";
-		if (tagvalue == "_updates_")
-		{
-			if (packagelist->get_package(i)->isUpdate()) categoryOk = true;
-			else categoryOk = false;
-		}
-		else
-		{
-			if (tagvalue == "_all_")
-			{
-				categoryOk = true;
-			}
-			else
-			{
-				categoryOk = false;
-				tmpTagList.clear();
-				tmpTagList = *packagelist->get_package(i)->get_tags();
-				printf("[%d] tmpTagList of %s is %d length\n", i, packagelist->get_package(i)->get_name()->c_str(), packagelist->get_package(i)->get_tags()->size());
-				for (unsigned int t = 0; t < tmpTagList.size(); t++)
-				{
-					if (tmpTagList[t] == tagvalue)
-					{
-						categoryOk = true;
-					}
-				} // for (... tmpTagList ...)	
-				if (tmpTagList.empty() && tagvalue != "_misc_")
-				{
-					printf("[%d] no tags in %s\n",i, packagelist->get_package(i)->get_name()->c_str());
-					categoryOk = false;
-				}
-				else
-				{
-					if (tmpTagList.size() == 0 && tagvalue == "_misc_") categoryOk = true;
-				}
-			}
-		}
-		if (nameOk && statusOk && deprecatedOk)
-		{
+			//printf("Package %s accepted\n",packagelist->get_package(i)->get_name()->c_str() );
 			pkgCount++;
 			ui.packageTable->setRowHidden(packagelist->getTableID(i), false);
 		}
 		else 
 		{
-			if (categoryOk) ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
-			else printf("%s not in this cat\n", packagelist->get_package(i)->get_name()->c_str());
+			//printf("Package %s is not accepted, table_ID = %d\n", packagelist->get_package(i)->get_name()->c_str(), packagelist->getTableID(i));
+			if (isCategoryComplain(i, currentCategoryID)) ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
 		}
-#ifdef CATEGORY_HIGHLIGHTING
-		// The last enhancement - category highlight =)
-		tmpTagList = *packagelist->get_package(i)->get_tags();
-
-		if (statusOk && nameOk && !ui.quickPackageSearchEdit->text().isEmpty())
-		{
-			string tmpcat;
-			for (int k=0; k<tmpTagList.size(); k++)
-			{
-
-				for (int d=0; d<ui.listWidget->count(); d++)
-				{
-					tmpcat = (string) _categories.getChildNode("group", d).getAttribute("tag");
-					if (tmpTagList[k]==tmpcat)
-					{
-						// Do something with ui.listWidget
-					}
-				}
-
-			}
-		}
-#endif
 	} // for (...)	
-	//string s_installQueueSize = humanizeSize(packagelist->totalInstalledSizeByAction(ST_INSTALL));
 
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
@@ -415,7 +348,6 @@ string MainWindow::bool2str(bool data)
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
 	//pkgVisible[packageNum]=true;
-	printf("pNum: %d | row: %d\n", packageNum, row);
 	packagelist->setTableID(packageNum, row);
 	CheckBox *stat = new CheckBox(this);
 	if (checkState) stat->setCheckState(Qt::Checked);
@@ -821,6 +753,48 @@ void MainWindow::hideEntireTable()
 		ui.packageTable->setRowHidden(i, true);
 	}
 }
+bool MainWindow::isCategoryComplain(int package_num, int category_id)
+{
+	string tagvalue;
+	bool ret=false;
+	if (category_id>=0 && availableTags.size()>(unsigned int) category_id)
+	{
+		tagvalue = availableTags[category_id];
+	}
+	else tagvalue = "";
+	if (tagvalue == "_updates_")
+	{
+		if (packagelist->get_package(package_num)->isUpdate()) ret = true;
+		else ret = false;
+	}
+	else
+	{
+		if (tagvalue == "_all_")
+		{
+			ret = true;
+		}
+		else
+		{
+			ret = false;
+			for (unsigned int t = 0; t < packagelist->get_package(package_num)->get_tags()->size(); t++)
+			{
+				if (packagelist->get_package(package_num)->get_tags()->at(t) == tagvalue)
+				{
+					ret = true;
+				}
+			} // for (... tmpTagList ...)	
+			if (packagelist->get_package(package_num)->get_tags()->empty() && tagvalue != "_misc_")
+			{
+				ret = false;
+			}
+			else
+			{
+				if (packagelist->get_package(package_num)->get_tags()->empty() && tagvalue == "_misc_") ret = true;
+			}
+		}
+	}
+	return ret;
+}
 
 void MainWindow::filterCategory(int category_id)
 {
@@ -830,53 +804,15 @@ void MainWindow::filterCategory(int category_id)
 	vector<string> tmpTagList;
 	string tagvalue;
 	request.resize(packagelist->size());
-	for (unsigned int i=0; i<request.size(); i++)
+	for (int i=0; i<packagelist->size(); i++)
 	{
-		request[i]=false;
-		if (currentCategoryID>=0 && availableTags.size()>(unsigned int) currentCategoryID)
-		{
-			tagvalue = availableTags[currentCategoryID];
-		}
-		else tagvalue = "";
-		if (tagvalue == "_updates_")
-		{
-			if (packagelist->get_package(i)->isUpdate()) request[i] = true;
-			else request[i] = false;
-		}
-		else
-		{
-			if (tagvalue == "_all_")
-			{
-				request[i] = true;
-			}
-			else
-			{
-				request[i] = false;
-				tmpTagList = *packagelist->get_package(i)->get_tags();
-				for (unsigned int t = 0; t < tmpTagList.size(); t++)
-				{
-					if (tmpTagList[t] == tagvalue)
-					{
-						request[i] = true;
-					}
-				} // for (... tmpTagList ...)	
-				if (tmpTagList.size() == 0 && tagvalue != "_misc_")
-				{
-					request[i] = false;
-				}
-				else
-				{
-					if (tmpTagList.size() == 0 && tagvalue == "_misc_") request[i] = true;
-				}
-			}
-		}
+		request[i]=isCategoryComplain(i, category_id);
 
 	}
 	if (actionBus._abortActions)
 	{
 		while (!actionBus._abortComplete)
 		{
-		//	printf("waiting...\n");
 			usleep(10);
 		}
 	}

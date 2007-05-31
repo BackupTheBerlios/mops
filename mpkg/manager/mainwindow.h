@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.50 2007/05/31 11:28:00 i27249 Exp $
+ * $Id: mainwindow.h,v 1.51 2007/05/31 12:04:17 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -26,6 +26,8 @@ class MainWindow: public QMainWindow
 {
 	Q_OBJECT
 	public:
+
+		bool isCategoryComplain(int package_num, int category_id);
 		double installQueueSize;
 		bool initializeOk;
 		MainWindow (QMainWindow *parent = 0);
@@ -60,7 +62,6 @@ class MainWindow: public QMainWindow
 		void receiveAvailableTags(vector<string> tags);
 		void setSkipButton(bool flag);
 		void setIdleButtons(bool flag);
-		
 		void abortActions();
 		void skipAction();
 		void resetProgressBar();
@@ -94,10 +95,7 @@ class MainWindow: public QMainWindow
 		void disableProgressBar2();
 		void setProgressBarValue2(unsigned int value);
 		void initProgressBar2(unsigned int stepCount = 100);
-
-
-
-		
+	
 		// Table operations
 		void clearTable();
 		void selectAll();

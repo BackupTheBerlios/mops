@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.65 2007/05/31 11:28:00 i27249 Exp $
+ * $Id: corethread.cpp,v 1.66 2007/05/31 12:04:17 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -285,7 +285,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
 	//while (!readyState) usleep(1);
 	//readyState = false;
-	printf("%s: tablePos = %d\n", __func__, tablePos);
+	//printf("%s: tablePos = %d\n", __func__, tablePos);
 	emit setTableItem(tablePos, package_num, checked, pName);
 }
 void coreThread::recvReadyFlag()
