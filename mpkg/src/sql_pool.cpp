@@ -3,14 +3,13 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.40 2007/05/23 18:02:18 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.41 2007/06/01 04:13:51 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
 
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
-	printf("Integrity check\n");
 	if (\
 			sql_exec("select dependency_id, packages_package_id, dependency_condition, dependency_type, dependency_package_name, dependency_package_version from dependencies limit 1;")!=0 || \
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files limit 1;")!=0 || \
@@ -25,13 +24,11 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select rating_id, rating_value, packages_package_name from ratings limit 1;")!=0 \
 			)*/
 	{
-		printf("complete - failed\n");
 		return false;
 	}
 
 	else 
 	{
-		printf("complete successful\n");
 		return true;
 	}
 }

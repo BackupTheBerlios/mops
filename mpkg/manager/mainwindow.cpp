@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.106 2007/06/01 03:38:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.107 2007/06/01 04:13:51 i27249 Exp $
  *
  ****************************************************************/
 
@@ -355,12 +355,10 @@ void MainWindow::generateStat()
 void MainWindow::applyPackageFilter ()
 {
 	//TODO: here is a bug involved after data update and causes segfault. have to search...
-	if (!initializeOk)
+	if (!initializeOk || currentCategoryID<0)
 	{
-		printf("%s: uninitialized\n", __func__);
 		return;
 	}
-	else printf("%s: init ok\n", __func__);
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
 	bool nameOk = false;
@@ -374,7 +372,6 @@ void MainWindow::applyPackageFilter ()
 	bool installed;
 	bool configexist;
 	bool deprecated;
-
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
@@ -388,7 +385,6 @@ void MainWindow::applyPackageFilter ()
 		nameOk = false;
 		statusOk = false;
 		categoryOk = false;
-
 		nameOk = nameComplain(i, ui.quickPackageSearchEdit->text());
 	
 		if (nameOk)
@@ -456,12 +452,11 @@ void MainWindow::applyPackageFilter ()
 		{
 			if (isCategoryComplain(i, currentCategoryID)) ui.packageTable->setRowHidden(packagelist->getTableID(i), true);
 		}
-	} // for (...)	
+	} // for (...)
 
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
-	printf("done\n");
 	highlightCategoryList();
 }
 
@@ -714,7 +709,6 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 
 void MainWindow::initCategories(bool initial)
 {
-	printf("%s: start\n", __func__);
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 	XMLResults xmlErrCode;
 	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
@@ -819,7 +813,6 @@ bool MainWindow::isCategoryComplain(int package_num, int category_id)
 void MainWindow::filterCategory(int category_id)
 {
 
-	printf("packagelist size = %d\n", packagelist->size());
 	waitUnlock();
 
 	if (!actionBus.idle()) actionBus.abortActions();
@@ -856,16 +849,15 @@ void MainWindow::lockPackageList(bool state)
 
 void MainWindow::waitUnlock()
 {
-	while (__pkgLock)
-	{
-		usleep(1);
-	}
+	//while (__pkgLock)
+	//{
+	//	usleep(1);
+	//}
 }
 
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
-	printf("%s: RECEIVED package list, size = %d\n", __func__, pkgList.size());
 	*packagelist=pkgList;
 	newStatus = nStatus;
 
@@ -1418,7 +1410,6 @@ void MainWindow::highlightCategoryList()
 			_textStyle.clear();
 		}
 
-		if (initial) printf("initial highlighting\n");
 		named=false;
 		if (initial || hlThis)
 		{
