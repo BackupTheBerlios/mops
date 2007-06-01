@@ -1,7 +1,7 @@
 /*************************************************************
  * MOPSLinux package management system
  * Updates monitor - main header file
- * $Id: trayapp.cpp,v 1.9 2007/05/21 19:25:45 i27249 Exp $
+ * $Id: trayapp.cpp,v 1.10 2007/06/01 03:53:16 i27249 Exp $
  ************************************************************/
 
 #include "trayapp.h"
@@ -66,12 +66,7 @@ void TrayApp::quitApp()
 {
 	hide();
 	emit shutdownThread();
-	while (mThread->isRunning())
-	{
-		printf("TrayApp: waiting threads to exit\n");
-		sleep(1);
-	}
-	//delete core;
+	mThread->wait();
 	delete mThread;
 	qApp->quit();
 }
