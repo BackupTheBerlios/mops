@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.104 2007/05/31 19:47:13 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.105 2007/06/01 02:51:46 i27249 Exp $
  *
  ****************************************************************/
 
@@ -250,7 +250,6 @@ void MainWindow::loadingFinished()
 	
 	setTableSize();
 	emit imReady();
-	//initCategories();
 	currentStatus = tr("Idle").toStdString();
 }
 
@@ -355,7 +354,12 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
-	if (!initializeOk) return;
+	if (!initializeOk)
+	{
+		printf("%s: uninitialized\n", __func__);
+		return;
+	}
+	else printf("%s: init ok\n", __func__);
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
 	bool nameOk = false;
@@ -437,7 +441,7 @@ void MainWindow::applyPackageFilter ()
 		}
 		for (unsigned int a=0; a<availableTags.size(); a++)
 		{
-			if (isCategoryComplain(i, a) && availableTags[a]!="_all_" && nameOk)
+			if (isCategoryComplain(i, a) && nameOk)
 			{
 				highlightMap[availableTags[a]]=true;
 			}
@@ -708,6 +712,7 @@ void MainWindow::receiveAvailableTags(vector<string> tags)
 
 void MainWindow::initCategories(bool initial)
 {
+	printf("%s: start\n", __func__);
 	if (!FileExists("/etc/mpkg-groups.xml")) return;
 	XMLResults xmlErrCode;
 	_categories = XMLNode::parseFile("/etc/mpkg-groups.xml", "groups", &xmlErrCode);
@@ -716,11 +721,6 @@ void MainWindow::initCategories(bool initial)
 		return;
 	}
 	bool lockSta=false;
-	if (initializeOk) 
-	{
-		initializeOk=false;
-		lockSta=true;
-	}
 	ui.listWidget->clear();
 
 	bool named = false;
@@ -752,7 +752,6 @@ void MainWindow::initCategories(bool initial)
 
 		}
 	}
-	////if (lockSta) initializeOk=true;
 
 	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 	if (initial)
@@ -863,10 +862,9 @@ void MainWindow::waitUnlock()
 
 void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 {
-	lockPackageList(true);
+	printf("%s: RECEIVED package list, size = %d\n", __func__, pkgList.size());
 	*packagelist=pkgList;
 	newStatus = nStatus;
-	lockPackageList(false);
 
 }
 
@@ -1331,7 +1329,7 @@ waitUnlock();
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 
-	string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
+	string pName = "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" ><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
 		+_p->get_fullversion()\
 		+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 	       	+ "<br>"+*_p->get_short_description()+"</td></tr></tbody></table>";
@@ -1382,9 +1380,11 @@ void MainWindow::highlightCategoryList()
 	QString itemText;
 	QString textStyle = "<b>";
 	QString _textStyle = "</b>";
+	bool initial=false;
 	itemIcon = "/usr/share/mpkg/icons/void.png";
 	if (highlightState.size()!=availableTags.size())
 	{
+		initial=true;
 		highlightState.clear();
 		highlightState.resize(availableTags.size());
 		for (unsigned int i=0; i<highlightState.size(); i++)
@@ -1415,9 +1415,9 @@ void MainWindow::highlightCategoryList()
 			_textStyle.clear();
 		}
 
-
+		if (initial) printf("initial highlighting\n");
 		named=false;
-		if (hlThis)
+		if (initial || hlThis)
 		{
 			for (int t = 0; t< _categories.nChildNode("group");t++)
 			{
@@ -1425,9 +1425,11 @@ void MainWindow::highlightCategoryList()
 				{
 					named=true;
 					ListLabel *L_item = new ListLabel(ui.listWidget, i);
-					itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle +\
-					   (QString) _categories.getChildNode("group",t).getAttribute("name") +\
-					   _textStyle + "</td></tr></tbody></table>";
+					itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + \
+						textStyle +\
+					   	_categories.getChildNode("group",t).getAttribute("name") +\
+						_textStyle + \
+						"</td></tr></tbody></table>";
 
 					L_item->setText(itemText);
 					ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);

@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.69 2007/05/31 19:47:13 i27249 Exp $
+ * $Id: corethread.cpp,v 1.70 2007/06/01 02:51:46 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -30,6 +30,7 @@ void coreThread::callQuit()
 
 void coreThread::sync()
 {
+	printf("%s: sending package list, size = %d\n", __func__, packageList->size());
 	emit sendPackageList(*packageList, newStatus);
 }
 
@@ -300,6 +301,7 @@ void coreThread::recvFillReady()
 }
 PACKAGE_LIST *coreThread::getPackageList()
 {
+	printf("%s: sending package list, size = %d\n", __func__, packageList->size());
 	emit sendPackageList(*packageList, newStatus);
 	return packageList;
 }
@@ -309,6 +311,7 @@ void coreThread::_updatePackageDatabase()
 	currentStatus = tr("Updating package database from repositories...").toStdString();
 	emit loadingStarted();
 	database->update_repository_data();
+	_loadPackageData();
 	sync();
 	currentAction = CA_LoadDatabase;
 	_getAvailableTags();
