@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.105 2007/06/01 02:51:46 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.106 2007/06/01 03:38:44 i27249 Exp $
  *
  ****************************************************************/
 
@@ -354,6 +354,7 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
+	//TODO: here is a bug involved after data update and causes segfault. have to search...
 	if (!initializeOk)
 	{
 		printf("%s: uninitialized\n", __func__);
@@ -460,6 +461,7 @@ void MainWindow::applyPackageFilter ()
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
+	printf("done\n");
 	highlightCategoryList();
 }
 
@@ -753,9 +755,10 @@ void MainWindow::initCategories(bool initial)
 		}
 	}
 
-	QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
+	
 	if (initial)
 	{
+		QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 		ui.listWidget->setCurrentRow(1);
 		ui.listWidget->scrollToItem(ui.listWidget->item(0));
 	}

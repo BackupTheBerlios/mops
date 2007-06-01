@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.33 2007/05/23 14:16:03 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.34 2007/06/01 03:38:45 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -11,6 +11,7 @@
 #include "config.h"
 #include "sql_pool.h"
 #include <ftw.h>
+
 class mpkgDatabase
 {
 	public:
@@ -101,9 +102,9 @@ class mpkgDatabase
 };
 
 
-
-#endif //MPKG_H_
-
 #include "local_package.h"
 #include "core.h"
 #include "dependencies.h"
+#endif //MPKG_H_
+
+

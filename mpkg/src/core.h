@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.10 2007/05/18 07:35:33 i27249 Exp $
+ *	$Id: core.h,v 1.11 2007/06/01 03:38:45 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -12,7 +12,7 @@
 
 //string T="', '"; // Wery helpful element for SQL queries
 
-#define T "', '"   // Wery helpful element for SQL queries
+//#define T "', '"   // Wery helpful element for SQL queries
 
 #define SEARCH_OR 	0x01
 #define SEARCH_AND 	0x02
