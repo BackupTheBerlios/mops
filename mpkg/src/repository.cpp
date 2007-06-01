@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.44 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: repository.cpp,v 1.45 2007/06/01 03:01:45 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -567,7 +567,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
 		return MPKGERROR_ABORTED;
 	}
-
+	string *pList = new string;
+	string *mList = new string;
+	XMLNode *tmp = new XMLNode;
 	switch(type)
 	{
 		case TYPE_MPKG:
@@ -582,7 +584,6 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				
 				actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
 				actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
-				XMLNode *tmp = new XMLNode;
 				for (int i=0; i<pkg_count; i++)
 				{
 					if (actionBus._abortActions)
@@ -603,8 +604,6 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				delete tmp;
 			break;
 		case TYPE_SLACK:
-			string *pList = new string;
-			string *mList = new string;
 			*pList = ReadFile(index_filename);
 			*mList = ReadFile(md5sums_filename);
 
