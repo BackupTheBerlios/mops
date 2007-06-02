@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>628</width>
+    <width>901</width>
     <height>671</height>
    </rect>
   </property>
@@ -13,29 +13,14 @@
    <string>MOPSLinux package builder</string>
   </property>
   <layout class="QVBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
-    <number>6</number>
-   </property>
    <item>
-    <layout class="QVBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
+    <widget class="QSplitter" name="splitter" >
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="spacing" >
-      <number>6</number>
-     </property>
-     <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
+     <widget class="QWidget" name="" >
+      <layout class="QGridLayout" >
+       <item row="0" column="0" >
         <widget class="QLabel" name="label" >
          <property name="font" >
           <font>
@@ -47,550 +32,680 @@
          </property>
         </widget>
        </item>
-       <item>
+       <item row="0" column="1" >
         <widget class="QLineEdit" name="NameEdit" />
        </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label_2" >
-         <property name="font" >
-          <font>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="text" >
-          <string>Version:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
+       <item row="1" column="0" colspan="2" >
         <layout class="QHBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
          <property name="spacing" >
           <number>6</number>
          </property>
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QLineEdit" name="VersionEdit" />
-         </item>
-         <item>
-          <widget class="QLabel" name="label_3" >
+          <widget class="QLabel" name="label_2" >
            <property name="font" >
             <font>
              <pointsize>9</pointsize>
             </font>
            </property>
            <property name="text" >
-            <string>Architecture:</string>
+            <string>Version:</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QComboBox" name="ArchComboBox" >
-           <property name="font" >
-            <font>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-           <item>
-            <property name="text" >
-             <string>i486</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>i586</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>i686</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>i386</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>x86-64</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>ppc</string>
-            </property>
-           </item>
-           <item>
-            <property name="text" >
-             <string>noarch</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_4" >
-           <property name="font" >
-            <font>
-             <pointsize>9</pointsize>
-            </font>
-           </property>
-           <property name="text" >
-            <string>Build:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLineEdit" name="BuildEdit" />
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
-        <widget class="QLabel" name="label_5" >
-         <property name="font" >
-          <font>
-           <pointsize>9</pointsize>
-          </font>
-         </property>
-         <property name="text" >
-          <string>Short description:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="ShortDescriptionEdit" />
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <item>
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
          <item>
           <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
            <property name="spacing" >
             <number>6</number>
            </property>
+           <property name="leftMargin" >
+            <number>0</number>
+           </property>
+           <property name="topMargin" >
+            <number>0</number>
+           </property>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QLabel" name="label_8" >
+            <widget class="QLineEdit" name="VersionEdit" />
+           </item>
+           <item>
+            <widget class="QLabel" name="label_3" >
              <property name="font" >
               <font>
                <pointsize>9</pointsize>
               </font>
              </property>
              <property name="text" >
-              <string>Description:</string>
+              <string>Architecture:</string>
              </property>
             </widget>
            </item>
            <item>
-            <layout class="QGridLayout" >
-             <property name="margin" >
-              <number>0</number>
+            <widget class="QComboBox" name="ArchComboBox" >
+             <property name="font" >
+              <font>
+               <pointsize>9</pointsize>
+              </font>
              </property>
+             <item>
+              <property name="text" >
+               <string>i486</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>i586</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>i686</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>i386</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>x86-64</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>ppc</string>
+              </property>
+             </item>
+             <item>
+              <property name="text" >
+               <string>noarch</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label_4" >
+             <property name="font" >
+              <font>
+               <pointsize>9</pointsize>
+              </font>
+             </property>
+             <property name="text" >
+              <string>Build:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="BuildEdit" />
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0" colspan="2" >
+        <layout class="QHBoxLayout" >
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_5" >
+           <property name="font" >
+            <font>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text" >
+            <string>Short description:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="ShortDescriptionEdit" />
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="0" colspan="2" >
+        <layout class="QHBoxLayout" >
+         <property name="spacing" >
+          <number>6</number>
+         </property>
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <item>
+          <layout class="QVBoxLayout" >
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <property name="leftMargin" >
+            <number>0</number>
+           </property>
+           <property name="topMargin" >
+            <number>0</number>
+           </property>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" >
              <property name="spacing" >
               <number>6</number>
              </property>
-             <item row="0" column="1" >
-              <widget class="QComboBox" name="DescriptionLanguageComboBox" >
+             <property name="leftMargin" >
+              <number>0</number>
+             </property>
+             <property name="topMargin" >
+              <number>0</number>
+             </property>
+             <property name="rightMargin" >
+              <number>0</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_8" >
                <property name="font" >
                 <font>
                  <pointsize>9</pointsize>
                 </font>
                </property>
-               <property name="currentIndex" >
-                <number>1</number>
+               <property name="text" >
+                <string>Description:</string>
                </property>
-               <item>
-                <property name="text" >
-                 <string>ru</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>en</string>
-                </property>
-               </item>
               </widget>
+             </item>
+             <item>
+              <layout class="QGridLayout" >
+               <property name="leftMargin" >
+                <number>0</number>
+               </property>
+               <property name="topMargin" >
+                <number>0</number>
+               </property>
+               <property name="rightMargin" >
+                <number>0</number>
+               </property>
+               <property name="bottomMargin" >
+                <number>0</number>
+               </property>
+               <property name="horizontalSpacing" >
+                <number>6</number>
+               </property>
+               <property name="verticalSpacing" >
+                <number>6</number>
+               </property>
+               <item row="0" column="1" >
+                <widget class="QComboBox" name="DescriptionLanguageComboBox" >
+                 <property name="font" >
+                  <font>
+                   <pointsize>9</pointsize>
+                  </font>
+                 </property>
+                 <property name="currentIndex" >
+                  <number>1</number>
+                 </property>
+                 <item>
+                  <property name="text" >
+                   <string>ru</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text" >
+                   <string>en</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>91</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </item>
            <item>
-            <spacer>
-             <property name="orientation" >
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" >
-              <size>
-               <width>91</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+            <widget class="QTextEdit" name="DescriptionEdit" />
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QTextEdit" name="DescriptionEdit" />
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
-           </property>
+          <layout class="QVBoxLayout" >
            <property name="spacing" >
             <number>6</number>
            </property>
+           <property name="leftMargin" >
+            <number>0</number>
+           </property>
+           <property name="topMargin" >
+            <number>0</number>
+           </property>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QLabel" name="label_7" >
-             <property name="font" >
-              <font>
-               <pointsize>9</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
+            <layout class="QHBoxLayout" >
+             <property name="spacing" >
+              <number>6</number>
              </property>
-             <property name="text" >
-              <string>Changelog:</string>
+             <property name="leftMargin" >
+              <number>0</number>
              </property>
-            </widget>
+             <property name="topMargin" >
+              <number>0</number>
+             </property>
+             <property name="rightMargin" >
+              <number>0</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_7" >
+               <property name="font" >
+                <font>
+                 <pointsize>9</pointsize>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+               <property name="text" >
+                <string>Changelog:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>231</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
            <item>
-            <spacer>
-             <property name="orientation" >
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" >
-              <size>
-               <width>231</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+            <widget class="QTextEdit" name="ChangelogEdit" />
            </item>
           </layout>
          </item>
-         <item>
-          <widget class="QTextEdit" name="ChangelogEdit" />
-         </item>
         </layout>
        </item>
+       <item row="4" column="0" colspan="2" >
+        <widget class="QGroupBox" name="groupBox" >
+         <property name="styleSheet" >
+          <string/>
+         </property>
+         <property name="title" >
+          <string>Dependencies/Suggestions:</string>
+         </property>
+         <layout class="QGridLayout" >
+          <property name="leftMargin" >
+           <number>9</number>
+          </property>
+          <property name="topMargin" >
+           <number>9</number>
+          </property>
+          <property name="rightMargin" >
+           <number>9</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>9</number>
+          </property>
+          <property name="horizontalSpacing" >
+           <number>6</number>
+          </property>
+          <property name="verticalSpacing" >
+           <number>6</number>
+          </property>
+          <item row="6" column="0" colspan="2" >
+           <widget class="QLineEdit" name="MaintainerNameEdit" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="2" colspan="4" >
+           <widget class="QLineEdit" name="MaintainerMailEdit" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2" >
+           <widget class="QLabel" name="label_11" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Maintainer e-mail:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="2" >
+           <widget class="QLabel" name="label_10" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Maintainer name:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0" colspan="6" >
+           <widget class="Line" name="line" >
+            <property name="orientation" >
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2" >
+           <widget class="QPushButton" name="DepDeleteButton" >
+            <property name="text" >
+             <string>Delete</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5" >
+           <widget class="QPushButton" name="TagDeleteButton" >
+            <property name="text" >
+             <string>Delete</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2" >
+           <widget class="QPushButton" name="DepAddButton" >
+            <property name="text" >
+             <string>Add</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3" colspan="2" >
+           <widget class="QPushButton" name="TagAddButton" >
+            <property name="text" >
+             <string>Add</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="3" >
+           <widget class="QTableWidget" name="DepTableWidget" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="alternatingRowColors" >
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode" >
+             <enum>QAbstractItemView::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior" >
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
+            <property name="gridStyle" >
+             <enum>Qt::SolidLine</enum>
+            </property>
+            <property name="sortingEnabled" >
+             <bool>false</bool>
+            </property>
+            <column>
+             <property name="text" >
+              <string>name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text" >
+              <string>condition</string>
+             </property>
+            </column>
+            <column>
+             <property name="text" >
+              <string>version</string>
+             </property>
+            </column>
+            <column>
+             <property name="text" >
+              <string>type</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item rowspan="2" row="1" column="3" colspan="3" >
+           <widget class="QListWidget" name="TagListWidget" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" >
+           <widget class="QComboBox" name="DepConditionComboBox" >
+            <property name="minimumSize" >
+             <size>
+              <width>50</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text" >
+              <string>any</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>>=</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>==</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>&lt;=</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>></string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>&lt;</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="2" >
+           <widget class="QLineEdit" name="DepVersionEdit" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="4" colspan="2" >
+           <widget class="QLineEdit" name="TagEdit" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="2" >
+           <widget class="QComboBox" name="DepSuggestComboBox" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <item>
+             <property name="text" >
+              <string>Dependency</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
+              <string>Suggestion</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="0" column="3" >
+           <widget class="QLabel" name="label_9" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="text" >
+             <string>Tags:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2" >
+           <widget class="QLineEdit" name="DepNameEdit" >
+            <property name="font" >
+             <font>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox" >
-     <property name="styleSheet" >
-      <string/>
-     </property>
-     <property name="title" >
-      <string>Dependencies/Suggestions:</string>
-     </property>
-     <layout class="QGridLayout" >
-      <property name="margin" >
-       <number>9</number>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_2" >
+      <property name="title" >
+       <string>Configuration files</string>
       </property>
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <item row="6" column="0" colspan="2" >
-       <widget class="QLineEdit" name="MaintainerNameEdit" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="2" colspan="4" >
-       <widget class="QLineEdit" name="MaintainerMailEdit" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2" >
-       <widget class="QLabel" name="label_11" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="text" >
-         <string>Maintainer e-mail:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="2" >
-       <widget class="QLabel" name="label_10" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="text" >
-         <string>Maintainer name:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0" colspan="6" >
-       <widget class="Line" name="line" >
-        <property name="orientation" >
-         <enum>Qt::Horizontal</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2" >
-       <widget class="QPushButton" name="DepDeleteButton" >
-        <property name="text" >
-         <string>Delete</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="5" >
-       <widget class="QPushButton" name="TagDeleteButton" >
-        <property name="text" >
-         <string>Delete</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="2" >
-       <widget class="QPushButton" name="DepAddButton" >
-        <property name="text" >
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3" colspan="2" >
-       <widget class="QPushButton" name="TagAddButton" >
-        <property name="text" >
-         <string>Add</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="3" >
-       <widget class="QTableWidget" name="DepTableWidget" >
-        <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>7</hsizetype>
-          <vsizetype>7</vsizetype>
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="alternatingRowColors" >
-         <bool>false</bool>
-        </property>
-        <property name="selectionMode" >
-         <enum>QAbstractItemView::SingleSelection</enum>
-        </property>
-        <property name="selectionBehavior" >
-         <enum>QAbstractItemView::SelectRows</enum>
-        </property>
-        <property name="gridStyle" >
-         <enum>Qt::SolidLine</enum>
-        </property>
-        <property name="sortingEnabled" >
-         <bool>false</bool>
-        </property>
-        <column>
+      <layout class="QGridLayout" >
+       <item row="0" column="0" >
+        <widget class="QLabel" name="label_6" >
          <property name="text" >
-          <string>name</string>
+          <string>File to add:</string>
          </property>
-        </column>
-        <column>
+        </widget>
+       </item>
+       <item row="0" column="1" >
+        <widget class="QLineEdit" name="lineEdit" />
+       </item>
+       <item row="0" column="2" >
+        <widget class="QToolButton" name="toolButton" >
          <property name="text" >
-          <string>condition</string>
+          <string>...</string>
          </property>
-        </column>
-        <column>
-         <property name="text" >
-          <string>version</string>
-         </property>
-        </column>
-        <column>
-         <property name="text" >
-          <string>type</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-      <item rowspan="2" row="1" column="3" colspan="3" >
-       <widget class="QListWidget" name="TagListWidget" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0" >
-       <widget class="QComboBox" name="DepConditionComboBox" >
-        <property name="minimumSize" >
-         <size>
-          <width>50</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <item>
-         <property name="text" >
-          <string>any</string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>>=</string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>==</string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>&lt;=</string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>></string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>&lt;</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="1" column="1" colspan="2" >
-       <widget class="QLineEdit" name="DepVersionEdit" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4" colspan="2" >
-       <widget class="QLineEdit" name="TagEdit" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2" >
-       <widget class="QComboBox" name="DepSuggestComboBox" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <item>
-         <property name="text" >
-          <string>Dependency</string>
-         </property>
-        </item>
-        <item>
-         <property name="text" >
-          <string>Suggestion</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="3" >
-       <widget class="QLabel" name="label_9" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-        <property name="text" >
-         <string>Tags:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" >
-       <widget class="QLineEdit" name="DepNameEdit" >
-        <property name="font" >
-         <font>
-          <pointsize>9</pointsize>
-         </font>
-        </property>
-       </widget>
-      </item>
-     </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3" >
+        <widget class="QListWidget" name="listWidget" />
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
      <property name="spacing" >
       <number>6</number>
+     </property>
+     <property name="leftMargin" >
+      <number>0</number>
+     </property>
+     <property name="topMargin" >
+      <number>0</number>
+     </property>
+     <property name="rightMargin" >
+      <number>0</number>
+     </property>
+     <property name="bottomMargin" >
+      <number>0</number>
      </property>
      <item>
       <widget class="QPushButton" name="LoadButton" >

@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.15 2007/05/18 07:35:33 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.16 2007/06/02 08:47:01 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -9,9 +9,10 @@ using namespace std;
 
 PackageConfig::PackageConfig(string _f)
 {
+
+	XMLResults xmlErrCode;
 retry:
 	parseOk = true;
-	XMLResults xmlErrCode;
 	this->fileName = _f;
 	_node = XMLNode::parseFile(fileName.c_str(), "package", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)

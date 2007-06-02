@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.107 2007/06/01 04:13:51 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.108 2007/06/02 08:47:01 i27249 Exp $
  *
  ****************************************************************/
 
@@ -58,6 +58,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
+	QToolBar *mainToolBar = addToolBar("maintoolbar");
+	mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/installed.png"),"bugoga");
 	ui.applyButton->setEnabled(false);
 	ui.quickPackageSearchEdit->hide();
 	ui.quickSearchLabel->hide();
@@ -1440,6 +1442,7 @@ void MainWindow::highlightCategoryList()
 			}
 		}
 	}
+	ui.packageTable->repaint();
 
 }
 

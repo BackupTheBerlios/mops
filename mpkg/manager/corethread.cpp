@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.71 2007/06/01 04:13:51 i27249 Exp $
+ * $Id: corethread.cpp,v 1.72 2007/06/02 08:47:01 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -282,7 +282,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
 			+_p->get_fullversion() \
-			+ " tableID:" + IntToStr(packageList->getTableID(package_num)) \
+			/*+ " tableID:" + IntToStr(packageList->getTableID(package_num)) \*/
 			+ " <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\
 		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
 	//while (!fillReadyState) usleep(1);
