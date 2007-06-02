@@ -1,13 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <mpkgconfig>
-	<run_scripts>no</run_scripts>
-	<sys_root>/root/development/sys_root/</sys_root>
-	<sys_cache>/root/development/sys_cache/</sys_cache>
-	<database_url>sqlite://var/log/mpkg/packages.db</database_url>
-	<scripts_dir>/var/log/mpkg/scripts/</scripts_dir>
+	<sys_root>
+		/
+	</sys_root>
+	<sys_cache>
+		/var/mpkg/cache/
+	</sys_cache>
+	<database_url>
+		sqlite:////var/mpkg/packages.db
+	</database_url>
+	<scripts_dir>
+		/var/mpkg/scripts/
+	</scripts_dir>
+	<run_scripts>
+		yes
+	</run_scripts>
+	<cdrom_device>
+		/dev/sr0
+	</cdrom_device>
+	<cdrom_mountpoint>
+		/mnt/cdrom
+	</cdrom_mountpoint>
+	<checkFileConflicts>
+		preinstall
+	</checkFileConflicts>
 	<repository_list>
-		<repository type="mpkg">ftp://localhost/purge/</repository>
-		<repository type="slack">http://slackware.rol.ru/linuxpackages/Slackware-11.0/</repository>
+		<disabled_repository>
+			file:///root/distro/mops/
+		</disabled_repository>
+		<disabled_repository>
+			ftp://ftp.rpunet.ru/mopslinux-current/mops/
+		</disabled_repository>
+		<disabled_repository>
+			http://slackware.rol.ru/linuxpackages/Slackware-11.0/
+		</disabled_repository>
 	</repository_list>
 </mpkgconfig>
-

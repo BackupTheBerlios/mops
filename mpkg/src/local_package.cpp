@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.45 2007/05/23 18:02:18 i27249 Exp $
+$Id: local_package.cpp,v 1.46 2007/06/02 15:21:12 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -186,6 +186,7 @@ int LocalPackage::get_xml()
 	
 	if (!FileNotEmpty(tmp_xml))
 	{
+		say("%s: No XML, converting from legacy\n", filename.c_str());
 		// In most cases it means that we have legacy Slackware package.
 		// Trying to convert:
 		if (slack2xml(filename, tmp_xml) != 0)

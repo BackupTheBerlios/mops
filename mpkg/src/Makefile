@@ -1,5 +1,5 @@
 # MPKG - MOPSLinux packaging system
-# $Id: Makefile,v 1.36 2007/05/08 11:25:03 i27249 Exp $
+# $Id: Makefile,v 1.37 2007/06/02 15:21:12 i27249 Exp $
 #
 
 CC=gcc
@@ -42,11 +42,7 @@ sqlinit:
 	sqlite3 -init ../sql/create_database.sql ../sql/packages.db
 
 sqlclean:
-	cp ../sql/packages.db /var/log/mpkg/
-
-fullclean:
-	cp ../sql/packages.db /var/log/mpkg/
-	rm -rf $(ROOT_DIR)
+	cp ../sql/packages.db /var/mpkg/
 
 lib:
 	make -f Makefile.lib
