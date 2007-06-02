@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.53 2007/05/31 19:47:13 i27249 Exp $
+ * $Id: mainwindow.h,v 1.54 2007/06/02 23:26:06 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -54,6 +54,7 @@ class MainWindow: public QMainWindow
 		void quitThread();
 		void callCleanCache();
 		void commit(vector<int> nStatus);
+		void backsync(vector<int> nStatus);
 		void getRequiredPackages(unsigned int package_num);
 		void getDependantPackages(unsigned int package_num);
 	public slots:

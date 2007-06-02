@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.72 2007/06/02 08:47:01 i27249 Exp $
+ * $Id: corethread.cpp,v 1.73 2007/06/02 23:26:06 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -33,6 +33,10 @@ void coreThread::sync()
 	emit sendPackageList(*packageList, newStatus);
 }
 
+void coreThread::recvBacksync(vector<int> nStatus)
+{
+	newStatus = nStatus;
+}
 void coreThread::run()
 {
 	forever 
@@ -241,7 +245,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 
 	bool checked = false;
 	string package_icon;
-	if (packageList->get_package(package_num)->action()==ST_INSTALL || \
+	if (newStatus[package_num]==ST_INSTALL || \
 			packageList->get_package(package_num)->installed())
 	{
 		checked = true;
@@ -252,7 +256,8 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 	string cloneHeader;
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 	
-	switch (_p->action())
+	//switch (_p->action())
+	switch(newStatus[package_num])
 	{
 		case ST_NONE:
 			if (_p->installed()) package_icon = "installed.png";

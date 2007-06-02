@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.45 2007/06/01 03:01:45 i27249 Exp $
+ * $Id: repository.cpp,v 1.46 2007/06/02 23:26:06 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -418,8 +418,19 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 
 		pkgcounter++;
 		cout<< "indexing file " << filename << "..."<<endl;
+		FILE *log=fopen("index.log", "a");
 		LocalPackage lp(_package);
-		lp.injectFile(true);
+		int errCode = lp.injectFile(true);
+		
+		if (log)
+		{
+			if (errCode==0)
+			{
+				fprintf(log, "indexing package %s: OK\n", filename);
+			}
+			else fprintf(log, "indexing file %s FAILED: error code %d\n", filename, errCode);
+			fclose(log);
+		}	
 		_root.addChild(lp.getPackageXMLNode());
 	}
 	return 0;

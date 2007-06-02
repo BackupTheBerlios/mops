@@ -7,12 +7,12 @@
 # write your own (just change paths).
 # Use at development, not in real installations.
 # 
-# $Id: init_structure,v 1.1 2007/05/16 01:38:32 i27249 Exp $
+# $Id: init_structure,v 1.2 2007/06/02 23:26:06 i27249 Exp $
 #
 #########################################################
-mkdir -p /root/development/sys_cache/
-mkdir -p /var/log/mpkg/backup
-mkdir -p /var/log/mpkg/scripts
+mkdir -p /var/mpkg/cache
+mkdir -p /var/mpkg/backup
+mkdir -p /var/mpkg/scripts
 (cd src; make sqlclean)
 cp src/mpkg.xml /etc/
 cp manager/groups.xml /etc/mpkg-groups.xml

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.24 2007/05/23 18:02:18 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.25 2007/06/02 23:26:06 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -15,6 +15,7 @@ extern char* optarg;
 extern int optind, opterr, optopt;
 //string output_dir;
 //static LoggerPtr rootLogger;
+void show_package_info(mpkg *core, string name);
 
 int setup_action(char* act);
 int check_action(char* act);
@@ -123,7 +124,11 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_NONE )
 			print_usage(stderr, 1);
-	
+	if ( action == ACT_SHOW)
+	{
+		show_package_info(&core, argv[optind]);
+		// show info about package
+	}
 	vector<string> fname;
 	vector<string> pname;
 	if (action == ACT_COMMIT)
@@ -358,6 +363,7 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tupgrade    upgrade selected package or full system if no package selected\n"));
 	fprintf(stream,_("\tremove     remove selected package\n"));
 	fprintf(stream,_("\tpurge      purge selected package\n"));
+	fprintf(stream,_("\tshow       show info about package\n"));
 	fprintf(stream,_("\tupdate     update packages info\n"));
 	fprintf(stream,_("\tlist       list installed packages\n"));
 	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
@@ -385,6 +391,69 @@ int list_rep(mpkg *core)
 		say("[%d] %s\n", i+1, rlist[i].c_str());
 	}
 	return 0;
+}
+
+void show_package_info(mpkg *core, string name)
+{
+	PACKAGE_LIST pkgList;
+	SQLRecord sqlSearch;
+	if (!name.empty())
+	{
+		sqlSearch.setEqMode(EQ_LIKE);
+		sqlSearch.addField("package_name", &name);
+	}
+	core->get_packagelist(&sqlSearch, &pkgList);
+	if (pkgList.IsEmpty())
+	{
+		say("No such package\n");
+	}
+	for (int i=0; i<pkgList.size(); i++)
+	{
+		say("%sID:%s                 %d\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_id());
+		say("%sName:%s               %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_name()->c_str());
+		say("%sVersion:%s            %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_version()->c_str());
+		say("%sArch:%s               %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_arch()->c_str());
+		say("%sBuild:%s              %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_build()->c_str());
+		say("%sPackage size:%s       %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_compressed_size()->c_str());
+		say("%sInstalled size:%s     %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_installed_size()->c_str());
+		say("%sMaintainer:%s         %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_packager()->c_str());
+		say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_packager_email()->c_str());
+		say("%sStatus:%s             %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_vstatus(true).c_str());
+
+		say("%sMD5:%s                %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_md5()->c_str());
+		say("%sFilename:%s           %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_filename()->c_str());
+		say("%sShort description:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_short_description()->c_str());
+		say("%sDescription:%s        %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
+		
+		if (pkgList.get_package(i)->available()) {
+			say("%sLocations:%s\n", CL_YELLOW, CL_WHITE);
+			for (unsigned int t=0; t<pkgList.get_package(i)->get_locations()->size(); t++)
+			{
+				say("\t%s\n", pkgList.get_package(i)->get_locations()->at(t).get_full_url().c_str());
+			}
+		}
+		else say("%sLocations:%s          %s\n", CL_YELLOW, CL_WHITE, "none");
+		
+		say("%sTags:%s               \n", CL_YELLOW, CL_WHITE);
+		if (pkgList.get_package(i)->get_tags()->empty())
+		{
+			say("none\n");
+		}
+		else
+		{
+			for (unsigned int t=0; t<pkgList.get_package(i)->get_tags()->size(); t++)
+			{
+				say ("\t%s\n", pkgList.get_package(i)->get_tags()->at(t).c_str());
+			}
+		}
+
+	}
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+
+
+
 }
 
 int list(mpkg *core, vector<string> search, bool onlyQueue)
@@ -454,7 +523,8 @@ int check_action(char* act)
 		&& _act != "reset"
 		&& _act != "commit"
 		&& _act != "show_queue"
-	  	&& _act != "test" ) {
+	  	&& _act != "show"
+		&& _act != "test" ) {
 		res = -1;
 	}
 
@@ -517,6 +587,8 @@ int setup_action(char* act)
 
 	if (_act == "commit")
 		return ACT_COMMIT;
+	if (_act == "show")
+		return ACT_SHOW;
 
 	return ACT_NONE;
 }

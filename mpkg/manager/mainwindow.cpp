@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.108 2007/06/02 08:47:01 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.109 2007/06/02 23:26:06 i27249 Exp $
  *
  ****************************************************************/
 
@@ -100,14 +100,15 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
-	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()));
-	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
+	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::BlockingQueuedConnection);
+	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)), Qt::BlockingQueuedConnection);
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
+	QObject::connect(this, SIGNAL(backsync(vector<int>)), thread, SLOT(recvBacksync(vector<int>)));
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
 	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()), Qt::BlockingQueuedConnection);
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()), Qt::BlockingQueuedConnection);
 	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
 	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
 	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
@@ -718,7 +719,6 @@ void MainWindow::initCategories(bool initial)
 	{
 		return;
 	}
-	bool lockSta=false;
 	ui.listWidget->clear();
 
 	bool named = false;
@@ -733,19 +733,19 @@ void MainWindow::initCategories(bool initial)
 			{
 				named=true;
 				QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
-				ListLabel *L_item = new ListLabel(ui.listWidget, i);
-				L_item->setText((QString) _categories.getChildNode("group",t).getAttribute("name"));
+				//ListLabel *L_item = new ListLabel(ui.listWidget, i);
+				__item->setText((QString) _categories.getChildNode("group",t).getAttribute("name"));
 		    		__item->setIcon(QIcon(QString::fromUtf8(_categories.getChildNode("group", t).getAttribute("icon"))));
-				ui.listWidget->setItemWidget(__item, L_item);
+				//ui.listWidget->setItemWidget(__item, L_item);
 			}
 		}
 		if (!named)
 		{
-			ListLabel *L_item = new ListLabel(ui.listWidget, i);
+			//ListLabel *L_item = new ListLabel(ui.listWidget, i);
 			QListWidgetItem *__item = new QListWidgetItem(ui.listWidget);
-			L_item->setText(availableTags[i].c_str());
+			__item->setText(availableTags[i].c_str());
 	    		__item->setIcon(QIcon("/usr/share/mpkg/icons/icons/taskbar.png"));
-			ui.listWidget->setItemWidget(__item, L_item);
+			//ui.listWidget->setItemWidget(__item, L_item);
 
 
 		}
@@ -1149,7 +1149,7 @@ waitUnlock();
 	{
 		if (force_state == ST_NONE)
 		{
-			newStatus[i]==force_state;
+			newStatus[i]=force_state;
 		}
 		if (!_p->installed() && !_p->installedVersion.empty() && force_state == ST_INSTALL)
 		{
@@ -1333,7 +1333,7 @@ waitUnlock();
 
 	setTableItem(x, i, state, pName);		
 	ui.applyButton->setEnabled(true);
-
+	emit backsync(newStatus);
 }
 
 void MainWindow::loadData()
@@ -1372,7 +1372,7 @@ waitUnlock();
 }
 void MainWindow::highlightCategoryList()
 {
-	bool named, hlThis=false;
+	bool hlThis=false;
 	QString itemIcon;
 	QString itemText;
 	QString textStyle = "<b>";
@@ -1389,59 +1389,62 @@ void MainWindow::highlightCategoryList()
 			highlightState[i]=false;
 		}
 	}
+	QBrush hlBrush(QColor(255,255,0,150));
+	QBrush noHlBrush(Qt::NoBrush);
+	QFont fonttmp;
 	for (unsigned int i=0; i<availableTags.size(); i++)
 	{
-		if (!ui.quickPackageSearchEdit->text().isEmpty() && highlightMap[availableTags[i]])
+		if (ui.quickPackageSearchEdit->text().isEmpty())
 		{
-			if (!highlightState[i])
-			{
-				hlThis=true;
-				highlightState[i]=true;
-			}
-			textStyle = "<b>";
-			_textStyle = "</b>";
+			ui.listWidget->item(i)->setBackground(noHlBrush);
+			fonttmp = ui.listWidget->item(i)->font();
+			fonttmp.setBold(false);
+			ui.listWidget->item(i)->setForeground(QBrush(QColor(0,0,0)));
+
+			ui.listWidget->item(i)->setFont(fonttmp);
+	//		hlThis=true;
+	//		highlightState[i]=false;
 		}
+
 		else
+		
 		{
-			if (highlightState[i])
+			if (highlightMap[availableTags[i]])
 			{
-				hlThis=true;
-				highlightState[i]=false;
+		//		if (!highlightState[i])
+		//		{
+					ui.listWidget->item(i)->setBackground(hlBrush);
+					fonttmp = ui.listWidget->item(i)->font();
+					fonttmp.setBold(true);
+					ui.listWidget->item(i)->setForeground(QBrush(QColor(0,0,0)));
+
+					ui.listWidget->item(i)->setFont(fonttmp);
+	//				hlThis=true;
+	//				highlightState[i]=true;
+		//		}
+		//		textStyle = "<b>";
+		//		_textStyle = "</b>";
 			}
-			textStyle.clear();
-			_textStyle.clear();
-		}
-
-		named=false;
-		if (initial || hlThis)
-		{
-			for (int t = 0; t< _categories.nChildNode("group");t++)
+			else
 			{
-				if (availableTags[i]==(string) _categories.getChildNode("group",t).getAttribute("tag"))
-				{
-					named=true;
-					ListLabel *L_item = new ListLabel(ui.listWidget, i);
-					itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + \
-						textStyle +\
-					   	_categories.getChildNode("group",t).getAttribute("name") +\
-						_textStyle + \
-						"</td></tr></tbody></table>";
+		//		if (highlightState[i])
+		//		{
+					ui.listWidget->item(i)->setBackground(noHlBrush);
+					fonttmp = ui.listWidget->item(i)->font();
+					fonttmp.setBold(false);
+					ui.listWidget->item(i)->setFont(fonttmp);
+					ui.listWidget->item(i)->setForeground(QBrush(QColor(25,25,25,75)));
 
-					L_item->setText(itemText);
-					ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
-				}
-			}
-			if (!named)
-			{
-				ListLabel *L_item = new ListLabel(ui.listWidget, i);
-				itemText = "<table><tbody><tr><td><img src = \"" + itemIcon + "\"></img></td><td>" + textStyle  +\
-					   availableTags[i].c_str() + _textStyle + "</td></tr></tbody></table>";
+	//				hlThis=true;
+	//				highlightState[i]=false;
 
-				L_item->setText(itemText);
-				ui.listWidget->setItemWidget(ui.listWidget->item(i), L_item);
+		//		}
+		//	textStyle.clear();
+		//	_textStyle.clear();
 			}
 		}
 	}
+	
 	ui.packageTable->repaint();
 
 }

@@ -19,5 +19,6 @@
 #define ACT_COMMIT	0x11
 #define ACT_SHOWQUEUE	0x12
 #define ACT_RESETQUEUE	0x13
+#define ACT_SHOW	0x14
 #endif
 

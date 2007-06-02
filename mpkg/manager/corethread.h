@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.28 2007/06/01 02:51:46 i27249 Exp $
+ * $Id: corethread.h,v 1.29 2007/06/02 23:26:06 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -200,6 +200,7 @@ class coreThread: public QThread
 		
 	public slots:
 		PACKAGE_LIST * getPackageList();
+		void recvBacksync(vector<int> nStatus);
 
 	private:
 		unsigned int packageProcessingNumber;

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.58 2007/05/30 14:29:08 i27249 Exp $
+	$Id: dataunits.cpp,v 1.59 2007/06/02 23:26:06 i27249 Exp $
 */
 
 
@@ -625,7 +625,6 @@ void PACKAGE::clear()
 	package_changelog.clear();
 	package_packager.clear();
 	package_packager_email.clear();
-	package_available=0;
 	package_installed=0;
 	package_configexist=0;
 	package_action=0;
@@ -854,7 +853,6 @@ PACKAGE::PACKAGE()
 	isBroken = false;
 	isRequirement = false;
 	package_id=-1;
-	package_available=false;
 	package_installed=false;
 	package_configexist=false;
 	package_action=ST_NONE;
@@ -1035,15 +1033,6 @@ void PACKAGE_LIST::setTableID(int pkgNum, int id)
 int PACKAGE_LIST::getTableID(int pkgNum)
 {
 	return reverseTableID[pkgNum];
-	/*
-	for (unsigned int i=0; i<packages.size(); i++)
-	{
-		printf("[%d] tableID[%d]==%d\n", pkgNum, i, tableID[i]);
-		if (tableID[i]==pkgNum) return i;
-		
-	}
-	mError("No such package!\n");
-	return 0;*/
 }
 
 int PACKAGE_LIST::getRealNum(int id)
@@ -1458,7 +1447,7 @@ int PACKAGE_LIST::getPackageNumberByName(string *name)
 	{
 		if (*packages[i].get_name()==*name) return i;
 	}
-	mError("No such package " + *name);
+	mDebug("No such package " + *name);
 	return -1;
 }
 void PACKAGE_LIST::buildDependencyOrder()

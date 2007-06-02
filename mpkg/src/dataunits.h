@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.40 2007/05/30 14:29:09 i27249 Exp $
+	$Id: dataunits.h,v 1.41 2007/06/02 23:26:06 i27249 Exp $
 */
 
 
@@ -188,7 +188,6 @@ class PACKAGE
 	string package_changelog;
 	string package_packager;
 	string package_packager_email;
-	bool package_available;
 	bool package_installed;
 	bool package_configexist;
 	int package_action;	

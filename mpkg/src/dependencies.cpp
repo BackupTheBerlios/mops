@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.29 2007/05/23 18:02:18 i27249 Exp $
+$Id: dependencies.cpp,v 1.30 2007/06/02 23:26:06 i27249 Exp $
 */
 
 
@@ -149,7 +149,10 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	db->get_packagelist(&sqlSearch, &reachablePackages);
 	
 	if (reachablePackages.IsEmpty())
+	{
+		mError("Required package "+ *dep->get_package_name() + " not found");
 		return MPKGERROR_NOPACKAGE;
+	}
 	
 	PACKAGE_LIST candidates;
 	for (int i=0; i<reachablePackages.size(); i++)
@@ -159,7 +162,11 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 			candidates.add(reachablePackages.get_package(i));
 		}
 	}
-	if (candidates.IsEmpty()) return MPKGERROR_NOPACKAGE;
+	if (candidates.IsEmpty())
+	{
+		mError(dep->getDepInfo() + "is required, but no suitable version was found");
+		return MPKGERROR_NOPACKAGE;
+	}
 	if (candidates.hasInstalledOnes()) *returnPackage = *candidates.getInstalledOne();
 	else *returnPackage = *candidates.getMaxVersion();
 	return MPKGERROR_OK;

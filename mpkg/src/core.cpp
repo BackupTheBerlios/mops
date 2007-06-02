@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.58 2007/05/23 14:16:03 i27249 Exp $
+ *	$Id: core.cpp,v 1.59 2007/06/02 23:26:06 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -977,6 +977,7 @@ int mpkgDatabase::get_configexist(int package_id)
 
 int mpkgDatabase::get_available(int package_id)
 {
+	mError("Deprecated");
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("packages_package_id");
@@ -991,9 +992,9 @@ int mpkgDatabase::get_available(int package_id)
 	}
 	else
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_available")->c_str());
 		delete sqlTable;
-		return ret;
+		return sqlTable->size();
+		//int ret = atoi(sqlTable->getValue(0, "package_available")->c_str());
 	}
 }
 
