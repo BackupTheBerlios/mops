@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.87 2007/05/23 18:02:18 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.88 2007/06/03 00:37:04 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -762,18 +762,26 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	SQLRecord fields;
 
 	db.get_sql_vtable(&available_tags, sqlSearch, "tags", fields);
-	SQLTable tmp_out;
+	SQLTable used_tags;
+	db.get_sql_vtable(&used_tags, sqlSearch, "tags_links", fields);
 	vector<string> toDelete;
+	bool used;
 	if (available_tags.size()>0)
 	{
-		fields.addField("tags_tag_id");
 		for (int i=0; i<available_tags.size(); i++)
 		{
-			sqlSearch.clear();
-			sqlSearch.addField("tags_tag_id", available_tags.getValue(i, "tags_id"));
-			db.get_sql_vtable(&tmp_out, sqlSearch, "tags_links", fields);
-			if (tmp_out.empty())
+			used=false;
+			for (int u=0; u<used_tags.size(); u++)
 			{
+				if (*used_tags.getValue(u, "tags_tag_id")==*available_tags.getValue(i, "tags_id"))
+				{
+					used=true;
+				}
+			}
+			
+			if (!used)
+			{
+				say("Deleting tag %s as unused\n", available_tags.getValue(i, "tags_name")->c_str());
 				toDelete.push_back(*available_tags.getValue(i,"tags_id"));
 			}
 		}

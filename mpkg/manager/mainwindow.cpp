@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.109 2007/06/02 23:26:06 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.110 2007/06/03 00:37:04 i27249 Exp $
  *
  ****************************************************************/
 
@@ -100,15 +100,15 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(redrawReady(bool)), StatusThread, SLOT(recvRedrawReady(bool)));
 	QObject::connect(StatusThread, SIGNAL(loadProgressData()), this, SLOT(updateProgressData()));
 	QObject::connect(ui.clearSearchButton, SIGNAL(clicked()), ui.quickPackageSearchEdit, SLOT(clear()));
-	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()), Qt::BlockingQueuedConnection);
-	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)), Qt::BlockingQueuedConnection);
+	QObject::connect(thread, SIGNAL(applyFilters()), this, SLOT(applyPackageFilter()));
+	QObject::connect(thread, SIGNAL(initState(bool)), this, SLOT(setInitOk(bool)));
 	QObject::connect(StatusThread, SIGNAL(setStatus(QString)), this, SLOT(setStatus(QString)));
 	QObject::connect(this, SIGNAL(backsync(vector<int>)), thread, SLOT(recvBacksync(vector<int>)));
 	QObject::connect(thread, SIGNAL(errorLoadingDatabase()), this, SLOT(errorLoadingDatabase()));
 	QObject::connect(thread, SIGNAL(sqlQueryBegin()), this, SLOT(sqlQueryBegin()));
 	QObject::connect(thread, SIGNAL(sqlQueryEnd()), this, SLOT(sqlQueryEnd()));
-	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()), Qt::BlockingQueuedConnection);
-	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()), Qt::BlockingQueuedConnection);
+	QObject::connect(thread, SIGNAL(loadingStarted()), this, SLOT(loadingStarted()));
+	QObject::connect(thread, SIGNAL(loadingFinished()), this, SLOT(loadingFinished()));
 	QObject::connect(thread, SIGNAL(enableProgressBar()), this, SLOT(enableProgressBar()));
 	QObject::connect(thread, SIGNAL(disableProgressBar()), this, SLOT(disableProgressBar()));
 	QObject::connect(thread, SIGNAL(resetProgressBar()), this, SLOT(resetProgressBar()));
