@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.110 2007/06/03 00:37:04 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.111 2007/06/03 01:29:17 i27249 Exp $
  *
  ****************************************************************/
 
@@ -59,7 +59,28 @@ MainWindow::MainWindow(QMainWindow *parent)
 	if (parent == 0) ui.setupUi(this);
 	else ui.setupUi(parent);
 	QToolBar *mainToolBar = addToolBar("maintoolbar");
-	mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/installed.png"),"bugoga");
+	applyChangesAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/installed.png"),tr("Apply changes"));
+	resetChangesAction = mainToolBar->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/rotate_ccw.png"), tr("Reset changes"));
+	mainToolBar->addSeparator();
+	showConfigAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"), tr("Show core settings"));
+	mainToolBar->addSeparator();
+	showRepositoryConfigAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/icons/taskbar.png"), tr("Add/remove repositories"));
+	updateRepositoryDataAction = mainToolBar->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/reload.png"), tr("Update data"));
+	QObject::connect(applyChangesAction, SIGNAL(triggered()), ui.actionCommit_changes, SIGNAL(triggered()));
+	QObject::connect(ui.actionCommit_changes, SIGNAL(triggered()), ui.applyButton, SIGNAL(clicked()));
+	QObject::connect(resetChangesAction, SIGNAL(triggered()), ui.actionReset_changes, SIGNAL(triggered()));
+	QObject::connect(showConfigAction, SIGNAL(triggered()), ui.actionCore_settings, SIGNAL(triggered()));
+	QObject::connect(showRepositoryConfigAction, SIGNAL(triggered()), ui.actionAdd_remove_repositories, SIGNAL(triggered()));
+	QObject::connect(updateRepositoryDataAction, SIGNAL(triggered()), ui.actionUpdate_data, SIGNAL(triggered()));
+
+
+	//updateRepositoryDataAction;
+	//applyInstalledFilterAction;
+	//applyAvailableFilterAction;
+	//applyNotPurgedFilterAction;
+	//applyDeprecatedFilterAction;
+	//applyUnavailableFilterAction;
+
 	ui.applyButton->setEnabled(false);
 	ui.quickPackageSearchEdit->hide();
 	ui.quickSearchLabel->hide();
@@ -1372,16 +1393,8 @@ waitUnlock();
 }
 void MainWindow::highlightCategoryList()
 {
-	bool hlThis=false;
-	QString itemIcon;
-	QString itemText;
-	QString textStyle = "<b>";
-	QString _textStyle = "</b>";
-	bool initial=false;
-	itemIcon = "/usr/share/mpkg/icons/void.png";
 	if (highlightState.size()!=availableTags.size())
 	{
-		initial=true;
 		highlightState.clear();
 		highlightState.resize(availableTags.size());
 		for (unsigned int i=0; i<highlightState.size(); i++)
@@ -1402,8 +1415,6 @@ void MainWindow::highlightCategoryList()
 			ui.listWidget->item(i)->setForeground(QBrush(QColor(0,0,0)));
 
 			ui.listWidget->item(i)->setFont(fonttmp);
-	//		hlThis=true;
-	//		highlightState[i]=false;
 		}
 
 		else
@@ -1411,36 +1422,21 @@ void MainWindow::highlightCategoryList()
 		{
 			if (highlightMap[availableTags[i]])
 			{
-		//		if (!highlightState[i])
-		//		{
 					ui.listWidget->item(i)->setBackground(hlBrush);
 					fonttmp = ui.listWidget->item(i)->font();
 					fonttmp.setBold(true);
 					ui.listWidget->item(i)->setForeground(QBrush(QColor(0,0,0)));
 
 					ui.listWidget->item(i)->setFont(fonttmp);
-	//				hlThis=true;
-	//				highlightState[i]=true;
-		//		}
-		//		textStyle = "<b>";
-		//		_textStyle = "</b>";
 			}
 			else
 			{
-		//		if (highlightState[i])
-		//		{
 					ui.listWidget->item(i)->setBackground(noHlBrush);
 					fonttmp = ui.listWidget->item(i)->font();
 					fonttmp.setBold(false);
 					ui.listWidget->item(i)->setFont(fonttmp);
 					ui.listWidget->item(i)->setForeground(QBrush(QColor(25,25,25,75)));
 
-	//				hlThis=true;
-	//				highlightState[i]=false;
-
-		//		}
-		//	textStyle.clear();
-		//	_textStyle.clear();
 			}
 		}
 	}

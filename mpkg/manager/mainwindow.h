@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.54 2007/06/02 23:26:06 i27249 Exp $
+ * $Id: mainwindow.h,v 1.55 2007/06/03 01:29:17 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -134,6 +134,18 @@ class MainWindow: public QMainWindow
 		QAction *installPackageAction;
 		QAction *removePackageAction;
 		QAction *purgePackageAction;
+
+		// Toolbar
+		QAction *applyChangesAction;
+		QAction *resetChangesAction;
+		QAction *showConfigAction;
+		QAction *showRepositoryConfigAction;
+		QAction *updateRepositoryDataAction;
+		QAction *applyInstalledFilterAction;
+		QAction *applyAvailableFilterAction;
+		QAction *applyNotPurgedFilterAction;
+		QAction *applyDeprecatedFilterAction;
+		QAction *applyUnavailableFilterAction;
 
 		XMLNode _categories;
 		
