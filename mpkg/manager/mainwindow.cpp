@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.111 2007/06/03 01:29:17 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.112 2007/06/03 03:07:59 i27249 Exp $
  *
  ****************************************************************/
 
@@ -378,7 +378,6 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
-	//TODO: here is a bug involved after data update and causes segfault. have to search...
 	if (!initializeOk || currentCategoryID<0)
 	{
 		return;

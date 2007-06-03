@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.25 2007/06/02 23:26:06 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.26 2007/06/03 03:07:59 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -26,7 +26,7 @@ int list_rep(mpkg *core);
 
 void ShowBanner()
 {
-	char *version="0.1 beta N (debug state)";
+	char *version="0.9 beta 1 (public preview state)";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -399,7 +399,6 @@ void show_package_info(mpkg *core, string name)
 	SQLRecord sqlSearch;
 	if (!name.empty())
 	{
-		sqlSearch.setEqMode(EQ_LIKE);
 		sqlSearch.addField("package_name", &name);
 	}
 	core->get_packagelist(&sqlSearch, &pkgList);
@@ -409,32 +408,31 @@ void show_package_info(mpkg *core, string name)
 	}
 	for (int i=0; i<pkgList.size(); i++)
 	{
-		say("%sID:%s                 %d\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_id());
-		say("%sName:%s               %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_name()->c_str());
-		say("%sVersion:%s            %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_version()->c_str());
-		say("%sArch:%s               %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_arch()->c_str());
-		say("%sBuild:%s              %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_build()->c_str());
-		say("%sPackage size:%s       %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_compressed_size()->c_str());
-		say("%sInstalled size:%s     %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_installed_size()->c_str());
-		say("%sMaintainer:%s         %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_packager()->c_str());
-		say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_packager_email()->c_str());
-		say("%sStatus:%s             %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_vstatus(true).c_str());
+		say("%sID:%s                 %d\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_id());
+		say("%sName:%s               %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_name()->c_str());
+		say("%sVersion:%s            %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_version()->c_str());
+		say("%sArch:%s               %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_arch()->c_str());
+		say("%sBuild:%s              %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_build()->c_str());
+		say("%sPackage size:%s       %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_compressed_size()->c_str());
+		say("%sInstalled size:%s     %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_installed_size()->c_str());
+		say("%sMaintainer:%s         %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager()->c_str());
+		say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager_email()->c_str());
+		say("%sStatus:%s             %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_vstatus(true).c_str());
 
-		say("%sMD5:%s                %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_md5()->c_str());
-		say("%sFilename:%s           %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_filename()->c_str());
-		say("%sShort description:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_short_description()->c_str());
-		say("%sDescription:%s        %s\n", CL_YELLOW, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
+		say("%sMD5:%s                %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_md5()->c_str());
+		say("%sFilename:%s           %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_filename()->c_str());
+		say("%sShort description:%s  %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_short_description()->c_str());
 		
 		if (pkgList.get_package(i)->available()) {
-			say("%sLocations:%s\n", CL_YELLOW, CL_WHITE);
+			say("%sLocations:%s\n", CL_GREEN, CL_WHITE);
 			for (unsigned int t=0; t<pkgList.get_package(i)->get_locations()->size(); t++)
 			{
-				say("\t%s\n", pkgList.get_package(i)->get_locations()->at(t).get_full_url().c_str());
+				say("\t\t    %s\n", pkgList.get_package(i)->get_locations()->at(t).get_full_url().c_str());
 			}
 		}
-		else say("%sLocations:%s          %s\n", CL_YELLOW, CL_WHITE, "none");
+		else say("%sLocations:%s          %s\n", CL_GREEN, CL_WHITE, "none");
 		
-		say("%sTags:%s               \n", CL_YELLOW, CL_WHITE);
+		say("%sTags:%s               \n", CL_GREEN, CL_WHITE);
 		if (pkgList.get_package(i)->get_tags()->empty())
 		{
 			say("none\n");
@@ -443,14 +441,23 @@ void show_package_info(mpkg *core, string name)
 		{
 			for (unsigned int t=0; t<pkgList.get_package(i)->get_tags()->size(); t++)
 			{
-				say ("\t%s\n", pkgList.get_package(i)->get_tags()->at(t).c_str());
+				say ("\t\t    %s\n", pkgList.get_package(i)->get_tags()->at(t).c_str());
+			}
+		}
+		if (!pkgList.get_package(i)->get_dependencies()->empty())
+		{
+			say("%sDepends on:%s\n", CL_GREEN, CL_WHITE);
+			for (unsigned int t=0; t<pkgList.get_package(i)->get_dependencies()->size(); t++)
+			{
+				say("\t\t    %s\n", pkgList.get_package(i)->get_dependencies()->at(t).getDepInfo().c_str());
 			}
 		}
 
+		say("%sDescription:%s        \n%s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
 	}
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_YELLOW, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
+	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
 
 
 
