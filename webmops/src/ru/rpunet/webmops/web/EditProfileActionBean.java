@@ -13,11 +13,16 @@
  * limitations under the License.
  */
 
-package ru.rpunet.webmops.web.admin;
+package ru.rpunet.webmops.web;
+
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import ru.rpunet.webmops.dao.PersonManager;
+import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.SystemUnavaliableException;
+import ru.rpunet.webmops.utils.WebmopsActionBean;
 import net.sourceforge.stripes.action.Before;
 import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.DontValidate;
@@ -26,44 +31,47 @@ import net.sourceforge.stripes.action.HandlesEvent;
 import net.sourceforge.stripes.action.LocalizableMessage;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
+import net.sourceforge.stripes.action.UrlBinding;
 import net.sourceforge.stripes.controller.LifecycleStage;
 import net.sourceforge.stripes.validation.EmailTypeConverter;
-import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
 import net.sourceforge.stripes.validation.ValidateNestedProperties;
-import net.sourceforge.stripes.validation.ValidationErrors;
-import net.sourceforge.stripes.validation.ValidationMethod;
-import ru.rpunet.webmops.dao.PersonManager;
-import ru.rpunet.webmops.model.Person;
-import ru.rpunet.webmops.utils.SystemUnavaliableException;
-import ru.rpunet.webmops.utils.WebmopsActionBean;
 
 /**
  * @author Andrew Diakin
  *
  */
-public class AddEditUserActionBean extends WebmopsActionBean {
-	
-	private static Log log = LogFactory.getLog(AddEditUserActionBean.class);
-	
-	private PersonManager personDAO;
-	
-	private Long personId;
+@UrlBinding("/users/EditProfile.action")
+public class EditProfileActionBean extends WebmopsActionBean {
+
+	private static Log log = LogFactory.getLog(EditProfileActionBean.class);
 	
 	@ValidateNestedProperties({
 		@Validate(field="firstName", minlength=3, required=true),
 		@Validate(field="lastName", minlength=3, required=true),
-		@Validate(field="email", required=true, converter=EmailTypeConverter.class),
-		@Validate(field="login", required=true, minlength=4, maxlength=15),
-		@Validate(field="password", required=true, minlength=6, maxlength=20)
+		@Validate(field="email", required=true, converter=EmailTypeConverter.class)
 	})
 	private Person user;
 	
-	@Validate(required=true, minlength=6, maxlength=20, expression="this == user.password")
+	private PersonManager personDAO;
+	
+	@Validate(minlength=6, maxlength=20)
+	private String newPassword;
+	
+	@Validate(minlength=6, maxlength=20, expression="this == newPassword")
 	private String confirmPassword;
 	
-	public String getConfigrmPassword() {
+	
+	public String getNewPassword() {
+		return this.newPassword;
+	}
+	
+	public String getConfirmPassword() {
 		return this.confirmPassword;
+	}
+	
+	public void setNewPassword(String newPassword) {
+		this.newPassword = newPassword;		
 	}
 	
 	public void setConfirmPassword(String confirmPassword) {
@@ -78,59 +86,42 @@ public class AddEditUserActionBean extends WebmopsActionBean {
 		this.user = user;
 	}
 	
-	public Long getPersonId() {
-		return this.personId;
-	}
-	
-	public void setPersonId(Long personId) {
-		this.personId = personId;
-	}
-	
-	
-	@ValidationMethod
-	public void validate(ValidationErrors errors) {
-		if ( user.getId() != null ) {
-			if ( personDAO.findPerson(this.user.getLogin()) != null ) {
-				errors.add("user.login", new LocalizableError("usernameTaken"));
-			}
-		}
-	}
-	
 	@Before(LifecycleStage.BindingAndValidation)
 	public void preload() {
-		log.debug("Loading Person DAO");
-		personDAO = new PersonManager();
+		if (personDAO == null)
+			personDAO = new PersonManager();
 		
-		log.info("Requested user id " + getContext().getRequest().getParameter("personId"));
-		if ( getContext().getRequest().getParameter("personId") != null ) {
-			user = personDAO.findPersonById(Long.parseLong(getContext().getRequest().getParameter("personId")));
-			log.info("Edit user " + user.getLogin());
-		} else {
-			log.info("Creating new user");
-		}
+		log.debug("Preloading user objects");
+		
+		user = personDAO.findPersonById(getContext().getUser().getId());
 	}
 	
 	@DontValidate
 	@DefaultHandler
 	public Resolution index() {
-		return new ForwardResolution("/admin/AddEditUser.jsp");
+		return new ForwardResolution("/EditProfile.jsp");
 	}
 	
-	@HandlesEvent("saveUser")
-	public Resolution saveUser() {
+	@HandlesEvent("saveProfile")
+	public Resolution saveProfile() {
+		
+		if ( newPassword != null && confirmPassword != null) {
+			log.debug("Updating user password");
+			user.setPassword(newPassword);
+		} 
+		
+		
+		log.debug("Saving user " + user.getLogin());
 		try {
 			personDAO.saveOrUpdate(user);
 		} catch (SystemUnavaliableException e) {
 			e.printStackTrace();
 		}
 		
-		getContext().getMessages().add(
-				new LocalizableMessage("/users/Register.action.successMessage",
-										this.user.getFirstName(),
-										this.user.getLogin())
-			);
+		getContext().setUser(user);
+		getContext().getMessages().add(new LocalizableMessage("/users/EditProfile.action.successMessage"));
 		
-		return new RedirectResolution("/admin/Dashboard.action");
+				
+		return new RedirectResolution(ru.rpunet.webmops.web.UserProfileActionBean.class);
 	}
-	
 }

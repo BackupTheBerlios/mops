@@ -26,6 +26,10 @@ import javax.persistence.Table;
 import javax.persistence.Id;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.validator.NotNull;
+
+
+
 /**
  * Person entity
  * 
@@ -48,21 +52,29 @@ public class Person implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long Id;
 	
+	@NotNull
 	private String firstName;
 	
+	@NotNull
 	private String lastName;
 	
+	@NotNull
 	private String login;
 	
+	@NotNull
 	@Column(name="pwd")
 	private String password;
 	
+	@NotNull
 	private String email;
 	
+	@NotNull
 	@Column(name="userGroup")
 	private String group;
-	
+
 	private int active = 1;
+	
+
 	
 	public boolean isActive() {
 		return active > 0;

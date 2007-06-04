@@ -20,10 +20,10 @@
 				<td>E-Mail: </td>
 				<td>${actionBean.user.email}</td>
 			</tr>
-			<c:when test="${actionBean.user.requestedId == user.id}">
+			<c:if test="${actionBean.user.id == user.id}">
 				<tr>
 					<td>
-						<stripes:link beanclass="ru.rpunet.webmops.web.EditProfile">
+						<stripes:link beanclass="ru.rpunet.webmops.web.EditProfileActionBean">
 							<stripes:param name="userId" value="${actionBean.user.id}" />
 							<stripes:param name="login" value="/users/Login.action" />
 							Edit
@@ -31,8 +31,8 @@
 					</td>
 					<td>&nbsp;</td>
 				</tr>
-			</c:when>
-			<c:when test="${user.group eq 'ADMINISTRATOR' || user.group eq 'MODERATOR'}">
+			</c:if>
+			<c:if test="${user.group eq 'ADMINISTRATOR' || user.group eq 'MODERATOR'}">
 				<tr>
 					<td>
 						<stripes:link beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean">
@@ -43,14 +43,14 @@
 							<stripes:param name="userId" value="${actionBean.user.id}" />
 							Block user
 						</stripes:link> | 
-						<stripes:link beanclass="ru.rpunet.webmops.web.admin.DeleteUserActionBean">
+						<stripes:link beanclass="ru.rpunet.webmops.web.DeleteUserActionBean">
 							<stripes:param name="userId" value="${actionBean.user.id}" />
 							Delete user
 						</stripes:link>
 					</td>
 					<td>&nbsp;</td>
 				</tr>
-			</c:when>
+			</c:if>
 		</table>
 		<br />
 		<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">

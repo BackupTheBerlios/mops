@@ -26,6 +26,8 @@ import org.hibernate.criterion.Restrictions;
 
 import ru.rpunet.webmops.model.Person;
 import ru.rpunet.webmops.utils.HibernateUtil;
+import ru.rpunet.webmops.utils.PasswordServiceImpl;
+import ru.rpunet.webmops.utils.SystemUnavaliableException;
 
 /**
  * @author Andrew Diakin
@@ -50,7 +52,7 @@ public class PersonManager {
 		return user;
 	}
 	
-	public Person findPerson(Long id) {
+	public Person findPersonById(Long id) {
 		return (Person) session.load(Person.class, id);
 	}
 	
@@ -60,11 +62,12 @@ public class PersonManager {
 		return Collections.unmodifiableList(new ArrayList<Person>(users));
 	}
 	
-	public void saveOrUpdate(Person user) {
+	public void saveOrUpdate(Person user) throws SystemUnavaliableException {
 		makePersistent(user);
 	}
 	
-	public void makePersistent(Person user) {
+	public void makePersistent(Person user) throws SystemUnavaliableException {
+		user.setPassword(PasswordServiceImpl.getInstance().encrypt(user.getPassword()));
 		session.saveOrUpdate(user);
 	}
 }

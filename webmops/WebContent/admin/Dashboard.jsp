@@ -2,8 +2,8 @@
 <stripes:layout-render name="/layout/standart.jsp" title="file list">
 	<stripes:layout-component name="contents">
 		<table class="dashboard" cellpadding="2" cellspacing="0" border="0" width="100%">
-			<tr class="dashboard" width="40%">
-				<td class="dashboard"> <!--  users -->
+			<tr class="dashboard">
+				<td class="dashboard" width="40%"> <!--  users -->
 					<div id="dashboard-pane">
 						<h2 class="dashboard-header">
 							Users
@@ -17,7 +17,12 @@
 								<table class="commons-list" width="100%">
 									<c:forEach items="${actionBean.users}" var="user" varStatus="rowstat">
 										<tr class="common-list ${rowstat.count mod 2 == 0 ? 'even' : 'odd' }">
-											<td>${user.login}</td>
+											<td>
+												<stripes:link beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean">
+													<stripes:param name="personId" value="${user.id}" />
+													${user.login}
+												</stripes:link>
+											</td>
 											<td>${user.group}</td>
 											<td>${user.active}</td>
 										</tr>

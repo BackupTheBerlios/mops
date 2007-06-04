@@ -20,6 +20,8 @@ import org.apache.commons.logging.LogFactory;
 
 import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.PasswordServiceImpl;
+import ru.rpunet.webmops.utils.SystemUnavaliableException;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
 import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.DontValidate;
@@ -77,12 +79,18 @@ public class LoginActionBean extends WebmopsActionBean {
 	
 		PersonManager pm = new PersonManager();
 		Person user = pm.findPerson(login);
+		String encryptedPassword = null;
+		try {
+			encryptedPassword = PasswordServiceImpl.getInstance().encrypt(password);
+		} catch (SystemUnavaliableException e) {
+			e.printStackTrace();
+		}
 		
 		if ( user == null ) {
 			ValidationError error = new LocalizableError("userDoesNotExist");
 			getContext().getValidationErrors().add("login", error);
 			return getContext().getSourcePageResolution();
-		} else if ( !user.getPassword().equals(password) ) {
+		} else if ( !user.getPassword().equals(encryptedPassword) ) {
 			ValidationError error = new LocalizableError("incorrectPassword");
 			getContext().getValidationErrors().add("password", error);
 			return getContext().getSourcePageResolution();

@@ -5,7 +5,7 @@
 		<h2>Login</h2><br/>
 		<div class="login-box">
 		<stripes:form beanclass="ru.rpunet.webmops.web.LoginActionBean" focus="login">
-		<table cellpadding="0" cellspacing="0" border=0">
+		<table width="60%" cellpadding="3" cellspacing="0" border=0">
 			<tr>
 				<td colspan="2">
 					<stripes:errors />

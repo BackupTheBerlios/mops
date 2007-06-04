@@ -4,7 +4,7 @@
 	<stripes:layout-component name="contents">
 		<h2>User manager</h2><br />
 		<stripes:form beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean">
-			<table cellpadding="0" cellspacing="0" border="0">
+			<table cellpadding="3" cellspacing="0" border="0">
 				<tr>
 					<td colspan="2">
 						<stripes:errors />
@@ -31,19 +31,20 @@
 					<td><stripes:password name="user.password" /></td>
 				</tr>
 				<tr>
-					<td><stripes:label for="configrmPassword" />: </td>
+					<td><stripes:label for="confirmPassword" />: </td>
 					<td><stripes:password name="confirmPassword" /></td>
 				</tr>
 				<tr>
 					<td><stripes:label for="user.group" />: </td>
 					<td>
 						<stripes:select name="user.group" value="USER">
-							<stripes:options-enumeration enum="ru.rpunet.webmops.model.PersonsGroups" />
+							<stripes:options-enumeration enum="ru.rpunet.webmops.model.PersonGroups" />
 						</stripes:select>
 					</td>
 				</tr>
 				<tr>
 					<td style="text-aling: center;" colspan="2">
+						<stripes:hidden name="user.id" value="${actionBean.user.id}" />
 						<stripes:submit name="saveUser" value="Save" />
 					</td>
 				</tr>

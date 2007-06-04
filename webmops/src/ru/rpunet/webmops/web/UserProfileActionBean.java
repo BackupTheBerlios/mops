@@ -18,6 +18,7 @@ import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.ForwardResolution;
 import net.sourceforge.stripes.action.HandlesEvent;
 import net.sourceforge.stripes.action.Resolution;
+import net.sourceforge.stripes.action.UrlBinding;
 import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
@@ -26,6 +27,7 @@ import ru.rpunet.webmops.utils.WebmopsActionBean;
  * @author Andrew Diakin
  *
  */
+@UrlBinding("/users/Profile.action")
 public class UserProfileActionBean extends WebmopsActionBean {
 
 	private Long userId;
@@ -51,7 +53,16 @@ public class UserProfileActionBean extends WebmopsActionBean {
 	@DefaultHandler
 	public Resolution index() {
 		PersonManager personDAO = new PersonManager();
-		user = personDAO.findPerson(userId);
+		
+		Long id;
+		
+		if ( this.userId == null ) {
+			id = getContext().getUser().getId();
+		} else {
+			id = this.userId;
+		}
+		
+		user = personDAO.findPersonById(id);
 		
 		return new ForwardResolution("/UserProfile.jsp");
 	}
