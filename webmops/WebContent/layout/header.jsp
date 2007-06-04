@@ -20,7 +20,8 @@
 			<li>Logged as 
 				<a href="${pageContext.request.contextPath}/users/Profile.action">${user.login}</a>
 			</li>
-			<li><stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link>
+			<li><stripes:link beanclass="ru.rpunet.webmops.UserProfileActionBean">Profile</stripes:link></li>
+			<li><stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link></li>
 		</c:if>
 		<li><a href="${pageContext.request.contextPath}/Default.action">Home</a></li>
 		<li><a href="${pageContext.request.contextPath}/admin/Default.action">Admin</a></li>
