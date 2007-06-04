@@ -1,0 +1,48 @@
+#!/bin/sh
+echo "clearing old build"
+rm -rf out_packages/lib
+rm -rf out_packages/console
+rm -rf out_packages/tools
+rm -rf out_packages/gui
+rm -rf out_packages/*.tgz
+
+echo "Creating library package"
+mkdir out_packages/lib
+tar jxvf pkg_descriptions/lib.tar.bz2 -C out_packages/lib
+mkdir -p out_packages/lib/usr/local/lib
+mkdir -p out_packages/lib/usr/local/include
+mkdir -p out_packages/etc
+cp -R /usr/local/include/mpkg out_packages/lib/usr/local/include/
+cp src/mpkg.xml out_packages/lib/etc/
+cp manager/groups.xml out_packages/lib/etc/
+cp /usr/local/lib/libmpkg* out_packages/lib/usr/local/lib/
+cd out_packages/lib/; buildpkg; mv *.tgz ..; cd ../..
+
+echo "Creating console package"
+mkdir out_packages/console
+tar jxvf pkg_descriptions/console.tar.bz2 -C out_packages/console
+mkdir -p out_packages/console/usr/local/bin
+cp /usr/local/bin/mpkg out_packages/console/usr/local/bin/
+cp /usr/local/bin/buildpkg out_packages/console/usr/local/bin/
+cd out_packages/console/; buildpkg; mv *.tgz ..; cd ../..
+
+echo "Creating GUI package"
+mkdir out_packages/gui
+tar jxvf pkg_descriptions/gui.tar.bz2 -C out_packages/gui
+mkdir -p out_packages/gui/usr/local/bin
+mkdir -p out_packages/gui/usr/share
+cp /usr/local/bin/manager out_packages/gui/usr/local/bin/
+cp /usr/local/bin/updatechecker out_packages/gui/usr/local/bin/
+cp -R /usr/share/mpkg out_packages/gui/usr/share/mpkg
+cd out_packages/gui/; buildpkg; mv *.tgz ..; cd ../..
+
+echo "Creating tools package"
+mkdir out_packages/tools
+tar jxvf pkg_descriptions/tools.tar.bz2 -C out_packages/tools
+mkdir -p out_packages/tools/usr/local/bin
+cp /usr/local/bin/packagebuilder out_packages/usr/local/bin/
+cd out_packages/tools; buildpkg; mv *.tgz ..; cd ../..
+
+echo "All packages created successfully"
+
+
