@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.41 2007/06/02 23:26:06 i27249 Exp $
+	$Id: dataunits.h,v 1.42 2007/06/05 12:18:40 i27249 Exp $
 */
 
 
@@ -317,6 +317,7 @@ class PACKAGE_LIST
 	vector<PACKAGE> packages;
 	map<int, int> tableID;
 	map<int, int> reverseTableID;
+	PACKAGE __empty;
     public:
 	bool priorityInitialized;
 	void sortByPriority(bool reverse_order=false);

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.59 2007/06/02 23:26:06 i27249 Exp $
+ *	$Id: core.cpp,v 1.60 2007/06/05 12:18:40 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -97,7 +97,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlFields.addField("packages_package_id");
 	sqlFields.addField("file_name");
-
+	
 	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
 	for (unsigned int i=0;i<package->get_files()->size();i++)
 	{
@@ -890,6 +890,7 @@ int mpkgDatabase::set_action(int package_id, int status)
 
 int mpkgDatabase::get_installed(int package_id)
 {
+	mDebug("checking " + IntToStr(package_id) );
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("package_installed");
@@ -919,6 +920,7 @@ int mpkgDatabase::get_installed(int package_id)
 
 int mpkgDatabase::get_action(int package_id)
 {
+	mDebug("requesting " + IntToStr(package_id));
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	sqlFields.addField("package_action");
@@ -933,7 +935,7 @@ int mpkgDatabase::get_action(int package_id)
 	}
 	if (sqlTable->getRecordCount()==1)
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_installed")->c_str());
+		int ret = atoi(sqlTable->getValue(0, "package_action")->c_str());
 		delete sqlTable;
 		return ret;
 	}

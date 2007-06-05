@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.113 2007/06/05 08:45:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.114 2007/06/05 12:18:40 i27249 Exp $
  *
  ****************************************************************/
 
@@ -20,6 +20,7 @@
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	mDebug("initializing");
 	totalInstalledSize=0;
 	totalAvailableSize=0;
 	totalAvailableCount = 0;
@@ -174,7 +175,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
 	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
 	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
-
+	mDebug("init ok, let's show the UI");
 	this->show();
 	// Wait threads to start
 	while (!StatusThread->isRunning() && !thread->isRunning() && !ErrorBus->isRunning())
@@ -182,9 +183,11 @@ MainWindow::MainWindow(QMainWindow *parent)
 		say("Waiting for threads to start...\n");
 		usleep(1);
 	}
+	mDebug("requesting data");
 
 	emit getAvailableTags();
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
+	mDebug("constructor complete");
 }
 
 MainWindow::~MainWindow()
@@ -383,10 +386,13 @@ void MainWindow::generateStat()
 
 void MainWindow::applyPackageFilter ()
 {
-	if (!initializeOk || currentCategoryID<0)
+	if (!initializeOk || currentCategoryID<0 || currentCategoryID > ui.listWidget->count())
 	{
+		mDebug("uninitialized");
 		return;
 	}
+
+	mDebug("init ok");
 	string pkgBoxLabel = tr("Packages").toStdString();
 	generateStat();
 	bool nameOk = false;
@@ -400,14 +406,17 @@ void MainWindow::applyPackageFilter ()
 	bool installed;
 	bool configexist;
 	bool deprecated;
+	mDebug("request to currentCategory " + IntToStr(currentCategoryID) + ", list count = " + IntToStr(ui.listWidget->count()));
 	pkgBoxLabel += " - " + ui.listWidget->item(currentCategoryID)->text().toStdString();
 	pkgBoxLabel += " ";
 	unsigned int pkgCount = 0;
+	mDebug("initializing highlight map");
 	for (unsigned int a=0; a<availableTags.size(); a++)
 	{
 		highlightMap[availableTags[a]]=false;
 	}
 	waitUnlock();
+	mDebug("processing items, packagelist size = " + IntToStr(packagelist->size()));
 	for (int i=0; i<packagelist->size(); i++)
 	{
 		nameOk = false;
@@ -485,6 +494,7 @@ void MainWindow::applyPackageFilter ()
 	pkgBoxLabel += "\t\t("+IntToStr(pkgCount)+"/"+IntToStr(ui.packageTable->rowCount())\
 			+tr(" packages)").toStdString();
 	ui.packagesBox->setTitle(pkgBoxLabel.c_str());
+	mDebug("calling highlight");
 	highlightCategoryList();
 }
 
@@ -527,6 +537,11 @@ string MainWindow::bool2str(bool data)
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
 	waitUnlock();
+	if (packageNum>=packagelist->size())
+	{
+		mDebug("uninitialized");
+		return;
+	}
 	if (nameComplain(packageNum, ui.quickPackageSearchEdit->text()))
 	{
 		ui.packageTable->setRowHidden(row, false);
@@ -795,7 +810,11 @@ void MainWindow::hideEntireTable()
 bool MainWindow::isCategoryComplain(int package_num, int category_id)
 {
 	waitUnlock();
-
+	if (packagelist->size()<=package_num)
+	{
+		mDebug("uninitialized");
+		return false;
+	}
 	string tagvalue;
 	bool ret=false;
 	if (category_id>=0 && availableTags.size()>(unsigned int) category_id)
@@ -841,7 +860,7 @@ void MainWindow::filterCategory(int category_id)
 {
 
 	waitUnlock();
-
+	mDebug("filterCategory");
 	if (!actionBus.idle()) actionBus.abortActions();
 	currentCategoryID = category_id;
 	vector<bool> request;
@@ -893,7 +912,7 @@ void MainWindow::receivePackageList(PACKAGE_LIST pkgList, vector<int> nStatus)
 void MainWindow::quickPackageSearch()
 {
 	waitUnlock();
-
+	mDebug("searching");
 	QString tmp;
 	for (int i=0; i<ui.packageTable->rowCount(); i++)
 	{
@@ -921,6 +940,7 @@ void MainWindow::resetQueue()
 void MainWindow::showPackageInfo()
 {
 	waitUnlock();
+	mDebug("");
 
 	long id = ui.packageTable->currentRow();
 	PACKAGE *pkg = packagelist->getPackageByTableID(id);
@@ -1056,6 +1076,11 @@ void MainWindow::commitChanges()
 	}
 	QString installList;
 	QString removeList;
+	if (newStatus.size()!=packagelist->size())
+	{
+		mDebug("uninitialized");
+		return;
+	}
 	for (unsigned int i=0; i<newStatus.size(); i++)
 	{
 		if (newStatus[i]==ST_INSTALL)
@@ -1111,7 +1136,11 @@ void MainWindow::showAddRemoveRepositories(){
 void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
 {
 	waitUnlock();
-
+	if (package_num>packagelist->size())
+	{
+		mDebug("uninitialized");
+		return;
+	}
 	if (req.size()==1) return;
 	int this_id=packagelist->get_package(package_num)->get_id();
 	for (int i=0; i<packagelist->size(); i++)
@@ -1130,6 +1159,11 @@ void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST 
 void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
 {
 	waitUnlock();
+	if (package_num>=packagelist->size())
+	{
+		mDebug("uninitialized");
+		return;
+	}
 
 	if (dep.size()==1) return;
 	int this_id=packagelist->get_package(package_num)->get_id();
@@ -1390,6 +1424,11 @@ void MainWindow::setBarValue(QProgressBar *Bar, int stepValue)
 bool MainWindow::nameComplain(int package_num, QString text)
 {
 waitUnlock();
+	if (package_num>=packagelist->size())
+	{
+		mDebug("uninitialized");
+		return false;
+	}
 
 	QString nameMask;	
 	nameMask = nameMask.fromStdString(*packagelist->get_package(package_num)->get_name());
@@ -1397,6 +1436,7 @@ waitUnlock();
 }
 void MainWindow::highlightCategoryList()
 {
+	mDebug("start");
 	if (highlightState.size()!=availableTags.size())
 	{
 		highlightState.clear();
@@ -1444,8 +1484,9 @@ void MainWindow::highlightCategoryList()
 			}
 		}
 	}
-	
 	ui.packageTable->repaint();
+
+	mDebug("end");
 
 }
 
