@@ -3,7 +3,7 @@
 <stripes:layout-render name="/layout/standart.jsp" title="add/edit user">
 	<stripes:layout-component name="contents">
 		<h2>User manager</h2><br />
-		<stripes:form beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean">
+		<stripes:form beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean" focus="user.login">
 			<table cellpadding="3" cellspacing="0" border="0">
 				<tr>
 					<td colspan="2">

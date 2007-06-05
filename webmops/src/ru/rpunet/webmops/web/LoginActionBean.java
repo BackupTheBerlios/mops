@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory;
 
 import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
-import ru.rpunet.webmops.utils.PasswordServiceImpl;
+import ru.rpunet.webmops.utils.PasswordService;
 import ru.rpunet.webmops.utils.SystemUnavaliableException;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
 import net.sourceforge.stripes.action.DefaultHandler;
@@ -30,6 +30,7 @@ import net.sourceforge.stripes.action.HandlesEvent;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
 import net.sourceforge.stripes.action.UrlBinding;
+import net.sourceforge.stripes.integration.spring.SpringBean;
 import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
 import net.sourceforge.stripes.validation.ValidationError;
@@ -42,6 +43,9 @@ import net.sourceforge.stripes.validation.ValidationError;
 public class LoginActionBean extends WebmopsActionBean {
 	
 	private static Log log = LogFactory.getLog(LoginActionBean.class);
+	
+	@SpringBean
+	private PasswordService passwordService;
 	
 	@Validate(required=true)
 	private String login;
@@ -81,7 +85,8 @@ public class LoginActionBean extends WebmopsActionBean {
 		Person user = pm.findPerson(login);
 		String encryptedPassword = null;
 		try {
-			encryptedPassword = PasswordServiceImpl.getInstance().encrypt(password);
+			log.debug("Creating password hash");
+			encryptedPassword = passwordService.encrypt(password);
 		} catch (SystemUnavaliableException e) {
 			e.printStackTrace();
 		}
@@ -100,6 +105,8 @@ public class LoginActionBean extends WebmopsActionBean {
 			
 			if ( this.targetUrl != null ) {
 				return new RedirectResolution(this.targetUrl);
+			} else if ( getContext().getSourcePageResolution() != null ) {
+				return getContext().getSourcePageResolution();
 			} else {
 				return new RedirectResolution("/Default.action");
 			}

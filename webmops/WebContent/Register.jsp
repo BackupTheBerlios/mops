@@ -3,8 +3,8 @@
 	<stripes:layout-component name="contents">
 	<h2>Registration</h2>
 	<br />
-	<stripes:form beanclass="ru.rpunet.webmops.web.UserRegistration" focus="user.login">
-		<table cellpadding="0" cellspacing="0" border="0">
+	<stripes:form beanclass="ru.rpunet.webmops.web.RegisterActionBean" focus="user.login">
+		<table cellpadding="3" cellspacing="0" border="0">
 			<tr>
 				<td colspan="2">
 					<stripes:errors />
@@ -31,7 +31,7 @@
 				<td><stripes:password name="user.password" /></td>
 			</tr>
 			<tr>
-				<td><stripes:label for="configrmPassword" />: </td>
+				<td><stripes:label for="confirmPassword" />: </td>
 				<td><stripes:password name="confirmPassword" /></td>
 			</tr>
 			<tr>

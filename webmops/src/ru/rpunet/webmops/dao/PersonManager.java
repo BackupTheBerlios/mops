@@ -26,7 +26,6 @@ import org.hibernate.criterion.Restrictions;
 
 import ru.rpunet.webmops.model.Person;
 import ru.rpunet.webmops.utils.HibernateUtil;
-import ru.rpunet.webmops.utils.PasswordServiceImpl;
 import ru.rpunet.webmops.utils.SystemUnavaliableException;
 
 /**
@@ -67,7 +66,6 @@ public class PersonManager {
 	}
 	
 	public void makePersistent(Person user) throws SystemUnavaliableException {
-		user.setPassword(PasswordServiceImpl.getInstance().encrypt(user.getPassword()));
 		session.saveOrUpdate(user);
 	}
 }

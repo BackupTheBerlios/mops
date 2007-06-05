@@ -27,6 +27,7 @@ import net.sourceforge.stripes.action.LocalizableMessage;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
 import net.sourceforge.stripes.controller.LifecycleStage;
+import net.sourceforge.stripes.integration.spring.SpringBean;
 import net.sourceforge.stripes.validation.EmailTypeConverter;
 import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
@@ -35,8 +36,10 @@ import net.sourceforge.stripes.validation.ValidationErrors;
 import net.sourceforge.stripes.validation.ValidationMethod;
 import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.PasswordService;
 import ru.rpunet.webmops.utils.SystemUnavaliableException;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
+
 
 /**
  * @author Andrew Diakin
@@ -44,6 +47,9 @@ import ru.rpunet.webmops.utils.WebmopsActionBean;
  */
 public class AddEditUserActionBean extends WebmopsActionBean {
 	
+	@SpringBean
+	private PasswordService passwordService;
+		
 	private static Log log = LogFactory.getLog(AddEditUserActionBean.class);
 	
 	private PersonManager personDAO;
@@ -120,6 +126,9 @@ public class AddEditUserActionBean extends WebmopsActionBean {
 	@HandlesEvent("saveUser")
 	public Resolution saveUser() {
 		try {
+			log.debug("Hashing user password");
+			user.setPassword(passwordService.encrypt(user.getPassword()));
+			log.info("Saving user " + user.getLogin());
 			personDAO.saveOrUpdate(user);
 		} catch (SystemUnavaliableException e) {
 			e.printStackTrace();

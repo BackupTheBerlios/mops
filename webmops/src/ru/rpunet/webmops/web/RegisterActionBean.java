@@ -20,15 +20,20 @@ import org.apache.commons.logging.LogFactory;
 
 import ru.rpunet.webmops.dao.PersonManager;
 import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.PasswordService;
 import ru.rpunet.webmops.utils.SystemUnavaliableException;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
+import net.sourceforge.stripes.action.Before;
 import net.sourceforge.stripes.action.DefaultHandler;
 import net.sourceforge.stripes.action.DontValidate;
 import net.sourceforge.stripes.action.ForwardResolution;
 import net.sourceforge.stripes.action.HandlesEvent;
+import net.sourceforge.stripes.action.LocalizableMessage;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
 import net.sourceforge.stripes.action.UrlBinding;
+import net.sourceforge.stripes.controller.LifecycleStage;
+import net.sourceforge.stripes.integration.spring.SpringBean;
 import net.sourceforge.stripes.validation.EmailTypeConverter;
 import net.sourceforge.stripes.validation.LocalizableError;
 import net.sourceforge.stripes.validation.Validate;
@@ -42,6 +47,9 @@ import net.sourceforge.stripes.validation.ValidationMethod;
  */
 @UrlBinding("/users/Register.action")
 public class RegisterActionBean extends WebmopsActionBean {
+	
+	@SpringBean
+	private PasswordService passwordService;
 	
 	private static Log log = LogFactory.getLog(RegisterActionBean.class);
 	
@@ -78,6 +86,12 @@ public class RegisterActionBean extends WebmopsActionBean {
 		this.user = user;
 	}
 	
+	@Before(LifecycleStage.BindingAndValidation)
+	public void preload() {
+		log.debug("Creatin PersonDAO if exist");
+		if (personDAO == null)
+			personDAO = new PersonManager();
+	}
 	
 	@ValidationMethod
 	public void validate(ValidationErrors errors) {
@@ -95,22 +109,28 @@ public class RegisterActionBean extends WebmopsActionBean {
 	
 	@HandlesEvent("registerUser")
 	public Resolution register() {
-		/* а вот это нам нах не нужно
+		
 		try {
-			String encryptedPassword = PasswordServiceImpl.getInstance().encrypt(user.getPassword());
-			user.setPassword(encryptedPassword);
+			String encPassword = passwordService.encrypt(user.getPassword());
+			user.setPassword(encPassword);
 		} catch (SystemUnavaliableException e) {
-			// хуя!
 			e.printStackTrace();
 		}
-		*/
+		
 		// и ниипет!
 		user.setGroup("USER");
-		personDAO = new PersonManager();
 		
 		log.info("Registering user " + user.getLogin());
 		try {
 			personDAO.makePersistent(user);
+			getContext().setUser(user);
+			
+			getContext().getMessages().add(new LocalizableMessage("/users/Register.action.successMessage",
+					this.user.getFirstName(),
+					this.user.getLogin())
+			);
+			
+			
 		} catch (SystemUnavaliableException e) {
 			e.printStackTrace();
 		}

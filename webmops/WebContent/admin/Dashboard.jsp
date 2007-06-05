@@ -47,7 +47,11 @@
 								<table class="common-list" width="100%">
 									<c:forEach items="${actionBean.mirrors}" var="mirror" varStatus="rowstat">
 										<tr class="common-list ${rowstat.count mod 2 == 0 ? 'even' : 'odd' }">
-											<td>${mirror.name}</td>
+											<td>
+												<stripes:link beanclass="ru.rpunet.webmops.web.admin.MirrorsActionBean">
+													${mirror.name}		
+												</stripes:link>
+											</td>
 											<td>${mirror.url}</td>
 											<td>${mirror.type}</td>
 										</tr>
@@ -74,7 +78,11 @@
 								<table class="common-list" width="100%">
 									<c:forEach items="${actionBean.dists}" var="dist" varStatus="rowstat">
 										<tr class="common-list ${rowstat.count mod 2 == 0 ? 'even' : 'odd' }">
-											<td>${dist.name}</td>
+											<td>
+												<stripes:link beanclass="ru.rpunet.webmops.web.admin.DistributionsActionBean">
+													${dist.name}
+												</stripes:link>
+											</td>
 											<td>${dist.description}</td>
 										</tr>
 									</c:forEach>	
