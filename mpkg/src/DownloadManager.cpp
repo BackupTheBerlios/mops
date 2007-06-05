@@ -16,7 +16,7 @@ InitializeDownloadObjects(DownloadFactory *factory)
 	IDownload *handler = NULL;
 
 
-	dlhandler = dlopen("/usr/lib/libmpkg-http.so", RTLD_LAZY);
+	dlhandler = dlopen("libmpkg-http.so", RTLD_LAZY);
 	//void *dlhandler = dlopen("./libmpkg-http.so", RTLD_LAZY);
 	if ( dlhandler == NULL ) {
 		mError("critical error: cannot load libmpkg-http.so");
