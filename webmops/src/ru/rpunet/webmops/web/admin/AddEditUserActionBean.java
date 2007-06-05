@@ -63,6 +63,7 @@ public class AddEditUserActionBean extends WebmopsActionBean {
 	private String confirmPassword;
 	
 	public String getConfigrmPassword() {
+		
 		return this.confirmPassword;
 	}
 	

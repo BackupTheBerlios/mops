@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<bean default-autoware="byName">
+	<!-- 
+		default password generator
+	 -->
+	<bean id="PasswordService" class="ru.rpunet.webmops.utils.PasswordServiceImpl" />
+</bean>
