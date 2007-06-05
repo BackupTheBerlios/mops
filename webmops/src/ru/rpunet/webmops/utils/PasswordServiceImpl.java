@@ -19,6 +19,9 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import sun.misc.BASE64Encoder;
 
 /**
@@ -27,12 +30,18 @@ import sun.misc.BASE64Encoder;
  */
 public class PasswordServiceImpl implements PasswordService {
 
+	private static Log log = LogFactory.getLog(PasswordService.class);
+	
 	private static PasswordServiceImpl instance;
 	
 	public PasswordServiceImpl() {
+		log.info("Initilizing PasswordServiceImpl");
 	}
 	
 	public synchronized String encrypt(String plaintext) throws SystemUnavaliableException {
+		
+		log.debug("Calling encrypt");
+		
 		MessageDigest md = null;
 		
 		try {
@@ -58,6 +67,8 @@ public class PasswordServiceImpl implements PasswordService {
 		if (instance == null) {
 			instance = new PasswordServiceImpl();
 		}
+		
+		log.debug("Returning instance");
 		
 		return instance;
 	}

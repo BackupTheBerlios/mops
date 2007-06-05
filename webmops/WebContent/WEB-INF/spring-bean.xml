@@ -2,5 +2,6 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans default-autowire="byName">
-    <bean name="passwordService" class="ru.rpunet.webmops.utils.PasswordServiceImpl" />
+    <bean name="passwordService" class="ru.rpunet.webmops.utils.PasswordServiceImpl"
+    	factory-method="getInstance" />
 </beans>

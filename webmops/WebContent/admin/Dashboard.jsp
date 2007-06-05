@@ -24,7 +24,12 @@
 												</stripes:link>
 											</td>
 											<td>${user.group}</td>
-											<td>${user.active}</td>
+											<td>
+												<stripes:link beanclass="ru.rpunet.webmops.web.DeleteUserActionBean">
+													<stripes:param name="personId" value="${user.id}" />
+													Delete
+												</stripes:link>
+											</td>
 										</tr>
 									</c:forEach>	
 								</table>

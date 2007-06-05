@@ -68,4 +68,15 @@ public class PersonManager {
 	public void makePersistent(Person user) throws SystemUnavaliableException {
 		session.saveOrUpdate(user);
 	}
+	
+	public void deletePerson(Long id) {
+		Person user = (Person) session.load(Person.class, id);
+		if (user == null) {
+			log.error("No user with id " + id);
+			return;
+		}
+			
+		log.info("Deleting user " + user.getLogin());
+		session.delete(user);
+	}
 }
