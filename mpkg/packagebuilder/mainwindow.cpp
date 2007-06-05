@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.19 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.20 2007/06/05 08:45:53 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -36,90 +36,73 @@ void Form::loadData()
 	{
 		xmlFilename = QFileDialog::getOpenFileName(this, tr("Choose package index") + " (data.xml):", "./", "");
 	}
+	XMLResults xmlErr;
 
-	QXmlInputSource xmlsrc;
-	xmlsrc.setData((QString) ReadFile(xmlFilename.toStdString()).c_str());
-
-	QXmlSimpleReader *xmlReader = new QXmlSimpleReader;
-	if (xmlReader->parse(xmlsrc))
+	XMLNode *tmp = new XMLNode;
+	if (!xmlFilename.isEmpty())
 	{
-		PackageConfig p(xmlFilename.toStdString().c_str());
-		XMLNode *tmp = new XMLNode;
-		*tmp = p.getXMLNode();
-		xml2package(tmp, &pkg);
-		delete tmp;
+		*tmp = XMLNode::parseFile(xmlFilename.toStdString().c_str(), "package", &xmlErr);
+	       if (xmlErr.error==eXMLErrorNone)
+		{
+			//PackageConfig p(xmlFilename.toStdString().c_str());
+			//*tmp = p.getXMLNode();
+			xml2package(tmp, &pkg);
+			delete tmp;
+			pkg.sync();
 	
-
-
-		// Filling data 
-		ui.NameEdit->setText(pkg.get_name()->c_str());
-		ui.VersionEdit->setText(pkg.get_version()->c_str());
-		ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
-		ui.BuildEdit->setText(pkg.get_build()->c_str());
-		ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
+			// Filling data 
+			ui.NameEdit->setText(pkg.get_name()->c_str());
+			ui.VersionEdit->setText(pkg.get_version()->c_str());
+			ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
+			ui.BuildEdit->setText(pkg.get_build()->c_str());
+			ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
 		
-		//for (int i=0; i<pkg.get_descriptions()->size(); i++)
-		//{
-			//printf("id=%d, lang = %s\n",i,pkg.get_descriptions()->get_description(i)->get_language().c_str());
-		//	if (pkg.get_descriptions()->get_description(i)->get_language()=="en")
 			{
 				short_description[0]=pkg.get_short_description()->c_str();
 				description[0]=pkg.get_description()->c_str();
 			}
-/*			if (pkg.get_descriptions()->get_description(i)->get_language()=="ru")
-			{
-				short_description[1]=pkg.get_descriptions()->get_description(i)->get_shorttext().c_str();
-				description[1]=pkg.get_descriptions()->get_description(i)->get_text().c_str();
-			}
-		}*/
-		//if (!short_description[1].isEmpty() || !description[1].isEmpty())
-		//{
 			ui.ShortDescriptionEdit->setText(short_description[0]);
 			ui.DescriptionEdit->setText(description[0]);
-			//printf("ru default\n");
-		//}
-		/*else if (!short_description[0].isEmpty() || !description[0].isEmpty())
-		{
-			ui.DescriptionLanguageComboBox->setCurrentIndex(0);
-			ui.ShortDescriptionEdit->setText(short_description[1]);
-			ui.DescriptionEdit->setText(description[1]);
-			//printf("en default\n");
-			
+
+			ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
+			ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
+			ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
+
+			for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
+			{
+				ui.DepTableWidget->insertRow(0);
+				ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_type()->c_str()));
+				ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
+				ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
+				ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
+			}
+		
+			for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
+			{
+				tag_tmp=pkg.get_tags()->at(i);
+				ui.TagListWidget->addItem(tag_tmp.c_str());
+				tag_tmp.clear();
+			}
+			for (unsigned int i=0; i<pkg.get_config_files()->size(); i++)
+			{
+				QListWidgetItem *__item = new QListWidgetItem(ui.configFilesListWidget);
+				__item->setText(pkg.get_config_files()->at(i).get_name()->c_str());
+			}
 		}
 		else
 		{
-			ui.DescriptionEdit->setText(pkg.get_description().c_str());
-			//printf("no default\n");
-		}
-		*/
-
-		ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
-		ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
-		ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
-	
-
-		for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
-		{
-			ui.DepTableWidget->insertRow(0);
-			ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_type()->c_str()));
-			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
-			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
-			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
-		}
-
-		for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
-		{
-			tag_tmp=pkg.get_tags()->at(i);
-			ui.TagListWidget->addItem(tag_tmp.c_str());
-			tag_tmp.clear();
-		}
-	}
-	else QMessageBox::warning(this, tr("Bad XML!"), \
+			QMessageBox::warning(this, tr("Bad XML!"), \
 				tr("Error opening ") + xmlFilename + tr(": invalid XML structure"), \
 				QMessageBox::Ok, QMessageBox::Ok);
+		}
+	}
 	ui.DepTableWidget->resizeRowsToContents();
 	ui.DepTableWidget->resizeColumnsToContents();
 	modified=false;
+	if (!xmlFilename.isEmpty() && xmlFilename.length()>strlen("install/data.xml"))
+	{
+		pkgRoot = xmlFilename.toStdString().substr(0, xmlFilename.length()-strlen("install/data.xml")).c_str();
+	}
 }
 
 void Form::saveData()
@@ -259,7 +242,12 @@ void Form::saveData()
 			node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
 		}
 	}
-	
+	node.addChild("configfiles");
+	for (int i=0; i<ui.configFilesListWidget->count(); i++)
+	{
+		node.getChildNode("configfiles").addChild("conffile");
+		node.getChildNode("configfiles").getChildNode("conffile",i).addText(ui.configFilesListWidget->item(i)->text().toStdString().c_str());
+	}
 	(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
 	setWindowTitle(windowTitle()+tr(" (saved)"));
@@ -274,23 +262,53 @@ void Form::addTag(){
 }
 void Form::addDependency(){
 
-	if (!ui.DepNameEdit->text().isEmpty() && !ui.DepVersionEdit->text().isEmpty())
-	{	ui.DepTableWidget->insertRow(0);
-		ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(ui.DepSuggestComboBox->currentText()));
-		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
-		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
-		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
-		ui.DepNameEdit->clear();
-		ui.DepVersionEdit->clear();
-		ui.DepSuggestComboBox->setCurrentIndex(0);
-		ui.DepConditionComboBox->setCurrentIndex(0);
+	if (!ui.DepNameEdit->text().isEmpty())
+	{
+		if (ui.DepConditionComboBox->currentText()=="any" || !ui.DepVersionEdit->text().isEmpty())
+		{
+			ui.DepTableWidget->insertRow(0);
+			ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(ui.DepSuggestComboBox->currentText()));
+			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
+			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
+			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
+			ui.DepNameEdit->clear();
+			ui.DepVersionEdit->clear();
+			ui.DepSuggestComboBox->setCurrentIndex(0);
+			ui.DepConditionComboBox->setCurrentIndex(0);
+		}
+	}
+}
+void Form::addConfigFile()
+{
+	if (!ui.confFileAddEdit->text().isEmpty())
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.configFilesListWidget);
+		__item->setText(ui.confFileAddEdit->text());
 	}
 }
 
+void Form::deleteConfigFile()
+{
+	int i=ui.configFilesListWidget->currentRow();
+	ui.configFilesListWidget->takeItem(i);
+}
 void Form::deleteTag()
 {
 	int i=ui.TagListWidget->currentRow();
 	ui.TagListWidget->takeItem(i);
+}
+void Form::searchConfigFile()
+{
+	if (pkgRoot.isEmpty())
+	{
+		pkgRoot = QFileDialog::getExistingDirectory(this, tr("Choose package root"), "./");
+	}
+	if (!pkgRoot.isEmpty()) 
+	{
+		QString fname = QFileDialog::getOpenFileName(this, tr("Choose a config file"), pkgRoot, "");
+		if (fname.length()>pkgRoot.length())
+		ui.confFileAddEdit->setText(fname.toStdString().substr(pkgRoot.length()).c_str());
+	}
 }
 
 void Form::deleteDependency()

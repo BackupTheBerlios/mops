@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.46 2007/06/02 23:26:06 i27249 Exp $
+ * $Id: repository.cpp,v 1.47 2007/06/05 08:45:53 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -395,6 +395,14 @@ int xml2package(XMLNode *pkgnode, PACKAGE *data)
 		file_tmp.set_name(&vec_tmp_names[i]);
 		data->get_files()->push_back(file_tmp);
 	}
+	vec_tmp_names = p.getConfigFilelist();
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		file_tmp.set_name(&vec_tmp_names[i]);
+		file_tmp.set_type(FTYPE_CONFIG);
+		data->get_files()->push_back(file_tmp);
+	}
+
 	return 0;
 }
 

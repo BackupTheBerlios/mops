@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.4 2007/02/15 13:19:19 i27249 Exp $
+ * $Id: mainwindow.h,v 1.5 2007/06/05 08:45:53 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -16,6 +16,9 @@ class Form: public QWidget
 	public slots:
 		void loadData();
 		void saveData();
+		void addConfigFile();
+		void deleteConfigFile();
+		void searchConfigFile();
 		void addTag();
 		void addDependency();
 		void deleteTag();
@@ -31,6 +34,7 @@ class Form: public QWidget
 		std::vector<QString> short_description;
 		std::vector<QString> description;
 		QString xmlFilename;
+		QString pkgRoot;
 		bool modified;
 };
 #endif

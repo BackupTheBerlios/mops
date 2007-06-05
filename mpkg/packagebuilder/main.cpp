@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.8 2007/05/23 18:02:18 i27249 Exp $
+ *     $Id: main.cpp,v 1.9 2007/06/05 08:45:53 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -19,6 +19,9 @@
      	Form mw;
 
 	//mw.show();
+	QObject::connect(mw.ui.addConfFileButton, SIGNAL(clicked()), &mw, SLOT(addConfigFile()));
+	QObject::connect(mw.ui.delConfFileButton, SIGNAL(clicked()), &mw, SLOT(deleteConfigFile()));
+	QObject::connect(mw.ui.conffileSearchButton, SIGNAL(clicked()), &mw, SLOT(searchConfigFile()));
 	QObject::connect(mw.ui.LoadButton, SIGNAL(clicked()), &mw, SLOT(loadData()));
 	QObject::connect(mw.ui.TagAddButton, SIGNAL(clicked()), &mw, SLOT(addTag()));
 	QObject::connect(mw.ui.TagDeleteButton, SIGNAL(clicked()), &mw, SLOT(deleteTag()));

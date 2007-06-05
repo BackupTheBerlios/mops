@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.112 2007/06/03 03:07:59 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.113 2007/06/05 08:45:53 i27249 Exp $
  *
  ****************************************************************/
 
@@ -330,6 +330,11 @@ void MainWindow::generateStat()
 		return;
 	}
 	waitUnlock();
+	if (packagelist->size()!=newStatus.size())
+	{
+		mError("Structure not ready");
+		return;
+	}
 	for (int i=0; i<packagelist->size(); i++)
 	{
 		if (packagelist->get_package(i)->installed())
