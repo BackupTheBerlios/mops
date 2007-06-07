@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.25 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.26 2007/06/07 13:47:22 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -201,7 +201,7 @@ write_file:
 			goto write_file;
 
 		abort();
-		return 1;
+		return -1;
 	}
 }
 

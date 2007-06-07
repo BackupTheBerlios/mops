@@ -78,7 +78,7 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	
 	//int mount_ret;
 	//int umount_ret;
-	
+	mkdir(DL_CDROM_MOUNTPOINT.c_str(), 755);
 	// First, check if device mounted in proper directory. 
 	struct mntent *mountList;
 	FILE *mtab = fopen("/proc/mounts", "r");
@@ -160,9 +160,17 @@ try_mount:
 
 copy_file:
 	string cp_cmd;
-       	if (do_cache) cp_cmd = "cp -f "; else cp_cmd = "ln -sf ";
-	cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
-	if (system(cp_cmd.c_str())!=0 && sourceFileName.find("packages")!=std::string::npos && sourceFileName.find("PACKAGES")!=std::string::npos)
+       	int link_ret;
+	unlink(output.c_str());
+	if (do_cache)
+	{
+		cp_cmd = "cp -f ";
+		cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
+		link_ret = system(cp_cmd.c_str());
+	}
+	else link_ret = symlink(sourceFileName.c_str(), output.c_str());
+
+	if (link_ret!=0 && sourceFileName.find("packages")!=std::string::npos && sourceFileName.find("PACKAGES")!=std::string::npos)
 	{
 		errRet = waitResponce(MPKG_SUBSYS_FILE_READ_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)

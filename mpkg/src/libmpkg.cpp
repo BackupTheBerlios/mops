@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.33 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.34 2007/06/07 13:47:22 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -27,6 +27,7 @@ mpkg::~mpkg()
 	if (DepTracker!=NULL) delete DepTracker;
 	if (db!=NULL) delete db;
 	delete_tmp_files();
+	mpkgSys::clean_cache(true);
 }
 
 string mpkg::current_status()

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.35 2007/06/07 12:38:50 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.36 2007/06/07 13:47:22 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -8,9 +8,12 @@
 string output_dir;
 
 // Cleans system cache
-int mpkgSys::clean_cache()
+int mpkgSys::clean_cache(bool symlinks_only)
 {
-	ftw(SYS_CACHE.c_str(), _clean, 100);
+	if (symlinks_only) say("Cleaning unneeded symlinks\n");
+	else say("Cleaning package cache\n");
+	if (!symlinks_only) ftw(SYS_CACHE.c_str(), _clean, 50);
+	else ftw(SYS_CACHE.c_str(), _clean_symlinks, 50);
 	return 0;
 }
 
@@ -132,11 +135,11 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	{
 		if (tmpPackage.installed())
 		{
-			mError("Package "+ *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already installed");
+			mError("Package "+ *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is already installed");
 		}
 		if (!tmpPackage.available(localInstall))
 		{
-			mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is unavailable");
+			mError("Package " + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is unavailable");
 		}
 		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
@@ -194,7 +197,7 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	if (!tryLocalInstall || !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
 	else
 	{
-		// Attempting to install locally
+		say("Installing local package %s\n", package_name.c_str());
 		LocalPackage _p(package_name);
 		_p.injectFile();
 		db->emerge_to_db(&_p.data);
@@ -244,8 +247,8 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		else
 		{
-			if (purge) mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
-			else  mError("Package " + *tmpPackage.get_name() + tmpPackage.get_fullversion() + " is already purged");
+			if (purge) mError("Package " + *tmpPackage.get_name() + " "+ tmpPackage.get_fullversion() + " is already purged");
+			else  mError("Package " + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is already purged");
 ;
 			return MPKGERROR_IMPOSSIBLE;
 		}
@@ -308,6 +311,21 @@ int mpkgSys::_clean(const char *filename, const struct stat *file_status, int fi
 	}
 	return 0;
 }
+
+int mpkgSys::_clean_symlinks(const char *filename, const struct stat *file_status, int filetype)
+{
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
+
+	if (S_ISLNK(file_status->st_mode))
+	{
+		printf("deleting symlink %s\n", filename);
+		unlink(filename);
+	}
+	return 0;
+}
+
 
 int mpkgSys::_conv_dir(const char *filename, const struct stat *file_status, int filetype)
 {

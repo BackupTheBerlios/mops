@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.60 2007/06/05 12:18:40 i27249 Exp $
+	$Id: dataunits.cpp,v 1.61 2007/06/07 13:47:22 i27249 Exp $
 */
 
 
@@ -1048,7 +1048,7 @@ int PACKAGE_LIST::getRealNum(int id)
 }
 void PACKAGE_LIST::set_package(int num, PACKAGE* package)
 {
-	if (num>=packages.size())
+	if ((unsigned int) num>=packages.size())
 	{
 		mError("Incorrect num "+IntToStr(num));
 		return;
