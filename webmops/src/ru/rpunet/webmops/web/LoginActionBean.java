@@ -105,10 +105,8 @@ public class LoginActionBean extends WebmopsActionBean {
 			
 			if ( this.targetUrl != null ) {
 				return new RedirectResolution(this.targetUrl);
-			} else if ( getContext().getSourcePageResolution() != null ) {
-				return getContext().getSourcePageResolution();
 			} else {
-				return new RedirectResolution("/Default.action");
+				return new RedirectResolution(ru.rpunet.webmops.web.DefaultActionBean.class);
 			}
 		}
 	}

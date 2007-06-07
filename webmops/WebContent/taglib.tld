@@ -63,5 +63,28 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 	</tag>
+	
+	<tag>
+		<description><![CDATA[Role based content pane, if no roles defined then every logged user have access]]></description>
+		<display-name>secure</display-name>
+		<name>secure</name>
+		<tag-class>ru.rpunet.webmops.tags.SecurePaneTag</tag-class>
+		<body-content>JSP</body-content>
+		
+		<attribute>
+			<description>roles list</description>
+			<name>roles</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	
+	<tag>
+		<description><![CDATA[Show content for not logged in users.]]></description>
+		<display-name>guest</display-name>
+		<name>guest</name>
+		<tag-class>ru.rpunet.webmops.tags.GuestPaneTag</tag-class>
+		<body-content>JSP</body-content>
+	</tag>
 
 </taglib>

@@ -15,22 +15,20 @@
 					<td class="packages-list">${pkg.version}</td>
 					<td class="packages-list">${pkg.arch}</td>
 					<td class="packages-list">${pkg.shortDescription}</td>
-					<td class="packages-list"><a href="${pageContext.request.contextPath}/PackageInfo.action?id=${pkg.id}">Show</a></td>
-					<td class="packages-list"><a href="${pageContext.request.contextPath}/Download.action?id=${pkg.id}">Download</a></td>
+					<td class="packages-list">
+						<stripes:link beanclass="ru.rpunet.webmops.web.PackageInfoActionBean">
+							<stripes:param name="id" value="${pkg.id}" />
+							Show
+						</stripes:link>
+					</td>
+					<td class="packages-list">
+						<stripes:link beanclass="ru.rpunet.webmops.web.DownloadPackageActionBean">
+							<stripes:param name="id" value="${pkg.id}" />
+							Download
+						</stripes:link>
+					</td>
 				</tr>
 			</c:forEach>
 		</table>
-		<c:when test="${actionBean.pageNum > 1}">
-			<stripes:link beanclass="ru.rpunet.webmops.web.ListActionBean">
-				<stripes:param name="page" value="${actionBean.currentPage - 1}" />
-				Prev
-			</stripes:link>
-		</c:when>
-		<c:when test="${actionBean.totalPages != actionBean.pageNum}">
-			<stripes:link beanclass="ru.rpunet.webmops.web.ListActionBean">
-				<stripes:param name="page" value="${actionBean.currentPage +1}" />
-				Next
-			</stripes:link>
-		</c:when>
 	</stripes:layout-component>
 </stripes:layout-render>

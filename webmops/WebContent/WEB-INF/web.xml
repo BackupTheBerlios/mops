@@ -95,6 +95,13 @@
 	        net.sourceforge.stripes.controller.BeforeAfterMethodInterceptor
 			</param-value>
 		</init-param>
+		
+		<!--  just for fun >
+		<init-param>
+			<param-name>ActionResolver.Class</param-name>
+			<param-value>ru.rpunet.webmops.utils.WebmopsActionResolver</param-value>
+		</init-param-->
+		
 	</filter>
 
 	<filter-mapping>
@@ -116,6 +123,13 @@
 		</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
+
+
+	<!--  just for fun %) 
+	<servlet-mapping>
+		<servlet-name>StripesDispatcher</servlet-name>
+		<url-pattern>*.php</url-pattern>
+	</servlet-mapping-->
 
 	<servlet-mapping>
 		<servlet-name>StripesDispatcher</servlet-name>

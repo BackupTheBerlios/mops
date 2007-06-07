@@ -45,15 +45,14 @@ import ru.rpunet.webmops.utils.WebmopsActionBean;
  * or install/package.xml in new mops packages. We don't use ValidateNestedProperties
  * because such things like md5, file name are not allowed to change from web.
  * 
- * TODO: add xml schema validation
  * TODO: add output repository property
  * 
  * @author Andrew Diakin
  *
  */
-public class UploadPackageActionBean extends WebmopsActionBean {
+public class UploadSlackwarePackageActionBean extends WebmopsActionBean {
 	
-	private static Log log = LogFactory.getLog(UploadPackageActionBean.class);
+	private static Log log = LogFactory.getLog(UploadSlackwarePackageActionBean.class);
 	
 	private Package pkg;
 	

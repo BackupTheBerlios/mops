@@ -16,17 +16,37 @@
 <!-- navigation -->
 <div id="nav">
 	<ul class="clearfix">
-		<c:if test="${not empty user}">
-			<li>Logged as 
-				<a href="${pageContext.request.contextPath}/users/Profile.action">${user.login}</a>
+		<m:guest>
+			<li>
+				<stripes:link beanclass="ru.rpunet.webmops.web.LoginActionBean">
+					Login
+				</stripes:link>
 			</li>
-			<li><stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">Profile</stripes:link></li>
-			<li><stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link></li>
-			<c:if test="${user.group == 'ADMINISTRATOR'}">
-				<li><a href="${pageContext.request.contextPath}/admin/Default.action">Admin</a></li>
-			</c:if>
-		</c:if>
-		<li><a href="${pageContext.request.contextPath}/Default.action">Home</a></li>
+			<li>
+				<stripes:link beanclass="ru.rpunet.webmops.web.RegisterActionBean">
+					Register
+				</stripes:link>
+			</li>
+		</m:guest>
+	
+		<m:secure>
+			<li>Logged as
+				<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">${user.login}</stripes:link>
+			</li>
+			<li>
+				<stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link>
+			</li>
+		</m:secure>
+	
+		<m:secure roles="ADMINISTRATOR">
+			<li>
+				<stripes:link beanclass="ru.rpunet.webmops.web.admin.DashboardActionBean">Admin</stripes:link>
+			</li>
+		</m:secure>
+
+		<li>
+			<stripes:link beanclass="ru.rpunet.webmops.web.DefaultActionBean">Home</stripes:link>
+		</li>
 
 	</ul>
 </div>

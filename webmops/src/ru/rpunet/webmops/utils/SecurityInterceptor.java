@@ -15,6 +15,8 @@
 
 package ru.rpunet.webmops.utils;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,7 +42,6 @@ public class SecurityInterceptor implements Interceptor {
 
 	private static Log log = LogFactory.getLog(SecurityInterceptor.class);
 	
-
 	public Resolution intercept(ExecutionContext ctx) throws Exception {
 		
 		if ( AppConfigurator.isConfigured() ) {
@@ -70,9 +71,6 @@ public class SecurityInterceptor implements Interceptor {
 		return resolution;
 	}
 	
-	protected boolean isLoggedIn(ActionBeanContext ctx) {
-		return ((WebmopsActionBeanContext) ctx).getUser() != null;		
-	}
 	
 	protected boolean isPermitted(WebmopsActionBeanContext ctx, ActionBean bean) 
 			throws NotAuthenticatedException, NotAuthorisedException {
@@ -109,5 +107,51 @@ public class SecurityInterceptor implements Interceptor {
 		
 		return false;
 	}
+	
+	public static boolean isUserInRole(List<String> roles, ActionBeanContext ctx) {
+		
+		Person user = ((WebmopsActionBeanContext) ctx).getUser();
+
+		String _roles = "";
+		
+		for (String _r : roles) {
+			_roles += _r + ", ";
+		}
+		
+		if ( user == null ) {
+			log.info("User is in ANONYMOUS group");
+			return false;
+		}
+		
+		if ( user.getGroup().equalsIgnoreCase("ADMINISTRATOR") ) {
+			log.info("User admin, everything allowed");
+			return true;
+		}
+		
+		log.info("Checking if user " + user.getLogin() + " in roles(" + _roles + ")");;
+		
+		
+		for (String role : roles) {
+			if ( user.getGroup().equalsIgnoreCase(role) ) {
+				log.info("User in role " + role);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean isLoggedIn(ActionBeanContext ctx) {
+		Person user = ((WebmopsActionBeanContext) ctx).getUser();
+		
+		if ( user == null ) {
+			log.info("User not logged in.");
+			return false;
+		}
+		
+		log.info("User logged in.");
+		return true;
+	}
+	
  
 }

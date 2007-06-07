@@ -78,6 +78,44 @@ public class AppConfigurator {
 		moderatorsUrls.add("/users/BlockUser.action");
 		moderatorsUrls.add("/users/EditUser.action");
 		moderatorsUrls.add("/moderation/Dashboard.action");
+		/*
+		
+		anonymousUrls.add("/List.php");
+		anonymousUrls.add("/users/Register.php");
+		anonymousUrls.add("/users/Login.php");
+		anonymousUrls.add("/Search.php");
+		anonymousUrls.add("/PackageInfo.php");
+		anonymousUrls.add("/ShowFiles.php");
+		anonymousUrls.add("/Default.php");
+		anonymousUrls.add("/CssResourcesLoader.php");
+		
+		
+		for (String p : anonymousUrls) {
+			usersUrls.add(p);
+		}
+		
+		usersUrls.add("/users/Logout.php");
+		usersUrls.add("/UploadPackage.php");
+		usersUrls.add("/users/Profile.php");
+		usersUrls.add("/users/EditProfile.php");
+		usersUrls.add("/users/UploadPhoto.php");
+		usersUrls.add("/users/ListPackages.php");
+		usersUrls.add("/users/RemovePackage.php");
+		
+		
+		for (String p : usersUrls) {
+			moderatorsUrls.add(p);
+		}
+		moderatorsUrls.add("/EditPackage.php");
+		moderatorsUrls.add("/DeletePackage.php");
+		moderatorsUrls.add("/RebuildIndex.php");
+		moderatorsUrls.add("/ViewPackage.php");
+		moderatorsUrls.add("/AllowPackage.php");
+		moderatorsUrls.add("/users/List.php");
+		moderatorsUrls.add("/users/BlockUser.php");
+		moderatorsUrls.add("/users/EditUser.php");
+		moderatorsUrls.add("/moderation/Dashboard.php");
+		*/
 		
 		log.debug("Anon urls size: " + anonymousUrls.size());
 		log.debug("Users urls size: " + usersUrls.size());
