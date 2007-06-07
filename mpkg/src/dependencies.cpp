@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.30 2007/06/02 23:26:06 i27249 Exp $
+$Id: dependencies.cpp,v 1.31 2007/06/07 12:38:50 i27249 Exp $
 */
 
 
@@ -231,7 +231,7 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		found=false;
 		for (int t=0;t<installStream.size();t++)
 		{
-			if (installStream.get_package(t)==installStream.get_package(i))
+			if (installStream.get_package(t)->equalTo(installStream.get_package(i)))
 			{
 				found=true;
 				break;
@@ -248,8 +248,8 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		for (int t=0; t<proxyinstalledList.size(); t++)
 		{
 			if (proxyinstalledList.get_package(t)->installed() && \
-					proxyinstalledList.get_package(t)->get_name() == installStream.get_package(i)->get_name() && \
-					proxyinstalledList.get_package(t)->get_md5() != installStream.get_package(i)->get_md5() \
+					*proxyinstalledList.get_package(t)->get_name() == *installStream.get_package(i)->get_name() && \
+					*proxyinstalledList.get_package(t)->get_md5() != *installStream.get_package(i)->get_md5() \
 			   )
 			{
 				proxyinstalledList.get_package(t)->set_action(ST_REMOVE);
@@ -276,12 +276,6 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	removeQueue2 = renderRemoveQueue (&removeQueue2);
 	remove_list += removeQueue2;
 #endif
-
-
-
-
-
-
 	// 4. Put in install_list all installStream
 	install_list = installStream;
 	// 5. Return results.
@@ -295,7 +289,7 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 	// Step 1. Check if it conflicts with someone in searchlist
 	for (int i=0; i<searchList.size(); i++)
 	{
-		if (pkg->get_name() == searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
+		if (*pkg->get_name() == *searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
 	}
 
 	for (unsigned int i=0; i<pkg->get_dependencies()->size(); i++)
@@ -320,23 +314,25 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 bool DependencyTracker::commitToDb()
 {
 	if (installList.size()>0) say("Committing %d packages to install:\n", installList.size());
+	else say ("No packages to install\n");
 	int iC=1;
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
 		{
-			//say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
+			say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 			iC++;
 			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 		}
 	}
 	if (removeList.size()>0) say("Committing %d packages to remove\n", removeList.size());
+	else say ("No packages to remove\n");
 	int rC=1;
 	for (int i=0; i<removeList.size(); i++)
 	{
 		if (removeList.get_package(i)->configexist())
 		{
-			//say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+			say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 			rC++;
 			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 		}

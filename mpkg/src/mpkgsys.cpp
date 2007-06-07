@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.34 2007/05/28 14:17:19 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.35 2007/06/07 12:38:50 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -111,8 +111,23 @@ int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepT
 	
 int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool localInstall)
 {
+	mDebug("requested to install " + IntToStr(package_id));
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", tmpPackage.get_name());
+	PACKAGE_LIST candidates;
+	db->get_packagelist(&sqlSearch, &candidates);
+	mDebug("received " + IntToStr(candidates.size()) + " candidates to update"); 
+	for (int i=0; i<candidates.size(); i++)
+	{
+		mDebug("checking " + IntToStr(i));
+		if (candidates.get_package(i)->installed() && !candidates.get_package(i)->equalTo(&tmpPackage))
+		{
+			say("Updating package %s\n", candidates.get_package(i)->get_name()->c_str());
+			requestUninstall(*candidates.get_package(i)->get_name(), db, DepTracker);
+		}
+	}
 	if (ret == 0)
 	{
 		if (tmpPackage.installed())
@@ -156,15 +171,23 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	sqlSearch.addField("package_name", &package_name);
 	PACKAGE_LIST candidates;
 	int ret = db->get_packagelist(&sqlSearch, &candidates);
+	mDebug("received " + IntToStr(candidates.size()) + " candidates for " + package_name);
 	int id=-1;
 	if (ret == 0)
 	{
+		mDebug("checking id...");
 		id = candidates.getMaxVersionID(&package_name);
+		mDebug("id = " + IntToStr(id));
 		if (id>=0)
 		{
+			mDebug("requesting to install " + candidates.get_package(candidates.getMaxVersionNumber(&package_name))->get_fullversion());
 			return requestInstall(id, db, DepTracker);
 		}
-		else tryLocalInstall=true;
+		else 
+		{
+			mDebug("trying local install");
+			tryLocalInstall=true;
+		}
 	}
 	else return ret;
 
@@ -187,8 +210,10 @@ int mpkgSys::requestUninstall(PACKAGE *package, mpkgDatabase *db, DependencyTrac
 
 int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
 {
+	mDebug("requestUninstall\n");
 	PACKAGE tmpPackage;
 	int ret = db->get_package(package_id, &tmpPackage);
+	mDebug("uninstall called for id " + IntToStr(package_id) + ", name = " + *tmpPackage.get_name() + "-" + tmpPackage.get_fullversion());
 	bool process=false;
 	if (ret == 0)
 	{
@@ -196,17 +221,24 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		{
 			if (purge)
 			{
+				mDebug("action set to purge");
 				tmpPackage.set_action(ST_PURGE);
 				process=true;
 			}
 			else if (tmpPackage.installed())
 			{
+				mDebug("action is remove");
 				tmpPackage.set_action(ST_REMOVE);
 				process=true;
 			}
 		}
+		else
+		{
+			say("%s-%s doesn't present in the system\n", tmpPackage.get_name()->c_str(), tmpPackage.get_fullversion().c_str());
+		}
 		if (process)
 		{
+			mDebug("Processing deps");
 			DepTracker->addToRemoveQuery(&tmpPackage);
 			return tmpPackage.get_id();
 		}
@@ -224,17 +256,27 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 	}
 }
 int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge)
-{	
+{
+	mDebug("requestUninstall of " + package_name);
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", &package_name);
 	sqlSearch.addField("package_installed", 1);
 	PACKAGE_LIST candidates;
 	int ret = db->get_packagelist(&sqlSearch, &candidates);
+	mDebug("candidates to uninstall size = " + IntToStr(candidates.size()));
 	int id=-1;
 	if (ret == 0)
 	{
-		if (candidates.size()>1) return MPKGERROR_AMBIGUITY;
-		if (candidates.IsEmpty()) return MPKGERROR_NOPACKAGE;
+		if (candidates.size()>1)
+		{
+			mError("Ambiguity in uninstall: multiple packages with some name are installed");	
+			return MPKGERROR_AMBIGUITY;
+		}
+		if (candidates.IsEmpty())
+		{
+			mError("No packages to uninstall");
+			return MPKGERROR_NOPACKAGE;
+		}
 		id = candidates.get_package(0)->get_id();
 		if (id>=0)
 		{

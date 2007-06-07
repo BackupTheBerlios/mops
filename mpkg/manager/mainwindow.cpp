@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.114 2007/06/05 12:18:40 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.115 2007/06/07 12:38:50 i27249 Exp $
  *
  ****************************************************************/
 
@@ -514,7 +514,10 @@ void MainWindow::selectAll()
 {
 	for (int i = 0; i<ui.packageTable->rowCount(); i++)
 	{
-		if (!ui.packageTable->isRowHidden(i)) markChanges(i, Qt::Checked);
+		if (!ui.packageTable->isRowHidden(i))
+		{
+			markChanges(i, Qt::Checked);
+		}
 	}
 	applyPackageFilter();
 }
@@ -1216,7 +1219,8 @@ waitUnlock();
 			{
 				if (*packagelist->get_package(t)->get_name()==*_p->get_name())
 				{
-					markChanges(t, Qt::Unchecked, ST_UPDATE);
+					newStatus[t]=ST_UPDATE;
+					//markChanges(packagelist->getTableID(t), Qt::Unchecked, ST_UPDATE);
 					break;
 				}
 			}
@@ -1310,7 +1314,8 @@ waitUnlock();
 									packagelist->get_package(t)->installed() && \
 									newStatus[t]==ST_NONE)
 							{
-								markChanges(t, Qt::Unchecked, ST_UPDATE);
+								newStatus[t]=ST_UPDATE;
+								//markChanges(t, Qt::Unchecked, ST_UPDATE);
 								break;
 							}
 						}
