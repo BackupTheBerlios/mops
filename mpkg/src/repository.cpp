@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.47 2007/06/05 08:45:53 i27249 Exp $
+ * $Id: repository.cpp,v 1.48 2007/06/08 00:46:47 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -407,6 +407,7 @@ int xml2package(XMLNode *pkgnode, PACKAGE *data)
 }
 
 unsigned int pkgcounter;
+vector<string> pkgDupeNames;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
 	unsigned short x=0, y=0;
@@ -440,6 +441,22 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			fclose(log);
 		}	
 		_root.addChild(lp.getPackageXMLNode());
+		// Dupe check
+		for (unsigned int i=0; i<pkgDupeNames.size(); i++)
+		{
+			if (*lp.data.get_name()==pkgDupeNames[i])
+			{
+				// Dupe found, notify!
+				say("%sWarning!%s duplicate package found for %s\n", CL_RED, CL_WHITE, lp.data.get_name()->c_str());
+				FILE *duplog = fopen("dupes.log", "a");
+				if (duplog)
+				{
+					fprintf(duplog, "%s%s\n", lp.data.get_locations()->at(0).get_full_url().c_str(), filename);
+					fclose(duplog);
+				}
+			}
+		}
+		pkgDupeNames.push_back(*lp.data.get_name());
 	}
 	return 0;
 }
@@ -447,6 +464,10 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
+	pkgDupeNames.clear();
+	unlink("index.log");
+	unlink("dupes.log");
+	unlink("legacy.log");
 	if (rebuild)
 	{
 		if (system("gunzip packages.xml.gz")!=0)
