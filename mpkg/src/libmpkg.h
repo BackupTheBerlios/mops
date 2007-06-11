@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.22 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: libmpkg.h,v 1.23 2007/06/11 18:21:42 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -80,6 +80,7 @@ class mpkg
 		int install(PACKAGE *pkg);
 		int install(PACKAGE_LIST *pkgList);
 		int install(int package_id);
+		int installGroups(vector<string>groupName);
 		/* install(vector<string> fname):
 		 * Prepares packages with names defined in fname vector to install.
 		 * It checks availability, chooses newest version, builds dependency tree, and

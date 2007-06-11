@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.27 2007/06/11 03:56:39 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.28 2007/06/11 18:21:42 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -258,43 +258,26 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		printf("No test for today\n");
+		Dialog dialogItem;
+		vector<string> tags;
+		core.get_available_tags(&tags);
+		vector<TagPair> items;
+		for (unsigned int i=0; i<tags.size(); i++)
+		{
+			items.push_back(TagPair(tags[i], tags[i]));
+		}
+		dialogItem.execCheckList("Выберите категории для установки", 0,0,0, &items);
+		vector<string> installGroups;
+		for (unsigned int i=0; i<items.size(); i++)
+		{
+			if (items[i].checkState) installGroups.push_back(items[i].tag);
+		}
+		core.installGroups(installGroups);
+		core.commit();
+		delete_tmp_files();
+		
 		return 0;
 
-		/*
-
-		TagPair tmp;
-		vector<TagPair> optList;
-		tmp.tag="1";tmp.value="Run gauge";
-		optList.push_back(tmp);
-		tmp.tag="2";
-		tmp.value="Print a message";
-		optList.push_back(tmp);
-		string act = dialogItem.execMenu("Choose an action", 0,0,0, optList);
-		if (act.empty())
-		{
-			printf("cancelled\n");
-			delete_tmp_files();
-			return 0;
-		}
-		if (act=="2")
-		{
-			printf("Message choosed\n");
-			delete_tmp_files();
-			return 0;
-		}
-		if (act=="1")
-		{
-		for (unsigned int i=0; i<=100; i++)
-		{
-			dialogItem.execGauge("Testing gauge engine", 8,60,i);
-		//	sleep(1);
-		}
-		printf("Developing console dialog class\n");
-		return 0;
-		}
-		printf("unknown return %s\n", act.c_str());
-		*/
 
 
 	}

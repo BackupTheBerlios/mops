@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.35 2007/06/11 03:56:39 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.36 2007/06/11 18:21:42 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -72,7 +72,14 @@ int mpkg::install(vector<string> fname)
 	//currentStatus = "Installation complete";
 	return ret;
 }
-
+int mpkg::installGroups(vector<string> groupName)
+{
+	for (unsigned int i=0; i<groupName.size(); i++)
+	{
+		mpkgSys::requestInstallGroup(groupName[i], db, DepTracker);
+	}
+	return 0;
+}
 int mpkg::install(string fname)
 {
 	currentStatus = "Building queue: "+fname;

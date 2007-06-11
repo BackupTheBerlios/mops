@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.36 2007/06/07 13:47:22 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.37 2007/06/11 18:21:42 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -157,6 +157,30 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		mError("get_package error: returned " + IntToStr (ret));
 		return ret;
 	}
+}
+int mpkgSys::requestInstallGroup(string groupName, mpkgDatabase *db, DependencyTracker *DepTracker)
+{
+	mDebug("requesting data");
+	SQLRecord sqlSearch;
+	PACKAGE_LIST candidates;
+	db->get_packagelist(&sqlSearch, &candidates);
+	vector<string> install_list;
+	for (int i=0; i<candidates.size(); i++)
+	{
+		for (unsigned int t=0; t<candidates.get_package(i)->get_tags()->size(); t++)
+		{
+			if (candidates.get_package(i)->get_tags()->at(t)==groupName)
+			{
+				install_list.push_back(*candidates.get_package(i)->get_name());
+			}
+		}
+	}
+	mDebug("Requesting to install " + IntToStr(install_list.size()) + " packages from group " + groupName);
+	for (unsigned int i=0; i<install_list.size(); i++)
+	{
+		requestInstall(install_list[i], db, DepTracker);
+	}
+	return 0;
 }
 
 int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracker *DepTracker)
