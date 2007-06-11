@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.31 2007/06/07 12:38:50 i27249 Exp $
+$Id: dependencies.cpp,v 1.32 2007/06/11 03:56:39 i27249 Exp $
 */
 
 
@@ -226,12 +226,13 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	// What we should do?
 	// 1. Remove from removeStream all items who are in installStream.
 	// 2. Add to remove_list resulting removeStream;
+	mDebug("Stage 1: removing items from removeStream which is required by installStream");
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		found=false;
 		for (int t=0;t<installStream.size();t++)
 		{
-			if (installStream.get_package(t)->equalTo(installStream.get_package(i)))
+			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) //FIXME: Ооооочень странное место... явно кривое
 			{
 				found=true;
 				break;
@@ -239,6 +240,7 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		}
 		if (!found) remove_list.add(removeStream.get_package(i));
 	}
+	mDebug("Add to remove_stream all conflicting packages");
 	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
 	PACKAGE_LIST proxyinstalledList = installedPackages;
        proxyinstalledList.add(&installQueuedList);
@@ -258,9 +260,11 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 			}
 		}
 	}
+	mDebug("Filtering conflict list");
 	// 3.1 Filter conflict_list. Search for packages who required anything in conflict_list and it cannot be replaced by anything in installStream.
 	remove_list.add(&conflict_list);
 #ifdef BACKTRACE_DEPS
+	mDebug("Backtracing dependencies");
 	PACKAGE_LIST removeCandidates;
 	PACKAGE_LIST removeQueue2;
 	PACKAGE_LIST willInstalled = installStream + installedPackages;
@@ -276,11 +280,13 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	removeQueue2 = renderRemoveQueue (&removeQueue2);
 	remove_list += removeQueue2;
 #endif
+	mDebug("Putting install_list");
 	// 4. Put in install_list all installStream
 	install_list = installStream;
 	// 5. Return results.
 	installList = install_list;
 	removeList = remove_list;
+	mDebug("Done");
 }
 
 bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) // Tests if all items in searchList can be installed without pkg

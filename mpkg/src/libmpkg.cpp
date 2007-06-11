@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.34 2007/06/07 13:47:22 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.35 2007/06/11 03:56:39 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -104,6 +104,7 @@ int mpkg::uninstall(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
+		printf("[%d] REMOVING %s\n", i, pkg_name[i].c_str());
 		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0) ret--;
 	}

@@ -4,12 +4,12 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.26 2007/06/03 03:07:59 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.27 2007/06/11 03:56:39 i27249 Exp $
  */
 
 #include "libmpkg.h"
 #include "converter.h"
-
+#include "dialog.h"
 const char* program_name;
 extern char* optarg;
 extern int optind, opterr, optopt;
@@ -164,7 +164,86 @@ int main (int argc, char **argv)
 		return 0;
 	}
 
+	if (action == ACT_PACKAGEMENU)
+	{
+		Dialog dialogItem;
+		vector<TagPair> pkgList;
+		SQLRecord sqlSearch;
+		PACKAGE_LIST packageList;
+		core.get_packagelist(&sqlSearch, &packageList);
+		for (int i=0; i<packageList.size(); i++)
+		{
+			pkgList.push_back(TagPair(*packageList.get_package(i)->get_name(),\
+					       *packageList.get_package(i)->get_short_description(),\
+					       packageList.get_package(i)->installed()));
+		}
+		vector<TagPair> oldState = pkgList;
+		if (dialogItem.execCheckList("Отредактируйте состояние пакетов", 0,0,0, &pkgList))
+		{
+			vector<string> removeList;
+			vector<string> installList;
+			for (unsigned int i=0; i<oldState.size(); i++)
+			{
+				if (oldState[i].checkState!=pkgList[i].checkState)
+				{
+					if (pkgList[i].checkState) installList.push_back(pkgList[i].tag);
+					else removeList.push_back(pkgList[i].tag);
+				}
+			}
+			printf("Install list:\n");
+			for (unsigned int i=0; i<installList.size(); i++)
+			{
+				printf("INSTALL: %s\n", installList[i].c_str());
+			}
+			for (unsigned int i=0; i<removeList.size(); i++)
+			{
+				printf("REMOVE: %s\n", removeList[i].c_str());
+			}
 
+			core.uninstall(removeList);
+			core.install(installList);
+			core.commit();
+		}
+		else printf("Cancelled\n");
+		return 0;
+	}
+
+	if (action == ACT_INSTALLFROMLIST)
+	{
+		if (argc>2)
+		{
+			// Read the file
+			FILE *install_list = fopen(argv[optind], "r");
+			if (!install_list)
+			{
+				perror("cannot open installation list");
+				exit(-1);
+			}
+			char membuff[2000];
+			vector<string> installQuery;
+			memset(&membuff, 0, sizeof(membuff));
+			string tmp;
+			while (fscanf(install_list, "%s", &membuff)!=EOF)
+			{
+				tmp = (string) membuff;
+				installQuery.push_back(tmp.substr(1, tmp.size()-2));
+			}
+			fclose(install_list);
+			for (unsigned int i=0; i<installQuery.size(); i++)
+			{
+				mDebug("Installing from list " + installQuery[i]);
+			}
+			core.install(installQuery);
+			core.commit();
+			delete_tmp_files();
+			return 0;
+		}
+		else
+		{
+			mError("Please select input file\n");
+			exit(-1);
+		}
+	}				
 
 	if (action == ACT_INSTALL)
 	{
@@ -179,13 +258,45 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		vector<string> test;
-		core.get_available_tags(&test);
-		for (unsigned int i=0; i<test.size(); i++)
-		{
-			printf("[%d] %s\n", i, test[i].c_str());
-		}
+		printf("No test for today\n");
 		return 0;
+
+		/*
+
+		TagPair tmp;
+		vector<TagPair> optList;
+		tmp.tag="1";tmp.value="Run gauge";
+		optList.push_back(tmp);
+		tmp.tag="2";
+		tmp.value="Print a message";
+		optList.push_back(tmp);
+		string act = dialogItem.execMenu("Choose an action", 0,0,0, optList);
+		if (act.empty())
+		{
+			printf("cancelled\n");
+			delete_tmp_files();
+			return 0;
+		}
+		if (act=="2")
+		{
+			printf("Message choosed\n");
+			delete_tmp_files();
+			return 0;
+		}
+		if (act=="1")
+		{
+		for (unsigned int i=0; i<=100; i++)
+		{
+			dialogItem.execGauge("Testing gauge engine", 8,60,i);
+		//	sleep(1);
+		}
+		printf("Developing console dialog class\n");
+		return 0;
+		}
+		printf("unknown return %s\n", act.c_str());
+		*/
+
+
 	}
 	if (action == ACT_REMOVE)
 	{
@@ -364,9 +475,11 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tremove     remove selected package\n"));
 	fprintf(stream,_("\tpurge      purge selected package\n"));
 	fprintf(stream,_("\tshow       show info about package\n"));
+	fprintf(stream,_("\tshow_queue show actions queue\n"));
 	fprintf(stream,_("\tupdate     update packages info\n"));
 	fprintf(stream,_("\tlist       list installed packages\n"));
 	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
+	fprintf(stream,_("\tinstallfromlist install using file with list of items\n"));
 	fprintf(stream,_("\treset      reset queue\n"));
 	fprintf(stream,_("\tshow_queue show queue\n"));
 	fprintf(stream,_("\tcommit     commit queued actions\n"));
@@ -531,7 +644,9 @@ int check_action(char* act)
 		&& _act != "commit"
 		&& _act != "show_queue"
 	  	&& _act != "show"
-		&& _act != "test" ) {
+		&& _act != "installfromlist"
+		&& _act != "test"
+	  	&& _act != "menu" ) {
 		res = -1;
 	}
 
@@ -546,6 +661,9 @@ int setup_action(char* act)
 
 	if ( _act == "test" )
 			return ACT_TEST;
+
+	if ( _act == "installfromlist" )
+			return ACT_INSTALLFROMLIST;
 
 	if ( _act == "install" )
 			return ACT_INSTALL;
@@ -596,6 +714,8 @@ int setup_action(char* act)
 		return ACT_COMMIT;
 	if (_act == "show")
 		return ACT_SHOW;
+	if (_act == "menu")
+		return ACT_PACKAGEMENU;
 
 	return ACT_NONE;
 }
