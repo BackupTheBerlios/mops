@@ -1,0 +1,2 @@
+g++ -lmpkg -lparted -o setup setup.cpp
+

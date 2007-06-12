@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.2 2007/06/12 03:45:50 i27249 Exp $
+ * $Id: dialog.cpp,v 1.3 2007/06/12 07:49:47 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -74,14 +74,22 @@ vector<string> Dialog::getReturnValues(string tmp_file, bool quoted)
 bool Dialog::execYesNo(string header, unsigned int height, unsigned int width)
 {
 	string tmp_file = get_tmp_file();
-	string exec_str = "dialog --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " 2>" + tmp_file;
+	string exec_str = "dialog --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width);
+	int r = system(exec_str.c_str());
+	if (r==0) return true;
+	else return false;
+}
+void Dialog::execInfoBox(string text, unsigned int height, unsigned int width)
+{
+	string exec_str = "dialog --infobox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
 	system(exec_str.c_str());
-	string ret = getReturnValue(tmp_file);
-	printf("%s\n", ret.c_str());
-	return ret == "yes";
 }
 
-
+void Dialog::execMsgBox(string text, unsigned int height, unsigned int width)
+{
+	string exec_str = "dialog --msgbox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
+	system(exec_str.c_str());
+}
 string Dialog::execMenu(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair> menuItems)
 {
 	if (menuItems.empty())

@@ -1,0 +1,31 @@
+$Id: installer_scheme,v 1.1 2007/06/12 07:49:47 i27249 Exp $
+
+MOPSLinux installer: procedure order
+
++0. Greeting
+1. Language select (omit for now)
+2. Disk partitioning (omit for now, will be from console)
++ 3. Selecting, formatting and activating swap partitions
++ 4. Selecting filesystem mount points
++	4a. Root filesystem
+	4b. Other filesystems
+	4c. Mounting all filesystems
+5. Running package manager selection tool (almost ready)
+6. Committing install (performing actual installations)
+7. Syncronize database
+8. Performing initial system configuration
+	8.1. Timezone
+	8.2. Optional proprietary drivers installation (NVidia, ATI, etc - which is included in the system or supplied by additional disc)
+	8.3. Network
+	8.4. Services
+	8.5. X.Org
+		8.5.1. Video driver
+		8.5.2. Mode configuration (automatic/manual)
+			8.5.2.1 If manual, resolution
+			8.5.2.2 If manual, default depth
+		8.5.3. Default window manager
+	8.6. Root password
+	8.7. Adding users
+	8.8. Default login behavior
+9. Configuring and installing boot loader
+10. Finish setup.
