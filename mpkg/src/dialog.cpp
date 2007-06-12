@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.1 2007/06/11 03:58:29 i27249 Exp $
+ * $Id: dialog.cpp,v 1.2 2007/06/12 03:45:50 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -69,6 +69,16 @@ vector<string> Dialog::getReturnValues(string tmp_file, bool quoted)
 
 	fclose(returnValues);
 	return ret;
+}
+
+bool Dialog::execYesNo(string header, unsigned int height, unsigned int width)
+{
+	string tmp_file = get_tmp_file();
+	string exec_str = "dialog --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " 2>" + tmp_file;
+	system(exec_str.c_str());
+	string ret = getReturnValue(tmp_file);
+	printf("%s\n", ret.c_str());
+	return ret == "yes";
 }
 
 
