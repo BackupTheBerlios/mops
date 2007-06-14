@@ -1,2 +1,2 @@
-g++ -lmpkg -lparted -o setup setup.cpp
+g++ -O2 -fomit-frame-pointer -march=i486 -mtune=i686 -lmpkg -lparted -o setup setup.cpp
 

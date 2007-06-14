@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.3 2007/06/14 11:27:18 i27249 Exp $
+ * $Id: setup.cpp,v 1.4 2007/06/14 14:13:58 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -405,7 +405,8 @@ int mountPartitions()
 	{
 		dialogItem.execInfoBox("Монтируются дополнительные файловые системы: " + systemConfig.otherMounts[i].tag + " ["+ \
 				systemConfig.otherMounts[i].value+"]");
-		mount_cmd = "mount -p " + systemConfig.otherMounts[i].tag + " " + systemConfig.otherMounts[i].value;
+		mkdir_cmd = "mkdir -p " + systemConfig.rootMountPoint+systemConfig.otherMounts[i].value;
+		mount_cmd = "mount " + systemConfig.otherMounts[i].tag + " " + systemConfig.rootMountPoint+systemConfig.otherMounts[i].value;
 		if (system(mkdir_cmd.c_str())!=0 || system(mount_cmd.c_str())!=0)
 		{
 			dialogItem.execInfoBox("Произошла ошибка при монтировании файловой системы " + \
@@ -527,8 +528,13 @@ int manualInstall()
 	return MPKGERROR_ABORTED;
 }
 
+
+
 void initDatabaseStructure()
 {
+	mpkg *core;
+beg:
+	core = new mpkg;
 	string cmd;
 	cmd = "mkdir -p " + systemConfig.rootMountPoint+"/var/mpkg/scripts";
 	system(cmd.c_str());
@@ -540,6 +546,13 @@ void initDatabaseStructure()
 	system(cmd.c_str());
 	cmd = "cp -f /packages.db /var/mpkg/";
 	system(cmd.c_str());
+	if (core->update_repository_data()!=0)
+	{
+		Dialog dialogItem;
+		delete core;
+		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте носители."))	goto beg;
+		else abort();
+	}
 }
 
 
@@ -689,6 +702,7 @@ int main()
 	setOtherPartitions();
 	formatPartitions();
 	mountMedia();
+	mountPartitions();
 	selectInstallMethod();
 	performConfig();
 	syncFS();
