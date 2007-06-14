@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.3 2007/06/12 07:49:47 i27249 Exp $
+ * $Id: dialog.cpp,v 1.4 2007/06/14 08:02:40 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -107,6 +107,15 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 	system(exec_str.c_str());
 	return getReturnValue(tmp_file);
 }
+
+string Dialog::execInputBox(string header, string default_text, unsigned int height, unsigned int width)
+{
+	string tmp_file = get_tmp_file();
+	string exec_str = "dialog --inputbox \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " \"" + default_text + "\"" + " 2>"+tmp_file;
+	system(exec_str.c_str());
+	return getReturnValue(tmp_file);
+}
+
 int Dialog::execMenu(string header, vector<string> menuItems)
 {
 	if (menuItems.empty())
