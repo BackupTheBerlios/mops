@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.88 2007/06/03 00:37:04 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.89 2007/06/14 11:27:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -295,11 +295,11 @@ int mpkgDatabase::commit_actions()
 						break;
 					case MPKG_RETURN_ABORT:
 						say("aborting...\n");
-						return -100;
+						return MPKGERROR_ABORTED;
 						break;
 					default:
 						mError("Unknown value, don't know what to do, aborting");
-						return -100;
+						return MPKGERROR_ABORTED;
 				}
 					
 			}
@@ -353,11 +353,11 @@ installProcess:
 						break;
 					case MPKG_RETURN_ABORT:
 						say("Aborting installation\n");
-						return -100;
+						return MPKGERROR_ABORTED;
 						break;
 					default:
 						mError("Unknown reply, aborting");
-						return -120;
+						return MPKGERROR_ABORTED;
 						break;
 				}
 			}

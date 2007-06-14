@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.2 2007/06/14 08:02:40 i27249 Exp $
+ * $Id: setup.cpp,v 1.3 2007/06/14 11:27:18 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -18,7 +18,7 @@
 #include <mpkg/libmpkg.h>
 #include <mpkg/dialog.h>
 #include <parted/parted.h>
-
+#include <sys/mount.h>
 struct pEntry
 {
 	string devname;
@@ -34,6 +34,8 @@ struct SysConfig
 	string rootPartition;
 	string rootPartitionType;
 	vector<TagPair>otherMounts;
+	string rootMountPoint;
+	string cdromDevice;
 };
 
 SysConfig systemConfig;
@@ -66,7 +68,7 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 			partFinished=false;
 			tmpPartition=NULL;
 			tmpPartList.clear();
-			while (!partFinished && x<10)
+			while (!partFinished)
 			{
 				tmpPartition=ped_disk_next_partition(tmpDisk, tmpPartition);
 				if (tmpPartition==NULL)
@@ -87,7 +89,7 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 	{
 		for (unsigned int t=0; t<partitionList[i].size(); t++)
 		{
-			if (partitionList[i][t]->num>0)
+			if (partitionList[i][t]->num>0 && partitionList[i][t]->type!=PED_PARTITION_EXTENDED)
 			{
 				if (partitionList[i][t]->fs_type==NULL)
 				{
@@ -189,6 +191,8 @@ selectSwapPartition:
 				}
 			}
 			// Confirmed:
+			string swapoff="swapoff " + swapList[i].devname;
+			system(swapoff.c_str());
 			string swapMake = "mkswap " + swapList[i].devname;
 			if (system(swapMake.c_str())!=0)
 			{
@@ -252,6 +256,7 @@ selectRootPartition:
 	}
 	if (formatOption!="---")
 	{
+		umount(rootPartition.c_str());
 		string mkfs_cmd;
 		if (formatOption!="xfs") mkfs_cmd = "mkfs." + formatOption + " " + rootPartition + " >> /var/install.log";
 		else mkfs_cmd = "mkfs." + formatOption + " -f " + rootPartition + " >> /var/install.log";
@@ -269,9 +274,20 @@ selectRootPartition:
 void setOtherPartitions()
 {
 	vector<string> gp;
-	vector<pEntry> pList = getGoodPartitions(gp);
+	vector<pEntry> pList_raw = getGoodPartitions(gp);
 	vector<TagPair> menuItems;
 	vector<TagPair> mountPoints;
+	vector<pEntry> pList;
+	for (unsigned int i=0; i<pList_raw.size(); i++)
+	{
+		if (pList_raw[i].fstype.find("linux-swap")==std::string::npos && pList_raw[i].devname.find(systemConfig.rootPartition)==std::string::npos)
+		{
+			pList.push_back(pList_raw[i]);
+
+		}
+	}
+	pList_raw.clear();
+
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
 		menuItems.push_back(TagPair(pList[i].devname, "(не подключено)"));
@@ -286,11 +302,7 @@ void setOtherPartitions()
 	exec_menu:
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
-
-		if (pList[i].fstype.find("linux-swap")==std::string::npos && mountPoints[i].tag!=systemConfig.rootPartition)
-		{
-			menuItems[i] = TagPair(pList[i].devname + " (" + pList[i].fstype + ", "+pList[i].size+" Mb)" , mountPoints[i].value);
-		}
+		menuItems[i] = TagPair(pList[i].devname + " (" + pList[i].fstype + ", "+pList[i].size+" Mb)" , mountPoints[i].value);
 	}
 
 	Dialog dialogItem;
@@ -343,7 +355,7 @@ void formatPartitions()
 loadData:
 	pList = getGoodPartitions(gp);
 	menuItems.clear();
-	menuItems.push_back("Продолжить", "Все разделы отформатированы как надо, продолжить");
+	menuItems.push_back(TagPair("Продолжить", "Все разделы отформатированы как надо, продолжить"));
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
 		for (unsigned int t=0; t<systemConfig.otherMounts.size(); t++)
@@ -366,6 +378,7 @@ loadData:
 		if (fsFormat!="xfs") mkfs_cmd = "mkfs." + fsFormat + " " + formatItem + " >> /var/install.log";
 		else mkfs_cmd = "mkfs." + fsFormat + " -f " + formatItem + " >> /var/install.log";
 		dialogItem.execInfoBox("Идет форматирование " + formatItem + " в файловую систему " + fsFormat + "\nЭто займет какое-то время");
+		umount(formatItem.c_str());
 		if (system(mkfs_cmd.c_str())!=0)
 		{
 			dialogItem.execMsgBox("При форматировании раздела " + formatItem + " произошла ошибка. Попробуйте другой тип файловой системы");
@@ -403,7 +416,7 @@ int mountPartitions()
 	return 0;
 }
 
-void autoInstall()
+int autoInstall()
 {
 	mpkg core;
 	Dialog dialogItem;
@@ -421,16 +434,38 @@ void autoInstall()
 		if (items[i].checkState) installGroups.push_back(items[i].tag);
 	}
 	core.installGroups(installGroups);
-	core.commit();
+	int ret = core.commit();
+	if (ret!=0)
+	{
+		switch(ret)
+		{
+			case MPKGERROR_UNRESOLVEDDEPS:
+				dialogItem.execMsgBox("Неразрешенные зависимости. Это проблема сборки дистрибутива, обратитесь к разработчикам");
+				break;
+			case MPKGERROR_SQLQUERYERROR:
+				dialogItem.execMsgBox("Произошла внутренняя ошибка в базе пакетов.\nЭто означает, что либо возникли проблемы с базой данных, либо это ошибка в программе");
+				break;
+			case MPKGERROR_ABORTED:
+				dialogItem.execMsgBox("Установка отменена");
+				break;
+			case MPKGERROR_COMMITERROR:
+				dialogItem.execMsgBox("Ошибка при установке пакетов. Чтобы узнать подробности, смотрите /var/mpkg/errors.log");
+				break;
+			default:
+				dialogItem.execMsgBox("Произошла неизвестная ошибка, core.commit() вернуло " + IntToStr(ret));
+		}
+	}
 	delete_tmp_files();
 
+	return ret;
 }
-void manualInstall()
+int manualInstall()
 {
 	Dialog dialogItem;
 	vector<TagPair> pkgList;
 	SQLRecord sqlSearch;
 	PACKAGE_LIST packageList;
+	mpkg core;
 	core.get_packagelist(&sqlSearch, &packageList);
 	for (int i=0; i<packageList.size(); i++)
 	{
@@ -462,33 +497,157 @@ void manualInstall()
 		}
 		core.uninstall(removeList);
 		core.install(installList);
-		core.commit();
+		int ret = core.commit();
+		if (ret!=0)
+		{
+			switch(ret)
+			{
+				case MPKGERROR_UNRESOLVEDDEPS:
+					dialogItem.execMsgBox("Неразрешенные зависимости. Это проблема сборки дистрибутива, обратитесь к разработчикам");
+					break;
+				case MPKGERROR_SQLQUERYERROR:
+					dialogItem.execMsgBox("Произошла внутренняя ошибка в базе пакетов.\nЭто означает, что либо возникли проблемы с базой данных, либо это ошибка в программе");
+					break;
+				case MPKGERROR_ABORTED:
+					dialogItem.execMsgBox("Установка отменена");
+					break;
+				case MPKGERROR_COMMITERROR:
+					dialogItem.execMsgBox("Ошибка при установке пакетов. Чтобы узнать подробности, смотрите /var/mpkg/errors.log");
+					break;
+				default:
+					dialogItem.execMsgBox("Произошла неизвестная ошибка, core.commit() вернуло " + IntToStr(ret));
+			}
+		}
+		delete_tmp_files();
+
+		return ret;
+
 	}
 	else printf("Cancelled\n");
+	return MPKGERROR_ABORTED;
 }
 
 void initDatabaseStructure()
 {
 	string cmd;
-	cmd = "mkdir -p " systemConfig.rootMountPoint+"/var/mpkg/scripts";
-	system(cmd);
-	cmd = "mkdir -p " systemConfig.rootMountPoint+"/var/mpkg/backup";
-	system(cmd);
-	cmd = "mkdir -p " systemConfig.rootMountPoint+"/var/mpkg/cache";
-	system(cmd);
-	system(cmd);
-	cmd = "ln -sf " systemConfig.rootMountPoint+"/var/mpkg /var/mpkg";
-	system(cmd);
+	cmd = "mkdir -p " + systemConfig.rootMountPoint+"/var/mpkg/scripts";
+	system(cmd.c_str());
+	cmd = "mkdir -p "+systemConfig.rootMountPoint+"/var/mpkg/backup";
+	system(cmd.c_str());
+	cmd = "mkdir -p " +systemConfig.rootMountPoint+"/var/mpkg/cache";
+	system(cmd.c_str());
+	cmd = "ln -sf " +systemConfig.rootMountPoint+"/var/mpkg /var/mpkg";
+	system(cmd.c_str());
 	cmd = "cp -f /packages.db /var/mpkg/";
-	system(cmd);
+	system(cmd.c_str());
 }
 
 
+void mountMedia()
+{
+	Dialog dialogItem;
+	dialogItem.execInfoBox("Попытка автоматического определения DVD-ROM...");
+	int ret=-1;
+	vector<string> devList;
+	// IDE drives
+	devList.push_back("/dev/hda");
+	devList.push_back("/dev/hdb");
+	devList.push_back("/dev/hdc");
+	devList.push_back("/dev/hdd");
+	devList.push_back("/dev/hde");
+	devList.push_back("/dev/hdf");
+	devList.push_back("/dev/hdg");
+	devList.push_back("/dev/hdh");
+	// SCSI CD-ROM
+	devList.push_back("/dev/scd0");
+	devList.push_back("/dev/scd1");
+	devList.push_back("/dev/scd2");
+	devList.push_back("/dev/scd3");
+	devList.push_back("/dev/scd4");
+	devList.push_back("/dev/scd5");
+	devList.push_back("/dev/scd6");
+	devList.push_back("/dev/scd7");
+	devList.push_back("/dev/scd8");
+	devList.push_back("/dev/scd9");
+	devList.push_back("/dev/scd10");
+	devList.push_back("/dev/scd11");
+	devList.push_back("/dev/scd12");
+	devList.push_back("/dev/scd13");
+	devList.push_back("/dev/scd14");
+	devList.push_back("/dev/scd15");
 
+	// SCSI/SATA CD-RW
+	devList.push_back("/dev/sr0");
+	devList.push_back("/dev/sr1");
+	devList.push_back("/dev/sr2");
+	devList.push_back("/dev/sr3");
+	devList.push_back("/dev/sr4");
+	devList.push_back("/dev/sr5");
+	devList.push_back("/dev/sr6");
+	devList.push_back("/dev/sr7");
+	devList.push_back("/dev/sr8");
+	devList.push_back("/dev/sr9");
+	devList.push_back("/dev/sr10");
+	devList.push_back("/dev/sr11");
+	devList.push_back("/dev/sr12");
+	devList.push_back("/dev/sr13");
+	devList.push_back("/dev/sr14");
+	devList.push_back("/dev/sr15");
+
+	// LPT drives
+	devList.push_back("/dev/pcd0");
+	devList.push_back("/dev/pcd1");
+	devList.push_back("/dev/pcd2");
+	devList.push_back("/dev/pcd3");
+
+	// Ugly (pre-ide) drives
+	devList.push_back("/dev/sonycd");
+	devList.push_back("/dev/optcd");
+	devList.push_back("/dev/sjcd");
+	devList.push_back("/dev/mcdx0");
+	devList.push_back("/dev/mcdx1");
+	devList.push_back("/dev/cdu535");
+	devList.push_back("/dev/sbpcd");
+	devList.push_back("/dev/aztcd");
+	devList.push_back("/dev/cm205cd");
+	devList.push_back("/dev/cm206cd");
+	devList.push_back("/dev/bpcd");
+	devList.push_back("/dev/mcd");
+
+	// Trying to mount
+	string cmd;
+	for (unsigned int i=0; i<devList.size(); i++)
+	{
+		cmd = "mount -t iso9660 " + devList[i]+" /var/log/mount 2>> /var/install.log";
+		if (system(cmd.c_str())==0)
+		{
+			systemConfig.cdromDevice=devList[i];
+			dialogItem.execInfoBox("Диск успешно найден в " + devList[i]);
+			return;
+		}
+	}
+	// Failed? Select manually please
+	if (!dialogItem.execYesNo("Автоопределение привода не удалось. Хотите указать вручную?"))
+	{
+		abort();
+	}
+manual:
+	string manualMount = dialogItem.execInputBox("Укажите вручную имя устройства (например /dev/sda)", "/dev/");
+	if (manualMount.empty())
+	{
+		if (dialogItem.execYesNo("Вы ничего не указали. Выйти из программы установки?")) abort();
+		cmd = "mount -t iso9660 " + manualMount + " /var/log/mount 2>> /var/install.log";
+		if (system(cmd.c_str())!=0)
+		{
+			dialogItem.execMsgBox("Не удалось смонтировать указанный вами диск");
+			goto manual;
+		}
+	}
+}
 
 
 	
-void selectInstallMethod()
+int selectInstallMethod()
 {
 	initDatabaseStructure();
 	Dialog dialogItem;
@@ -497,13 +656,28 @@ void selectInstallMethod()
 	options.push_back("Экспертный режим: индивидуальный выбор пакетов");
 	int opt = dialogItem.execMenu("Выберите метод установки:", options);
 	if (opt<0) abort();
-       	if (opt==0) autoInstall();
-	else manualInstall();
+       	if (opt==0) return autoInstall();
+	else return manualInstall();
 }
 
 void performConfig()
 {
+	setenv("ROOT_DEVICE", systemConfig.rootPartition.c_str(), 1);
+	WriteFile("/var/log/setup/tmp/SeTT_PX", systemConfig.rootMountPoint);
+	WriteFile("/var/log/setup/tmp/SeTrootdev", systemConfig.rootPartition);
+	system("/usr/lib/setup/SeTconfig");
+}
 
+void syncFS()
+{
+	system("sync");
+	umount(systemConfig.cdromDevice.c_str());
+}
+
+void showFinish()
+{
+	Dialog dialogItem;
+	dialogItem.execMsgBox("Установка завершена успешно! Перезагрузитесь и наслаждайтесь!");
 }
 
 int main()
@@ -514,8 +688,11 @@ int main()
 	setRootPartition();
 	setOtherPartitions();
 	formatPartitions();
+	mountMedia();
 	selectInstallMethod();
 	performConfig();
+	syncFS();
+	showFinish();
 	return 0;
 }
 
