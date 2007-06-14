@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.32 2007/06/11 03:56:39 i27249 Exp $
+$Id: dependencies.cpp,v 1.33 2007/06/14 20:36:21 i27249 Exp $
 */
 
 
@@ -128,7 +128,7 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	for (unsigned int i=0; i<package->get_dependencies()->size(); i++)
 	{
 		if (get_dep_package(&package->get_dependencies()->at(i), &tmpPackage)!=0) {
-			mError("package is broken"); package->set_broken();
+			mError("package " + *package->get_name() + " " + package->get_fullversion() + " is broken"); package->set_broken();
 		}
 		else requiredPackages.add(&tmpPackage);
 	}
@@ -164,7 +164,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	}
 	if (candidates.IsEmpty())
 	{
-		mError(dep->getDepInfo() + "is required, but no suitable version was found");
+		mError(dep->getDepInfo() + " is required, but no suitable version was found");
 		return MPKGERROR_NOPACKAGE;
 	}
 	if (candidates.hasInstalledOnes()) *returnPackage = *candidates.getInstalledOne();
