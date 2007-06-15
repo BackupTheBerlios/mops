@@ -2,52 +2,32 @@
 
 <!-- header -->
 <div id="header">
-	<div id="logo-image">
-		<img src="${pageContext.request.contextPath}/images/beta-logo.png" 
-					width="75"
-					alt="beta version" />
+	<div class="title">
+		<h1>MOPS Linux packages db.</h1>
 	</div>
-	<h1 id="logo" style="color: #fff;">
-		<a href="${pageContext.request.contextPath}/Default.action">Mops linux packages db</a>
-	</h1>
-</div>
-<!-- /header -->
-
-<!-- navigation -->
-<div id="nav">
-	<ul class="clearfix">
+	<div class="navigation">
 		<m:guest>
-			<li>
-				<stripes:link beanclass="ru.rpunet.webmops.web.LoginActionBean">
-					Login
-				</stripes:link>
-			</li>
-			<li>
-				<stripes:link beanclass="ru.rpunet.webmops.web.RegisterActionBean">
-					Register
-				</stripes:link>
-			</li>
+			<stripes:link beanclass="ru.rpunet.webmops.web.LoginActionBean">
+				Login
+			</stripes:link>
+			<stripes:link beanclass="ru.rpunet.webmops.web.RegisterActionBean">
+				Register
+			</stripes:link>
 		</m:guest>
 	
 		<m:secure>
-			<li>Logged as
-				<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">${user.login}</stripes:link>
-			</li>
-			<li>
-				<stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link>
-			</li>
+			<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">${user.login}</stripes:link>
+			<stripes:link beanclass="ru.rpunet.webmops.web.LogoutActionBean">Logout</stripes:link>
 		</m:secure>
 	
 		<m:secure roles="ADMINISTRATOR">
-			<li>
-				<stripes:link beanclass="ru.rpunet.webmops.web.admin.DashboardActionBean">Admin</stripes:link>
-			</li>
+			<stripes:link beanclass="ru.rpunet.webmops.web.admin.DashboardActionBean">Admin</stripes:link>
 		</m:secure>
 
-		<li>
-			<stripes:link beanclass="ru.rpunet.webmops.web.DefaultActionBean">Home</stripes:link>
-		</li>
-
-	</ul>
+		<stripes:link beanclass="ru.rpunet.webmops.web.DefaultActionBean">Home</stripes:link>
+		<div class="clearer"><span></span></div>
+	</div>
+	
 </div>
-<!-- /navigation -->
+<!-- /header -->
+

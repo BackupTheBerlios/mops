@@ -1,0 +1,58 @@
+.login-box table {
+	padding: 3px;
+}
+
+/**
+ dashboard
+*/
+.common-list {
+	border: solid 1px #eee;
+	border-collapse: collapse;
+	padding: 3px;
+}
+
+.dashboard-header {
+	background-color: #3c78b5;
+	color: #fff;
+	text-align: center;
+	font-size: 100%;
+}
+.even {
+	background-color: #eee;
+}
+
+.edd {
+	background-color: #fff;
+}
+
+.packages-list {
+	border: solid 1px #eee;
+	border-collapse: collapse;
+	padding: 3px;
+}
+
+.invalid-server {
+	border: solid 1px #eee;
+	border-collapse: collapse;
+	padding: 3px;
+	color: red;
+}
+
+.packages-list-header {
+	border: solid 1px #ccc;
+	border-collapse: collapse;
+	padding: 3px;
+	background-color: #eee;
+	text-align: center;
+}
+
+
+input.error,textarea.error {
+	color: red;
+	background-color: yellow;
+}
+
+input.error [type="radio"],input.error [type="checkbox"],select.error {
+	background-color: white;
+	border: 2px solid red;
+}

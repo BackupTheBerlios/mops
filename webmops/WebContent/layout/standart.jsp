@@ -13,37 +13,37 @@
 	<m:javascript include="prototype" />
 	<m:javascript include="effects" />
 	<m:javascript include="controls" />
-	<m:stylesheet name="main" />
+	<m:stylesheet name="indigo" />
+	<m:stylesheet name="mops" />
 </head>
 <body>
-<div id="container">
+<div class="container">
 	<stripes:layout-component name="header">
 		<jsp:include page="/layout/header.jsp" />
 	</stripes:layout-component>
 	
-	<div id="content">
-		<div id="cnt-inner">
-			<stripes:layout-component name="sidebar">
-				<jsp:include page="/layout/sidebar.jsp" />
-			</stripes:layout-component>
-			<div id="main" class="clearfix">
-				<div id="pagenav">
-					<p id="flash">
-						<stripes:messages />
-					</p>
-				</div>
-				<div id="main-content">
-					<stripes:layout-component name="contents" />
-				</div>
-			</div>
-			
+	<div class="main">
+		
+		<div class="content">
+			<h1><stripes:messages/></h1>
+			<br />
+			<stripes:layout-component name="contents" />	
 		</div>
+		
+		<stripes:layout-component name="sidebar">
+			<jsp:include page="/layout/sidebar.jsp" />
+		</stripes:layout-component>
+		
 	</div>
+</div>
 	
-	<div id="footer">
-		Mops linux packages db &copy; 2007
-		Andrew Diakin   <a href="mailto:adiakin[at]gmail.com">adiakin@gmail.com</a>
-	</div>
+
+<div class="footer">
+	Valid <a href="http://jigsaw.w3.org/css-validator/check/referer">CSS</a> &amp; 
+	<a href="http://validator.w3.org/check?uri=referer">XHTML</a>. 
+	&copy; 2007 Webmops Packages database
+</div>
+
 	
 </div>
 </body>
