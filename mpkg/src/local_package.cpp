@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.47 2007/06/08 00:46:47 i27249 Exp $
+$Id: local_package.cpp,v 1.48 2007/06/15 12:40:52 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -92,6 +92,7 @@ int slack2xml(string filename, string xml_output)
 	_node.getChildNode("build").addText(tmp.c_str());
 	tmp.clear();
 	_node.writeToFile(xml_output.c_str());
+	delete_tmp_files();
 	return 0;
 }
 
@@ -173,7 +174,7 @@ int LocalPackage::get_scripts()
 	string str_postinstall=ReadFile(tmp_postinstall);
 	string str_preremove=ReadFile(tmp_preremove);
 	string str_postremove=ReadFile(tmp_postremove);
-
+	delete_tmp_files();
 	return 0;
 }
 
@@ -199,6 +200,7 @@ int LocalPackage::get_xml()
 		if (slack2xml(filename, tmp_xml) != 0)
 		{
 			mError("Infernally invalid package! Cannot work with it at all");
+			delete_tmp_files();
 			return -1;
 		}
 	}
@@ -206,6 +208,7 @@ int LocalPackage::get_xml()
 	PackageConfig p(tmp_xml);
 	if (!p.parseOk)
 	{
+		delete_tmp_files();
 		return -100;
 	}
 	_packageXMLNode = p.getXMLNode(); // To be indexing work
@@ -276,6 +279,7 @@ int LocalPackage::get_xml()
 	vec_tmp_conditions.clear();
 	vec_tmp_versions.clear();
 	mDebug("get_xml end");
+	delete_tmp_files();
 	return 0;
 }
 
@@ -304,6 +308,7 @@ int LocalPackage::fill_filelist(PACKAGE *package)
 		file_tmp.set_name(&link_names[i]);
 		package->get_files()->push_back(file_tmp);
 	}
+	delete_tmp_files();
 	return 0;
 }
 
@@ -329,6 +334,7 @@ int LocalPackage::get_filelist()
 	vec_tmp_names.clear();
 	data.sync();
 	mDebug("get_filelist end");
+	delete_tmp_files();
 	return 0;
 }
 	
@@ -350,6 +356,7 @@ int LocalPackage::create_md5()
 	_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
 	mDebug("create_md5 end");
+	delete_tmp_files();
 	return 0;
 }
 
@@ -360,6 +367,7 @@ int LocalPackage::get_size()
 	string sys="gzip -l "+filename+" > "+tmp + " 2>/dev/null";
 	if (system(sys.c_str())!=0)
 	{
+		delete_tmp_files();
 		mError("Zero-length package " + filename);
 		return -2;
 	}
@@ -377,6 +385,7 @@ int LocalPackage::get_size()
 	{
 		if (fscanf(zdata, "%s", &c_size)==EOF)
 		{
+			delete_tmp_files();
 			mError("Unexcepted EOF while reading gzip data");
 			return -1;
 		}
@@ -394,6 +403,7 @@ int LocalPackage::get_size()
 	_packageXMLNode.addChild("installed_size");
 	_packageXMLNode.getChildNode("installed_size").addText(isize.c_str());
 	mDebug("get_size end");
+	delete_tmp_files();
 	return 0;
 }
 	
@@ -452,17 +462,23 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
 	if (system(sys.c_str())!=0)
 	{
+		delete_tmp_files();
 		return 0;
 	}
 	
 	// Checking for XML presence. NOTE: this procedure DOES NOT check validity of this XML!
 	if (!FileNotEmpty(tmp_xml))
 	{
+		delete_tmp_files();
 		return -1;
 	}
 
 	PackageConfig p(tmp_xml);
-	if (!p.parseOk) return -100;
+	if (!p.parseOk) 
+	{
+		delete_tmp_files();
+		return -100;
+	}
 	vector<string> vec_tmp_names=p.getConfigFilelist();
 	FILES configfile_tmp;
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
@@ -473,7 +489,8 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	}
 	vec_tmp_names.clear();
 	package->sync();
-	mDebug("PMFG...fill_configfiles end");
+	mDebug("fill_configfiles end");
+	delete_tmp_files();
 	return 0;
 
 }

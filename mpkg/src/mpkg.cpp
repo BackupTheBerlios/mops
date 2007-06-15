@@ -1,11 +1,12 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.89 2007/06/14 11:27:18 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.90 2007/06/15 12:40:52 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
 #include "syscommands.h"
 #include "DownloadManager.h"
 
+#include "dialog.h"
 /** Scans database and do actions. Actually, packages will install in SYS_ROOT folder.
  * In real (mean installed) systems, set SYS_ROOT to "/"
  * @**/
@@ -96,6 +97,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 
 int mpkgDatabase::commit_actions()
 {
+	delete_tmp_files();
 	sqlFlush();
 	// Zero: purging required packages
 	// First: removing required packages
@@ -114,16 +116,33 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.addField("package_action", ST_INSTALL);
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
+	// Checking available space
+	double rem_size=0;
+	double ins_size=0;
 
 	for (int i=0; i<remove_list.size(); i++)
 	{
 		remove_list.get_package(i)->itemID = pData.addItem(*remove_list.get_package(i)->get_name(), 10);
+		rem_size+=strtod(remove_list.get_package(i)->get_installed_size()->c_str(), NULL);
 	}
 	for (int i=0; i<install_list.size(); i++)
 	{
 		install_list.get_package(i)->itemID = pData.addItem(*install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size()->c_str()));
+		ins_size = strtod(install_list.get_package(i)->get_installed_size()->c_str(), NULL);
 	}
-	
+	double freespace = get_disk_freespace(SYS_ROOT);
+	if (freespace < ins_size - rem_size)
+	{
+		if (dialogMode)
+		{
+			Dialog dialogItem;
+			if (!dialogItem.execYesNo("Судя по всему, для установки места на диске не хватит.\nНа корневой файловой системе имеется " + IntToStr(freespace/1048576) + " Mb\nДля установки требуется: " + IntToStr((ins_size - rem_size)/1048576) + " Mb\nВсе равно продолжить?"))
+			{
+				return MPKGERROR_COMMITERROR;
+			}
+		}
+	}
+
 	// Building action list
 	actionBus.clear();
 	if (remove_list.size()>0)
@@ -169,6 +188,7 @@ int mpkgDatabase::commit_actions()
 	
 		for (int i=0;i<remove_list.size();i++)
 		{
+			delete_tmp_files();
 			actionBus.setActionProgress(ACTIONID_REMOVE,i);
 			if (actionBus._abortActions)
 			{
@@ -215,6 +235,7 @@ int mpkgDatabase::commit_actions()
 		bool skip=false;
 		for (int i=0; i<install_list.size(); i++)
 		{
+			delete_tmp_files();
 
 			actionBus.setActionProgress(ACTIONID_CACHECHECK, i);
 			if (actionBus._abortActions)

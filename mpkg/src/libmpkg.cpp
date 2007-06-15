@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.36 2007/06/11 18:21:42 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.37 2007/06/15 12:40:52 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -259,13 +259,18 @@ int mpkg::set_runscripts(bool dorun)
 // Finalizing
 int mpkg::commit()
 {
+	say("Checking dependencies\n");
 	currentStatus = "Checking dependencies...";
 	int errorCount = DepTracker->renderData();
 	if (errorCount==0)
 	{
+		say("Building queue\n");
 		DepTracker->commitToDb();
+		say("Committing...\n");
 		currentStatus = "Committing changes...";
 		unsigned int ret = db->commit_actions();
+		if (ret==0) say("Complete successfully\n");
+		else mError("Commit failed");
 		currentStatus = "Complete.";
 		return ret;
 	}

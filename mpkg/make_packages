@@ -30,10 +30,12 @@ echo "Creating GUI package"
 mkdir out_packages/gui
 tar jxvf pkg_descriptions/gui.tar.bz2 -C out_packages/gui
 mkdir -p out_packages/gui/usr/local/bin
-mkdir -p out_packages/gui/usr/share
+mkdir -p out_packages/gui/usr/share/applications
 cp /usr/local/bin/manager out_packages/gui/usr/local/bin/
 cp /usr/local/bin/updatechecker out_packages/gui/usr/local/bin/
 cp -R /usr/share/mpkg out_packages/gui/usr/share/mpkg
+
+cp -R manager/applink/* out_packages/gui/usr/share/applications/
 cd out_packages/gui/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating tools package"

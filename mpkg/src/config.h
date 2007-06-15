@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.38 2007/06/02 15:21:12 i27249 Exp $
+    $Id: config.h,v 1.39 2007/06/15 12:40:52 i27249 Exp $
 */
 
 
@@ -31,6 +31,7 @@ extern string CDROM_VOLUMELABEL;
 extern string CDROM_DEVICENAME;
 // System configuration
 extern bool consoleMode;
+extern bool dialogMode;
 extern string SYS_ROOT;		// "/root/development/sys_root/"
 extern string SYS_CACHE; 	//"/root/development/sys_cache/"
 extern string SCRIPTS_DIR;

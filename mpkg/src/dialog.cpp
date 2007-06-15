@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.4 2007/06/14 08:02:40 i27249 Exp $
+ * $Id: dialog.cpp,v 1.5 2007/06/15 12:40:52 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -76,6 +76,7 @@ bool Dialog::execYesNo(string header, unsigned int height, unsigned int width)
 	string tmp_file = get_tmp_file();
 	string exec_str = "dialog --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width);
 	int r = system(exec_str.c_str());
+	unlink(tmp_file.c_str());
 	if (r==0) return true;
 	else return false;
 }
@@ -105,7 +106,9 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 	}
 	exec_str += " 2>"+tmp_file;
 	system(exec_str.c_str());
-	return getReturnValue(tmp_file);
+	string ret = getReturnValue(tmp_file);
+	unlink(tmp_file.c_str());
+	return ret;
 }
 
 string Dialog::execInputBox(string header, string default_text, unsigned int height, unsigned int width)
@@ -113,7 +116,9 @@ string Dialog::execInputBox(string header, string default_text, unsigned int hei
 	string tmp_file = get_tmp_file();
 	string exec_str = "dialog --inputbox \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " \"" + default_text + "\"" + " 2>"+tmp_file;
 	system(exec_str.c_str());
-	return getReturnValue(tmp_file);
+	string ret = getReturnValue(tmp_file);
+	unlink(tmp_file.c_str());
+	return ret;
 }
 
 int Dialog::execMenu(string header, vector<string> menuItems)
@@ -162,6 +167,7 @@ bool Dialog::execCheckList(string header, unsigned int height, unsigned int widt
 	exec_str += " 2>"+tmp_file;
 	int d_ret = system(exec_str.c_str());
 	vector<string> ret = getReturnValues(tmp_file);
+	unlink(tmp_file.c_str());
 	if (d_ret!=0)
 		return false;
 	for (unsigned int i=0; i<menuItems->size(); i++)

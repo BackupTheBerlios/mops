@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.26 2007/06/07 13:47:22 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.27 2007/06/15 12:40:52 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -24,6 +24,7 @@ double get_disk_freespace(string point)
 		fscanf(df, "%s", &buff);
 	}
 	fclose(df);
+	unlink(tmp_file.c_str());
 	double ret = strtod(buff, NULL);
 	return ret*1024;
 }
@@ -47,6 +48,7 @@ string get_file_md5(string filename)
 	string md5str;
 	md5str=_c_md5;
 	fclose(md5);
+	unlink(tmp_md5.c_str());
 	return md5str;
 }
 
@@ -70,8 +72,7 @@ create_tmp:
 	}
 
 	tmp_fname=t;
-	temp_files.resize(temp_files.size()+1);
-	temp_files[temp_files.size()-1]=tmp_fname;
+	temp_files.push_back(tmp_fname);
 	close(fd);
 	return tmp_fname;
 }
@@ -82,13 +83,8 @@ void delete_tmp_files()
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
 		fname=temp_files[i]+".gz";
 		unlink(fname.c_str());
-		if ( unlink( temp_files[i].c_str() ) != 0 ) {
-			mDebug( temp_files[i] );
-			mDebug("\n");
-			perror( strerror( errno ) );
-		}		
+		unlink( temp_files[i].c_str() );
 	}
-
 	temp_files.clear(); // Clean-up list - for future use
 }
 
@@ -238,10 +234,12 @@ unsigned int CheckFileType(string fname)
 		mDebug("Tar returns "+IntToStr(tar_ret));
 		if (FileNotEmpty(contCheck))
 		{
+			unlink(contCheck.c_str());
 			return PKGTYPE_MOPSLINUX;
 		}
 		else
 		{
+			unlink(contCheck.c_str());
 			return PKGTYPE_SLACKWARE;
 		}
 	}

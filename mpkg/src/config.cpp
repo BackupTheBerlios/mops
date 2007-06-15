@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.31 2007/05/23 14:16:03 i27249 Exp $
+ * $Id: config.cpp,v 1.32 2007/06/15 12:40:52 i27249 Exp $
  *
  * ***************************************************/
 
@@ -10,6 +10,7 @@
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
 bool consoleMode=true;
+bool dialogMode=false;
 bool DO_NOT_RUN_SCRIPTS;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string SYS_ROOT;

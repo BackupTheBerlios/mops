@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.33 2007/06/14 20:36:21 i27249 Exp $
+$Id: dependencies.cpp,v 1.34 2007/06/15 12:40:52 i27249 Exp $
 */
 
 
@@ -85,20 +85,35 @@ int DependencyTracker::renderData()
 	int failureCounter = 0;
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
 
-/*	for (int i=0; i<installStream.size(); i++)
-	{
-		say("[%d] %s\n", i, installStream.get_package(i)->get_name()->c_str());
-	}*/
 	mDebug("Rendering removing");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	mDebug("Filtering dupes: install");
 	filterDupes(&installStream);
 	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
+	mDebug("Rolling back the items who was dropped on update");
+	PACKAGE_LIST fullWillBeList = installedPackages;
+	fullWillBeList.add(&installStream);
+	bool requested=false;
+	for (int i=0; i<removeStream.size(); i++)
+	{
+		requested=false;
+		for (int t=0; t<removeQueryList.size(); t++)
+		{
+			if (removeStream.get_package(i)->equalTo(removeQueryList.get_package(t)))
+			{
+				requested=true;
+			}
+		}
+		if (!requested && checkBrokenDeps(removeStream.get_package(i), fullWillBeList))
+		{
+			mDebug("Rolling back " + *removeStream.get_package(i)->get_name());
+			installStream.add(removeStream.get_package(i));
+		}
+	}
 
 	mDebug("Muxing streams");
 	muxStreams(installStream, removeStream);
-
 	mDebug("Searching for broken packages");
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	mDebug("done");
@@ -234,6 +249,7 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		{
 			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) //FIXME: Ооооочень странное место... явно кривое
 			{
+				mDebug("Rollback of " + *installStream.get_package(t)->get_name() + " is confirmed");
 				found=true;
 				break;
 			}
