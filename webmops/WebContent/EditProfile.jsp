@@ -37,6 +37,7 @@
 				<tr>
 					<td style="text-aling: center;" colspan="2">
 						<stripes:submit name="saveProfile" value="Save" />
+						<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">Back</stripes:link>
 					</td>
 				</tr>
 			</table>	

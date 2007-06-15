@@ -16,9 +16,13 @@
 package ru.rpunet.webmops.web;
 
 import net.sourceforge.stripes.action.DefaultHandler;
+import net.sourceforge.stripes.action.HandlesEvent;
 import net.sourceforge.stripes.action.RedirectResolution;
 import net.sourceforge.stripes.action.Resolution;
 import net.sourceforge.stripes.action.UrlBinding;
+import ru.rpunet.webmops.dao.PersonManager;
+import ru.rpunet.webmops.model.Person;
+import ru.rpunet.webmops.utils.SystemUnavaliableException;
 import ru.rpunet.webmops.utils.WebmopsActionBean;
 
 /**
@@ -28,8 +32,47 @@ import ru.rpunet.webmops.utils.WebmopsActionBean;
 @UrlBinding("/users/Block.action")
 public class BlockUserActionBean extends WebmopsActionBean {
 	
+	private Person user;
+	private Long userId;
+	private PersonManager personDAO;
+	
+	public Person getUser() {
+		return this.user;
+	}
+	
+	public void setUser(Person user) {
+		this.user = user;
+	}
+	
+	public Long getUserId() {
+		return this.userId;
+	}
+	
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	
 	@DefaultHandler
 	public Resolution index() {
 		return new RedirectResolution("/Default.action");
+	}
+	
+	@HandlesEvent("block")
+	public Resolution block() {
+		
+		personDAO = new PersonManager();
+		
+		user = personDAO.findPersonById(this.userId);
+		
+		if ( user != null ) {
+			user.setActive(false);
+			try {
+				personDAO.saveOrUpdate(user);
+			} catch (SystemUnavaliableException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return getContext().getSourcePageResolution();
 	}
 }

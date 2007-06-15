@@ -20,7 +20,7 @@
 				<td>E-Mail: </td>
 				<td>${actionBean.user.email}</td>
 			</tr>
-			<c:if test="${actionBean.user.id == user.id}">
+			<m:secure userId="${user.id}">
 				<tr>
 					<td>
 						<stripes:link beanclass="ru.rpunet.webmops.web.EditProfileActionBean">
@@ -31,8 +31,9 @@
 					</td>
 					<td>&nbsp;</td>
 				</tr>
-			</c:if>
-			<c:if test="${user.group eq 'ADMINISTRATOR' || user.group eq 'MODERATOR'}">
+			</m:secure>
+			
+			<m:secure roles="MODERATOR,ADMINISTRATOR">
 				<tr>
 					<td>
 						<stripes:link beanclass="ru.rpunet.webmops.web.admin.AddEditUserActionBean">
@@ -50,7 +51,7 @@
 					</td>
 					<td>&nbsp;</td>
 				</tr>
-			</c:if>
+			</m:secure>
 		</table>
 		<br />
 		<stripes:link beanclass="ru.rpunet.webmops.web.UserProfileActionBean">

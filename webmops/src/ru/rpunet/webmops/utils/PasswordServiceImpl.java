@@ -25,6 +25,8 @@ import org.apache.commons.logging.LogFactory;
 import sun.misc.BASE64Encoder;
 
 /**
+ * Create SHA-1 password hash
+ * 
  * @author Andrew Diakin
  *
  */

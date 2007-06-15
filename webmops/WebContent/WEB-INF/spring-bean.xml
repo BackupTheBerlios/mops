@@ -5,5 +5,5 @@
     <bean name="passwordService" class="ru.rpunet.webmops.utils.PasswordServiceImpl"
     	factory-method="getInstance" />
     	
-    <bean name="packageListReader" class="ru.rpunet.webmops.importer.SlackwarePackagesListREaderImpl" />
+    <!-- bean name="packageListReader" class="ru.rpunet.webmops.importer.SlackwarePackagesListREaderImpl" /-->
 </beans>

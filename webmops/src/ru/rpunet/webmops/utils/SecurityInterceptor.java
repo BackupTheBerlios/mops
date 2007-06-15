@@ -108,6 +108,23 @@ public class SecurityInterceptor implements Interceptor {
 		return false;
 	}
 	
+	/**
+	 * check if current user have same id as requested
+	 * @param id user id
+	 * @param ctx Current ActionBean context
+	 * @return result
+	 */
+	public static boolean validateUserById(Long id, ActionBeanContext ctx) {
+		Person user = ((WebmopsActionBeanContext) ctx).getUser();
+		
+		if ( user!= null && user.getId() == id ) {
+			// user logged in and id equals
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	public static boolean isUserInRole(List<String> roles, ActionBeanContext ctx) {
 		
 		Person user = ((WebmopsActionBeanContext) ctx).getUser();
@@ -128,7 +145,7 @@ public class SecurityInterceptor implements Interceptor {
 			return true;
 		}
 		
-		log.info("Checking if user " + user.getLogin() + " in roles(" + _roles + ")");;
+		log.info("Checking if user " + user.getLogin() + " [" + user.getGroup() + "] " + " in roles(" + _roles + ")");;
 		
 		
 		for (String role : roles) {
