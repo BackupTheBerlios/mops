@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.5 2007/06/14 20:36:21 i27249 Exp $
+ * $Id: setup.cpp,v 1.6 2007/06/17 15:25:22 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -768,8 +768,29 @@ int selectInstallMethod()
 	}
 }
 
+void writeFstab()
+{
+	mDebug("start");
+	string data = systemConfig.rootPartition + "\t/\t" + systemConfig.rootPartitionType + "\tdefaults\t1 1\n" + \
+	(string) "devpts\t/dev/pts\tdevpts\tgid=5,mode=620\t0 0\n" + \
+	(string) "proc\t/proc\tproc\tdefaults\t0 0\n";
+	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		data += systemConfig.otherMounts[i].tag + "\t" + systemConfig.otherMounts[i].value + "\tauto\tdefaults\t0 0";
+	}
+	mDebug("data is:\n"+data);
+	WriteFile(systemConfig.rootMountPoint + "/etc/fstab", data);
+	mDebug("end");
+	// TODO: recognize FS types, add filesystem options (like iocharset, codepage, umask, etc)
+}
+
+
+
 void performConfig()
 {
+
+	writeFstab();
 	mDebug("start");
 	setenv("ROOT_DEVICE", systemConfig.rootPartition.c_str(), 1);
 	WriteFile("/var/log/setup/tmp/SeTT_PX", systemConfig.rootMountPoint);
