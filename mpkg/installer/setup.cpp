@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.6 2007/06/17 15:25:22 i27249 Exp $
+ * $Id: setup.cpp,v 1.7 2007/06/18 02:51:10 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -15,28 +15,7 @@
  *
  * *************************************************/
 
-#include <mpkg/libmpkg.h>
-#include <mpkg/dialog.h>
-#include <parted/parted.h>
-#include <sys/mount.h>
-struct pEntry
-{
-	string devname;
-	string fstype;
-	string fslabel;
-	string size;
-	string freespace;
-};
-
-struct SysConfig
-{
-	string swapPartition;
-	string rootPartition;
-	string rootPartitionType;
-	vector<TagPair>otherMounts;
-	string rootMountPoint;
-	string cdromDevice;
-};
+#include "setup.h"
 
 SysConfig systemConfig;
 
@@ -272,6 +251,7 @@ selectRootPartition:
 	}
 	if (formatOption!="---")
 	{
+		systemConfig.rootPartitionType = formatOption;
 		mDebug("formatting " + rootPartition + " as " + formatOption);
 		umount(rootPartition.c_str());
 		string mkfs_cmd;
@@ -610,7 +590,7 @@ beg:
 	mDebug(cmd);
 	system(cmd.c_str());
 	mDebug("Creating mpkg object");
-	core = new mpkg;
+	/*core = new mpkg;
 	mDebug("updating database...");
 	
 	if (core->update_repository_data()!=0)
@@ -622,7 +602,8 @@ beg:
 		else abort();
 	}
 	else
-		mDebug("ok");
+		mDebug("ok");*/
+	packageSourceSelection();
 	mDebug("end");
 }
 
@@ -819,6 +800,44 @@ void showFinish()
 	mDebug("finish");
 }
 
+void packageSourceSelection()
+{
+	Dialog dialogItem;
+	mpkg *core;
+	vector<string> nullList, rList;
+start:
+	core = new mpkg;
+       	rList	= REPOSITORY_LIST;
+	dialogItem.execAddableList("Сформируйте список репозиториев\nЭто должны быть URL стандартного вида, указывающие на корень репозитория\nи заканчивающиеся символом /\nДоступные типы: ftp://, http://, file://, cdrom://\nДля установки с этого диска рекомендуем использовать file:///var/log/mount/mops/", &rList, "://");
+	// Redefine repository list
+	if (rList.empty())
+	{
+		if (dialogItem.execYesNo("Вы не указали ни одного источника пакетов. Использовать список по умолчанию?"))
+		{
+			rList.push_back("file:///var/log/mount/mops/");
+		}
+	}
+	dialogItem.execInfoBox("Обновление списка пакетов...");
+	core->set_repositorylist(rList, nullList);
+	if (core->update_repository_data()!=0)
+	{
+		mDebug("update failed");
+		Dialog dialogItem;
+		delete core;
+		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте доступность источников либо измените список."))
+		{
+			goto start;
+		}
+		else abort();
+	}
+	else
+	{
+		mDebug("ok");
+	}
+
+	delete core;
+}
+
 int main()
 {
 	mDebug("Main start");
@@ -835,7 +854,6 @@ int main()
 		mDebug("Installation failed");
 		return 0;
 	}
-
 	performConfig();
 	syncFS();
 	showFinish();

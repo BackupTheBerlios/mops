@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.60 2007/06/05 12:18:40 i27249 Exp $
+ *	$Id: core.cpp,v 1.61 2007/06/18 02:51:10 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -127,7 +127,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
-					//delete sqlTable;
 					say("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), package_id);
 					return backupFile(sqlTable->getValue(k, "file_name"), package_id, package->get_id());
 				}
@@ -191,9 +190,24 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 	        mv += SYS_ROOT + *filename + " " + bkpDir2 + "/";
 		if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
 		{
+			mError("Error while backup");
 			return MPKGERROR_FILEOPERATIONS;
 		}
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
+		// Adding some logging facility
+		FILE *log = fopen("/var/log/mpkg-backups.log","a");
+		if (log)
+		{
+			string target_name = *pkg.get_name() + "-" + pkg.get_fullversion();
+			get_package(conflicted_package_id, &pkg);
+			string overwriter_name = *pkg.get_name() + "-" + pkg.get_fullversion();
+			fprintf(log, "FILE: [%s] TARGET: [%s] OVERWRITER: [%s]\n", filename->c_str(), target_name.c_str(), overwriter_name.c_str());
+			fclose(log);
+		}
+		else
+		{
+			mError("Unable to open log file /var/log/mpkg-backups.log");
+		}
 	}
 	return 0;
 }

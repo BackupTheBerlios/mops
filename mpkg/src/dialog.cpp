@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.5 2007/06/15 12:40:52 i27249 Exp $
+ * $Id: dialog.cpp,v 1.6 2007/06/18 02:51:10 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -137,6 +137,124 @@ int Dialog::execMenu(string header, vector<string> menuItems)
 	if (ret.empty()) return -1;
 	return atoi(ret.c_str());
 }
+
+string Dialog::resolveComment(string tag)
+{
+	vector<TagPair> comments;
+
+	comments.push_back(TagPair("ftp", "Онлайн-репозиторий (FTP)"));
+	comments.push_back(TagPair("http", "Онлайн-репозиторий (HTTP)"));
+	comments.push_back(TagPair("cdrom", "Пакеты на CD/DVD-диске"));
+	comments.push_back(TagPair("file", "Пакеты на смонтированной файловой системе"));
+	for (unsigned int i=0; i<comments.size(); i++)
+	{
+		if (comments[i].tag==tag)
+			return comments[i].value;
+	}
+	return (string) "<Неизвестный тип репозитория либо некорректный URL>";
+}
+
+
+void Dialog::execAddableList(string header, vector<string> *menuItems, string tagLimiter)
+{
+	// Legend:
+	// tagLimiter, for exapmle, may be equal to "://" - this means that the value of "ftp://something.com" will be splitted in next way:
+	// 	ftp will be a value (or assotiated comment using internal database), and something.com will be a tag.
+	string tmp_file, exec_str, value;
+	vector<TagPair> menuList;
+	vector<string> tmpList;
+	int ret;
+	unsigned int pos;
+	tmp_file = get_tmp_file();
+
+begin:
+	exec_str = "dialog --ok-label \"Удалить\" --cancel-label \"Продолжить\" --extra-button --extra-label \"Добавить\" --menu \"" + header + "\" " + \
+			   IntToStr(0) + " " + IntToStr(0) + " " + IntToStr(0);
+
+	menuList.clear();
+	if (!tagLimiter.empty())
+	{
+		for (unsigned int i=0; i<menuItems->size(); i++)
+		{
+			pos = menuItems->at(i).find(tagLimiter);
+			if (pos!=std::string::npos)
+			{
+				menuList.push_back(TagPair(menuItems->at(i), resolveComment(menuItems->at(i).substr(0, pos))));
+			}
+			else
+			{
+				menuList.push_back(TagPair(menuItems->at(i), "Некорректный URL"));
+			}
+		}
+	}
+	for (unsigned int i=0; i<menuList.size(); i++)
+	{
+		exec_str += " \"" + menuList[i].tag + "\" \"" + menuList[i].value + "\" ";
+	}
+	exec_str += " 2>"+tmp_file;
+	ret = system(exec_str.c_str());
+	printf("returned %i\n", ret);
+	switch(ret)
+	{
+		case 256: // OK button
+			printf("Ok\n");
+			return;
+			break;
+		case 768: // Add button
+			value = execInputBox("Введите URL репозитория:", "");
+			if (!value.empty())
+			{
+				menuItems->push_back(value);
+			}
+			goto begin;
+			break;
+		case 0:	// Delete button
+			mError("delete button");
+			value = getReturnValue(tmp_file);
+			if (!value.empty())
+			{
+				if (menuList.size()==1)
+				{
+					execMsgBox("Список не может быть пустым. Сначала добавьте еще что-нибудь");
+					goto begin;
+				}
+				for (unsigned int i=0; i<menuList.size(); i++)
+				{
+					if (menuList[i].tag == value)
+					{
+						tmpList.clear();
+						for (unsigned int t=0; t<menuItems->size(); t++)
+						{
+							if (menuItems->at(t)!=value)
+							{
+								tmpList.push_back(menuItems->at(t));
+							}
+						}
+						*menuItems = tmpList;
+						tmpList.clear();
+						mDebug("Deleted " + value);
+						goto begin;
+					}
+				}
+				mError("out of cycle");
+				goto begin;
+			}
+			else
+			{
+				mDebug("empty value");
+			}
+			goto begin;
+			break;
+		default: // Cancel, ESC, and other errors
+			mError(exec_str);
+			mDebug("Returned " +  IntToStr(ret));
+			
+					
+			if (execYesNo("Действительно прервать?")) abort();
+			else goto begin;
+	}
+}
+
 void Dialog::execGauge(string text, unsigned int height, unsigned int width, int value)
 {
 	string exec_str = "echo " + IntToStr(value) + " | dialog --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);

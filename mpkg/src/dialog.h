@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.h,v 1.4 2007/06/14 08:02:40 i27249 Exp $
+ * $Id: dialog.h,v 1.5 2007/06/18 02:51:10 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -33,6 +33,8 @@ class Dialog
 	Dialog();
 	~Dialog();
 	string getReturnValue(string tmp_file);
+	void execAddableList(string header, vector<string> *menuItems, string tagLimiter="");
+	string resolveComment(string tag);
 	bool execYesNo(string header, unsigned int height=0, unsigned int width=0);
 	void execInfoBox(string text, unsigned int height=0, unsigned int width=0);
 	vector<string> getReturnValues(string tmp_file, bool quoted=true);
