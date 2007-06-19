@@ -1,2 +1,3 @@
 g++ -O2 -march=i486 -mtune=i686 -lmpkg -lparted -o setup setup.cpp
+strip setup
 

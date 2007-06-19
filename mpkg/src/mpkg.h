@@ -1,11 +1,12 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.35 2007/06/15 12:40:53 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.36 2007/06/19 01:20:58 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
 #ifndef MPKG_H_
 #define MPKG_H_
 
+#include <math.h>
 #include "constants.h"
 #include "debug.h"
 #include "config.h"

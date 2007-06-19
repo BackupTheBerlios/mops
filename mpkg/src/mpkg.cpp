@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.90 2007/06/15 12:40:52 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.91 2007/06/19 01:20:58 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -97,6 +97,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 
 int mpkgDatabase::commit_actions()
 {
+	Dialog dialogItem;
 	delete_tmp_files();
 	sqlFlush();
 	// Zero: purging required packages
@@ -136,7 +137,7 @@ int mpkgDatabase::commit_actions()
 		if (dialogMode)
 		{
 			Dialog dialogItem;
-			if (!dialogItem.execYesNo("Судя по всему, для установки места на диске не хватит.\nНа корневой файловой системе имеется " + IntToStr(freespace/1048576) + " Mb\nДля установки требуется: " + IntToStr((ins_size - rem_size)/1048576) + " Mb\nВсе равно продолжить?"))
+			if (!dialogItem.execYesNo("Судя по всему, для установки места на диске не хватит.\nНа корневой файловой системе " + SYS_ROOT+" имеется " + IntToStr(freespace/1048576) + " Mb\nДля установки требуется: " + IntToStr((ins_size - rem_size)/1048576) + " Mb\nВсе равно продолжить?"))
 			{
 				return MPKGERROR_COMMITERROR;
 			}
@@ -188,6 +189,13 @@ int mpkgDatabase::commit_actions()
 	
 		for (int i=0;i<remove_list.size();i++)
 		{
+			if (dialogMode)
+			{
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + "] Удаляется пакет " + \
+						*remove_list.get_package(i)->get_name() + "-" + \
+						remove_list.get_package(i)->get_fullversion(), 10,80, \
+						round((i+1)*(100/remove_list.size())));
+			}	
 			delete_tmp_files();
 			actionBus.setActionProgress(ACTIONID_REMOVE,i);
 			if (actionBus._abortActions)
@@ -235,6 +243,13 @@ int mpkgDatabase::commit_actions()
 		bool skip=false;
 		for (int i=0; i<install_list.size(); i++)
 		{
+			if (dialogMode)
+			{
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка кэша: " + \
+						*install_list.get_package(i)->get_name() + "-" + \
+						install_list.get_package(i)->get_fullversion(), 10,80, \
+						round((i+1)*(100/install_list.size())));
+			}	
 			delete_tmp_files();
 
 			actionBus.setActionProgress(ACTIONID_CACHECHECK, i);
@@ -299,6 +314,7 @@ int mpkgDatabase::commit_actions()
 		{
 			do_download = false;
 			pData.downloadAction=true;
+
 			if (CommonGetFileEx(downloadQueue, &currentItem) == DOWNLOAD_ERROR)
 			{
 				mError("Download failed (returned DOWNLOAD_ERROR)");
@@ -349,7 +365,14 @@ installProcess:
 			}
 			if (actionBus.skipped(ACTIONID_MD5CHECK)) break;
 
-			say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
+			if (dialogMode)
+			{
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка целостности файлов: " + \
+						*install_list.get_package(i)->get_name() + "-" + \
+						install_list.get_package(i)->get_fullversion(), 10,80, \
+						round((i+1)*(100/install_list.size())));
+			}
+			else say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
 			currentStatus = "Checking md5 of downloaded files: " + *install_list.get_package(i)->get_name();
 	
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
@@ -418,6 +441,13 @@ installProcess:
 			}
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
 			currentStatus = "Installing package " + *install_list.get_package(i)->get_name();
+			if (dialogMode)
+			{
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Устанавливается пакет " + \
+						*install_list.get_package(i)->get_name() + "-" + \
+						install_list.get_package(i)->get_fullversion(), 10,80, \
+						round((i+1)*(100/install_list.size())));
+			}	
 			if (install_package(install_list.get_package(i))!=0)
 			{
 				installFailures++;
@@ -442,7 +472,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 {
 
 	pData.setItemCurrentAction(package->itemID, "installing");
-	say("Installing %s %s\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+	if (!dialogMode) say("Installing %s %s\n",package->get_name()->c_str(), package->get_fullversion().c_str());
 	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package " + *package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	// First of all: EXTRACT file list and scripts!!!
@@ -633,8 +663,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	package->sync();
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
 	pData.setItemCurrentAction(package->itemID, "removing");
-
-	say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+	if (!dialogMode) say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
 
 	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+*package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";

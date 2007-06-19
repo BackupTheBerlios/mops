@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.7 2007/06/18 02:51:10 i27249 Exp $
+ * $Id: setup.cpp,v 1.8 2007/06/19 01:20:58 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -840,6 +840,7 @@ start:
 
 int main()
 {
+	dialogMode=true;
 	mDebug("Main start");
 	systemConfig.rootMountPoint="/mnt";
 	showGreeting();
