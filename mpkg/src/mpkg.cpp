@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.91 2007/06/19 01:20:58 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.92 2007/06/20 11:21:45 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -132,6 +132,7 @@ int mpkgDatabase::commit_actions()
 		ins_size = strtod(install_list.get_package(i)->get_installed_size()->c_str(), NULL);
 	}
 	double freespace = get_disk_freespace(SYS_ROOT);
+	/*
 	if (freespace < ins_size - rem_size)
 	{
 		if (dialogMode)
@@ -142,7 +143,7 @@ int mpkgDatabase::commit_actions()
 				return MPKGERROR_COMMITERROR;
 			}
 		}
-	}
+	}*/
 
 	// Building action list
 	actionBus.clear();
@@ -194,7 +195,7 @@ int mpkgDatabase::commit_actions()
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + "] Удаляется пакет " + \
 						*remove_list.get_package(i)->get_name() + "-" + \
 						remove_list.get_package(i)->get_fullversion(), 10,80, \
-						round((i+1)*(100/remove_list.size())));
+						round(i/(remove_list.size()/100)));
 			}	
 			delete_tmp_files();
 			actionBus.setActionProgress(ACTIONID_REMOVE,i);
@@ -248,7 +249,7 @@ int mpkgDatabase::commit_actions()
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка кэша: " + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
-						round((i+1)*(100/install_list.size())));
+						round(i/(install_list.size()/100)));
 			}	
 			delete_tmp_files();
 
@@ -370,7 +371,7 @@ installProcess:
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка целостности файлов: " + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
-						round((i+1)*(100/install_list.size())));
+						round(i/(install_list.size()/100)));
 			}
 			else say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
 			currentStatus = "Checking md5 of downloaded files: " + *install_list.get_package(i)->get_name();
@@ -446,7 +447,7 @@ installProcess:
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Устанавливается пакет " + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
-						round((i+1)*(100/install_list.size())));
+						round(i/(install_list.size()/100)));
 			}	
 			if (install_package(install_list.get_package(i))!=0)
 			{

@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.8 2007/06/19 01:20:58 i27249 Exp $
+ * $Id: setup.cpp,v 1.9 2007/06/20 11:21:45 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -134,7 +134,7 @@ void showGreeting()
 {
 	mDebug("start");
 	Dialog dialogItem;
-	dialogItem.execMsgBox("Добро пожаловать в MOPSLinux!\n\nПеред вами - экспериментальная версия, это значит что вместе с новыми \nдостоинствами возможно добавились и новые ошибки, но мы надеемся что все будет гораздо лучше. Удачи! Debug release!");
+	dialogItem.execMsgBox("Добро пожаловать в MOPSLinux!\n\nПрограмма установки выполнит установку системы на ваш компьютер\nи проведет первоначальную конфигурацию.\n");
 	mDebug("end");
 }
 
@@ -323,6 +323,7 @@ void setOtherPartitions()
 			{
 				mDebug("added " + pList[i].devname + " to mount at " + mountPoints[i].value);
 				systemConfig.otherMounts.push_back(TagPair(pList[i].devname, mountPoints[i].value));
+				systemConfig.otherMountFSTypes.push_back(pList[i].fstype);
 			}
 		}
 		mDebug("end");
@@ -466,6 +467,7 @@ int autoInstall()
 		if (items[i].checkState) installGroups.push_back(items[i].tag);
 	}
 	core.installGroups(installGroups);
+	dialogItem.execInfoBox("Подготовка к установке, ждите...");
 	int ret = core.commit();
 	if (ret!=0)
 	{
@@ -755,15 +757,30 @@ void writeFstab()
 	string data = systemConfig.rootPartition + "\t/\t" + systemConfig.rootPartitionType + "\tdefaults\t1 1\n" + \
 	(string) "devpts\t/dev/pts\tdevpts\tgid=5,mode=620\t0 0\n" + \
 	(string) "proc\t/proc\tproc\tdefaults\t0 0\n";
+	string options="defaults";
+	string fstype="auto";
 	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
-		data += systemConfig.otherMounts[i].tag + "\t" + systemConfig.otherMounts[i].value + "\tauto\tdefaults\t0 0";
+		options="defaults";
+		fstype="auto";
+		if (systemConfig.otherMountFSTypes[i].find("fat")!=std::string::npos)
+		{
+			options="codepage=866,iocharset=utf-8,user,users,umask=022";
+			fstype="vfat";
+		}
+		if (systemConfig.otherMountFSTypes[i].find("ntfs")!=std::string::npos)
+		{
+			options="locale=ru_RU.utf8,umask=022";
+			fstype="ntfs-3g";
+		}
+		data += systemConfig.otherMounts[i].tag + "\t" + systemConfig.otherMounts[i].value + "\t"+fstype+"\t" + options + "\t0 0";
 	}
 	mDebug("data is:\n"+data);
+	
 	WriteFile(systemConfig.rootMountPoint + "/etc/fstab", data);
+	//WriteFile("fstab", data);
 	mDebug("end");
-	// TODO: recognize FS types, add filesystem options (like iocharset, codepage, umask, etc)
 }
 
 
