@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.32 2007/06/15 12:40:52 i27249 Exp $
+ * $Id: config.cpp,v 1.33 2007/06/21 20:22:49 i27249 Exp $
  *
  * ***************************************************/
 
@@ -9,6 +9,8 @@
 
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
+bool simulate=false;
+bool force_all=false;
 bool consoleMode=true;
 bool dialogMode=false;
 bool DO_NOT_RUN_SCRIPTS;

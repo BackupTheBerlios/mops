@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.15 2007/06/21 18:35:48 i27249 Exp $
+* $Id: file_routines.h,v 1.16 2007/06/21 20:22:49 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -26,6 +26,9 @@ using namespace std;
 #include <sys/dir.h>
 #include <sys/types.h>
 #include <sys/param.h>
+int system(string cmd);
+bool backupDatabase();
+bool restoreDatabaseFromBackup();
 double get_disk_freespace(string point="/");
 string get_file_md5(string filename);
 string get_tmp_file();

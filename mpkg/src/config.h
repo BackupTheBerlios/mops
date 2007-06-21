@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.39 2007/06/15 12:40:52 i27249 Exp $
+    $Id: config.h,v 1.40 2007/06/21 20:22:49 i27249 Exp $
 */
 
 
@@ -23,6 +23,8 @@ using namespace std;
 
 #ifndef HTTP_LIB
 // Global configuration and message bus
+extern bool simulate;
+extern bool force_all;
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;
 extern string CDROM_DEVICE;

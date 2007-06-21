@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.41 2007/06/01 04:13:51 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.42 2007/06/21 20:22:49 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -417,6 +417,8 @@ SQLiteDB::SQLiteDB(string filename)
 	int sql_return;
 	mpkgErrorReturn errRet;
 
+backupdb:
+	backupDatabase();
 opendb:
 	sql_return=init();
 	
@@ -471,6 +473,10 @@ int SQLiteDB::initDatabaseStructure()
 SQLiteDB::~SQLiteDB(){
 	sqlCommit();
 	sqlite3_close(db);
+	if (simulate)
+	{
+		restoreDatabaseFromBackup();
+	}
 }
 
 int SQLProxy::sqlCommit()

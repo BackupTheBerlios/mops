@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.10 2007/06/21 18:35:48 i27249 Exp $
+ * $Id: setup.cpp,v 1.11 2007/06/21 20:22:49 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -32,7 +32,7 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 	PedDevice *tmpDevice=NULL;
 	PedDisk *tmpDisk=NULL;
 	PedPartition *tmpPartition=NULL;
-	int x=0;
+	//int x=0;
 	while (!enumFinished)
 	{
 		tmpDevice = ped_device_get_next(tmpDevice);
@@ -306,7 +306,7 @@ void setOtherPartitions()
 	menuItems.push_back(TagPair("Продолжить", "Все готово, продолжить далее"));
 	string editItem;
 	string tmp_value;
-	unsigned int currentItem;
+	unsigned int currentItem=0;
 	exec_menu:
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
@@ -428,7 +428,7 @@ int mountPartitions()
 	else mDebug("root mkdir and mount OK");
 	
 	// Sorting mount points
-	vector<int> mountOrder, mountPriority;
+	vector<unsigned int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
 		mountPriority.push_back(0);
@@ -606,8 +606,6 @@ int manualInstall()
 void initDatabaseStructure()
 {
 	mDebug("start");
-	mpkg *core;
-beg:
 	mDebug("Processing directories");
 	string cmd;
 	cmd = "rm -rf " + systemConfig.rootMountPoint+"/var/mpkg 2>>/var/install.log";
@@ -629,19 +627,6 @@ beg:
 	mDebug(cmd);
 	system(cmd.c_str());
 	mDebug("Creating mpkg object");
-	/*core = new mpkg;
-	mDebug("updating database...");
-	
-	if (core->update_repository_data()!=0)
-	{
-		mDebug("failed");
-		Dialog dialogItem;
-		delete core;
-		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте носители."))	goto beg;
-		else abort();
-	}
-	else
-		mDebug("ok");*/
 	packageSourceSelection();
 	mDebug("end");
 }
@@ -654,7 +639,6 @@ void mountMedia()
 	else mDebug("cd wasn't mounted or unmount error. Processing to detection");
 	Dialog dialogItem;
 	dialogItem.execInfoBox("Попытка автоматического определения DVD-ROM...");
-	int ret=-1;
 	vector<string> devList;
 	// IDE drives
 	devList.push_back("/dev/hda");
@@ -799,7 +783,7 @@ void writeFstab()
 	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
 	
 	// Sorting
-	vector<int> mountOrder, mountPriority;
+	vector<unsigned int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
 		mountPriority.push_back(0);
@@ -927,8 +911,22 @@ start:
 	delete core;
 }
 
-int main()
+int main(int argc, char **argv)
 {
+	if (argc>=2)
+	{
+		if (strcmp(argv[1], "--simulate")==0)
+		{
+			simulate=true;
+			say("Simulation mode!\n");
+			sleep(1);
+		}
+		else
+		{
+			mError("Incorrect parameters");
+			abort();
+		}
+	}
 	dialogMode=true;
 	mDebug("Main start");
 	systemConfig.rootMountPoint="/mnt";

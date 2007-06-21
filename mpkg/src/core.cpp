@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.61 2007/06/18 02:51:10 i27249 Exp $
+ *	$Id: core.cpp,v 1.62 2007/06/21 20:22:49 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -188,10 +188,13 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 		
 		string mv = "mv ";
 	        mv += SYS_ROOT + *filename + " " + bkpDir2 + "/";
-		if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
+		if (!simulate)
 		{
-			mError("Error while backup");
-			return MPKGERROR_FILEOPERATIONS;
+			if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
+			{
+				mError("Error while backup");
+				return MPKGERROR_FILEOPERATIONS;
+			}
 		}
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
 		// Adding some logging facility
@@ -217,7 +220,7 @@ int _cleanBackupCallback(const char *filename, const struct stat *file_status, i
 	unsigned short x=0, y=0;
 
 	if (file_status->st_ino!=0) x=y;
-	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP)!=0 ) rmdir(filename);
+	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP)!=0 && !simulate ) rmdir(filename);
 	return 0;
 }
 

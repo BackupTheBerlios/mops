@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.28 2007/06/21 18:35:48 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.29 2007/06/21 20:22:49 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -11,10 +11,36 @@
 vector<string> temp_files;
 extern int errno;
 
+bool backupDatabase()
+{
+	string cmd = "cp -f " + DB_FILENAME + " " + DB_FILENAME+".backup 2>&1 >/dev/null";
+	mDebug(cmd);
+	if (system(cmd)==0) return true;
+	else return false;
+}
+
+bool restoreDatabaseFromBackup()
+{
+	mDebug("restoring");
+	if (system("cp -f " + DB_FILENAME + ".backup " + DB_FILENAME + " 2>&1 >/dev/null")==0) return true;
+	else return false;
+}
+
+int system(string cmd)
+{
+	int ret = system(cmd.c_str());
+	mDebug("[returned " + IntToStr(ret) + "] " + cmd);
+	return ret;
+}
 double get_disk_freespace(string point)
 {
 	struct statfs buf;
 	int s_ret = statfs(point.c_str(), &buf);
+	if (s_ret!=0)
+	{
+		mError("Unable to determine FS parameters of " + point);
+		return 0;
+	}
 	long long dfree = buf.f_bsize * buf.f_bfree;
 	return (double) dfree;
 }

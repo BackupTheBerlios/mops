@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.48 2007/06/15 12:40:52 i27249 Exp $
+$Id: local_package.cpp,v 1.49 2007/06/21 20:22:49 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -133,7 +133,7 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	string tmp_preremove=scripts_dir+"preremove.sh";
 	string tmp_postremove=scripts_dir+"postremove.sh";
 	string mkdir_pkg="mkdir -p "+scripts_dir+" 2>/dev/null";
-	system(mkdir_pkg.c_str());
+	if (!simulate) system(mkdir_pkg.c_str());
 	string sys_cache=SYS_CACHE;
 	string filename=sys_cache + *package->get_filename();
 	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
@@ -141,40 +141,14 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
 	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+ tmp_postremove + " 2>/dev/null";
 
-	system(sys_preinstall.c_str());
-	system(sys_postinstall.c_str());
-	system(sys_preremove.c_str());
-	system(sys_postremove.c_str());
+	if (!simulate) 
+	{
+		system(sys_preinstall.c_str());
+		system(sys_postinstall.c_str());
+		system(sys_preremove.c_str());
+		system(sys_postremove.c_str());
+	}
 
-	return 0;
-}
-
-
-
-int LocalPackage::get_scripts()
-{
-	mDebug("get_scripts start");
-	
-	string tmp_preinstall=get_tmp_file();
-	string tmp_postinstall=get_tmp_file();
-	string tmp_preremove=get_tmp_file();
-	string tmp_postremove=get_tmp_file();
-	
-	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+tmp_preinstall+" 2>/dev/null";
-	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+tmp_postinstall+" 2>/dev/null";
-	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+tmp_preremove+" 2>/dev/null";
-	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+tmp_postremove+" 2>/dev/null";
-
-	system(sys_preinstall.c_str());
-	system(sys_postinstall.c_str());
-	system(sys_preremove.c_str());
-	system(sys_postremove.c_str());
-
-	string str_preinstall=ReadFile(tmp_preinstall);
-	string str_postinstall=ReadFile(tmp_postinstall);
-	string str_preremove=ReadFile(tmp_preremove);
-	string str_postremove=ReadFile(tmp_postremove);
-	delete_tmp_files();
 	return 0;
 }
 
@@ -522,14 +496,14 @@ int LocalPackage::injectFile(bool index)
 	mDebug("local_packaige.cpp: injectFile(): filename is "+ filename);
 	data.set_filename(&filename);
 	
-	if (!index)
+	/*if (!index)
 	{
 		if (get_scripts()!=0)
 		{
 			mDebug("local_package.cpp: injectFile(): get_scripts FAILED");
 			return -4;
 		}
-	}
+	}*/
 	if (!index) // NOT Building file list on server, build locally
 	{
 		if (get_filelist()!=0)

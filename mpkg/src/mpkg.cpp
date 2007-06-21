@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.93 2007/06/21 18:35:48 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.94 2007/06/21 20:22:49 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -89,7 +89,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 		return true;
 	else
 	{
-		if (clear_wrong)unlink(fname.c_str());
+		if (clear_wrong) unlink(fname.c_str());
 		return false;
 	}
 }
@@ -133,7 +133,7 @@ int mpkgDatabase::commit_actions()
 	}
 	double freespace = get_disk_freespace(SYS_ROOT);
 	
-	if (freespace < ins_size - rem_size)
+	if (freespace < (ins_size - rem_size))
 	{
 		if (dialogMode)
 		{
@@ -571,7 +571,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		if (FileExists(package->get_scriptdir() + "preinst.sh"))
 		{
 			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preinst.sh";
-			system(preinst.c_str());
+			if (!simulate) system(preinst.c_str());
 		}
 	}
 
@@ -584,7 +584,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	string sys_cache=SYS_CACHE;
 	string sys_root=SYS_ROOT;
 	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
-	system(create_root.c_str());
+	if (!simulate) system(create_root.c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache + *package->get_filename()+" --exclude install";
 	//If previous version isn't purged, do not overwrite config files
 	if (no_purge)
@@ -627,10 +627,13 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	package_files.clear();
 	sys+=" > /dev/null)";
 //#ifdef ACTUAL_EXTRACT
-	if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
-	else {
-		currentStatus = "Failed to extract!";
-		return -10;
+	if (!simulate)
+	{
+		if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
+		else {
+			currentStatus = "Failed to extract!";
+			return -10;
+		}
 	}
 //#endif
 	pData.increaseItemProgress(package->itemID);
@@ -643,7 +646,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		if (FileExists(package->get_scriptdir() + "doinst.sh"))
 		{
 			string postinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "doinst.sh";
-			system(postinst.c_str());
+			if (!simulate) system(postinst);
 		}
 	}
 
@@ -680,7 +683,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			{
 				currentStatus = statusHeader + "executing pre-remove scripts";
 				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
-				system(prerem.c_str());
+				if (!simulate) system(prerem.c_str());
 			}
 		}
 		pData.increaseItemProgress(package->itemID);
@@ -704,7 +707,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			if (removeThis && fname[fname.length()-1]!='/')
 			{
 				pData.increaseItemProgress(package->itemID);
-				unlink (fname.c_str());
+				if (!simulate) unlink (fname.c_str());
 			}
 		}
 
@@ -729,7 +732,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 			for (int x=empty_dirs.size()-1;x>=0; x--)
 			{
-				rmdir(empty_dirs[x].c_str());
+				if (!simulate) rmdir(empty_dirs[x].c_str());
 			}
 			edir.clear();
 			empty_dirs.clear();
@@ -742,7 +745,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			{
 				currentStatus = statusHeader + "executing post-removal scripts";
 				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
-				system(postrem.c_str());
+				if (!simulate) system(postrem.c_str());
 			}
 		}
 	}
@@ -757,13 +760,13 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		{
 			cmd = "mkdir -p ";
 		       	cmd += SYS_ROOT + restore[i].get_backup_file()->substr(0, restore[i].get_backup_file()->find_last_of("/"));
-			system(cmd.c_str());
+			if (!simulate) system(cmd.c_str());
 			cmd = "mv ";
 		        cmd += *restore[i].get_backup_file() + " ";
 			tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
 			tmpName = tmpName.substr(tmpName.find("/"));
 		        cmd += SYS_ROOT	+ tmpName;
-			system(cmd.c_str());
+			if (!simulate) system(cmd.c_str());
 			delete_conflict_record(package->get_id(), restore[i].get_backup_file());
 		}
 	}
@@ -1062,12 +1065,6 @@ int mpkgDatabase::syncronize_data(PACKAGE_LIST *pkgList)
 	mDebug("removed wrong packages");
 	delete allList;
 	mDebug("deleted object, returning");
-	
-	
-		
-
-
-	
 	return 0;
 
 }

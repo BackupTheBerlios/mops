@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.13 2007/03/06 01:17:25 i27249 Exp $
+$Id: local_package.h,v 1.14 2007/06/21 20:22:49 i27249 Exp $
 */
 
 
@@ -34,7 +34,6 @@ class LocalPackage
 		int create_md5();
 		int get_size();
 		int get_xml();
-		int get_scripts();
 		int get_filelist();
 		int set_additional_data();
 		unsigned int packageType;

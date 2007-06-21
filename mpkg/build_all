@@ -3,11 +3,12 @@
 ###################################################
 # Build script over entire project
 # Performs clean build of all items
-# $Id: build_all,v 1.2 2007/05/16 01:38:32 i27249 Exp $
+# $Id: build_all,v 1.3 2007/06/21 20:22:48 i27249 Exp $
 ###################################################
 
 (cd src/build; ./clean; ./build)
 (cd manager; make clean; ./build)
 (cd packagebuilder; make clean; ./build)
 (cd updatechecker; make clean; ./build)
+(cd installer; ./clean; ./build)
 echo "Build finished."
