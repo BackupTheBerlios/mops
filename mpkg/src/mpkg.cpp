@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.92 2007/06/20 11:21:45 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.93 2007/06/21 18:35:48 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -129,21 +129,22 @@ int mpkgDatabase::commit_actions()
 	for (int i=0; i<install_list.size(); i++)
 	{
 		install_list.get_package(i)->itemID = pData.addItem(*install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size()->c_str()));
-		ins_size = strtod(install_list.get_package(i)->get_installed_size()->c_str(), NULL);
+		ins_size += strtod(install_list.get_package(i)->get_installed_size()->c_str(), NULL);
 	}
 	double freespace = get_disk_freespace(SYS_ROOT);
-	/*
+	
 	if (freespace < ins_size - rem_size)
 	{
 		if (dialogMode)
 		{
 			Dialog dialogItem;
-			if (!dialogItem.execYesNo("Судя по всему, для установки места на диске не хватит.\nНа корневой файловой системе " + SYS_ROOT+" имеется " + IntToStr(freespace/1048576) + " Mb\nДля установки требуется: " + IntToStr((ins_size - rem_size)/1048576) + " Mb\nВсе равно продолжить?"))
+			if (!dialogItem.execYesNo("Судя по всему, для установки места на диске не хватит.\nНа корневой файловой системе " + SYS_ROOT+" имеется " + humanizeSize(freespace) + "\nДля установки требуется: " + humanizeSize(ins_size - rem_size) + "\nВсе равно продолжить?"))
 			{
 				return MPKGERROR_COMMITERROR;
 			}
 		}
-	}*/
+		else mError("Seems that free space is not enough to install. Required: " + humanizeSize(ins_size - rem_size) + ", available: " + humanizeSize(freespace));
+	}
 
 	// Building action list
 	actionBus.clear();

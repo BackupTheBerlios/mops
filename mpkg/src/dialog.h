@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.h,v 1.5 2007/06/18 02:51:10 i27249 Exp $
+ * $Id: dialog.h,v 1.6 2007/06/21 18:35:48 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -8,13 +8,14 @@
 #ifndef DIALOGCPP_H_
 #define DIALOGCPP_H_
 
-/*#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <vector>
 #include <string>
-#include <map>*/
-#include "libmpkg.h"
-//using namespace std;
+#include <map>
+#include "file_routines.h"
+using namespace std;
 class TagPair
 {
 	public:

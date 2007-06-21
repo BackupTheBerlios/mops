@@ -1,32 +1,22 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.27 2007/06/15 12:40:52 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.28 2007/06/21 18:35:48 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
 #include <assert.h>
 #include <sys/stat.h>
+#include <sys/vfs.h>
 #include <fstream>
 vector<string> temp_files;
 extern int errno;
 
 double get_disk_freespace(string point)
 {
-	string tmp_file = get_tmp_file();
-	string cmd = "df " + point + " > " + tmp_file;
-	system(cmd.c_str());
-	FILE *df = fopen(tmp_file.c_str(), "r");
-	if (!df) return 0;
-	char buff[200];
-	memset(&buff, 0, sizeof(buff));
-	for (int i=0; i<12; i++)
-	{
-		fscanf(df, "%s", &buff);
-	}
-	fclose(df);
-	unlink(tmp_file.c_str());
-	double ret = strtod(buff, NULL);
-	return ret*1024;
+	struct statfs buf;
+	int s_ret = statfs(point.c_str(), &buf);
+	long long dfree = buf.f_bsize * buf.f_bfree;
+	return (double) dfree;
 }
 
 

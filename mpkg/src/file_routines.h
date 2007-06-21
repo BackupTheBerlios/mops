@@ -1,11 +1,12 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.14 2007/05/23 18:02:18 i27249 Exp $
+* $Id: file_routines.h,v 1.15 2007/06/21 18:35:48 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
 #include <string>
 #include <vector>
+#include <math.h>
 #include "config.h"
 #include "dataunits.h"
 #include "string_operations.h"

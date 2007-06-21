@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.42 2007/06/19 01:20:58 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.43 2007/06/21 18:35:48 i27249 Exp $
 #
 
 # Project name
@@ -28,7 +28,7 @@ ELSE(APPLE)
 ENDIF(APPLE)
 
 # TARGET: building HTTP library (libmpkg-http.so)
-ADD_LIBRARY(mpkg-http libmpkg-http HttpDownload debug)
+ADD_LIBRARY(mpkg-http libmpkg-http HttpDownload debug dialog)
 # Link parameters for mpkg-http
 TARGET_LINK_LIBRARIES(mpkg-http dl curl)
 

@@ -1,5 +1,5 @@
 #include "HttpDownload.h"
-
+#include "dialog.h"
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <sys/types.h>
@@ -47,6 +47,11 @@ static int downloadCallback(void *clientp,
 	{
 		return -2;
 	}
+	if (!dialogMode)
+	{
+		Dialog dialogItem;
+		dialogItem.execGauge("Скачивается файл " + ppData->getItemName(currentItemID), 10,80, (unsigned int) round(dlnow/(dltotal/100)));
+	}
 
 	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
 	return 0;
@@ -55,6 +60,7 @@ static int downloadCallback(void *clientp,
 
 int fileLinker(std::string source, std::string output)
 {
+
 	unlink(output.c_str());
 	int ret = symlink(source.c_str(), output.c_str());
 	return ret;
@@ -319,7 +325,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-					say("Downloading %s\n", item->url_list.at(j).c_str());
+					if (!dialogMode) say("Downloading %s\n", item->url_list.at(j).c_str());
+					else mDebug("Downloading " + item->url_list.at(j));
 					if (prData->size()>0)
 					{
 						prData->setItemCurrentAction(item->itemID, "Downloading");

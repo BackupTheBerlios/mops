@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.9 2007/06/20 11:21:45 i27249 Exp $
+ * $Id: setup.cpp,v 1.10 2007/06/21 18:35:48 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -425,13 +425,50 @@ int mountPartitions()
 		dialogItem.execInfoBox("Произошла ошибка при монтировании корневой файловой системы.\nПроверьте всё и начните установку заново");
 		abort();
 	}
-	else mDebug("mkdir and mount OK");
+	else mDebug("root mkdir and mount OK");
+	
+	// Sorting mount points
+	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
-		dialogItem.execInfoBox("Монтируются дополнительные файловые системы: " + systemConfig.otherMounts[i].tag + " ["+ \
-				systemConfig.otherMounts[i].value+"]");
-		mkdir_cmd = "mkdir -p " + systemConfig.rootMountPoint+systemConfig.otherMounts[i].value;
-		mount_cmd = "mount " + systemConfig.otherMounts[i].tag + " " + systemConfig.rootMountPoint+systemConfig.otherMounts[i].value;
+		mountPriority.push_back(0);
+	}
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		for (unsigned int t=0; t<systemConfig.otherMounts.size(); t++)
+		{
+			if (systemConfig.otherMounts[i].value.find(systemConfig.otherMounts[t].value)==0)
+			{
+				mountPriority[i]++;
+			}
+		}
+	}
+	for (unsigned int i=0; i<mountPriority.size(); i++)
+	{
+		for (unsigned int t=0; t<mountPriority.size(); t++)
+		{
+			if (mountPriority[t]==i)
+			{
+				mountOrder.push_back(t);
+			}
+		}
+	}
+	if (mountOrder.size()!=systemConfig.otherMounts.size()) 
+	{
+		mError("mount code error, size mismatch: order size = " + \
+			IntToStr(mountOrder.size()) + \
+			"queue size: " + IntToStr(systemConfig.otherMounts.size())); 
+		abort();
+	}
+
+	// Mounting others...
+	
+	for (unsigned int i=0; i<mountOrder.size(); i++)
+	{
+		dialogItem.execInfoBox("Монтируются дополнительные файловые системы: " + systemConfig.otherMounts[mountOrder[i]].tag + " ["+ \
+				systemConfig.otherMounts[mountOrder[i]].value+"]");
+		mkdir_cmd = "mkdir -p " + systemConfig.rootMountPoint+systemConfig.otherMounts[mountOrder[i]].value;
+		mount_cmd = "mount " + systemConfig.otherMounts[mountOrder[i]].tag + " " + systemConfig.rootMountPoint+systemConfig.otherMounts[mountOrder[i]].value;
 
 		mDebug("Attempting to mkdir: " + mkdir_cmd);
 	       	mDebug("and Attempting to mount: " + mount_cmd);	
@@ -439,7 +476,7 @@ int mountPartitions()
 		{
 			mDebug("error while mount");
 			dialogItem.execInfoBox("Произошла ошибка при монтировании файловой системы " + \
-					systemConfig.otherMounts[i].tag + "\nПроверьте всё и начните установку заново");
+					systemConfig.otherMounts[mountOrder[i]].tag + "\nПроверьте всё и начните установку заново");
 			abort();
 		}
 		else mDebug("mount ok");
@@ -760,21 +797,56 @@ void writeFstab()
 	string options="defaults";
 	string fstype="auto";
 	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
+	
+	// Sorting
+	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		mountPriority.push_back(0);
+	}
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		for (unsigned int t=0; t<systemConfig.otherMounts.size(); t++)
+		{
+			if (systemConfig.otherMounts[i].value.find(systemConfig.otherMounts[t].value)==0)
+			{
+				mountPriority[i]++;
+			}
+		}
+	}
+	for (unsigned int i=0; i<mountPriority.size(); i++)
+	{
+		for (unsigned int t=0; t<mountPriority.size(); t++)
+		{
+			if (mountPriority[t]==i)
+			{
+				mountOrder.push_back(t);
+			}
+		}
+	}
+	if (mountOrder.size()!=systemConfig.otherMounts.size()) 
+	{
+		mError("mount code error, size mismatch: order size = " + \
+			IntToStr(mountOrder.size()) + \
+			"queue size: " + IntToStr(systemConfig.otherMounts.size())); 
+		abort();
+	}
+	// Storing data
+	for (unsigned int i=0; i<mountOrder.size(); i++)
 	{
 		options="defaults";
 		fstype="auto";
-		if (systemConfig.otherMountFSTypes[i].find("fat")!=std::string::npos)
+		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("fat")!=std::string::npos)
 		{
 			options="codepage=866,iocharset=utf-8,user,users,umask=022";
 			fstype="vfat";
 		}
-		if (systemConfig.otherMountFSTypes[i].find("ntfs")!=std::string::npos)
+		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("ntfs")!=std::string::npos)
 		{
 			options="locale=ru_RU.utf8,umask=022";
 			fstype="ntfs-3g";
 		}
-		data += systemConfig.otherMounts[i].tag + "\t" + systemConfig.otherMounts[i].value + "\t"+fstype+"\t" + options + "\t0 0";
+		data += systemConfig.otherMounts[mountOrder[i]].tag + "\t" + systemConfig.otherMounts[mountOrder[i]].value + "\t"+fstype+"\t" + options + "\t0 0";
 	}
 	mDebug("data is:\n"+data);
 	

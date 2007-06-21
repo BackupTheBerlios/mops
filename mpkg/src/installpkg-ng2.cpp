@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.28 2007/06/11 18:21:42 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.29 2007/06/21 18:35:48 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -258,24 +258,9 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		Dialog dialogItem;
-		vector<string> tags;
-		core.get_available_tags(&tags);
-		vector<TagPair> items;
-		for (unsigned int i=0; i<tags.size(); i++)
-		{
-			items.push_back(TagPair(tags[i], tags[i]));
-		}
-		dialogItem.execCheckList("Выберите категории для установки", 0,0,0, &items);
-		vector<string> installGroups;
-		for (unsigned int i=0; i<items.size(); i++)
-		{
-			if (items[i].checkState) installGroups.push_back(items[i].tag);
-		}
-		core.installGroups(installGroups);
-		core.commit();
-		delete_tmp_files();
-		
+
+		double dfree=get_disk_freespace(SYS_ROOT);
+		printf("%s: %f\n", SYS_ROOT.c_str(), dfree);
 		return 0;
 
 
