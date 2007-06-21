@@ -1,0 +1,21 @@
+[Desktop Entry]
+Comment=
+Comment[ru]=
+Encoding=UTF-8
+Exec=manager
+GenericName=
+GenericName[ru]=
+Icon=kpackage
+MimeType=
+Name=Менеджер пакетов
+Name[ru]=Менеджер пакетов
+Name[en]=Package manager
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-DCOP-ServiceType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=root
+Categories=Application;System;Settings
