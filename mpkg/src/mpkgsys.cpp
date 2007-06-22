@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.37 2007/06/11 18:21:42 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.38 2007/06/22 12:07:28 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -10,8 +10,7 @@ string output_dir;
 // Cleans system cache
 int mpkgSys::clean_cache(bool symlinks_only)
 {
-	if (symlinks_only) say("Cleaning unneeded symlinks\n");
-	else say("Cleaning package cache\n");
+	if (!symlinks_only) say("Cleaning package cache\n");
 	if (!symlinks_only) ftw(SYS_CACHE.c_str(), _clean, 50);
 	else ftw(SYS_CACHE.c_str(), _clean_symlinks, 50);
 	return 0;

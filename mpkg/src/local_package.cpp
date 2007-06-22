@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.51 2007/06/22 06:09:23 i27249 Exp $
+$Id: local_package.cpp,v 1.52 2007/06/22 12:07:28 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -603,7 +603,6 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 
 XMLNode LocalPackage::getPackageXMLNode()
 {
-	printf("nas %d names\n", _packageXMLNode.nChildNode("name"));
 	return _packageXMLNode;
 }
 

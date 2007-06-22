@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.50 2007/06/22 06:09:23 i27249 Exp $
+ * $Id: repository.cpp,v 1.51 2007/06/22 12:07:28 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -443,7 +443,6 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		}
 		else mError("unable to open log file");
 		_root.addChild(lp.getPackageXMLNode());	
-		printf("[1] _root has %d els\n", _root.nChildNode("package"));
 		
 		//_rootFList.addChild(lp.getPackageFListNode()); // MYSTERIOUS!!! Вот эта строка затирает полностью переменную _root. Спрашивается, ПОЧЕМУ?
 		
@@ -592,7 +591,6 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	ftw(".", ProcessPackage, 600);
 
 	// Finally, write our XML tree to file
-	printf("_root has %d elements\n", _root.nChildNode("package"));
 	//printf("_rootFList has %d elements\n", _rootFList.nChildNode("package"));
 	_root.writeToFile("packages.xml");
 	//_rootFList.writeToFile("filelist.xml");
