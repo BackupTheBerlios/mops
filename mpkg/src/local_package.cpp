@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.50 2007/06/22 00:59:13 i27249 Exp $
+$Id: local_package.cpp,v 1.51 2007/06/22 06:09:23 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -559,7 +559,7 @@ int LocalPackage::injectFile(bool index)
 	}*/
 	// NOT Building file list on server, build locally
 	
-	if (get_filelist(index)!=0)
+	if (!index && fill_filelist(&data, index)!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
 		return -5;
@@ -603,6 +603,7 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 
 XMLNode LocalPackage::getPackageXMLNode()
 {
+	printf("nas %d names\n", _packageXMLNode.nChildNode("name"));
 	return _packageXMLNode;
 }
 

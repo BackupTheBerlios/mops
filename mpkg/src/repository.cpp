@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.49 2007/06/22 00:59:13 i27249 Exp $
+ * $Id: repository.cpp,v 1.50 2007/06/22 06:09:23 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -8,8 +8,7 @@ Repository::Repository(){}
 Repository::~Repository(){}
 
 XMLNode _root; 
-XMLNode _rootFList;
-
+//XMLNode _rootFList;
 int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url)
 {
 	if (actionBus._abortActions)
@@ -411,6 +410,7 @@ unsigned int pkgcounter;
 vector<string> pkgDupeNames;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
+	XMLNode tmpX;
 	unsigned short x=0, y=0;
 
 	if (file_status->st_ino!=0) x=y;
@@ -440,9 +440,26 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			}
 			else fprintf(log, "indexing file %s FAILED: error code %d\n", filename, errCode);
 			fclose(log);
-		}	
-		_root.addChild(lp.getPackageXMLNode());
-		_rootFList.addChild(lp.getPackageFListNode());
+		}
+		else mError("unable to open log file");
+		_root.addChild(lp.getPackageXMLNode());	
+		printf("[1] _root has %d els\n", _root.nChildNode("package"));
+		
+		//_rootFList.addChild(lp.getPackageFListNode()); // MYSTERIOUS!!! Вот эта строка затирает полностью переменную _root. Спрашивается, ПОЧЕМУ?
+		
+		// tmpX = lp.getPackageFListNode();		// Эти две строки приводят к тому же результату...
+		// _rootFList.addChild(tmpX);
+		
+		// Попытка 3:
+		//tmpX = _root;
+
+		//printf("[2] _root has %d els\n", _root.nChildNode("package"));
+		
+		//_rootFList.addChild(lp.getPackageFListNode());
+		//printf("[3] tmpX has %d els\n", tmpX.nChildNode("package"));
+
+
+		
 		// Dupe check
 		for (unsigned int i=0; i<pkgDupeNames.size(); i++)
 		{
@@ -522,47 +539,6 @@ void analyzeFTree(XMLNode *node)
 		}
 	
 		
-/*
-	for (int i=0; i<node->nChildNode("package"); i++)
-	{
-
-		p1=node->getChildNode("package", i).getChildNode("name").getText();
-		printf(" checking package %s (%d)\n",p1.c_str(), i);
-		for (int x=0; x<node->getChildNode("package", i).getChildNode("filelist").nChildNode("file"); x++)
-		{
-			printf("checking file %d of %d\n", x, node->getChildNode("package", i).getChildNode("filelist").nChildNode("file"));
-			for (int i_2=i+1; i_2<node->nChildNode("package"); i_2++)
-			{
-				p2=node->getChildNode("package", i_2).getChildNode("name").getText();
-				printf("[2] checking package %d of %d\n", i_2, node->nChildNode("package"));
-
-				for (int x_2=0; x_2<node->getChildNode("package", i_2).getChildNode("filelist").nChildNode("file"); x_2++)
-				{
-					//printf("[%d %d %d %d, %s vs %s] [2] checking file %d of %d\n", i,x,i_2,x_2, p1.c_str(), p2.c_str(), x_2, node->getChildNode("package", i_2).getChildNode("filelist").nChildNode("file"));
-					
-					if ((string)
-						node->getChildNode("package", i).getChildNode("filelist").getChildNode("file",x).getText() == 
-						(string) node->getChildNode("package", i_2).getChildNode("filelist").getChildNode("file",x_2).getText())
-					{
-						iteration_count = iteration_count + 1;
-						
-						printf("found an object\n");
-						mDebug("adding record");
-						// File conflict in some form!
-						fprintf(conflog, "[%s]::[%s]: %s\n", \
-								node->getChildNode("package", i).getChildNode("name").getText(),\
-								node->getChildNode("package", i_2).getChildNode("name").getText(), \
-								node->getChildNode("package", i).getChildNode("filelist").getChildNode("file", x).getText());
-						fprintf(stdout, "[%s]::[%s]: %s\n", \
-								node->getChildNode("package", i).getChildNode("name").getText(),\
-								node->getChildNode("package", i_2).getChildNode("name").getText(), \
-								node->getChildNode("package", i).getChildNode("filelist").getChildNode("file", x).getText());
-
-					}
-				}
-			}
-		}
-	}*/
 }
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
@@ -588,21 +564,25 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	}	
 	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
+	
 	_root=XMLNode::createXMLTopNode("repository");
-	_rootFList=XMLNode::createXMLTopNode("repository");
+	
+	//_rootFList=XMLNode::createXMLTopNode("repository");
+	
+	
 	if (!server_url.empty())
 	{
 		_root.addAttribute("url", server_url.c_str());
-		_rootFList.addAttribute("url", server_url.c_str());
+	//	_rootFList.addAttribute("url", server_url.c_str());
 	}
 	if (!server_name.empty())
 	{
 		_root.addAttribute("name", server_name.c_str());
-		_rootFList.addAttribute("name", server_name.c_str());
+	//	_rootFList.addAttribute("name", server_name.c_str());
 
 	}
 	_root.addAttribute("type", "compact");
-	_rootFList.addAttribute("type", "full");
+	//_rootFList.addAttribute("type", "full");
 
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
@@ -612,15 +592,17 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	ftw(".", ProcessPackage, 600);
 
 	// Finally, write our XML tree to file
+	printf("_root has %d elements\n", _root.nChildNode("package"));
+	//printf("_rootFList has %d elements\n", _rootFList.nChildNode("package"));
 	_root.writeToFile("packages.xml");
-	_rootFList.writeToFile("filelist.xml");
+	//_rootFList.writeToFile("filelist.xml");
 	// Analyze file conflicts
-	mDebug("Analyzing file conflicts");
-	analyzeFTree(&_rootFList);
+	//mDebug("Analyzing file conflicts");
+	//analyzeFTree(&_rootFList);
 	// Compress file
 	mDebug("Compressing files");
 	say("Compressing files\n");
-	if (system("gzip -f filelist.xml")==0 && system("gzip -f packages.xml")==0)
+	if (/*system("gzip -f filelist.xml")==0 && */system("gzip -f packages.xml")==0)
 	       say("\n-------------SUMMARY------------------\nRepository URL: %s\nRepository name: %s\nTotal: %d packages\n\nRepository index created successfully\n",\
 			       server_url.c_str(), server_name.c_str(), pkgcounter);
 	else mError("Error creating repository index!");
