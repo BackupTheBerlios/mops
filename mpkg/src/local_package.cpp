@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.49 2007/06/21 20:22:49 i27249 Exp $
+$Id: local_package.cpp,v 1.50 2007/06/22 00:59:13 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -100,9 +100,11 @@ int slack2xml(string filename, string xml_output)
 
 LocalPackage::LocalPackage(string _f, unsigned int pkgType)
 {
+	internal=false;
 	mDebug("LocalPackage created");
 	this->filename=_f;
 	this->packageType=pkgType;
+	_packageFListNode=XMLNode::createXMLTopNode("filelist");
 }
 
 LocalPackage::~LocalPackage(){}
@@ -126,14 +128,14 @@ string LocalPackage::files2xml(string input)
 
 int LocalPackage::fill_scripts(PACKAGE *package)
 {
-	mDebug("get_scripts start");
+	mDebug("fill_scripts start");
 	string scripts_dir=SCRIPTS_DIR+"/" + *package->get_filename() + "_" + *package->get_md5() + "/";
 	string tmp_preinstall=scripts_dir+"preinstall.sh";
 	string tmp_postinstall=scripts_dir+"doinst.sh";
 	string tmp_preremove=scripts_dir+"preremove.sh";
 	string tmp_postremove=scripts_dir+"postremove.sh";
 	string mkdir_pkg="mkdir -p "+scripts_dir+" 2>/dev/null";
-	if (!simulate) system(mkdir_pkg.c_str());
+	if (!simulate) system(mkdir_pkg);
 	string sys_cache=SYS_CACHE;
 	string filename=sys_cache + *package->get_filename();
 	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
@@ -141,12 +143,13 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
 	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+ tmp_postremove + " 2>/dev/null";
 
-	if (!simulate) 
+	if (!simulate)
 	{
-		system(sys_preinstall.c_str());
-		system(sys_postinstall.c_str());
-		system(sys_preremove.c_str());
-		system(sys_postremove.c_str());
+		mDebug("extracting scripts");
+		system(sys_preinstall);
+		system(sys_postinstall);
+		system(sys_preremove);
+		system(sys_postremove);
 	}
 
 	return 0;
@@ -157,7 +160,7 @@ int LocalPackage::get_xml()
 	mDebug("get_xml start");
 	string tmp_xml=get_tmp_file();
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
-	system(sys.c_str());
+	system(sys);
 	
 	if (!FileNotEmpty(tmp_xml))
 	{
@@ -257,38 +260,78 @@ int LocalPackage::get_xml()
 	return 0;
 }
 
-int LocalPackage::fill_filelist(PACKAGE *package)
+int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 {
 	mDebug("fill_filelist start");
 	FILES file_tmp;
 	// Retrieving regular files
 	string fname=get_tmp_file();
 	string tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
-	system(tar_cmd.c_str());
+	system(tar_cmd);
 	vector<string>file_names=ReadFileStrings(fname);
 	for (unsigned int i=2; i<file_names.size(); i++)
 	{
-		file_tmp.set_name(&file_names[i]);
-		package->get_files()->push_back(file_tmp);
+		if (!file_names[i].empty())
+		{
+			file_tmp.set_name(&file_names[i]);
+			package->get_files()->push_back(file_tmp);
+		}
 	}
 	// Retrieving symlinks (from doinst.sh)
 	string lnfname=get_tmp_file();
-	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < " + \
-			  package->get_scriptdir() + "doinst.sh > "+lnfname;
-	system(sed_cmd.c_str());
+	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < ";
+	if (!index) sed_cmd += package->get_scriptdir() + "doinst.sh > "+lnfname;
+	else
+	{
+		string dt = get_tmp_file();
+		// Extracting file to the temp dir
+		extractFromTgz(filename, "install/doinst.sh", dt);
+		sed_cmd += dt + " > " + lnfname;
+	}
+	system(sed_cmd);
+	
+
+
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)
 	{
-		file_tmp.set_name(&link_names[i]);
-		package->get_files()->push_back(file_tmp);
+		if (!link_names[i].empty())
+		{	file_tmp.set_name(&link_names[i]);
+			package->get_files()->push_back(file_tmp);
+		}
+	}
+	mDebug("Processing XML part");
+	// Keeping XML intact
+	if (internal && _packageXMLNode.nChildNode("filelist")==0)
+	{
+		mDebug("Adding core node \"filelist\"");
+		_packageXMLNode.addChild("filelist");
+		mDebug("Done");
+	}
+
+	mDebug("Filling trees");
+	for (unsigned int i=0;i<package->get_files()->size();i++)
+	{
+		if (!index && internal)
+		{
+			_packageXMLNode.getChildNode("filelist").addChild("file");
+			if (_packageXMLNode.getChildNode("filelist").nChildNode("file")>i) _packageXMLNode.getChildNode("filelist").getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
+			else mError("XML out of space at _packageXMLNode, size = " + IntToStr(_packageXMLNode.getChildNode("filelist").nChildNode("file")) + ", i=" + IntToStr(i));
+
+		}
+		_packageFListNode.addChild("file");
+		if (_packageFListNode.nChildNode("file")>i) _packageFListNode.getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
+		else mError("XML out of space at _packageFListNode, size = " + IntToStr(_packageFListNode.nChildNode("file")) + ", i=" + IntToStr(i));
 	}
 	delete_tmp_files();
 	return 0;
 }
 
 
-int LocalPackage::get_filelist()
+int LocalPackage::get_filelist(bool index)
 {
+	return fill_filelist(&data, index);
+/*
 	mDebug("get_filelist start");
 	string tmp_flist=get_tmp_file();
 	string tmp_xml_flist=get_tmp_file();
@@ -300,16 +343,25 @@ int LocalPackage::get_filelist()
 	_packageXMLNode.addChild("filelist");
 	for (unsigned int i=2;i<vec_tmp_names.size();i++)
 	{
-		_packageXMLNode.getChildNode("filelist").addChild("file");
-		_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
+		if (!index)
+		{
+			_packageXMLNode.getChildNode("filelist").addChild("file");
+			_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
+		}
+		else
+		{
+			_packageFListNode.addChild("file");
+			_packageFListNode.getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
+		}
 		file_tmp.set_name(&vec_tmp_names[i]);
 		data.get_files()->push_back(file_tmp);
+		
 	}
 	vec_tmp_names.clear();
 	data.sync();
 	mDebug("get_filelist end");
 	delete_tmp_files();
-	return 0;
+	return 0;*/
 }
 	
 int LocalPackage::create_md5()
@@ -318,7 +370,7 @@ int LocalPackage::create_md5()
 	string tmp_md5=get_tmp_file();
 
 	string sys="md5sum "+filename+" > "+tmp_md5;
-	system(sys.c_str());
+	system(sys);
 	string md5str=ReadFile(tmp_md5, 32);
 	mDebug("MD5 = "+md5str);
 	if (md5str.empty())
@@ -339,7 +391,7 @@ int LocalPackage::get_size()
 	mDebug("get_size start");
 	string tmp=get_tmp_file();
 	string sys="gzip -l "+filename+" > "+tmp + " 2>/dev/null";
-	if (system(sys.c_str())!=0)
+	if (system(sys)!=0)
 	{
 		delete_tmp_files();
 		mError("Zero-length package " + filename);
@@ -434,7 +486,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 {
 	string tmp_xml=get_tmp_file();
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
-	if (system(sys.c_str())!=0)
+	if (system(sys)!=0)
 	{
 		delete_tmp_files();
 		return 0;
@@ -470,6 +522,7 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 }
 int LocalPackage::injectFile(bool index)
 {
+	internal=true;
 	// Injecting data from file!
 	// If any of functions fails (e.g. return!=0) - break process and return failure code (!=0);
 	//int ret=0;
@@ -504,14 +557,14 @@ int LocalPackage::injectFile(bool index)
 			return -4;
 		}
 	}*/
-	if (!index) // NOT Building file list on server, build locally
+	// NOT Building file list on server, build locally
+	
+	if (get_filelist(index)!=0)
 	{
-		if (get_filelist()!=0)
-		{
-			mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
-			return -5;
-		}
+		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
+		return -5;
 	}
+	
 	if (set_additional_data()!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): set_additional_data FAILED");
@@ -528,7 +581,7 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	string tar_cmd;
 	mDebug("flist tmpfile: "+fname);
 	tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
-	if (system(tar_cmd.c_str())!=0)
+	if (system(tar_cmd)!=0)
 	{
 		mError("Unable to get file list");
 		return -1;
@@ -538,7 +591,7 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 #else
 	string sed_cmd;
 	sed_cmd="echo '<?xml version=\"1.0\" encoding=\"utf-8\"?><package><filelist><file>file_list_header' > "+tmp_xml+" && cat "+ fname +" | sed -e i'</file>\\n<file>'  >> "+tmp_xml+" && echo '</file></filelist></package>' >> "+tmp_xml;
-	if (system(sed_cmd.c_str())!=0)
+	if (system(sed_cmd)!=0)
 	{
 		mError("Parsing using sed failed");
 		return -1;
@@ -553,3 +606,10 @@ XMLNode LocalPackage::getPackageXMLNode()
 	return _packageXMLNode;
 }
 
+XMLNode LocalPackage::getPackageFListNode()
+{
+	XMLNode ret = _packageXMLNode;
+	ret.getChildNode("filelist").deleteNodeContent(1);
+	ret.addChild(_packageFListNode);
+	return ret;
+}

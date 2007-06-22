@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.29 2007/06/21 18:35:48 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.30 2007/06/22 00:59:13 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -258,9 +258,16 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-
-		double dfree=get_disk_freespace(SYS_ROOT);
-		printf("%s: %f\n", SYS_ROOT.c_str(), dfree);
+		if (argc==3)
+		{
+			XMLNode fl = XMLNode::openFileHelper(argv[2], "repository");
+			analyzeFTree(&fl);
+		}
+		else
+		{
+			mError("too few arguments.\nSyntax: mpkg test filelist.xml");
+			abort();
+		}
 		return 0;
 
 

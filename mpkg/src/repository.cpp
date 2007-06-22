@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.48 2007/06/08 00:46:47 i27249 Exp $
+ * $Id: repository.cpp,v 1.49 2007/06/22 00:59:13 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -8,6 +8,7 @@ Repository::Repository(){}
 Repository::~Repository(){}
 
 XMLNode _root; 
+XMLNode _rootFList;
 
 int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url)
 {
@@ -441,6 +442,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			fclose(log);
 		}	
 		_root.addChild(lp.getPackageXMLNode());
+		_rootFList.addChild(lp.getPackageFListNode());
 		// Dupe check
 		for (unsigned int i=0; i<pkgDupeNames.size(); i++)
 		{
@@ -461,6 +463,107 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	return 0;
 }
 
+void analyzeFTree(XMLNode *node)
+{
+	say("Analyzing tree\n");
+	long double iteration_count=0;
+	string p1, p2;
+	printf("contains %d packages\n", node->nChildNode("package"));
+	PACKAGE_LIST pList;
+	PACKAGE pkg;
+	XMLNode tmp;
+	printf("Building pList\n");
+	for (int i=0; i<node->nChildNode("package"); i++)
+	{
+		printf("package %d...\n", i);
+		pkg.clear();
+		tmp = node->getChildNode("package", i);
+		xml2package(&tmp, &pkg);
+		pList.add(&pkg);
+	}
+	printf("analyzing\n");
+	int i=0;
+	for (int i__=0; i__<pList.size(); i__++)
+	{
+		if (*pList.get_package(i__)->get_name()=="mopscripts")
+		{
+			i=i__;
+			break;
+		}
+	}
+		printf("analyzing package %d\n", i);
+		for (int x=0; x<pList.get_package(i)->get_files()->size(); x++)
+		{
+			if (pList.get_package(i)->get_files()->at(x).get_name()->at(pList.get_package(i)->get_files()->at(x).get_name()->length()-1)!='/')
+			{
+				for (int i_1=i+1; i_1<pList.size(); i_1++)
+				{
+					for (int x_1=0; x_1<pList.get_package(i_1)->get_files()->size(); x_1++)
+					{
+						if (*pList.get_package(i)->get_files()->at(x).get_name()==*pList.get_package(i_1)->get_files()->at(x_1).get_name())
+						{
+							printf("found an object\n");
+	
+							FILE *conflog = fopen("file_conflicts.log", "a");
+							if (conflog)
+							{
+								fprintf(conflog, "[%s]::[%s] %s\n", pList.get_package(i)->get_name()->c_str(), \
+									pList.get_package(i_1)->get_name()->c_str(),\
+									pList.get_package(i)->get_files()->at(x).get_name()->c_str());
+									fclose(conflog);
+							}
+							printf("[%s]::[%s] %s\n", pList.get_package(i)->get_name()->c_str(), \
+								pList.get_package(i_1)->get_name()->c_str(),\
+								pList.get_package(i)->get_files()->at(x).get_name()->c_str());
+						}
+					}
+				}
+			}
+		}
+	
+		
+/*
+	for (int i=0; i<node->nChildNode("package"); i++)
+	{
+
+		p1=node->getChildNode("package", i).getChildNode("name").getText();
+		printf(" checking package %s (%d)\n",p1.c_str(), i);
+		for (int x=0; x<node->getChildNode("package", i).getChildNode("filelist").nChildNode("file"); x++)
+		{
+			printf("checking file %d of %d\n", x, node->getChildNode("package", i).getChildNode("filelist").nChildNode("file"));
+			for (int i_2=i+1; i_2<node->nChildNode("package"); i_2++)
+			{
+				p2=node->getChildNode("package", i_2).getChildNode("name").getText();
+				printf("[2] checking package %d of %d\n", i_2, node->nChildNode("package"));
+
+				for (int x_2=0; x_2<node->getChildNode("package", i_2).getChildNode("filelist").nChildNode("file"); x_2++)
+				{
+					//printf("[%d %d %d %d, %s vs %s] [2] checking file %d of %d\n", i,x,i_2,x_2, p1.c_str(), p2.c_str(), x_2, node->getChildNode("package", i_2).getChildNode("filelist").nChildNode("file"));
+					
+					if ((string)
+						node->getChildNode("package", i).getChildNode("filelist").getChildNode("file",x).getText() == 
+						(string) node->getChildNode("package", i_2).getChildNode("filelist").getChildNode("file",x_2).getText())
+					{
+						iteration_count = iteration_count + 1;
+						
+						printf("found an object\n");
+						mDebug("adding record");
+						// File conflict in some form!
+						fprintf(conflog, "[%s]::[%s]: %s\n", \
+								node->getChildNode("package", i).getChildNode("name").getText(),\
+								node->getChildNode("package", i_2).getChildNode("name").getText(), \
+								node->getChildNode("package", i).getChildNode("filelist").getChildNode("file", x).getText());
+						fprintf(stdout, "[%s]::[%s]: %s\n", \
+								node->getChildNode("package", i).getChildNode("name").getText(),\
+								node->getChildNode("package", i_2).getChildNode("name").getText(), \
+								node->getChildNode("package", i).getChildNode("filelist").getChildNode("file", x).getText());
+
+					}
+				}
+			}
+		}
+	}*/
+}
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
@@ -486,9 +589,21 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	_root=XMLNode::createXMLTopNode("repository");
-	if (!server_url.empty()) _root.addAttribute("url", server_url.c_str());
-	if (!server_name.empty()) _root.addAttribute("name", server_name.c_str());
-	
+	_rootFList=XMLNode::createXMLTopNode("repository");
+	if (!server_url.empty())
+	{
+		_root.addAttribute("url", server_url.c_str());
+		_rootFList.addAttribute("url", server_url.c_str());
+	}
+	if (!server_name.empty())
+	{
+		_root.addAttribute("name", server_name.c_str());
+		_rootFList.addAttribute("name", server_name.c_str());
+
+	}
+	_root.addAttribute("type", "compact");
+	_rootFList.addAttribute("type", "full");
+
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
@@ -498,8 +613,14 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 
 	// Finally, write our XML tree to file
 	_root.writeToFile("packages.xml");
+	_rootFList.writeToFile("filelist.xml");
+	// Analyze file conflicts
+	mDebug("Analyzing file conflicts");
+	analyzeFTree(&_rootFList);
 	// Compress file
-	if (system("gzip -f packages.xml")==0)
+	mDebug("Compressing files");
+	say("Compressing files\n");
+	if (system("gzip -f filelist.xml")==0 && system("gzip -f packages.xml")==0)
 	       say("\n-------------SUMMARY------------------\nRepository URL: %s\nRepository name: %s\nTotal: %d packages\n\nRepository index created successfully\n",\
 			       server_url.c_str(), server_name.c_str(), pkgcounter);
 	else mError("Error creating repository index!");

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.62 2007/06/21 20:22:49 i27249 Exp $
+ *	$Id: core.cpp,v 1.63 2007/06/22 00:59:12 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -88,6 +88,7 @@ PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
+	mDebug("start");
 	int package_id;
 	int prev_package_id=package->get_id();
 	string fname;
