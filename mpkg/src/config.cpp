@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.33 2007/06/21 20:22:49 i27249 Exp $
+ * $Id: config.cpp,v 1.34 2007/07/02 09:04:22 i27249 Exp $
  *
  * ***************************************************/
 
@@ -14,6 +14,7 @@ bool force_all=false;
 bool consoleMode=true;
 bool dialogMode=false;
 bool DO_NOT_RUN_SCRIPTS;
+bool forceSkipLinkMD5Checks=false;
 unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string SYS_ROOT;
 string SYS_CACHE;

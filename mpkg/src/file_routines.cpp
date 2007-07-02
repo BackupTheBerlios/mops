@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.29 2007/06/21 20:22:49 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.30 2007/07/02 09:04:22 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -41,7 +41,11 @@ double get_disk_freespace(string point)
 		mError("Unable to determine FS parameters of " + point);
 		return 0;
 	}
-	long long dfree = buf.f_bsize * buf.f_bfree;
+	printf("f_bsize = %d, f_bfree = %ld\n", buf.f_bsize, buf.f_bfree);
+	long double dfree;
+       dfree	= (long double) buf.f_bfree * (long double) buf.f_bsize;
+       printf("%Lf\n", dfree);
+	mDebug("Free on " + point + ": " + IntToStr((long long) dfree));
 	return (double) dfree;
 }
 

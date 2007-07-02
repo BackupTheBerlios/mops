@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.11 2007/06/21 20:22:49 i27249 Exp $
+ * $Id: setup.cpp,v 1.12 2007/07/02 09:04:22 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -497,14 +497,20 @@ int autoInstall()
 	{
 		items.push_back(TagPair(tags[i], tags[i]));
 	}
-	dialogItem.execCheckList("Выберите категории пакетов для установки", 0,0,0, &items);
+selectGroups:
+	if (!dialogItem.execCheckList("Выберите категории пакетов для установки", 0,0,0, &items))
+	{
+		if (dialogItem.execYesNo("Прервать установку?")) abort();
+		else goto selectGroups;
+	}
 	vector<string> installGroups;
 	for (unsigned int i=0; i<items.size(); i++)
 	{
 		if (items[i].checkState) installGroups.push_back(items[i].tag);
 	}
+
+	dialogItem.execInfoBox("Формирование очереди, ждите...");
 	core.installGroups(installGroups);
-	dialogItem.execInfoBox("Подготовка к установке, ждите...");
 	int ret = core.commit();
 	if (ret!=0)
 	{
@@ -608,7 +614,7 @@ void initDatabaseStructure()
 	mDebug("start");
 	mDebug("Processing directories");
 	string cmd;
-	cmd = "rm -rf " + systemConfig.rootMountPoint+"/var/mpkg 2>>/var/install.log";
+	cmd = "rm -rf /var/mpkg 2>>/var/install.log";
 	mDebug(cmd);
 	system(cmd.c_str());
 	cmd = "ln -sf " +systemConfig.rootMountPoint+"/var/mpkg /var/mpkg 2>>/var/install.log";
@@ -921,10 +927,19 @@ int main(int argc, char **argv)
 			say("Simulation mode!\n");
 			sleep(1);
 		}
+		if (strcmp(argv[1], "--skip-check")==0)
+		{
+			forceSkipLinkMD5Checks=true;
+		}
 		else
 		{
-			mError("Incorrect parameters");
-			abort();
+			printf("MOPSLinux installer 2.0 alpha\n");
+			printf("Usage:\n");
+			printf("setup [options]\n\n");
+
+			printf("\t--skip-check     Skip package integrity check\n");
+			printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
+			exit(0);
 		}
 	}
 	dialogMode=true;

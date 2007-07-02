@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.38 2007/06/22 12:07:28 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.39 2007/07/02 09:04:22 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -341,6 +341,7 @@ int mpkgSys::_clean_symlinks(const char *filename, const struct stat *file_statu
 
 	if (file_status->st_ino!=0) x=y;
 
+	if (filetype==0) x=y;
 	if (S_ISLNK(file_status->st_mode))
 	{
 		printf("deleting symlink %s\n", filename);

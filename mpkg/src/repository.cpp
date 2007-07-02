@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.51 2007/06/22 12:07:28 i27249 Exp $
+ * $Id: repository.cpp,v 1.52 2007/07/02 09:04:22 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -482,7 +482,6 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 void analyzeFTree(XMLNode *node)
 {
 	say("Analyzing tree\n");
-	long double iteration_count=0;
 	string p1, p2;
 	printf("contains %d packages\n", node->nChildNode("package"));
 	PACKAGE_LIST pList;
@@ -508,13 +507,13 @@ void analyzeFTree(XMLNode *node)
 		}
 	}
 		printf("analyzing package %d\n", i);
-		for (int x=0; x<pList.get_package(i)->get_files()->size(); x++)
+		for (unsigned int x=0; x<pList.get_package(i)->get_files()->size(); x++)
 		{
 			if (pList.get_package(i)->get_files()->at(x).get_name()->at(pList.get_package(i)->get_files()->at(x).get_name()->length()-1)!='/')
 			{
 				for (int i_1=i+1; i_1<pList.size(); i_1++)
 				{
-					for (int x_1=0; x_1<pList.get_package(i_1)->get_files()->size(); x_1++)
+					for (unsigned int x_1=0; x_1<pList.get_package(i_1)->get_files()->size(); x_1++)
 					{
 						if (*pList.get_package(i)->get_files()->at(x).get_name()==*pList.get_package(i_1)->get_files()->at(x_1).get_name())
 						{

@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.11 2007/05/21 23:52:14 i27249 Exp $
+ * $Id: string_operations.h,v 1.12 2007/07/02 09:04:22 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -8,7 +8,7 @@
 #include <vector>
 #include <stdio.h>
 using namespace std;
-string IntToStr(int num);
+string IntToStr(long long num);
 
 void PrepareSql(string* str);
 char * strMerge(const char *part1, const char *part2); // Merges part1 and part2, and returns the result. Note: you should free() the result at the end.

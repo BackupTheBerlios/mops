@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.30 2007/06/22 00:59:13 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.31 2007/07/02 09:04:22 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -258,16 +258,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		if (argc==3)
-		{
-			XMLNode fl = XMLNode::openFileHelper(argv[2], "repository");
-			analyzeFTree(&fl);
-		}
-		else
-		{
-			mError("too few arguments.\nSyntax: mpkg test filelist.xml");
-			abort();
-		}
+		printf("%f\n", get_disk_freespace());
 		return 0;
 
 
@@ -429,7 +420,6 @@ int main (int argc, char **argv)
 		for (int i=0;i<core.DepTracker->get_failure_list()->size();i++)
 		{
 			say("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name()->c_str());
-			//core.DepTracker->PrintFailure(core.DepTracker->get_failure_list()->get_package(i));
 		}
 	}
 	say("\n");
@@ -444,6 +434,7 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("Options:\n"));
 	fprintf(stream,_("\t-h    --help       show this help\n"));
 	fprintf(stream,_("\t-v    --verbose    be verbose\n"));
+	
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall    install packages\n"));
 	fprintf(stream,_("\tupgrade    upgrade selected package or full system if no package selected\n"));
@@ -460,10 +451,17 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tcommit     commit queued actions\n"));
 	fprintf(stream,_("\tsearch     search package by name\n"));
 	fprintf(stream,_("\tclean      remove all packages from cache\n"));
+	
+	fprintf(stream,_("\nInteractive options:\n"));
+	fprintf(stream,_("\tmenu       Shows the package selection menu\n"));
+	
 	fprintf(stream,_("\nRepository maintaining functions:\n"));
 	fprintf(stream,_("\tindex <server_url> <file_url>     create a repository index file \"packages.xml.gz\"\n"));
 	fprintf(stream,_("\tconvert <package>      convert specified packages from Slackware to MPKG format\n"));
 	fprintf(stream,_("\tconvert_dir <outp_dir> convert whole directory (including sub-dirs) to MPKG format\n"));
+
+	fprintf(stream,_("\nDebug options:\n"));
+	fprintf(stream,_("\ttest       Executes unit test\n"));
 	fprintf(stream, "\n");
 
 

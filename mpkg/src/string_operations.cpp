@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.12 2007/05/23 18:02:18 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.13 2007/07/02 09:04:22 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -28,13 +28,13 @@ void PrepareSql(string *str)
 }
 
 // Helpful function ))
-string IntToStr(int num)
+string IntToStr(long long num)
 {
   	char *s = (char *) malloc(2000);
   	string ss;
   	if (s)
   	{
-		sprintf(s,"%d",num);
+		sprintf(s,"%Ld",num);
 	  	ss=s;
 	  	free(s);
   	}

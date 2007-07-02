@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.52 2007/06/22 12:07:28 i27249 Exp $
+$Id: local_package.cpp,v 1.53 2007/07/02 09:04:22 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -315,12 +315,12 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		if (!index && internal)
 		{
 			_packageXMLNode.getChildNode("filelist").addChild("file");
-			if (_packageXMLNode.getChildNode("filelist").nChildNode("file")>i) _packageXMLNode.getChildNode("filelist").getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
+			if ((unsigned int) _packageXMLNode.getChildNode("filelist").nChildNode("file")>i) _packageXMLNode.getChildNode("filelist").getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
 			else mError("XML out of space at _packageXMLNode, size = " + IntToStr(_packageXMLNode.getChildNode("filelist").nChildNode("file")) + ", i=" + IntToStr(i));
 
 		}
 		_packageFListNode.addChild("file");
-		if (_packageFListNode.nChildNode("file")>i) _packageFListNode.getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
+		if ((unsigned int)_packageFListNode.nChildNode("file")>i) _packageFListNode.getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
 		else mError("XML out of space at _packageFListNode, size = " + IntToStr(_packageFListNode.nChildNode("file")) + ", i=" + IntToStr(i));
 	}
 	delete_tmp_files();

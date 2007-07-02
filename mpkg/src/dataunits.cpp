@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.61 2007/06/07 13:47:22 i27249 Exp $
+	$Id: dataunits.cpp,v 1.62 2007/07/02 09:04:22 i27249 Exp $
 */
 
 
@@ -1437,8 +1437,11 @@ bool meetVersion(versionData *condition, string *packageVersion)
 			if (strverscmp(version1.c_str(),version2.c_str())<=0) return true;
 			else return false;
 			break;
+		case VER_ANY:
+			return true;
+			break;
 		default:
-			mError((string) __func__ + ": unknown condition" + IntToStr(iCondition));
+			mError((string) __func__ + ": unknown condition " + IntToStr(iCondition));
 			return true;
 	}
 	return true;

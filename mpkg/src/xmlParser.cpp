@@ -1,4 +1,4 @@
-/** $Id: xmlParser.cpp,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+/** $Id: xmlParser.cpp,v 1.3 2007/07/02 09:04:22 i27249 Exp $
  ****************************************************************************
  * <P> XML.c - implementation file for basic XML parser written in ANSI C++
  * for portability. It works by using recursion and a node tree for breaking
@@ -273,6 +273,8 @@ static const char XML_utf8ByteTable[256] =
     }
     char *myWideCharToMultiByte(const wchar_t *s, int l)
     {
+	    int x1;
+	    x1=l;
         const wchar_t *ss=s;
         int i=(int)wcsrtombs(NULL,&ss,0,NULL);
         if (i<0) return NULL;
@@ -2417,6 +2419,8 @@ XMLParserBase64Tool::~XMLParserBase64Tool(){ if (buf) free(buf); }
 
 int XMLParserBase64Tool::encodeLength(unsigned char *inbuf, int inlen, char formatted)
 {
+	unsigned char *t;
+	t=inbuf;
     unsigned int i=((inlen-1)/3*4+4+1),eLen=inlen/3;
     if (formatted) i+=eLen/18; 
     return i;

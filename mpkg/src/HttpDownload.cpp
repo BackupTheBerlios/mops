@@ -37,6 +37,10 @@ static int downloadCallback(void *clientp,
                        double ultotal,
                        double ulnow)
 {
+	double t = ultotal;
+	t=ulnow;
+	void *t1;
+       t1= clientp;
 	ppData->setItemProgress(currentItemID, dlnow);
 	if (prevDlValue==dlnow) downloadTimeout++;
 	else {
