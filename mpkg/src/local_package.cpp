@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.54 2007/07/02 09:47:44 i27249 Exp $
+$Id: local_package.cpp,v 1.55 2007/07/02 10:07:17 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -301,6 +301,7 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		}
 	}
 	mDebug("Processing XML part");
+	/*
 	// Keeping XML intact
 	if (internal && _packageXMLNode.nChildNode("filelist")==0)
 	{
@@ -322,7 +323,7 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		_packageFListNode.addChild("file");
 		if ((unsigned int)_packageFListNode.nChildNode("file")>i) _packageFListNode.getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
 		else mError("XML out of space at _packageFListNode, size = " + IntToStr(_packageFListNode.nChildNode("file")) + ", i=" + IntToStr(i));
-	}
+	}*/
 	delete_tmp_files();
 	return 0;
 }
@@ -331,37 +332,6 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 int LocalPackage::get_filelist(bool index)
 {
 	return fill_filelist(&data, index);
-/*
-	mDebug("get_filelist start");
-	string tmp_flist=get_tmp_file();
-	string tmp_xml_flist=get_tmp_file();
-	FILES file_tmp;
-	CreateFlistNode(tmp_flist, tmp_xml_flist);
-	PackageConfig ftree(tmp_xml_flist);
-	if (!ftree.parseOk) return -100;
-	vector <string> vec_tmp_names=ftree.getFilelist();
-	_packageXMLNode.addChild("filelist");
-	for (unsigned int i=2;i<vec_tmp_names.size();i++)
-	{
-		if (!index)
-		{
-			_packageXMLNode.getChildNode("filelist").addChild("file");
-			_packageXMLNode.getChildNode("filelist").getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
-		}
-		else
-		{
-			_packageFListNode.addChild("file");
-			_packageFListNode.getChildNode("file",i-2).addText(vec_tmp_names[i].c_str());
-		}
-		file_tmp.set_name(&vec_tmp_names[i]);
-		data.get_files()->push_back(file_tmp);
-		
-	}
-	vec_tmp_names.clear();
-	data.sync();
-	mDebug("get_filelist end");
-	delete_tmp_files();
-	return 0;*/
 }
 	
 int LocalPackage::create_md5()
