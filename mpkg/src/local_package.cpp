@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.55 2007/07/02 10:07:17 i27249 Exp $
+$Id: local_package.cpp,v 1.56 2007/07/02 12:58:55 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -92,7 +92,7 @@ int slack2xml(string filename, string xml_output)
 	_node.getChildNode("build").addText(tmp.c_str());
 	tmp.clear();
 	_node.writeToFile(xml_output.c_str());
-	delete_tmp_files();
+	//delete_tmp_files();
 	return 0;
 }
 
@@ -159,32 +159,37 @@ int LocalPackage::get_xml()
 {
 	mDebug("get_xml start");
 	string tmp_xml=get_tmp_file();
+	mDebug("Extracting XML");
 	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
 	system(sys);
 	
 	if (!FileNotEmpty(tmp_xml))
 	{
+		mDebug("XML empty, parsing as legacy");
 		say("%s: No XML, converting from legacy\n", filename.c_str());
 		
-			FILE *legacy = fopen("legacy.log", "a");
-			if (legacy)
-			{
-				fprintf(legacy, "%s\n", filename.c_str());
-				fclose(legacy);
-			}
+		FILE *legacy = fopen("/var/log/mpkg-legacy.log", "a");
+		if (legacy)
+		{
+			fprintf(legacy, "%s\n", filename.c_str());
+			fclose(legacy);
+		}
 		// In most cases it means that we have legacy Slackware package.
 		// Trying to convert:
+		mDebug("Converting from legacy to XML");
 		if (slack2xml(filename, tmp_xml) != 0)
 		{
 			mError("Infernally invalid package! Cannot work with it at all");
 			delete_tmp_files();
 			return -1;
 		}
+		mDebug("Converted");
 	}
-
+	mDebug("Parsing XML");
 	PackageConfig p(tmp_xml);
 	if (!p.parseOk)
 	{
+		mDebug("Error parsing XML");
 		delete_tmp_files();
 		return -100;
 	}
