@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.30 2007/07/02 09:04:22 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.31 2007/07/02 09:47:44 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -149,10 +149,12 @@ bool FileNotEmpty(string filename)
 
 string ReadFile(string filename, int max_count)
 {
+	mDebug("Reading file");
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
 	{
 		//perror("ReadFile");
+		mDebug("No such file");
 		return "";
 	}
 	long size=fStat.st_size;
@@ -169,12 +171,14 @@ string ReadFile(string filename, int max_count)
 		ret = (string) memblock;
 		if (max_count > 0) ret = ret.substr(0, max_count);
 		delete memblock;
+		mDebug("Returning data");
 		return ret;
 	}
 }
 
-vector<string>ReadFileStrings(string filename)
+vector<string> ReadFileStrings(string filename)
 {
+	mDebug("Reading strings...");
 	string data=ReadFile(filename);
 	vector<string> ret;
 	
@@ -187,6 +191,7 @@ vector<string>ReadFileStrings(string filename)
 		if (lim<data.size()) data = data.substr(lim+1);
 		else data="";
 	}
+	mDebug("Returning strings vector...");
 	return ret;
 }
 int extractFromTgz(string filename, string file_to_extract, string output)

@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.53 2007/07/02 09:04:22 i27249 Exp $
+$Id: local_package.cpp,v 1.54 2007/07/02 09:47:44 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -267,8 +267,11 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 	// Retrieving regular files
 	string fname=get_tmp_file();
 	string tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
+	mDebug("Extracting file list");
 	system(tar_cmd);
+	mDebug("Parsing file list");
 	vector<string>file_names=ReadFileStrings(fname);
+	mDebug("Injecting file list");
 	for (unsigned int i=2; i<file_names.size(); i++)
 	{
 		if (!file_names[i].empty())
@@ -289,9 +292,6 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		sed_cmd += dt + " > " + lnfname;
 	}
 	system(sed_cmd);
-	
-
-
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)
 	{
