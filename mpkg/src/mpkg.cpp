@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.95 2007/07/02 09:04:22 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.96 2007/07/02 14:04:49 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -538,14 +538,18 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	}
 	mDebug("Checking file conflicts\n");
-	if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
+	if (!force_skip_conflictcheck)
 	{
-		mDebug("Check failed (dupes present)");
-		currentStatus = "Error: Unresolved file conflict on package " + *package->get_name();
-		mError("Unresolved file conflict on package " + *package->get_name() + ", it will be skipped!");
-		return -5;
+		if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
+		{
+			mDebug("Check failed (dupes present)");
+			currentStatus = "Error: Unresolved file conflict on package " + *package->get_name();
+			mError("Unresolved file conflict on package " + *package->get_name() + ", it will be skipped!");
+			return -5;
+		}
+		mDebug("Check conflicts ok");
 	}
-	mDebug("Check conflicts ok");
+	else mDebug("Conflict check skipped");
 	
 	currentStatus = statusHeader + "installing...";
 	pData.increaseItemProgress(package->itemID);

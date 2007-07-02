@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.34 2007/06/15 12:40:52 i27249 Exp $
+$Id: dependencies.cpp,v 1.35 2007/07/02 14:04:49 i27249 Exp $
 */
 
 
@@ -117,7 +117,8 @@ int DependencyTracker::renderData()
 	mDebug("Searching for broken packages");
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	mDebug("done");
-	return failureCounter;
+	if (!force_dep) return failureCounter;
+	else return 0;
 }
 // Tree
 PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQueue)
@@ -247,7 +248,7 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		found=false;
 		for (int t=0;t<installStream.size();t++)
 		{
-			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) //FIXME: Ооооочень странное место... явно кривое
+			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) //FIXME: Ооооочень странное место... глючное
 			{
 				mDebug("Rollback of " + *installStream.get_package(t)->get_name() + " is confirmed");
 				found=true;

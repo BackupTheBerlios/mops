@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.31 2007/07/02 09:04:22 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.32 2007/07/02 14:04:49 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -76,11 +76,17 @@ int main (int argc, char **argv)
 	
 
 	int ich;
-	const char* short_opt = "hvp";
+	const char* short_opt = "hvpdfmksD";
 	const struct option long_options[] =  {
 		{ "help",	0,	NULL, 'h'},
 		{ "verbose", 0, NULL, 'v'},
 		{ "purge", 0, NULL, 'p'},
+		{ "force-dep", 0, NULL, 'd'},
+		{ "force-conflicts",0,NULL,'f'},
+		{ "skip-md5check",0,NULL,'m'},
+		{ "force-essential",0,NULL,'k'},
+		{ "simulate",0,NULL,'s'},
+		{ "download-only",0,NULL,'D'},
 		{ NULL, 0, NULL, 0}
 	};
 
@@ -100,6 +106,27 @@ int main (int argc, char **argv)
 
 			case 'p':
 					do_purge = 1;
+					break;
+
+			case 'd':
+					force_dep = true;
+					break;
+			case 'f':
+					force_skip_conflictcheck = true;
+					break;
+
+			case 'm':
+					forceSkipLinkMD5Checks=true;
+					break;
+
+			case 'k':
+					force_essential_remove=true;
+					break;
+			case 's':
+					simulate=true;
+					break;
+			case 'D':
+					download_only=true;
 					break;
 					
 			case '?':
@@ -432,8 +459,14 @@ void print_usage(FILE* stream, int exit_code)
 {
 	fprintf(stream, _("\nUsage: %s [options] action package [package ...]\n"), program_name);
 	fprintf(stream,_("Options:\n"));
-	fprintf(stream,_("\t-h    --help       show this help\n"));
-	fprintf(stream,_("\t-v    --verbose    be verbose\n"));
+	fprintf(stream,_("\t-h    --help              show this help\n"));
+	fprintf(stream,_("\t-v    --verbose           be verbose\n"));
+	fprintf(stream,_("\t-d    --force-dep         interpret dependency errors as warnings\n"));
+	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
+	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity\n"));
+	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));
+	fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
+	fprintf(stream,_("\t-D    --download-only     only download packages, do not install\n"));
 	
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall    install packages\n"));

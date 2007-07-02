@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.41 2007/07/02 09:04:22 i27249 Exp $
+    $Id: config.h,v 1.42 2007/07/02 14:04:49 i27249 Exp $
 */
 
 
@@ -25,7 +25,11 @@ using namespace std;
 // Global configuration and message bus
 extern bool forceSkipLinkMD5Checks;
 extern bool simulate;
-extern bool force_all;
+extern bool force_dep;
+extern bool force_skip_conflictcheck;
+extern bool force_essential_remove;
+extern bool download_only;
+
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;
 extern string CDROM_DEVICE;
