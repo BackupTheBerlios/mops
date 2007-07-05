@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		mpkg-tools
+	</name>
+	<version>
+		0.1alpha1
+	</version>
+	<arch>
+		i686
+	</arch>
+	<build>
+		1
+	</build>
+	<description lang="en">
+		For now, this package contains only one tool - package builder. It marked aplha, because it&apos;s not completed yet (but is already usable). You can use it to build a package descriptions.
+	</description>
+	<description lang="ru">
+	</description>
+	<short_description lang="en">
+		MOPSLinux package system - mainenance tools
+	</short_description>
+	<short_description lang="ru">
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				mpkg-core
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9beta1
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			xapps
+		</tag>
+		<tag>
+			depelopment
+		</tag>
+	</tags>
+	<changelog>
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+</package>

@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		mpkg-console
+	</name>
+	<version>
+		0.6beta1
+	</version>
+	<arch>
+		i686
+	</arch>
+	<build>
+		1
+	</build>
+	<description lang="en">
+		Console interface for MPKG. I recommend to intall this, because many scripts may be relied on this.
+	</description>
+	<description lang="ru">
+	</description>
+	<short_description lang="en">
+		MOPSLinux package system: console interface
+	</short_description>
+	<short_description lang="ru">
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				mpkg-core
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9beta1
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			base
+		</tag>
+		<tag>
+			console
+		</tag>
+	</tags>
+	<changelog>
+		This is a first public beta release. Please send bug reports to the maintainer.
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+	<configfiles/>
+</package>

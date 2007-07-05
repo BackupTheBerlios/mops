@@ -1,17 +1,17 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.35 2007/07/02 14:04:49 i27249 Exp $
+ * $Id: config.cpp,v 1.36 2007/07/05 13:23:08 i27249 Exp $
  *
  * ***************************************************/
 
 #include "config.h"
 #include "xmlParser.h"
-
+#include "file_routines.h"
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
 
 bool simulate=false;
-
+vector<string> removeBlacklist;
 bool force_dep=false;
 bool force_skip_conflictcheck=false;
 bool force_essential_remove=false;
@@ -59,6 +59,7 @@ int loadGlobalConfig(string config_file)
 	mError("error: core running non-core code\n");
 #endif
 	currentStatus = "Loading configuration...";
+	removeBlacklist = ReadFileStrings("/etc/mpkg-remove-blacklist");
 	string run_scripts="yes";
 	string cdrom_device="/dev/cdrom";
 	string cdrom_mountpoint="/mnt/cdrom";
@@ -211,6 +212,7 @@ XMLNode mpkgconfig::getXMLConfig(string conf_file)
 	XMLNode config;
 	XMLResults xmlErrCode;
 	bool conf_init = false;
+	removeBlacklist = ReadFileStrings("/etc/mpkg-remove-blacklist");
 	if (access(conf_file.c_str(), R_OK)==0)
 	{
 		config=XMLNode::parseFile(conf_file.c_str(), "mpkgconfig", &xmlErrCode);

@@ -1,0 +1,6 @@
+mpkg-core: MOPSLinux package system: core libraries
+mpkg-core: 
+mpkg-core: This is a core of MOPSLinux package system. It contains the main
+mpkg-core:  library, download library, default configuration file, and group
+mpkg-core:  descriptions. Considering that you are already have a directory
+mpkg-core:  structure (should be done on install)

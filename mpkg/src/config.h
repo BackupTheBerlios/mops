@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.42 2007/07/02 14:04:49 i27249 Exp $
+    $Id: config.h,v 1.43 2007/07/05 13:23:08 i27249 Exp $
 */
 
 
@@ -36,6 +36,7 @@ extern string CDROM_DEVICE;
 extern string CDROM_MOUNTPOINT;
 extern string CDROM_VOLUMELABEL;
 extern string CDROM_DEVICENAME;
+extern vector<string> removeBlacklist;
 // System configuration
 extern bool consoleMode;
 extern bool dialogMode;

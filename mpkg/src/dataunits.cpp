@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.62 2007/07/02 09:04:22 i27249 Exp $
+	$Id: dataunits.cpp,v 1.63 2007/07/05 13:23:08 i27249 Exp $
 */
 
 
@@ -848,8 +848,19 @@ bool PACKAGE::IsEmpty()
 	return package_name.empty();
 }
 
+bool PACKAGE::isRemoveBlacklisted()
+{
+	for (unsigned int i=0; i<removeBlacklist.size(); i++)
+	{
+		if (removeBlacklist[i]==this->package_name) return true;
+	}
+	return false;
+}
+
+
 PACKAGE::PACKAGE()
 {
+	isUpdating=false;
 	isBroken = false;
 	isRequirement = false;
 	package_id=-1;
@@ -1037,13 +1048,11 @@ void PACKAGE_LIST::setTableID(int pkgNum, int id)
 
 int PACKAGE_LIST::getTableID(int pkgNum)
 {
-	mDebug("requested " + IntToStr(pkgNum));
 	return reverseTableID[pkgNum];
 }
 
 int PACKAGE_LIST::getRealNum(int id)
 {
-	mDebug("requested "+IntToStr(id));
 	return tableID[id];
 }
 void PACKAGE_LIST::set_package(int num, PACKAGE* package)

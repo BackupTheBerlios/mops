@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.96 2007/07/02 14:04:49 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.97 2007/07/05 13:23:08 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -209,6 +209,15 @@ int mpkgDatabase::commit_actions()
 				return MPKGERROR_ABORTED;
 			}
 			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			for (int t=0; t<install_list.size(); t++)
+			{
+				if (*install_list.get_package(t)->get_name() == *remove_list.get_package(i)->get_name())
+				{
+					say("Updating package %s\n", remove_list.get_package(i)->get_name()->c_str()); 
+					remove_list.get_package(i)->isUpdating=true;
+					break;
+				}
+			}
 			currentStatus = "Removing package " + *remove_list.get_package(i)->get_name();
 			if (remove_package(remove_list.get_package(i))!=0)
 			{
@@ -669,125 +678,146 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	if (!package->isUpdating && package->isRemoveBlacklisted())
+	{
+		mError("Cannot remove package " + *package->get_name() + ", because it is an important system component.");
+		return MPKGERROR_IMPOSSIBLE;
+	}
 	get_filelist(package->get_id(), package->get_files());
 	package->sync();
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
 	pData.setItemCurrentAction(package->itemID, "removing");
-	if (!dialogMode) say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+	if (!dialogMode)
+	{
+		if (package->isUpdating) say("Updating package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+		else say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+	}
 
 	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+*package->get_name()+": ";
 	currentStatus = statusHeader + "initialization";
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
-		// Running pre-remove scripts
-		mDebug("REMOVE PACKAGE::Preparing scripts");
-		if(!DO_NOT_RUN_SCRIPTS)
+		if (!package->isRemoveBlacklisted())
 		{
-			if (FileExists(package->get_scriptdir() + "preremove.sh"))
+			// Running pre-remove scripts
+			mDebug("REMOVE PACKAGE::Preparing scripts");
+			if(!DO_NOT_RUN_SCRIPTS)
 			{
-				currentStatus = statusHeader + "executing pre-remove scripts";
-				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
-				if (!simulate) system(prerem.c_str());
-			}
-		}
-		pData.increaseItemProgress(package->itemID);
-		// removing package
-		mDebug("calling remove");
-		string sys_cache=SYS_CACHE;
-		string sys_root=SYS_ROOT;
-		string fname;
-		mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
-
-		// Purge is now implemented here; checking all
-		currentStatus = statusHeader + "building file list";
-		vector<FILES> *remove_files=package->get_files();
-		currentStatus = statusHeader + "removing files...";
-		bool removeThis;
-		for (unsigned int i=0; i<remove_files->size(); i++)
-		{
-			removeThis = false;
-			if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
-			fname=sys_root + *remove_files->at(i).get_name();
-			if (removeThis && fname[fname.length()-1]!='/')
-			{
-				pData.increaseItemProgress(package->itemID);
-				if (!simulate) unlink (fname.c_str());
-			}
-		}
-
-		currentStatus = statusHeader + "removing empty directories...";
-	
-		// Run 2: clearing empty directories
-		vector<string>empty_dirs;
-		string edir;
-		pData.increaseItemProgress(package->itemID);
-		for (unsigned int i=0; i<remove_files->size(); i++)
-		{
-			fname=sys_root + *remove_files->at(i).get_name();
-			for (unsigned int d=0; d<fname.length(); d++)
-			{
-				edir+=fname[d];
-				if (fname[d]=='/')
+				if (FileExists(package->get_scriptdir() + "preremove.sh"))
 				{
-					empty_dirs.resize(empty_dirs.size()+1);
-					empty_dirs[empty_dirs.size()-1]=edir;
+					currentStatus = statusHeader + "executing pre-remove scripts";
+					string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
+					if (!simulate) system(prerem.c_str());
 				}
 			}
-	
-			for (int x=empty_dirs.size()-1;x>=0; x--)
-			{
-				if (!simulate) rmdir(empty_dirs[x].c_str());
-			}
-			edir.clear();
-			empty_dirs.clear();
-		}
-	
-		// Creating and running POST-REMOVE script
-		if (!DO_NOT_RUN_SCRIPTS)
-		{
-			if (FileExists(package->get_scriptdir() + "postremove.sh"))
-			{
-				currentStatus = statusHeader + "executing post-removal scripts";
-				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
-				if (!simulate) system(postrem.c_str());
-			}
-		}
-	}
-	// Restoring backups
-	vector<FILES>restore;
-       	get_conflict_records(package->get_id(), &restore);
-	if (!restore.empty())
-	{
-		string cmd;
-		string tmpName;
-		for (unsigned int i=0; i<restore.size(); i++)
-		{
-			cmd = "mkdir -p ";
-		       	cmd += SYS_ROOT + restore[i].get_backup_file()->substr(0, restore[i].get_backup_file()->find_last_of("/"));
-			if (!simulate) system(cmd.c_str());
-			cmd = "mv ";
-		        cmd += *restore[i].get_backup_file() + " ";
-			tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
-			tmpName = tmpName.substr(tmpName.find("/"));
-		        cmd += SYS_ROOT	+ tmpName;
-			if (!simulate) system(cmd.c_str());
-			delete_conflict_record(package->get_id(), restore[i].get_backup_file());
-		}
-	}
+		
+			pData.increaseItemProgress(package->itemID);
+			// removing package
+			mDebug("calling remove");
+			string sys_cache=SYS_CACHE;
+			string sys_root=SYS_ROOT;
+			string fname;
+			mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
 
-	pData.increaseItemProgress(package->itemID);
-	set_installed(package->get_id(), ST_NOTINSTALLED);
-	set_action(package->get_id(), ST_NONE);
-	currentStatus = statusHeader + "cleaning file list";
-	pData.increaseItemProgress(package->itemID);
-	cleanFileList(package->get_id());
-	pData.increaseItemProgress(package->itemID);
-	sqlFlush();
-	currentStatus = statusHeader + "remove complete";
-	mDebug("Package removed sussessfully");
-	package->get_files()->clear();
-	return 0;
+			// Purge is now implemented here; checking all
+			currentStatus = statusHeader + "building file list";
+			vector<FILES> *remove_files=package->get_files();
+			currentStatus = statusHeader + "removing files...";
+			bool removeThis;
+			for (unsigned int i=0; i<remove_files->size(); i++)
+			{
+				removeThis = false;
+				if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
+				fname=sys_root + *remove_files->at(i).get_name();
+				if (removeThis && fname[fname.length()-1]!='/')
+				{
+					pData.increaseItemProgress(package->itemID);
+					if (!simulate) unlink (fname.c_str());
+				}
+			}
+
+			currentStatus = statusHeader + "removing empty directories...";
+	
+			// Run 2: clearing empty directories
+			vector<string>empty_dirs;
+			string edir;
+		
+			pData.increaseItemProgress(package->itemID);
+			
+			for (unsigned int i=0; i<remove_files->size(); i++)
+			{
+				fname=sys_root + *remove_files->at(i).get_name();
+				for (unsigned int d=0; d<fname.length(); d++)
+				{
+					edir+=fname[d];
+					if (fname[d]=='/')
+					{
+						empty_dirs.resize(empty_dirs.size()+1);
+						empty_dirs[empty_dirs.size()-1]=edir;
+					}
+				}
+	
+				for (int x=empty_dirs.size()-1;x>=0; x--)
+				{
+					if (!simulate) rmdir(empty_dirs[x].c_str());
+				}
+				edir.clear();
+				empty_dirs.clear();
+			}
+	
+			// Creating and running POST-REMOVE script
+			if (!DO_NOT_RUN_SCRIPTS)
+			{
+				if (FileExists(package->get_scriptdir() + "postremove.sh"))
+				{
+					currentStatus = statusHeader + "executing post-removal scripts";
+					string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
+					if (!simulate) system(postrem.c_str());
+				}
+			}
+		
+	
+			// Restoring backups
+			vector<FILES>restore;
+       			get_conflict_records(package->get_id(), &restore);
+			if (!restore.empty())
+			{
+				string cmd;
+				string tmpName;
+				for (unsigned int i=0; i<restore.size(); i++)
+				{
+					cmd = "mkdir -p ";
+		       			cmd += SYS_ROOT + restore[i].get_backup_file()->substr(0, restore[i].get_backup_file()->find_last_of("/"));
+					if (!simulate) system(cmd.c_str());
+					cmd = "mv ";
+				        cmd += *restore[i].get_backup_file() + " ";
+					tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
+					tmpName = tmpName.substr(tmpName.find("/"));
+				        cmd += SYS_ROOT	+ tmpName;
+					if (!simulate) system(cmd.c_str());
+					delete_conflict_record(package->get_id(), restore[i].get_backup_file());
+				}
+			}
+		}
+		pData.increaseItemProgress(package->itemID);
+		set_installed(package->get_id(), ST_NOTINSTALLED);
+		set_action(package->get_id(), ST_NONE);
+		currentStatus = statusHeader + "cleaning file list";
+		pData.increaseItemProgress(package->itemID);
+		cleanFileList(package->get_id());
+		pData.increaseItemProgress(package->itemID);
+		sqlFlush();
+		currentStatus = statusHeader + "remove complete";
+		mDebug("Package removed sussessfully");
+		package->get_files()->clear();
+		return 0;
+	}
+	else
+	{
+		mError("Weird status of package, i'm afraid to remove this...");
+		return -1;
+	}
 }	// End of remove_package
 
 int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)

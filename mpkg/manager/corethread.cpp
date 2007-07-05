@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.73 2007/06/02 23:26:06 i27249 Exp $
+ * $Id: corethread.cpp,v 1.74 2007/07/05 13:23:08 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -285,6 +285,8 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 			break;
 	}
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
+	if (!FileExists("/usr/share/mpkg/icons/"+package_icon)) printf("Requested icon %s doesn't exist\n", package_icon.c_str());
+
 		string pName = "<table><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+ *_p->get_name()+"</b> "\
 			+_p->get_fullversion() \
 			/*+ " tableID:" + IntToStr(packageList->getTableID(package_num)) \*/
@@ -292,6 +294,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 		       	+ "<br>"+*_p->get_short_description() + "</td></tr></tbody></table>";
 	//while (!fillReadyState) usleep(1);
 	//fillReadyState = false;
+	mDebug("setting table item (from thread): at tablePos="+IntToStr(tablePos) + ", package_num="+IntToStr(package_num));
 	emit setTableItem(tablePos, package_num, checked, pName);
 }
 void coreThread::recvReadyFlag()

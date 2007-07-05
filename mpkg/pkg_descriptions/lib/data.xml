@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		mpkg-core
+	</name>
+	<version>
+		0.10beta1
+	</version>
+	<arch>
+		i686
+	</arch>
+	<build>
+		4
+	</build>
+	<description lang="en">
+		This is a core of MOPSLinux package system. It contains the main library, download library, default configuration file, and group descriptions. Considering that you are already have a directory structure (should be done on install)
+	</description>
+	<description lang="ru">
+	</description>
+	<short_description lang="en">
+		MOPSLinux package system: core libraries
+	</short_description>
+	<short_description lang="ru">
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				curl
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				7.15
+			</version>
+		</dep>
+		<dep>
+			<name>
+				sqlite3
+			</name>
+			<condition>
+				equal
+			</condition>
+			<version>
+				3.3.17
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			base
+		</tag>
+	</tags>
+	<changelog>
+		This is a first public beta release. Please send bug reports and feature requests to the maintainer
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+	<configfiles>
+		<conffile>
+			etc/mpkg.xml
+		</conffile>
+		<conffile>
+			etc/mpkg-groups.xml
+		</conffile>
+	</configfiles>
+</package>

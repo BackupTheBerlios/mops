@@ -141,7 +141,6 @@ try_mount:
 	string Svolname;
 	
 	// check_volname:
-	
 	string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
 	system(vol_cmd.c_str());
 	FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");

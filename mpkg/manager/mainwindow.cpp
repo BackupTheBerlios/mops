@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.115 2007/06/07 12:38:50 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.116 2007/07/05 13:23:08 i27249 Exp $
  *
  ****************************************************************/
 
@@ -539,10 +539,15 @@ string MainWindow::bool2str(bool data)
 
 void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState, string cellItemText)
 {
-	waitUnlock();
+	//waitUnlock();
 	if (packageNum>=packagelist->size())
 	{
 		mDebug("uninitialized");
+		return;
+	}
+	if (row >= ui.packageTable->rowCount())
+	{
+		mDebug("out of range (skipped): " + IntToStr(row));
 		return;
 	}
 	if (nameComplain(packageNum, ui.quickPackageSearchEdit->text()))
@@ -570,12 +575,13 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 		depData+="<br>";
 	}
 
-	string tagList = "<br><b>" + tr("Tags:").toStdString() + "</b>";
+	/*string tagList = "<br><b>" + tr("Tags:").toStdString() + "</b>";
 	for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_tags()->size(); i++)
 	{
 		tagList+= "<br>" + packagelist->get_package(packageNum)->get_tags()->at(i);
 	}
-	tagList += "<br>";
+	tagList += "<br>";*/
+	string tagList = "";
 
 	cellItemText+="<html><b>"+tr("Installed version:").toStdString()+" </b>" + packagelist->get_package(packageNum)->installedVersion + \
 		       "<br><b>"+tr("It is max version:").toStdString()+" </b>" + bool2str(packagelist->get_package(packageNum)->hasMaxVersion)+\
@@ -584,11 +590,16 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 			"<b>"+tr("Description:").toStdString()+" </b><br>" + \
 		       adjustStringWide(*packagelist->get_package(packageNum)->get_description(), packagelist->get_package(packageNum)->get_short_description()->size())+ \
 		       		       "</html>";
-	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
 	stat->row = row;
 	QObject::connect(stat, SIGNAL(stateChanged(int)), stat, SLOT(markChanges()));
 	QObject::connect(stat, SIGNAL(stateChanged(int)), this, SLOT(applyPackageFilter()));
 	ui.packageTable->setRowHeight(row, 45);
+	//printf("Setting tooltip to %dx%d, table size = %dx%d\n", row, PT_NAME, ui.packageTable->rowCount(), ui.packageTable->columnCount());
+	ui.packageTable->cellWidget(row, PT_NAME)->setToolTip(cellItemText.c_str());
+
+	//ui.packageTable->cellWidget(row, PT_NAME)->setToolTip((QString) "VOID");
+	mDebug("Tooltip set");
+
 	//ui.packageTable->setRowHidden(row, true);
 	//thread->recvFillReady();
 }
@@ -1369,12 +1380,26 @@ waitUnlock();
 			else
 			{
 				if (_p->available()){
+				       if (_p->isUpdate()) package_icon = "update.png";
+				       else {
+					       package_icon="available.png";
+					       if (_p->configexist()) package_icon="removed_available.png";
+				       }
+				}
+				else package_icon="unknown.png";
+			}
+			break;
+/*
+			if (_p->installed()) package_icon = "installed.png";
+			else
+			{
+				if (_p->available()){
 				       package_icon="available.png";
 				       if (_p->configexist()) package_icon="removed_available.png";
 				}
 				else package_icon="unknown.png";
 			}
-			break;
+			break;*/
 		case ST_INSTALL:
 			package_icon="install.png";
 			break;
@@ -1390,6 +1415,7 @@ waitUnlock();
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 
+	if (!FileExists("/usr/share/mpkg/icons/"+package_icon)) printf("Requested icon %s doesn't exist\n", package_icon.c_str());
 	string pName = "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\" ><tbody><tr><td><img src = \"/usr/share/mpkg/icons/"+package_icon+"\"></img></td><td><b>"+*_p->get_name()+"</b> "\
 		+_p->get_fullversion()\
 		+" <font color=\"green\"> \t["+humanizeSize(*_p->get_compressed_size()) + "]     </font>" + cloneHeader+\

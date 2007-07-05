@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.31 2007/07/02 09:47:44 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.32 2007/07/05 13:23:08 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -283,6 +283,7 @@ unsigned int CheckFileType(string fname)
 }
 string getCdromVolname()
 {
+	// Not used anyway
 	mpkgErrorReturn errRet;
 check_volname:
 	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";

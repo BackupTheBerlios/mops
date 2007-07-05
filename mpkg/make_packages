@@ -7,28 +7,29 @@ rm -rf out_packages/gui
 rm -rf out_packages/*.tgz
 
 echo "Creating library package"
-mkdir out_packages/lib
-tar jxvf pkg_descriptions/lib.tar.bz2 -C out_packages/lib
+mkdir -p out_packages/lib/install
+cp pkg_descriptions/lib/*  out_packages/lib/install/
 mkdir -p out_packages/lib/usr/local/lib
 mkdir -p out_packages/lib/usr/local/include
 mkdir -p out_packages/lib/etc
 cp -R /usr/local/include/mpkg out_packages/lib/usr/local/include/
 cp src/mpkg.xml out_packages/lib/etc/
 cp manager/groups.xml out_packages/lib/etc/mpkg-groups.xml
+cp src/mpkg-remove-blacklist out_packages/lib/etc/
 cp /usr/local/lib/libmpkg* out_packages/lib/usr/local/lib/
 cd out_packages/lib/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating console package"
-mkdir out_packages/console
-tar jxvf pkg_descriptions/console.tar.bz2 -C out_packages/console
+mkdir -p out_packages/console/install
+cp  pkg_descriptions/console/* out_packages/console/install
 mkdir -p out_packages/console/usr/local/bin
 cp /usr/local/bin/mpkg out_packages/console/usr/local/bin/
 (cd out_packages/console/usr/local/bin; ln -s mpkg buildpkg)
 cd out_packages/console/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating GUI package"
-mkdir out_packages/gui
-tar jxvf pkg_descriptions/gui.tar.bz2 -C out_packages/gui
+mkdir -p out_packages/gui/install
+cp  pkg_descriptions/gui/*  out_packages/gui/install/
 mkdir -p out_packages/gui/usr/local/bin
 mkdir -p out_packages/gui/usr/share/applications
 cp /usr/local/bin/manager out_packages/gui/usr/local/bin/
@@ -39,8 +40,8 @@ cp -R manager/applink/* out_packages/gui/usr/share/applications/
 cd out_packages/gui/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating tools package"
-mkdir out_packages/tools
-tar jxvf pkg_descriptions/tools.tar.bz2 -C out_packages/tools
+mkdir -p out_packages/tools/install
+cp  pkg_descriptions/tools/* out_packages/tools/install/
 mkdir -p out_packages/tools/usr/local/bin
 cp /usr/local/bin/packagebuilder out_packages/tools/usr/local/bin/
 cd out_packages/tools; buildpkg; mv *.tgz ..; cd ../..

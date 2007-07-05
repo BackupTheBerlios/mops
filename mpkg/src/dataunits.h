@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.42 2007/06/05 12:18:40 i27249 Exp $
+	$Id: dataunits.h,v 1.43 2007/07/05 13:23:08 i27249 Exp $
 */
 
 
@@ -205,6 +205,8 @@ class PACKAGE
 	vector<DESCRIPTION> package_descriptions;
 #endif
     public:
+	bool isRemoveBlacklisted();
+	bool isUpdating;
 	versionData requiredVersion;
 	int priority;
 	int itemID;	// For status purposes only, means the number in PackageData vector

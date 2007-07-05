@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.32 2007/07/02 14:04:49 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.33 2007/07/05 13:23:08 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -285,7 +285,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		printf("%f\n", get_disk_freespace());
+
 		return 0;
 
 
@@ -611,6 +611,8 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 	}
 	for (int i=0; i<pkglist.size(); i++)
 	{
+		if (pkglist.get_package(i)->isRemoveBlacklisted()) say("*");
+		else say(" ");
 		if (!onlyQueue || pkglist.get_package(i)->action()!=ST_NONE)
 		{
 			say("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
