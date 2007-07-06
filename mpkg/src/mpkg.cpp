@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.97 2007/07/05 13:23:08 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.98 2007/07/06 05:58:33 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -681,6 +681,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	if (!package->isUpdating && package->isRemoveBlacklisted())
 	{
 		mError("Cannot remove package " + *package->get_name() + ", because it is an important system component.");
+		set_action(package->get_id(), ST_NONE);
 		return MPKGERROR_IMPOSSIBLE;
 	}
 	get_filelist(package->get_id(), package->get_files());

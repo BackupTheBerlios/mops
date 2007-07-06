@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.116 2007/07/05 13:23:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.117 2007/07/06 05:58:33 i27249 Exp $
  *
  ****************************************************************/
 
@@ -1389,17 +1389,6 @@ waitUnlock();
 				else package_icon="unknown.png";
 			}
 			break;
-/*
-			if (_p->installed()) package_icon = "installed.png";
-			else
-			{
-				if (_p->available()){
-				       package_icon="available.png";
-				       if (_p->configexist()) package_icon="removed_available.png";
-				}
-				else package_icon="unknown.png";
-			}
-			break;*/
 		case ST_INSTALL:
 			package_icon="install.png";
 			break;
