@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.37 2007/06/15 12:40:52 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.38 2007/07/06 08:49:41 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -44,6 +44,7 @@ int mpkg::unqueue(int package_id)
 {
 	return mpkgSys::unqueue(package_id, db);
 }
+
 // Package building
 int mpkg::build_package()
 {
@@ -282,4 +283,65 @@ int mpkg::commit()
 		return MPKGERROR_UNRESOLVEDDEPS;
 	}
 }
+
+bool mpkg::checkPackageIntegrity(string pkgName)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", &pkgName);
+	sqlSearch.addField("package_installed", ST_INSTALLED);
+	PACKAGE_LIST table;
+	get_packagelist(&sqlSearch, &table);
+	if (table.size()==0)
+	{
+		mError("No package \"" + pkgName + "\" is installed");
+		return true;
+	}
+	if (table.size()!=1)
+	{
+		mError("Received " + IntToStr(table.size()) + " packages, ambiguity!");
+		return false;
+	}
+	return checkPackageIntegrity(table.get_package(0));
+}
+
+bool mpkg::checkPackageIntegrity(PACKAGE *package)
+{
+
+	db->get_filelist(package->get_id(), package->get_files());
+	// Function description: 
+	// 	1. Check files for exist
+	// 	2. Check files for integrity (md5 verify)
+	// 	3. Access rights check (hm...)
+	bool integrity_ok = true;
+	bool broken_sym = false;
+	for (unsigned int i=0; i<package->get_files()->size(); i++)
+	{
+		if (!FileExists(SYS_ROOT + *package->get_files()->at(i).get_name(), &broken_sym))
+		{
+			if (integrity_ok) 
+				mError("Package " + (string) CL_YELLOW + *package->get_name() + (string) CL_WHITE + " has broken files or symlinks:");
+			integrity_ok = false;
+			if (!broken_sym) 
+				say("%s%s%s: /%s (file doesn't exist)\n", CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
+			else
+				say("%s%s%s: /%s (broken symlink)\n", CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
+
+
+		}
+	}
+	return integrity_ok;
+}
+
+bool mpkg::repair(PACKAGE *package)
+{
+	if (!package->available())
+	{
+		mError("Cannot repair " + *package->get_name() + ": package is unavailable");
+		return false;
+	}
+	db->set_action(package->get_id(), ST_REPAIR);
+	return true;
+}
+			
+
 

@@ -1,5 +1,5 @@
 /* Miscellaneous constants
-    $Id: constants.h,v 1.8 2007/05/28 14:17:19 i27249 Exp $
+    $Id: constants.h,v 1.9 2007/07/06 08:49:41 i27249 Exp $
 */
 
 
@@ -45,7 +45,7 @@
 #define ST_REMOVE	2
 #define ST_PURGE	3
 #define ST_UPDATE	4 	// equivalent to ST_REMOVE, but is required for GUI to make unroll possible
-
+#define ST_REPAIR	5
 // File type definitions
 #define FTYPE_PLAIN	0
 #define FTYPE_CONFIG	1

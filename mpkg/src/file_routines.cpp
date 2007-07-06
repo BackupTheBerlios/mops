@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.32 2007/07/05 13:23:08 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.33 2007/07/06 08:49:41 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -13,6 +13,8 @@ extern int errno;
 
 bool backupDatabase()
 {
+	return true; // Backup is disabled for now
+
 	string cmd = "cp -f " + DB_FILENAME + " " + DB_FILENAME+".backup 2>&1 >/dev/null";
 	mDebug(cmd);
 	if (system(cmd)==0) return true;
@@ -21,6 +23,7 @@ bool backupDatabase()
 
 bool restoreDatabaseFromBackup()
 {
+	return true; // Backup is disabled for now
 	mDebug("restoring");
 	if (system("cp -f " + DB_FILENAME + ".backup " + DB_FILENAME + " 2>&1 >/dev/null")==0) return true;
 	else return false;
@@ -108,10 +111,23 @@ void delete_tmp_files()
 	temp_files.clear(); // Clean-up list - for future use
 }
 
-bool FileExists(string filename)
+bool FileExists(string filename, bool *broken_symlink)
 {
-	if (access(filename.c_str(), R_OK)==0) return true;
-	else return false;
+	if (broken_symlink != NULL) *broken_symlink=false;
+	if (access(filename.c_str(), F_OK)==0) return true;
+	else 
+	{
+		struct stat st;
+		lstat(filename.c_str(), &st);
+		//{
+		//	printf("NOT EXIST AT ALL");
+		//}
+		//else
+		//{
+			if (S_ISLNK(st.st_mode) && broken_symlink!=NULL) *broken_symlink=true;
+		//}
+	}
+	return false;
 }
 
 bool FileNotEmpty(string filename)

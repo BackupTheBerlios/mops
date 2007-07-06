@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.33 2007/07/05 13:23:08 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.34 2007/07/06 08:49:41 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -16,14 +16,16 @@ extern int optind, opterr, optopt;
 //string output_dir;
 //static LoggerPtr rootLogger;
 void show_package_info(mpkg *core, string name);
-
+bool repair_damaged=false;
 int setup_action(char* act);
 int check_action(char* act);
 void print_usage(FILE* stream, int exit_code);
 int list(mpkg *core, vector<string> search, bool onlyQueue=false);
 void ShowBanner();
 int list_rep(mpkg *core);
-
+bool showOnlyAvailable=false;
+bool showOnlyInstalled=false;
+bool showFilelist=false;
 void ShowBanner()
 {
 	char *version="0.9 beta 1 (public preview state)";
@@ -31,6 +33,7 @@ void ShowBanner()
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
 
+int verbose = 0;
 int main (int argc, char **argv)
 {
 	mpkg core;
@@ -51,7 +54,6 @@ int main (int argc, char **argv)
 	textdomain("installpkg-ng");
 
 
-	int verbose = 0;
 
 	/**
 	 * remove everything?
@@ -76,7 +78,7 @@ int main (int argc, char **argv)
 	
 
 	int ich;
-	const char* short_opt = "hvpdfmksD";
+	const char* short_opt = "hvpdfmksDRial";
 	const struct option long_options[] =  {
 		{ "help",	0,	NULL, 'h'},
 		{ "verbose", 0, NULL, 'v'},
@@ -87,6 +89,10 @@ int main (int argc, char **argv)
 		{ "force-essential",0,NULL,'k'},
 		{ "simulate",0,NULL,'s'},
 		{ "download-only",0,NULL,'D'},
+		{ "repair",0,NULL,'R'},
+		{ "available",0,NULL,'a'},
+		{ "installed",0,NULL,'i'},
+		{ "filelist",0,NULL,'l'},
 		{ NULL, 0, NULL, 0}
 	};
 
@@ -125,8 +131,22 @@ int main (int argc, char **argv)
 			case 's':
 					simulate=true;
 					break;
+			case 'i':
+					showOnlyInstalled=true;
+					break;
+			case 'a':
+					showOnlyAvailable=true;
+					break;
 			case 'D':
 					download_only=true;
+					break;
+
+			case 'R':
+					repair_damaged=true;
+					break;
+
+			case 'l':
+					showFilelist=true;
 					break;
 					
 			case '?':
@@ -285,12 +305,60 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
+		say ("No test for today\n");
+		return 0;
+	}
+
+	if (action == ACT_CHECKDAMAGE)
+	{
+
+		PACKAGE_LIST repairList;
+		if (optind>=argc)
+		{
+			// Check entire system
+			SQLRecord sqlSearch;
+			sqlSearch.addField("package_installed",ST_INSTALLED);
+			PACKAGE_LIST checkList;
+			core.get_packagelist(&sqlSearch, &checkList);
+			for (int i=0; i<checkList.size(); i++)
+			{
+				say("[%d/%d] ",i+1,checkList.size());
+				if (core.checkPackageIntegrity(checkList.get_package(i))) say("%s: %sOK%s\n",\
+					       	checkList.get_package(i)->get_name()->c_str(), CL_GREEN, CL_WHITE);
+				else 
+				{
+					say("%s: %sDAMAGED%s\n", checkList.get_package(i)->get_name()->c_str(), CL_RED, CL_WHITE);
+					if (repair_damaged) 
+					{
+						repairList.add(checkList.get_package(i));
+					}
+				}
+			}
+		}
+		else
+		{
+			for (int i = optind; i<argc; i++)
+			{
+				if (core.checkPackageIntegrity((string) argv[i])) say("%s: %sOK%s\n", argv[i], CL_GREEN, CL_WHITE);
+				else 
+				{
+					say("%s: %sDAMAGED%s\n", argv[i], CL_RED, CL_WHITE);
+				}
+			}
+		}
+		for (int i=0; i<repairList.size(); i++)
+		{
+			core.repair(repairList.get_package(i));
+		}
+		if (repairList.size()>0)
+		{
+			say("\n\n----------Repairing damaged packages----------\n");
+			core.commit();
+		}
 
 		return 0;
-
-
-
 	}
+	
 	if (action == ACT_REMOVE)
 	{
 		for (int i = optind; i < argc; i++)
@@ -463,10 +531,14 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-v    --verbose           be verbose\n"));
 	fprintf(stream,_("\t-d    --force-dep         interpret dependency errors as warnings\n"));
 	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
-	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity\n"));
+	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity on install\n"));
 	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));
 	fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
 	fprintf(stream,_("\t-D    --download-only     only download packages, do not install\n"));
+	fprintf(stream,_("\t-R    --repair            repair damaged packages (use with \"check\" keyword"));
+	fprintf(stream,_("\t-i    --installed         show only installed packages (use with \"list\" keyword)\n"));
+	fprintf(stream,_("\t-a    --available         show only available packages (use with \"list\" keyword)\n"));
+
 	
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall    install packages\n"));
@@ -476,7 +548,7 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tshow       show info about package\n"));
 	fprintf(stream,_("\tshow_queue show actions queue\n"));
 	fprintf(stream,_("\tupdate     update packages info\n"));
-	fprintf(stream,_("\tlist       list installed packages\n"));
+	fprintf(stream,_("\tlist       show the list of all packages in database\n"));
 	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
 	fprintf(stream,_("\tinstallfromlist install using file with list of items\n"));
 	fprintf(stream,_("\treset      reset queue\n"));
@@ -484,7 +556,8 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tcommit     commit queued actions\n"));
 	fprintf(stream,_("\tsearch     search package by name\n"));
 	fprintf(stream,_("\tclean      remove all packages from cache\n"));
-	
+	fprintf(stream,_("\tcheck      checks installed package(s) for damaged files. Use -R flag to to repair\n"));
+
 	fprintf(stream,_("\nInteractive options:\n"));
 	fprintf(stream,_("\tmenu       Shows the package selection menu\n"));
 	
@@ -573,10 +646,42 @@ void show_package_info(mpkg *core, string name)
 		}
 
 		say("%sDescription:%s        \n%s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
+
+		if (showFilelist)
+		{
+			say("%sFilelist:%s\n", CL_GREEN, CL_WHITE);
+			if (pkgList.get_package(i)->installed())
+			{
+				core->db->get_filelist(pkgList.get_package(i)->get_id(), pkgList.get_package(i)->get_files());
+				if (pkgList.get_package(i)->get_files()->size()==0)
+				{
+					say("\tPackage contains no files\n");
+				}
+				else for (unsigned int t=0; t<pkgList.get_package(i)->get_files()->size(); t++)
+				{
+					say ("\t    %s", pkgList.get_package(i)->get_files()->at(t).get_name()->c_str());
+					if (verbose) 
+					{
+						if (pkgList.get_package(i)->get_files()->at(t).get_type()==FTYPE_CONFIG)
+						{
+							say (" (config file)\n");
+						}
+						else 
+						{
+							if (pkgList.get_package(i)->get_files()->at(t).get_type()==FTYPE_SYMLINK)
+							{
+								say(" (symlink)\n");
+							}
+							else say (" (plain file)\n");
+						}
+					}
+					else say ("\n");
+				}
+			}
+			else say ("\tPackage is not installed\n");
+		}
+
 	}
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
-	//	say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList->get_package(i)->get_packager_email()->c_str());
 
 
 
@@ -609,19 +714,26 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		else say("Nothing is found\n");
 		return 0;
 	}
+	bool showThis;
 	for (int i=0; i<pkglist.size(); i++)
 	{
-		if (pkglist.get_package(i)->isRemoveBlacklisted()) say("*");
-		else say(" ");
-		if (!onlyQueue || pkglist.get_package(i)->action()!=ST_NONE)
+		showThis=true;
+		if (showOnlyAvailable && !pkglist.get_package(i)->available()) showThis=false;
+		if (showOnlyInstalled && !pkglist.get_package(i)->installed()) showThis=false;
+		if (showThis)
 		{
-			say("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
-			say("%s-%s-%s-%s\t(%s)\n", \
-				pkglist.get_package(i)->get_name()->c_str(), \
-				pkglist.get_package(i)->get_version()->c_str(), \
-				pkglist.get_package(i)->get_arch()->c_str(), \
-				pkglist.get_package(i)->get_build()->c_str(), \
-				pkglist.get_package(i)->get_short_description()->c_str());
+			if (pkglist.get_package(i)->isRemoveBlacklisted()) say("*");
+			else say(" ");
+			if (!onlyQueue || pkglist.get_package(i)->action()!=ST_NONE)
+			{
+				say("[ %s ]\t", pkglist.get_package(i)->get_vstatus(true).c_str());
+				say("%s-%s-%s-%s\t(%s)\n", \
+					pkglist.get_package(i)->get_name()->c_str(), \
+					pkglist.get_package(i)->get_version()->c_str(), \
+					pkglist.get_package(i)->get_arch()->c_str(), \
+					pkglist.get_package(i)->get_build()->c_str(), \
+					pkglist.get_package(i)->get_short_description()->c_str());
+			}
 		}
 	}
 	return 0;
@@ -654,6 +766,7 @@ int check_action(char* act)
 	  	&& _act != "show"
 		&& _act != "installfromlist"
 		&& _act != "test"
+		&& _act != "check"
 	  	&& _act != "menu" ) {
 		res = -1;
 	}
@@ -667,6 +780,8 @@ int setup_action(char* act)
 {
 	std::string _act(act);
 
+	if ( _act == "check")
+			return ACT_CHECKDAMAGE;
 	if ( _act == "test" )
 			return ACT_TEST;
 

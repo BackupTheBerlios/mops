@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.16 2007/06/21 20:22:49 i27249 Exp $
+* $Id: file_routines.h,v 1.17 2007/07/06 08:49:41 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -33,7 +33,7 @@ double get_disk_freespace(string point="/");
 string get_file_md5(string filename);
 string get_tmp_file();
 void delete_tmp_files();
-bool FileExists(string filename);
+bool FileExists(string filename, bool *broken_symlink=NULL);
 bool FileNotEmpty(string filename);
 string ReadFile(string filename, int max_count=0);
 int WriteFile(string filename, string data);

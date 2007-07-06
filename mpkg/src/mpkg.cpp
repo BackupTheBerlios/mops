@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.98 2007/07/06 05:58:33 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.99 2007/07/06 08:49:41 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -115,6 +115,7 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_INSTALL);
+	sqlSearch.addField("package_action", ST_REPAIR);
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
 	// Checking available space

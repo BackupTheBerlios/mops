@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.23 2007/06/11 18:21:42 i27249 Exp $
+ * $Id: libmpkg.h,v 1.24 2007/07/06 08:49:41 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -180,6 +180,9 @@ class mpkg
 		 * this function ACTUALLY perform all queued actions: install, upgrade, remove, etc.
 		 * @@*/
 
+		bool checkPackageIntegrity(PACKAGE *package);
+		bool checkPackageIntegrity(string pkgName);
+		bool repair(PACKAGE *package);
 		// Objects to work with. Normally should be private, so try to avoid using it directly.
 		mpkgDatabase *db;
 		DependencyTracker *DepTracker;
