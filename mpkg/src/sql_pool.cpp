@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.44 2007/07/05 13:23:08 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.45 2007/07/09 14:41:42 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -114,6 +114,7 @@ int SQLiteDB::sql_exec (string sql_query)
 	mpkgErrorReturn errRet;
 	if (query_return!=SQLITE_OK) // Means error
 	{
+		mError("Error executing query: " + (string) sql_errmsg + "\n" + sql_query);
 		if (initOk)
 		{
 			mError((string)"SQL error while querying database: " + sql_errmsg);
