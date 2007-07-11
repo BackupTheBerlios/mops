@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.13 2007/07/11 13:54:28 i27249 Exp $
+ * $Id: setup.cpp,v 1.14 2007/07/11 14:28:42 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -787,7 +787,13 @@ int selectInstallMethod()
 		return manualInstall();
 	}
 }
-
+bool showLicense()
+{
+	Dialog d;
+	if (system((string) "dialog --extra-button --extra-label \"Не принимаю\" --no-cancel --ok-label \"Принимаю\"	--textbox license 0 0")==0) return true;
+	else return false;
+	
+}
 void writeFstab()
 {
 	mDebug("start");
@@ -1190,6 +1196,7 @@ part_menu:
 
 int main(int argc, char *argv[])
 {
+	if (!showLicense()) return -1;
 	simulate=true;
 	if (argc>=2)
 	{
