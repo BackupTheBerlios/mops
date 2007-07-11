@@ -1,4 +1,4 @@
-g++ -Wall -W -O2 -march=i486 -mtune=i686 -pipe -lmpkg -lparted -o setup setup.cpp
+g++ -Wall -W -march=i486 -mtune=i686 -pipe -lmpkg -lparted -o setup setup.cpp
 strip setup
 echo Setup build complete
 

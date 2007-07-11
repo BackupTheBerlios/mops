@@ -23,6 +23,7 @@ struct SysConfig
 	vector<string>otherMountFSTypes;
 	string rootMountPoint;
 	string cdromDevice;
+	string sourceName;
 };
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes);
 bool setPartitionMap();
@@ -40,6 +41,7 @@ int selectInstallMethod();
 void writeFstab();
 void performConfig();
 void syncFS();
+int packageSourceSelectionMenu();
 void showFinish();
 void packageSourceSelection();
 #endif

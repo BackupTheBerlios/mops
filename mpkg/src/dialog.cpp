@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.6 2007/06/18 02:51:10 i27249 Exp $
+ * $Id: dialog.cpp,v 1.7 2007/07/11 13:54:28 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -248,10 +248,11 @@ begin:
 		default: // Cancel, ESC, and other errors
 			mError(exec_str);
 			mDebug("Returned " +  IntToStr(ret));
+			sleep(5);
 			
-					
-			if (execYesNo("Действительно прервать?")) abort();
-			else goto begin;
+			return;		
+/*			if (execYesNo("Действительно прервать?")) abort();
+			else goto begin;*/
 	}
 }
 
