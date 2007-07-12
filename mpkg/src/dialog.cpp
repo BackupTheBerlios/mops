@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.8 2007/07/12 09:28:12 i27249 Exp $
+ * $Id: dialog.cpp,v 1.9 2007/07/12 13:50:26 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -74,7 +74,7 @@ vector<string> Dialog::getReturnValues(string tmp_file, bool quoted)
 bool Dialog::execYesNo(string header, unsigned int height, unsigned int width)
 {
 	string tmp_file = get_tmp_file();
-	string exec_str = "dialog --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width);
+	string exec_str = dialog + " --yesno \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width);
 	int r = system(exec_str.c_str());
 	unlink(tmp_file.c_str());
 	if (r==0) return true;
@@ -82,13 +82,13 @@ bool Dialog::execYesNo(string header, unsigned int height, unsigned int width)
 }
 void Dialog::execInfoBox(string text, unsigned int height, unsigned int width)
 {
-	string exec_str = "dialog --infobox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
+	string exec_str = dialog + " --infobox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
 	system(exec_str.c_str());
 }
 
 void Dialog::execMsgBox(string text, unsigned int height, unsigned int width)
 {
-	string exec_str = "dialog --msgbox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
+	string exec_str = dialog + " --msgbox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
 	system(exec_str.c_str());
 }
 string Dialog::execMenu(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair> menuItems, string default_item)
@@ -106,7 +106,7 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 		{
 			if (menuItems[i].tag==default_item)
 			{
-				def_item = "--default_item \"" + default_item + "\"";
+				def_item = "--default-item \"" + default_item + "\"";
 				printf("set to %s\n", def_item.c_str());
 			}
 		}
@@ -116,7 +116,7 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 			sleep(1);
 		}
 	}
-	string exec_str = "dialog " + def_item + "--menu \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
+	string exec_str = dialog + " " + def_item + " --menu \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
 	for (unsigned int i=0; i<menuItems.size(); i++)
 	{
 		exec_str += " \"" + menuItems[i].tag + "\" \"" + menuItems[i].value+"\"";
@@ -131,7 +131,7 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 string Dialog::execInputBox(string header, string default_text, unsigned int height, unsigned int width)
 {
 	string tmp_file = get_tmp_file();
-	string exec_str = "dialog --inputbox \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " \"" + default_text + "\"" + " 2>"+tmp_file;
+	string exec_str = dialog + " --inputbox \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " \"" + default_text + "\"" + " 2>"+tmp_file;
 	system(exec_str.c_str());
 	string ret = getReturnValue(tmp_file);
 	unlink(tmp_file.c_str());
@@ -185,7 +185,7 @@ void Dialog::execAddableList(string header, vector<string> *menuItems, string ta
 	tmp_file = get_tmp_file();
 
 begin:
-	exec_str = "dialog --ok-label \"Удалить\" --cancel-label \"Продолжить\" --extra-button --extra-label \"Добавить\" --menu \"" + header + "\" " + \
+	exec_str = dialog + " --ok-label \"Удалить\" --cancel-label \"Продолжить\" --extra-button --extra-label \"Добавить\" --menu \"" + header + "\" " + \
 			   IntToStr(0) + " " + IntToStr(0) + " " + IntToStr(0);
 
 	menuList.clear();
@@ -275,15 +275,8 @@ begin:
 
 void Dialog::execGauge(string text, unsigned int height, unsigned int width, int value)
 {
-	string exec_str = "echo " + IntToStr(value) + " | dialog --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
-	
-	//string exec_str = "dialog --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width) + " &";
+	string exec_str = "echo " + IntToStr(value) + " | " + dialog + " --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
 	system(exec_str.c_str());
-	/*for (unsigned int i=0; i<100; i++)
-	{
-		fprintf(stdout, "%s\n", IntToStr(i).c_str());
-		usleep(100);
-	}*/
 }
 bool Dialog::execCheckList(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair>* menuItems)
 {
@@ -293,7 +286,7 @@ bool Dialog::execCheckList(string header, unsigned int height, unsigned int widt
 		return false;
 	}
 	string tmp_file = get_tmp_file();
-	string exec_str = "dialog --checklist \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
+	string exec_str = dialog + " --checklist \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
 	for (unsigned int i=0; i<menuItems->size(); i++)
 	{
 		exec_str += " \"" + menuItems->at(i).tag + "\" \"" + menuItems->at(i).value+"\" ";
@@ -323,5 +316,11 @@ bool Dialog::execCheckList(string header, unsigned int height, unsigned int widt
 	return true;
 }
 
-Dialog::Dialog(){}
+Dialog::Dialog(string title, string backtitle)
+{
+	dialog = "dialog ";
+	if (!backtitle.empty()) dialog += " --backtitle \"" + backtitle + "\" ";
+	if (!title.empty()) dialog += " --title \"" + title + "\" ";
+}
+
 Dialog::~Dialog(){}

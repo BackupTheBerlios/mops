@@ -6,5 +6,5 @@
 #define CL_GREEN	"\033[22;32m"
 #define CL_YELLOW	"\033[22;33m"
 #define CL_BLUE 	"\033[22;34m"
-
+#define CL_BLACK	"\033[22;30m"
 #endif

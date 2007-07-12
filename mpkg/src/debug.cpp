@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.12 2007/06/14 20:36:21 i27249 Exp $
+ $Id: debug.cpp,v 1.13 2007/07/12 13:50:26 i27249 Exp $
  */
  
 
@@ -20,7 +20,7 @@ void _mError(char* file, int line, const char *func, std::string message)
 		fclose(log);
 	}
 #endif
-
+	sleep(2);
 
 
 }

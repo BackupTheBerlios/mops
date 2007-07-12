@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.15 2007/07/12 09:28:12 i27249 Exp $
+ * $Id: setup.cpp,v 1.16 2007/07/12 13:50:26 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -16,7 +16,7 @@
  * *************************************************/
 
 #include "setup.h"
-
+string i_menuHead = "Установка MOPSLinux 6.0";
 SysConfig systemConfig;
 PACKAGE_LIST i_availablePackages;
 vector<string> i_tagList;
@@ -116,41 +116,27 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 	return ret;
 }
 	
-bool setPartitionMap()
-{
-	mDebug("start");
-	vector<string> gp;
-       	gp.push_back("ext2");
-       	gp.push_back("ext3");
-	gp.push_back("xfs");
-	gp.push_back("jfs");
-       	gp.push_back("reiserfs");
-	vector<pEntry> pList = getGoodPartitions(gp);
-	for (unsigned int i=0; i<pList.size(); i++)
-	{
-	}
-	mDebug("end");
-	return true;
-}
 
 void showGreeting()
 {
 	mDebug("start");
-	Dialog dialogItem;
+	Dialog dialogItem("Приветствие");
 	dialogItem.execMsgBox("Добро пожаловать в MOPSLinux!\n\nПрограмма установки выполнит установку системы на ваш компьютер\nи проведет первоначальную конфигурацию.\n");
 	mDebug("end");
 }
 
 int setSwapSpace()
 {
+	// Selects the partition to use as a swap space
 	mDebug("start");
 	vector<string> gp;
 	vector<pEntry> swapList = getGoodPartitions(gp);
-	Dialog dialogItem;
+	Dialog dialogItem ("Выбор раздела подкачки");
 	if (swapList.empty())
 	{
 		mDebug("no partitions detected");
-		dialogItem.execMsgBox("No partitions found. Go partition your drives first");
+		dialogItem.execMsgBox("На жестких дисках не найдено ни одного раздела. Произведите разбивку диска");
+		return -3;
 	}
 	vector<TagPair> sList;
 	mDebug("filling options list");
@@ -160,10 +146,9 @@ int setSwapSpace()
 	}
 	string swapPartition;
 selectSwapPartition:
-	swapPartition = dialogItem.execMenu("Укажите раздел, который вы желаете использовать в качестве swap", 0,0,0,sList);
+	swapPartition = dialogItem.execMenu("Укажите раздел, который вы желаете использовать в качестве файла подкачки", 0,0,0,sList);
 	if (swapPartition.empty())
 	{
-		//if (!dialogItem.execYesNo("Продолжить без раздела подкачки?")) goto selectSwapPartition;
 		return -1;
 	}
 	for (unsigned int i=0; i<swapList.size(); i++)
@@ -181,43 +166,52 @@ selectSwapPartition:
 					goto selectSwapPartition;
 				}
 			}
-			// Confirmed:
-			/*string swapoff="swapoff " + swapList[i].devname;
-			system(swapoff.c_str());
-			string swapMake = "mkswap " + swapList[i].devname;
-			if (system(swapMake.c_str())!=0)
-			{
-				mDebug("error creating swap on " + swapList[i].devname);
-				dialogItem.execMsgBox("При создании файла подкачки произошла ошибка, попробуйте другой раздел");
-				goto selectSwapPartition;
-			}
-			else
-			{
-				mDebug("swap created on " + swapList[i].devname);*/
 			systemConfig.swapPartition = swapList[i].devname;
-
-/*			swapMake = "swapon " + swapList[i].devname;
-				dialogItem.execInfoBox("Активация раздела подкачки...");
-				if (system(swapMake.c_str())==0)
-				{
-					dialogItem.execInfoBox("Swap activated");
-				}
-				break;
-			}*/
-		
 		}
 	}
 	mDebug("end");
 	return 0;
 }
 
+int activateSwapSpace()
+{
+	// activates the swap space
+	Dialog dialogItem ("Активация раздела подкачки");
+	if (!systemConfig.swapPartition.empty())
+	{
+		string swapoff="swapoff " + systemConfig.swapPartition;
+		system(swapoff.c_str());
+		string swapMake = "mkswap " + systemConfig.swapPartition;
+		if (system(swapMake.c_str())!=0)
+		{
+			mDebug("error creating swap on " + systemConfig.swapPartition);
+			dialogItem.execMsgBox("При создании файла подкачки произошла ошибка, попробуйте другой раздел");
+			return -1;
+		}
+		else
+		{
+			mDebug("swap created on " + systemConfig.swapPartition);
+
+			swapMake = "swapon " + systemConfig.swapPartition;
+			dialogItem.execInfoBox("Активация раздела подкачки...");
+			if (system(swapMake.c_str())==0)
+			{
+				dialogItem.execInfoBox("Раздел подкачки подключен");
+			}
+		}
+	}
+	return 0;
+}
+
+
 int setRootPartition()
 {
+	// Selects the root partition
 	mDebug("start");
 	vector<string> gp;
 	vector<pEntry> pList;
 	pList= getGoodPartitions(gp);
-	Dialog dialogItem;
+	Dialog dialogItem("Настройка раздела для корневой файловой системы");
 	vector<TagPair> menuItems;
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
@@ -225,18 +219,18 @@ int setRootPartition()
 			menuItems.push_back(TagPair(pList[i].devname, pList[i].fstype + " (" + pList[i].size + "Mb)"));
 	}
 	string rootPartition;
-selectRootPartition:
 	rootPartition = dialogItem.execMenu("Укажите корневой раздел для MOPSLinux", 0,0,0,menuItems);
 	if (rootPartition.empty())
 	{
 		mDebug("nothing selected");
-		/*if (dialogItem.execYesNo("Без корневого раздела установить систему нельзя. Вы действительно хотите выйти из установки?"))
-		{
-			mDebug("aborted");
-			abort();
-		}
-		else goto selectRootPartition;*/
 		return -1;
+	}
+	for (unsigned int i=0; i<pList.size(); i++)
+	{
+		if (pList[i].devname == rootPartition)
+		{
+			systemConfig.rootPartitionType = pList[i].fstype;
+		}
 	}
 	mDebug("selecting FS type");
 	vector<TagPair> formatOptions;
@@ -253,179 +247,171 @@ selectRootPartition:
 	if (formatOption.empty())
 	{
 		return -1;
-		//if (dialogItem.execYesNo("Установка еще не завершена - выйти из программы?")) { mDebug("aborted"); abort(); }
 	}
+	
 	systemConfig.rootPartition = rootPartition;
 
 	if (formatOption!="---")
 	{
+		systemConfig.rootPartitionFormat=true;
 		systemConfig.rootPartitionType = formatOption;
 		mDebug("set to format " + rootPartition + " as " + formatOption);
 		umount(rootPartition.c_str());
-		string mkfs_cmd;
-		if (formatOption!="xfs") mkfs_cmd = "mkfs." + formatOption + " " + rootPartition + " 2>> /var/install.log";
-		else mkfs_cmd = "mkfs." + formatOption + " -f " + rootPartition + " 2>> /var/install.log";
-		mDebug("mkfs_cmd = " + mkfs_cmd);
-		dialogItem.execInfoBox("Идет форматирование " + rootPartition + " в файловую систему " + formatOption + "\nЭто займет какое-то время");
-		/*if (system(mkfs_cmd.c_str())!=0)
-		{
-			mDebug("Failed to format " + rootPartition + " as " + formatOption);
-			if (dialogItem.execYesNo("При форматировании произошла ошибка. Попробовать выбрать другой раздел?")) goto selectRootPartition;
-			else abort();
-		}
-		else
-		{
-			mDebug("Root FS Format ok");
-		}*/
 	}
+
+	else
+	{
+		systemConfig.rootPartitionFormat=false;
+	}
+		
 	mDebug("end");
 	return 0;
+
+}
+
+int setOtherPartitionItems()
+{
+	// Initializes partition list.
+	vector<string> gp;
+	vector<pEntry> pList_raw = getGoodPartitions(gp);
+	systemConfig.otherMountFSTypes.clear();
+	systemConfig.otherMounts.clear();
+	systemConfig.otherMountFormat.clear();
+	for (unsigned int i=0; i<pList_raw.size(); i++)
+	{
+		systemConfig.otherMounts.push_back(TagPair(pList_raw[i].devname, "не подключено"));
+		systemConfig.otherMountFSTypes.push_back(pList_raw[i].fstype);
+		systemConfig.otherMountFormat.push_back(false);
+	}
+	return 0;
+}
+
+int setOtherOptions(string devName)
+{
+	// Sets an options for other partitions
+	Dialog d("Настройка параметров подключения " + devName);
+	string fstype_ret;
+	string mountpoint_ret;
+	vector<TagPair> formatOptions;
+	formatOptions.push_back(TagPair("ext3", "Стандартная журналируемая файловая система Linux."));
+	formatOptions.push_back(TagPair("ext2", "Стандартная файловая система Linux (без журналирования)."));
+	formatOptions.push_back(TagPair("xfs", "XFS - быстрая файловая система для данных, изначально разработанная SGI для IRIX (мин. 16Мб)"));
+	formatOptions.push_back(TagPair("jfs", "Журналируемая файловая система, разработанная IBM (мин. 16Мб)"));
+	formatOptions.push_back(TagPair("reiserfs", "Файловая система ReiserFS, хранит данные в сбалансированном дереве (мин. 32Мб)"));
+	formatOptions.push_back(TagPair("---", "Не форматировать - оставить как есть, cохранив данные"));
+
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		if (systemConfig.otherMounts[i].tag == devName)
+		{
+			if (systemConfig.otherMounts[i].value[0]== '/') mountpoint_ret = systemConfig.otherMounts[i].value; 
+			fstype_ret = systemConfig.otherMountFSTypes[i];
+select_mp:
+			mountpoint_ret = d.execInputBox("Выберите точку подключения для " + systemConfig.otherMounts[i].tag, mountpoint_ret);
+			if (mountpoint_ret.empty()) return -1;
+			if (mountpoint_ret[0]!='/')
+			{
+				d.execMsgBox("Точка подключения " + mountpoint_ret + " некорректна. Это должен быть абсолютный путь, например /usr/local");
+				goto select_mp;
+			}
+			systemConfig.otherMounts[i].value = mountpoint_ret;
+
+			fstype_ret = d.execMenu("Выберите способ форматирования раздела " + systemConfig.otherMounts[i].tag,0,0,0,formatOptions);
+			if (fstype_ret.empty()) return -1;
+			if (fstype_ret == "---")
+			{
+				systemConfig.otherMountFormat[i]=false;
+			}
+			else
+			{
+				systemConfig.otherMountFormat[i]=true;
+				systemConfig.otherMountFSTypes[i]=fstype_ret;
+			}
+			return 0;
+		}
+	}
+	// If we reach this point - this mean that nothing was found...
+	mError("No such device " + devName);
+	sleep(4);
+	return -2;
 
 }
 
 int setOtherPartitions()
 {
-	mDebug("start");
-	vector<string> gp;
-	vector<pEntry> pList_raw = getGoodPartitions(gp);
+	Dialog d("Подключение других разделов");
 	vector<TagPair> menuItems;
-	vector<TagPair> mountPoints;
-	vector<pEntry> pList;
-	for (unsigned int i=0; i<pList_raw.size(); i++)
+	string ret;
+	TagPair tmpTag;
+other_part_menu_main:
+	menuItems.clear();
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
-		if (pList_raw[i].fstype.find("linux-swap")==std::string::npos && pList_raw[i].devname.find(systemConfig.rootPartition)==std::string::npos)
+		if (systemConfig.otherMounts[i].tag!=systemConfig.rootPartition && systemConfig.otherMounts[i].tag!=systemConfig.swapPartition)
 		{
-			pList.push_back(pList_raw[i]);
-
+			tmpTag = systemConfig.otherMounts[i];
+			if (tmpTag.value[0]=='/') 
+				tmpTag.value += ", " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i]);
+			menuItems.push_back(tmpTag);
 		}
 	}
-	pList_raw.clear();
-	if (pList.empty())
-	{
-		mDebug("no other partitions - skipping");
-		return 0;
-	}
-	for (unsigned int i=0; i<pList.size(); i++)
-	{
-		menuItems.push_back(TagPair(pList[i].devname, "(не подключено)"));
-
-		/*for (unsigned int t=0; t<systemConfig.otherMounts.size(); t++)
-		{
-			if (systemConfig.otherMounts[t].tag==pList[i].devname) mountPoints.push_back(systemConfig.otherMounts[t]);
-			else if (t==systemConfig.otherMounts.size()-1)*/	mountPoints.push_back(TagPair(pList[i].devname, ""));
-		//}
-	}
-
-	menuItems.push_back(TagPair("Продолжить", "Все готово, продолжить далее"));
-	string editItem;
-	string tmp_value;
-	unsigned int currentItem=0;
-	exec_menu:
-	//mountPoints=systemConfig.otherMounts;
-	for (unsigned int i=0; i<pList.size(); i++)
-	{
-		menuItems[i] = TagPair(pList[i].devname + " (" + pList[i].fstype + ", "+pList[i].size+" Mb)" , mountPoints[i].value);
-	}
-
-	Dialog dialogItem;
-	editItem = dialogItem.execMenu("Выберите разделы, которые вы хотели бы подключить к системе", 0,0,0,menuItems);
-	if (editItem.find_first_of("/")!=0)
-	{
-		for (unsigned int i=0; i<menuItems.size()-1; i++)
-		{
-			if (menuItems[i].value.find_first_of("/")==0)
-			{
-				mDebug("added " + pList[i].devname + " to mount at " + mountPoints[i].value);
-				systemConfig.otherMounts.push_back(TagPair(pList[i].devname, mountPoints[i].value));
-				systemConfig.otherMountFSTypes.push_back(pList[i].fstype);
-			}
-		}
-		mDebug("end");
-		return 0;
-	}
-	else
-	{
-		for (unsigned int i=0; i<menuItems.size()-1; i++)
-		{
-			if (editItem==pList[i].devname)
-			{
-				currentItem=i;
-				break;
-			}
-		}
-		tmp_value = dialogItem.execInputBox("Выберите точку подключения для " + editItem, mountPoints[currentItem].value);
-		mountPoints[currentItem].value=tmp_value;
-		goto exec_menu;
-	}
-	return 0;
+	menuItems.push_back(TagPair("Готово", "Продолжить"));
+	ret = d.execMenu("Выберите точки подключения для остальных разделов",0,0,0,menuItems);
+	if (ret.empty()) return -1;
+	if (ret == "Готово") return 0;
+	setOtherOptions(ret);
+	goto other_part_menu_main;
 }
-
+bool formatPartition(string devname, string fstype)
+{
+	if (!simulate)
+	{
+		string cmd = "mkfs -t " + fstype + " " + devname;
+		if (system(cmd)==0) return true;
+		else return false;
+	}
+	// Simulating format =)
+	sleep(3);
+	return true;
+}
 int formatPartitions()
 {
-	mDebug("start");
-	vector<string> gp;
-	Dialog dialogItem;
-	vector<pEntry> pList;
-	vector<string>formatList;
-	vector<TagPair> menuItems;
-	string formatItem;
-	string fsFormat;
-	vector<TagPair> formatOptions;
-	formatOptions.push_back(TagPair("ext3", "Стандартная журналируемая файловая система Linux."));
-	formatOptions.push_back(TagPair("ext2", "Стандартная файловая система Linux (без журналирования)."));
-	formatOptions.push_back(TagPair("xfs", "XFS - быстрая файловая система, изначально разработанная SGI для IRIX (мин. 16Мб)"));
-	formatOptions.push_back(TagPair("jfs", "Журналируемая файловая система, разработанная IBM (мин. 16Мб)"));
-	formatOptions.push_back(TagPair("reiserfs", "Файловая система ReiserFS, хранит данные в сбалансированном дереве (мин. 32Мб)"));
-	formatOptions.push_back(TagPair("---", "Не форматировать - оставить как есть, cохранив данные"));
-
-	string mkfs_cmd;
-loadData:
-	pList = getGoodPartitions(gp);
-	menuItems.clear();
-	menuItems.push_back(TagPair("Продолжить", "Все разделы отформатированы как надо, продолжить"));
-	for (unsigned int i=0; i<pList.size(); i++)
+	Dialog d("Форматирование разделов");
+	// Do the actual format
+	if (systemConfig.rootPartitionFormat)
 	{
-		for (unsigned int t=0; t<systemConfig.otherMounts.size(); t++)
+		d.execInfoBox("Форматирование корневой файловой системы " + systemConfig.rootPartition + \
+				", подключение: /\nТип файловой системы: " + systemConfig.rootPartitionType);
+		if (!formatPartition(systemConfig.rootPartition, systemConfig.rootPartitionType)) 
 		{
-			if (pList[i].devname==systemConfig.otherMounts[t].tag)
+			d.execMsgBox("При форматировании корневой ФС произошла ошибка");
+			return -1;
+		}
+	}
+	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
+	{
+		if (systemConfig.otherMountFormat[i])
+		{
+			d.execInfoBox("Форматирование файловой системы " + systemConfig.otherMounts[i].tag + \
+					", подключение: " + systemConfig.otherMounts[i].value + "\nТип файловой системы: " + systemConfig.otherMountFSTypes[i]);
+			if (!formatPartition(systemConfig.otherMounts[i].tag, systemConfig.otherMountFSTypes[i]))
 			{
-				menuItems.push_back(TagPair(pList[i].devname + " (" + pList[i].size + " Mb) ["+systemConfig.otherMounts[t].value+"]", pList[i].fstype));
+				d.execMsgBox("При форматировании " + systemConfig.otherMounts[i].tag + " произошла ошибка");
+				return -1;
 			}
 		}
 	}
-	if (menuItems.size()==1)
-	{
-		mDebug("nothing to format");
-		mDebug("end");
-		return 0;
-	}
-	formatItem = dialogItem.execMenu("Выберите разделы, которые вы хотите отформатировать", 0,0,0,menuItems);
-	if (formatItem.find_first_of("/")==std::string::npos)
-	{
-		mDebug("all done, returning");
-		return 0;
-	}
-	else
-	{
-		fsFormat = dialogItem.execMenu("В какую файловую систему отформатировать " + formatItem + "?", 0,0,0, formatOptions);
-		if (fsFormat.empty() || fsFormat=="---") goto loadData;
-		if (fsFormat!="xfs") mkfs_cmd = "mkfs." + fsFormat + " " + formatItem + " >> /var/install.log";
-		else mkfs_cmd = "mkfs." + fsFormat + " -f " + formatItem + " >> /var/install.log";
-		dialogItem.execInfoBox("Идет форматирование " + formatItem + " в файловую систему " + fsFormat + "\nЭто займет какое-то время");
-		umount(formatItem.c_str());
-		if (system(mkfs_cmd.c_str())!=0)
-		{
-			dialogItem.execMsgBox("При форматировании раздела " + formatItem + " произошла ошибка. Попробуйте другой тип файловой системы");
-		}
-		goto loadData;
-	}
-	mDebug("end");
+	return 0;
+
 }
+
+
 
 int mountPartitions()
 {
+	// Mount all HDD partitions
 	mDebug("start");
-	Dialog dialogItem;
+	Dialog dialogItem("Монтирование разделов");
 	string mount_cmd;
 	string mkdir_cmd;
 	dialogItem.execInfoBox("Монтируется корневая файловая система ("+systemConfig.rootPartition + ")");
@@ -443,7 +429,7 @@ int mountPartitions()
 	else mDebug("root mkdir and mount OK");
 	
 	// Sorting mount points
-	vector<unsigned int> mountOrder, mountPriority;
+	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
 		mountPriority.push_back(0);
@@ -456,22 +442,23 @@ int mountPartitions()
 			{
 				mountPriority[i]++;
 			}
+			if (systemConfig.otherMounts[i].value[0]!='/') mountPriority[i]=-1;
 		}
 	}
 	for (unsigned int i=0; i<mountPriority.size(); i++)
 	{
 		for (unsigned int t=0; t<mountPriority.size(); t++)
 		{
-			if (mountPriority[t]==i)
+			if (mountPriority[t]==(int) i)
 			{
 				mountOrder.push_back(t);
 			}
 		}
 	}
-	if (mountOrder.size()!=systemConfig.otherMounts.size()) 
+	if (mountPriority.size()!=systemConfig.otherMounts.size()) 
 	{
-		mError("mount code error, size mismatch: order size = " + \
-			IntToStr(mountOrder.size()) + \
+		mError("mount code error, size mismatch: priority size = " + \
+			IntToStr(mountPriority.size()) + \
 			"queue size: " + IntToStr(systemConfig.otherMounts.size())); 
 		abort();
 	}
@@ -500,148 +487,19 @@ int mountPartitions()
 	return 0;
 }
 
-int autoInstall()
-{
-	mDebug("start");
-	if (core==NULL) core = new mpkg;
-	Dialog dialogItem;
-	vector<string> tags;
-	core->get_available_tags(&tags);
-	vector<TagPair> items;
-	for (unsigned int i=0; i<tags.size(); i++)
-	{
-		items.push_back(TagPair(tags[i], tags[i]));
-	}
-selectGroups:
-	if (!dialogItem.execCheckList("Выберите категории пакетов для установки", 0,0,0, &items))
-	{
-		if (dialogItem.execYesNo("Прервать установку?")) abort();
-		else goto selectGroups;
-	}
-	vector<string> installGroups;
-	for (unsigned int i=0; i<items.size(); i++)
-	{
-		if (items[i].checkState) installGroups.push_back(items[i].tag);
-	}
-
-	dialogItem.execInfoBox("Формирование очереди, ждите...");
-	core->installGroups(installGroups);
-	/*int ret = core->commit();
-	if (ret!=0)
-	{
-		switch(ret)
-		{
-			case MPKGERROR_UNRESOLVEDDEPS:
-				dialogItem.execMsgBox("Неразрешенные зависимости. Это проблема сборки дистрибутива, обратитесь к разработчикам");
-				break;
-			case MPKGERROR_SQLQUERYERROR:
-				dialogItem.execMsgBox("Произошла внутренняя ошибка в базе пакетов.\nЭто означает, что либо возникли проблемы с базой данных, либо это ошибка в программе");
-				break;
-			case MPKGERROR_ABORTED:
-				dialogItem.execMsgBox("Установка отменена");
-				break;
-			case MPKGERROR_COMMITERROR:
-				dialogItem.execMsgBox("Ошибка при установке пакетов. Чтобы узнать подробности, смотрите /var/mpkg/errors.log");
-				break;
-			default:
-				dialogItem.execMsgBox("Произошла неизвестная ошибка, core.commit() вернуло " + IntToStr(ret));
-		}
-	}*/
-	delete_tmp_files();
-
-	delete core;
-	core=NULL;
-	mDebug("end");
-	return 0;
-}
 
 string getTagDescription(string tag)
 {
 	return tag;
 }
 
-int manualInstall()
-{
-	mDebug("start");
-	Dialog dialogItem;
-	vector<TagPair> pkgList;
-	SQLRecord sqlSearch;
-	PACKAGE_LIST packageList;
-	if (core==NULL) core = new mpkg;
-	core->get_packagelist(&sqlSearch, &packageList);
-	for (int i=0; i<packageList.size(); i++)
-	{
-		pkgList.push_back(TagPair(*packageList.get_package(i)->get_name(),\
-				       *packageList.get_package(i)->get_short_description(),\
-				       packageList.get_package(i)->installed()));
-	}
-	vector<TagPair> oldState = pkgList;
-	if (dialogItem.execCheckList("Выберите пакеты для установки", 0,0,0, &pkgList))
-	{
-		vector<string> removeList;
-		vector<string> installList;
-		for (unsigned int i=0; i<oldState.size(); i++)
-		{
-			if (oldState[i].checkState!=pkgList[i].checkState)
-			{
-				if (pkgList[i].checkState) installList.push_back(pkgList[i].tag);
-				else removeList.push_back(pkgList[i].tag);
-			}
-		}
-		printf("Install list:\n");
-		for (unsigned int i=0; i<installList.size(); i++)
-		{
-			printf("INSTALL: %s\n", installList[i].c_str());
-		}
-		for (unsigned int i=0; i<removeList.size(); i++)
-		{
-			printf("REMOVE: %s\n", removeList[i].c_str());
-		}
-		core->uninstall(removeList);
-		core->install(installList);
-		/*int ret = core.commit();
-		if (ret!=0)
-		{
-			switch(ret)
-			{
-				case MPKGERROR_UNRESOLVEDDEPS:
-					dialogItem.execMsgBox("Неразрешенные зависимости. Это проблема сборки дистрибутива, обратитесь к разработчикам");
-					break;
-				case MPKGERROR_SQLQUERYERROR:
-					dialogItem.execMsgBox("Произошла внутренняя ошибка в базе пакетов.\nЭто означает, что либо возникли проблемы с базой данных, либо это ошибка в программе");
-					break;
-				case MPKGERROR_ABORTED:
-					dialogItem.execMsgBox("Установка отменена");
-					break;
-				case MPKGERROR_COMMITERROR:
-					dialogItem.execMsgBox("Ошибка при установке пакетов. Чтобы узнать подробности, смотрите /var/mpkg/errors.log");
-					break;
-				default:
-					dialogItem.execMsgBox("Произошла неизвестная ошибка, core.commit() вернуло " + IntToStr(ret));
-			}
-		}*/
-		delete_tmp_files();
-
-		return 0;
-
-	}
-	else printf("Cancelled\n");
-	mDebug("end");
-	return MPKGERROR_ABORTED;
-}
-
-
-
 void initDatabaseStructure()
 {
-	// Should be remaked to use RAM while no HDD is mounted.
+	//TODO #1 !!  Should be remaked to use RAM while no HDD is mounted.
 	mDebug("start");
 	mDebug("Processing directories");
 	string cmd;
-	cmd = "rm -rf /var/mpkg 2>>/var/install.log";
-	mDebug(cmd);
-	system(cmd.c_str());
-	cmd = "ln -sf " +systemConfig.rootMountPoint+"/var/mpkg /var/mpkg 2>>/var/install.log";
+	cmd = "rm -rf /var/mpkg && mkdir -p /mnt/var/mpkg && ln -sf /mnt/var/mpkg /var/mpkg";
 	mDebug(cmd);
 	system(cmd.c_str());
 	cmd = "mkdir -p " + systemConfig.rootMountPoint+"/var/mpkg/scripts 2>>/var/install.log";
@@ -653,11 +511,9 @@ void initDatabaseStructure()
 	cmd = "mkdir -p " +systemConfig.rootMountPoint+"/var/mpkg/cache 2>>/var/install.log";
 	mDebug(cmd);
 	system(cmd.c_str());
-	cmd = "cp -f /packages.db /var/mpkg/ 2>> /var/install.log";
+	cmd = "cp -f /packages.db /var/mpkg/packages.db 2>> /var/install.log";
 	mDebug(cmd);
 	system(cmd.c_str());
-	mDebug("Creating mpkg object");
-	//packageSourceSelection();
 	mDebug("end");
 }
 
@@ -667,7 +523,7 @@ void mountMedia()
 	mDebug("start");
 	if (umount("/var/log/mount")==0) mDebug("successfully unmounted old mount");
 	else mDebug("cd wasn't mounted or unmount error. Processing to detection");
-	Dialog dialogItem;
+	Dialog dialogItem ("Поиск и монтирование привода CD/DVD");
 	dialogItem.execInfoBox("Попытка автоматического определения DVD-ROM...");
 	vector<string> devList;
 	// IDE drives
@@ -773,37 +629,9 @@ manual:
 	}
 	mDebug("end");
 }
-
-
-	
-int selectInstallMethod()
-{
-	mDebug("start");
-	initDatabaseStructure();
-	Dialog dialogItem;
-	vector<string> options;
-	options.push_back("Автоматический режим: выбор пакетов по группам");
-	options.push_back("Экспертный режим: индивидуальный выбор пакетов");
-	int opt = dialogItem.execMenu("Выберите метод установки:", options);
-	if (opt<0)
-	{
-		mDebug("aborted");
-		abort();
-	}
-       	if (opt==0)
-	{
-		mDebug("Auto install selected");
-		return autoInstall();
-	}
-	else
-	{
-		mDebug("Manual install selected");
-		return manualInstall();
-	}
-}
 bool showLicense()
 {
-	Dialog d;
+	Dialog d("Лицензионное соглашение");
 	if (system((string) "dialog --extra-button --extra-label \"Не принимаю\" --no-cancel --ok-label \"Принимаю\"	--textbox license 0 0")==0) return true;
 	else return false;
 	
@@ -819,7 +647,7 @@ void writeFstab()
 	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
 	
 	// Sorting
-	vector<unsigned int> mountOrder, mountPriority;
+	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 	{
 		mountPriority.push_back(0);
@@ -832,22 +660,23 @@ void writeFstab()
 			{
 				mountPriority[i]++;
 			}
+			if (systemConfig.otherMounts[i].value[0]!='/') mountPriority[i]=-1;
 		}
 	}
 	for (unsigned int i=0; i<mountPriority.size(); i++)
 	{
 		for (unsigned int t=0; t<mountPriority.size(); t++)
 		{
-			if (mountPriority[t]==i)
+			if (mountPriority[t]== (int) i)
 			{
 				mountOrder.push_back(t);
 			}
 		}
 	}
-	if (mountOrder.size()!=systemConfig.otherMounts.size()) 
+	if (mountPriority.size()!=systemConfig.otherMounts.size()) 
 	{
-		mError("mount code error, size mismatch: order size = " + \
-			IntToStr(mountOrder.size()) + \
+		mError("mount code error, size mismatch: priority size = " + \
+			IntToStr(mountPriority.size()) + \
 			"queue size: " + IntToStr(systemConfig.otherMounts.size())); 
 		abort();
 	}
@@ -870,8 +699,7 @@ void writeFstab()
 	}
 	mDebug("data is:\n"+data);
 	
-	WriteFile(systemConfig.rootMountPoint + "/etc/fstab", data);
-	//WriteFile("fstab", data);
+	if (!simulate) WriteFile(systemConfig.rootMountPoint + "/etc/fstab", data);
 	mDebug("end");
 }
 
@@ -904,7 +732,7 @@ void syncFS()
 void showFinish()
 {
 	mDebug("start");
-	Dialog dialogItem;
+	Dialog dialogItem("Завершение установки");
 	dialogItem.execMsgBox("Установка завершена успешно! Перезагрузитесь и наслаждайтесь!");
 	mDebug("finish");
 	exit(0);
@@ -912,10 +740,10 @@ void showFinish()
 
 void packageSourceSelection()
 {
-	Dialog dialogItem;
+	Dialog dialogItem ("Выбор источника пакетов");
 	vector<string> nullList, rList;
 start:
-	core = new mpkg;
+	if (core==NULL) core = new mpkg;
        	rList	= REPOSITORY_LIST;
 	dialogItem.execAddableList("Сформируйте список репозиториев\nЭто должны быть URL стандартного вида, указывающие на корень репозитория\nи заканчивающиеся символом /\nДоступные типы: ftp://, http://, file://, cdrom://\nДля установки с этого диска рекомендуем использовать file:///var/log/mount/mops/", &rList, "://");
 	// Redefine repository list
@@ -931,8 +759,8 @@ start:
 	if (core->update_repository_data()!=0)
 	{
 		mDebug("update failed");
-		Dialog dialogItem;
 		delete core;
+		core=NULL;
 		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте доступность источников либо измените список."))
 		{
 			goto start;
@@ -945,8 +773,9 @@ start:
 	}
 
 	delete core;
+	core=NULL;
 }
-
+/*
 int main_old(int argc, char **argv)
 {
 	if (argc>=2)
@@ -993,10 +822,10 @@ int main_old(int argc, char **argv)
 	mDebug("Installation seems to be OK");
 	return 0;
 }
-
+*/
 int packageSelectionMenu()
 {
-	Dialog d;
+	Dialog d("Выбор пакетов для установки");
 	vector<TagPair> menuItems;
 	string ret;
 	int i_ret=0;
@@ -1035,12 +864,14 @@ int packageSelectionMenu()
 
 	if (core==NULL) core = new mpkg;
 	SQLRecord sqlSearch;
+	printf("cleaning queue\n");
 	core->clean_queue();
+	printf("clean complete\n");
 	core->get_packagelist(&sqlSearch, &i_availablePackages);
 	core->get_available_tags(&i_tagList);
 	
 	// Predefined groups preselect
-	for (unsigned int i=0; i<i_availablePackages.size(); i++)
+	for (int i=0; i<i_availablePackages.size(); i++)
 	{
 		p = i_availablePackages.get_package(i);
 		mark=false;
@@ -1072,6 +903,7 @@ int packageSelectionMenu()
 	}
 	
 	// Executing adjustment
+	bool showThisItem;
 group_adjust_menu:
 	menuItems.clear();
 	menuItems.push_back(TagPair("Готово", "Все готово"));
@@ -1082,16 +914,23 @@ group_adjust_menu:
 			menuItems.push_back(TagPair(i_tagList[i], getTagDescription(i_tagList[i])));
 		}
 	}
+	menuItems.push_back(TagPair("extras", "Пакеты, не вошедшие ни в одну из групп"));
+	menuItems.push_back(TagPair("everything", "Единый список всех пакетов"));
 	
 	ret = d.execMenu("Вы выбрали тип установки " + ins_type + "\nОтредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
 	if (ret == "Готово") return 0;
 	else
 	{
 		menuItems.clear();
-		for (unsigned int i=0; i<i_availablePackages.size(); i++)
+		for (int i=0; i<i_availablePackages.size(); i++)
 		{
+			showThisItem=false;
 			p = i_availablePackages.get_package(i);
-			if (p->isTaggedBy(ret))
+			if (ret == "everything") showThisItem=true;
+			if (p->isTaggedBy(ret)) showThisItem=true;
+			if (ret == "extras" && p->get_tags()->empty()) showThisItem=true;
+			
+			if (showThisItem)
 			{
 				menuItems.push_back(TagPair(IntToStr(p->get_id()), *p->get_name() + " (" + *p->get_short_description() + ")", p->action()==ST_INSTALL));
 			}
@@ -1100,7 +939,7 @@ group_adjust_menu:
 		{
 			for (unsigned int i=0; i<menuItems.size(); i++)
 			{
-				for (unsigned int t=0; t<i_availablePackages.size(); t++)
+				for (int t=0; t<i_availablePackages.size(); t++)
 				{
 					if (atoi(menuItems[i].tag.c_str()) == i_availablePackages.get_package(t)->get_id())
 					{
@@ -1126,21 +965,49 @@ group_adjust_menu:
 
 int commit()
 {
-	Dialog d;
+	Dialog d("Подтвердите правильность параметров");
 	string summary;
-	summary = "Корневой раздел: " + systemConfig.rootPartition + ", " + systemConfig.rootPartitionType + "\n" + \
-		   "Раздел подкачки: " + systemConfig.swapPartition + "\n" + \
-		   "Другие разделы: ";
+	string errors;
+	bool has_queue=false;
+	if (systemConfig.rootPartition.empty()) errors += "Не указан корневой раздел системы\n";
+	else if (systemConfig.rootPartition==systemConfig.swapPartition) errors += "У вас раздел для swap и корневой раздел совпадают, вы в своем уме?!\n";
+	if (systemConfig.sourceName.empty()) errors += "Не указан источник пакетов\n";
+	else
+	{
+		if (i_availablePackages.IsEmpty()) errors += "Не обнаружено доступных пакетов\n";
+		for (int i=0; i<i_availablePackages.size(); i++)
+		{
+			if (i_availablePackages.get_package(i)->action()==ST_INSTALL) has_queue=true;
+		}
+		if (!has_queue) errors += "Не выбран набор устанавливаемых пакетов\n";
+	}
+	
+
+	if (!errors.empty())
+	{
+		d.execMsgBox(errors);
+		return -1;
+	}
+	
+	summary = "Проверьте внимательно все данные прежде чем продолжить!\n\n" + \
+		   "Корневой раздел: " + systemConfig.rootPartition + ", " + systemConfig.rootPartitionType + "\n" + \
+		   "Раздел подкачки: ";
+       if (systemConfig.swapPartition.empty()) summary += "нет\n";
+       else summary += systemConfig.swapPartition + "\n";
+       summary += "Другие разделы: ";
 	if (systemConfig.otherMounts.empty()) summary += "нет\n";
 	else
 	{
 		for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
 		{
-			summary += "                " + systemConfig.otherMounts[i].tag + " (" + systemConfig.otherMounts[i].value + "), форматирование: " + systemConfig.otherMountFSTypes[i] + "\n";
+			if (systemConfig.otherMounts[i].value[0]=='/')
+				summary += "                " + \
+				    systemConfig.otherMounts[i].tag + \
+				    " (" + systemConfig.otherMounts[i].value + "), форматирование: " + systemConfig.otherMountFSTypes[i] + "\n";
 		}
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
-		    "\n\nВсе в порядке, можно выполнять установку?";
+		    "\nМожно выполнять установку?";
 	if (d.execYesNo(summary))
 	{
 		if (!simulate)
@@ -1149,9 +1016,14 @@ int commit()
 			mountMedia();
 			mountPartitions();
 			if (core==NULL) core = new mpkg;
+			d.execInfoBox("Построение очереди...");
+			for (int i=0; i<i_availablePackages.size(); i++)
+			{
+				if (i_availablePackages.get_package(i)->action()==ST_INSTALL) core->install(i_availablePackages.get_package(i));
+			}
 			core->commit();
-			syncFS();
 			performConfig();
+			syncFS();
 		}
 		showFinish();
 	}
@@ -1161,10 +1033,10 @@ int commit()
 
 int setDVDSource()
 {
-	Dialog dialogItem;
+	Dialog dialogItem ("Поиск пакетов на DVD");
 	vector<string> nullList, rList;
 start:
-	core = new mpkg;
+	if (core==NULL) core = new mpkg;
 	rList.push_back("file:///var/log/mount/mops/");
 
 	mountMedia();
@@ -1173,8 +1045,8 @@ start:
 	if (core->update_repository_data()!=0)
 	{
 		mDebug("update failed");
-		Dialog dialogItem;
 		delete core;
+		core=NULL;
 		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте доступность источникa либо измените список."))
 		{
 			goto start;
@@ -1187,13 +1059,14 @@ start:
 	}
 
 	delete core;
+	core=NULL;
 	systemConfig.sourceName="DVD";
 	return 0;
 }
 
 int setHDDSource()
 {
-	Dialog d;
+	Dialog d("Поиск пакетов на жестком диске");
 	if (d.execYesNo("Сначала вы должны смонтировать нужный раздел в любую папку. Открыть консоль?")) 
 	{
 		say("Смонтируйте нужный диск в любую папку, перейдите в директорию с пакетами, и наберите this\n");
@@ -1220,6 +1093,7 @@ enter_path:
 		{
 			mDebug("update failed");
 			delete core;
+			core=NULL;
 			d.execMsgBox("При загрузке списка пакетов произошла ошибка. Проверьте корректность источникa.");
 			goto enter_path;
 		}
@@ -1228,6 +1102,7 @@ enter_path:
 			mDebug("ok");
 		}
 		delete core;
+		core=NULL;
 		systemConfig.sourceName="file://" + ret + "/";
 	}
 	else 
@@ -1240,11 +1115,11 @@ enter_path:
 
 int setNetworkSource()
 {
-	Dialog d;
+	Dialog d("Поиск пакетов в сети");
 	vector<string> nullList, rList;
 	string ret;
 start:
-	core = new mpkg;
+	if (core==NULL) core = new mpkg;
 	if (systemConfig.sourceName.find("Из сети")==0 && !REPOSITORY_LIST.empty()) ret = REPOSITORY_LIST[0];
 
 	rList.clear();
@@ -1268,6 +1143,7 @@ start:
 	{
 		mDebug("update failed");
 		delete core;
+		core=NULL;
 		if (d.execYesNo("При загрузке списка пакетов произошла ошибка. Проверьте введенные данные, и убедитесь что сеть работает"))
 		{
 			goto start;
@@ -1280,13 +1156,14 @@ start:
 	}
 
 	delete core;
+	core=NULL;
 	return 0;
 }
 
 int packageSourceSelectionMenu()
 {
 
-	Dialog d;
+	Dialog d("Выбор источника пакетов");
 	vector<TagPair> menuItems;
 	string ret;
 
@@ -1304,7 +1181,7 @@ int packageSourceSelectionMenu()
 	
 int diskPartitioningMenu()
 {
-	Dialog d;
+	Dialog d("Разбивка диска на разделы");
 	vector<TagPair> menuItems;
 	string ret;
 	int r = 0;
@@ -1323,7 +1200,11 @@ part_menu:
 	if (r==0) return 0;
 	else goto part_menu;
 }
-
+string doFormatString(bool input)
+{
+	if (input) return "да";
+	else return "нет";
+}
 int main(int argc, char *argv[])
 {
 	simulate=true;
@@ -1360,8 +1241,8 @@ int main(int argc, char *argv[])
 	}*/
 
 	systemConfig.rootMountPoint="/mnt";
-
-	Dialog d;
+	setOtherPartitionItems();
+	Dialog d ("Главное меню");
 	string ret;
 	string next_item;
 	vector<TagPair> menuItems;
@@ -1370,15 +1251,20 @@ int main(int argc, char *argv[])
 main_menu:
 	menuItems.clear();
 	menuItems.push_back(TagPair("0","Выполнить разбивку диска"));
-	menuItems.push_back(TagPair("1","Выбрать раздел подкачки [" + systemConfig.swapPartition + "]"));
-	menuItems.push_back(TagPair("2","Выбрать корневой раздел системы [" + systemConfig.rootPartition + "]"));
+	if (systemConfig.swapPartition.empty()) menuItems.push_back(TagPair("1", "Выбрать раздел подкачки"));
+	else menuItems.push_back(TagPair("1","Раздел подкачки: " + systemConfig.swapPartition));
+	if (systemConfig.rootPartition.empty()) 
+		menuItems.push_back(TagPair("2","Выбрать раздел для корневой файловой системы"));
+	else menuItems.push_back(TagPair("2","Корневой раздел системы: " + systemConfig.rootPartition + \
+				" (" + systemConfig.rootPartitionType + ", форматирование: " + doFormatString(systemConfig.rootPartitionFormat) + ")"));
 	menuItems.push_back(TagPair("3","Настроить подключение других разделов"));
-	menuItems.push_back(TagPair("4","Выбор источника пакетов ["+systemConfig.sourceName+"]"));
+	if (systemConfig.sourceName.empty()) menuItems.push_back(TagPair("4","Выбор источника пакетов"));
+	else menuItems.push_back(TagPair("4", "Источник пакетов: " + systemConfig.sourceName));
+	
 	menuItems.push_back(TagPair("5","Выбор устанавливаемых пакетов"));
-	//menuItems.push_back(TagPair("6","Настройка сервисов"));
-	//menuItems.push_back(TagPair("7","Настройка сети"));
-	//menuItems.push_back(TagPair("8","Настройка временной зоны"));
+	
 	menuItems.push_back(TagPair("6","Установить систему"));
+	
 	menuItems.push_back(TagPair("7","Выход"));
 	ret = d.execMenu("Установка MOPSLinux 6.0", 0,0,0,menuItems, next_item);
 	if (ret == "0") if (diskPartitioningMenu()==0) next_item="1";

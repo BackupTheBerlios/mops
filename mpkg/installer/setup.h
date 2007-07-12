@@ -5,6 +5,7 @@
 #include <mpkg/dialog.h>
 #include <parted/parted.h>
 #include <sys/mount.h>
+#include <mpkg/colors.h>
 struct pEntry
 {
 	string devname;
@@ -19,12 +20,15 @@ struct SysConfig
 	string swapPartition;
 	string rootPartition;
 	string rootPartitionType;
+	bool rootPartitionFormat;
 	vector<TagPair>otherMounts;
 	vector<string>otherMountFSTypes;
+	vector<bool>otherMountFormat;
 	string rootMountPoint;
 	string cdromDevice;
 	string sourceName;
 };
+string doFormatString(bool input);
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes);
 bool setPartitionMap();
 void showGreeting();

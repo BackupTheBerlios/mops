@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.h,v 1.7 2007/07/12 09:28:12 i27249 Exp $
+ * $Id: dialog.h,v 1.8 2007/07/12 13:50:26 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -31,7 +31,8 @@ class TagPair
 class Dialog
 {
 	public:
-	Dialog();
+	Dialog(string title="", string backtitle="Установка MOPSLinux 6.0");
+	string dialog;
 	~Dialog();
 	string getReturnValue(string tmp_file);
 	void execAddableList(string header, vector<string> *menuItems, string tagLimiter="");
