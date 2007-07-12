@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.7 2007/07/11 13:54:28 i27249 Exp $
+ * $Id: dialog.cpp,v 1.8 2007/07/12 09:28:12 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -91,7 +91,7 @@ void Dialog::execMsgBox(string text, unsigned int height, unsigned int width)
 	string exec_str = "dialog --msgbox \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
 	system(exec_str.c_str());
 }
-string Dialog::execMenu(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair> menuItems)
+string Dialog::execMenu(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair> menuItems, string default_item)
 {
 	if (menuItems.empty())
 	{
@@ -99,7 +99,24 @@ string Dialog::execMenu(string header, unsigned int height, unsigned int width, 
 		return "";
 	}
 	string tmp_file = get_tmp_file();
-	string exec_str = "dialog --menu \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
+	string def_item;
+	if (!default_item.empty()) 
+	{
+		for (unsigned int i=0; i<menuItems.size(); i++)
+		{
+			if (menuItems[i].tag==default_item)
+			{
+				def_item = "--default_item \"" + default_item + "\"";
+				printf("set to %s\n", def_item.c_str());
+			}
+		}
+		if (def_item.empty())
+		{
+			mError("No such item " + default_item + ", using defaults");
+			sleep(1);
+		}
+	}
+	string exec_str = "dialog " + def_item + "--menu \"" + header + "\" " + IntToStr(height) + " " + IntToStr(width) + " " + IntToStr(menu_height);
 	for (unsigned int i=0; i<menuItems.size(); i++)
 	{
 		exec_str += " \"" + menuItems[i].tag + "\" \"" + menuItems[i].value+"\"";

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.34 2007/07/06 08:49:41 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.35 2007/07/12 09:28:12 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -71,11 +71,7 @@ int main (int argc, char **argv)
 	uid = getuid();
 	euid = geteuid();
 
-	if ( uid != 0 ) {
-		mError("You must login as root to run this program");
-		exit(1);
-	}
-	
+		
 
 	int ich;
 	const char* short_opt = "hvpdfmksDRial";
@@ -167,6 +163,21 @@ int main (int argc, char **argv)
 				print_usage(stderr, 1);
 		
 		action = setup_action( argv[optind-1] );
+	}
+	
+	if (action==ACT_SHOW || \
+			action == ACT_SEARCH || \
+			action == ACT_SHOWQUEUE || \
+			action == ACT_CONVERT || \
+			action == ACT_CONVERT_DIR || \
+			action == ACT_TAG || \
+			action == ACT_LIST || \
+			action == ACT_INDEX) 
+		require_root=false;
+
+	if (require_root && uid != 0 ) {
+		mError("You must login as root to run this program");
+		exit(1);
 	}
 
 	if ( action == ACT_NONE )

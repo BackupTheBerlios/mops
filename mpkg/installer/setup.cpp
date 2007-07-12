@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.14 2007/07/11 14:28:42 i27249 Exp $
+ * $Id: setup.cpp,v 1.15 2007/07/12 09:28:12 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -18,6 +18,8 @@
 #include "setup.h"
 
 SysConfig systemConfig;
+PACKAGE_LIST i_availablePackages;
+vector<string> i_tagList;
 mpkg *core=NULL;
 
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
@@ -139,7 +141,7 @@ void showGreeting()
 	mDebug("end");
 }
 
-void setSwapSpace()
+int setSwapSpace()
 {
 	mDebug("start");
 	vector<string> gp;
@@ -161,8 +163,8 @@ selectSwapPartition:
 	swapPartition = dialogItem.execMenu("Укажите раздел, который вы желаете использовать в качестве swap", 0,0,0,sList);
 	if (swapPartition.empty())
 	{
-		if (!dialogItem.execYesNo("Продолжить без раздела подкачки?")) goto selectSwapPartition;
-		else return;
+		//if (!dialogItem.execYesNo("Продолжить без раздела подкачки?")) goto selectSwapPartition;
+		return -1;
 	}
 	for (unsigned int i=0; i<swapList.size(); i++)
 	{
@@ -206,9 +208,10 @@ selectSwapPartition:
 		}
 	}
 	mDebug("end");
+	return 0;
 }
 
-void setRootPartition()
+int setRootPartition()
 {
 	mDebug("start");
 	vector<string> gp;
@@ -227,15 +230,15 @@ selectRootPartition:
 	if (rootPartition.empty())
 	{
 		mDebug("nothing selected");
-		if (dialogItem.execYesNo("Без корневого раздела установить систему нельзя. Вы действительно хотите выйти из установки?"))
+		/*if (dialogItem.execYesNo("Без корневого раздела установить систему нельзя. Вы действительно хотите выйти из установки?"))
 		{
 			mDebug("aborted");
 			abort();
 		}
-		else goto selectRootPartition;
+		else goto selectRootPartition;*/
+		return -1;
 	}
 	mDebug("selecting FS type");
-	systemConfig.rootPartition = rootPartition;
 	vector<TagPair> formatOptions;
 	formatOptions.push_back(TagPair("ext3", "Стандартная журналируемая файловая система Linux."));
 	formatOptions.push_back(TagPair("ext2", "Стандартная файловая система Linux (без журналирования)."));
@@ -249,12 +252,15 @@ selectRootPartition:
 			0,0,0,formatOptions);
 	if (formatOption.empty())
 	{
-		if (dialogItem.execYesNo("Установка еще не завершена - выйти из программы?")) { mDebug("aborted"); abort(); }
+		return -1;
+		//if (dialogItem.execYesNo("Установка еще не завершена - выйти из программы?")) { mDebug("aborted"); abort(); }
 	}
+	systemConfig.rootPartition = rootPartition;
+
 	if (formatOption!="---")
 	{
 		systemConfig.rootPartitionType = formatOption;
-		mDebug("formatting " + rootPartition + " as " + formatOption);
+		mDebug("set to format " + rootPartition + " as " + formatOption);
 		umount(rootPartition.c_str());
 		string mkfs_cmd;
 		if (formatOption!="xfs") mkfs_cmd = "mkfs." + formatOption + " " + rootPartition + " 2>> /var/install.log";
@@ -273,10 +279,11 @@ selectRootPartition:
 		}*/
 	}
 	mDebug("end");
+	return 0;
 
 }
 
-void setOtherPartitions()
+int setOtherPartitions()
 {
 	mDebug("start");
 	vector<string> gp;
@@ -296,7 +303,7 @@ void setOtherPartitions()
 	if (pList.empty())
 	{
 		mDebug("no other partitions - skipping");
-		return;
+		return 0;
 	}
 	for (unsigned int i=0; i<pList.size(); i++)
 	{
@@ -334,7 +341,7 @@ void setOtherPartitions()
 			}
 		}
 		mDebug("end");
-		return;
+		return 0;
 	}
 	else
 	{
@@ -350,9 +357,10 @@ void setOtherPartitions()
 		mountPoints[currentItem].value=tmp_value;
 		goto exec_menu;
 	}
+	return 0;
 }
 
-void formatPartitions()
+int formatPartitions()
 {
 	mDebug("start");
 	vector<string> gp;
@@ -389,13 +397,13 @@ loadData:
 	{
 		mDebug("nothing to format");
 		mDebug("end");
-		return;
+		return 0;
 	}
 	formatItem = dialogItem.execMenu("Выберите разделы, которые вы хотите отформатировать", 0,0,0,menuItems);
 	if (formatItem.find_first_of("/")==std::string::npos)
 	{
 		mDebug("all done, returning");
-		return;
+		return 0;
 	}
 	else
 	{
@@ -484,7 +492,7 @@ int mountPartitions()
 			mDebug("error while mount");
 			dialogItem.execInfoBox("Произошла ошибка при монтировании файловой системы " + \
 					systemConfig.otherMounts[mountOrder[i]].tag + "\nПроверьте всё и начните установку заново");
-			abort();
+			return -1;
 		}
 		else mDebug("mount ok");
 	}
@@ -546,6 +554,12 @@ selectGroups:
 	mDebug("end");
 	return 0;
 }
+
+string getTagDescription(string tag)
+{
+	return tag;
+}
+
 int manualInstall()
 {
 	mDebug("start");
@@ -643,7 +657,7 @@ void initDatabaseStructure()
 	mDebug(cmd);
 	system(cmd.c_str());
 	mDebug("Creating mpkg object");
-	packageSourceSelection();
+	//packageSourceSelection();
 	mDebug("end");
 }
 
@@ -893,6 +907,7 @@ void showFinish()
 	Dialog dialogItem;
 	dialogItem.execMsgBox("Установка завершена успешно! Перезагрузитесь и наслаждайтесь!");
 	mDebug("finish");
+	exit(0);
 }
 
 void packageSourceSelection()
@@ -984,6 +999,10 @@ int packageSelectionMenu()
 	Dialog d;
 	vector<TagPair> menuItems;
 	string ret;
+	int i_ret=0;
+	bool mark;
+	PACKAGE *p;
+	string ins_type;
 	menuItems.push_back(TagPair("1","Десктоп (для домашнего и офисного применения)"));
 	menuItems.push_back(TagPair("2","Сервер (основные сервисы, без X11)"));
 	menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
@@ -991,6 +1010,116 @@ int packageSelectionMenu()
 	menuItems.push_back(TagPair("5","Полная установка (абсолютно все пакеты)"));
 	ret = d.execMenu("Выберите набор пакетов для установки.\nОни используются как отправная точка в выборе пакетов.\nВы сможете детально отредактировать список устанавливаемых компонентов",0,0,0,menuItems);
 	if (ret.empty()) return 0;
+
+	i_ret = atoi(ret.c_str());
+
+	switch(i_ret)
+	{
+		case 1: ins_type = "Десктоп";
+			break;
+		case 2:
+			ins_type = "Сервер";
+			break;
+		case 3:
+			ins_type = "Тонкий клиент";
+			break;
+		case 4:
+			ins_type = "Минимум";
+			break;
+		case 5:
+			ins_type = "Полностью";
+			break;
+		default:
+			ins_type = "Я хз что вы там выбрали...";
+	}
+
+	if (core==NULL) core = new mpkg;
+	SQLRecord sqlSearch;
+	core->clean_queue();
+	core->get_packagelist(&sqlSearch, &i_availablePackages);
+	core->get_available_tags(&i_tagList);
+	
+	// Predefined groups preselect
+	for (unsigned int i=0; i<i_availablePackages.size(); i++)
+	{
+		p = i_availablePackages.get_package(i);
+		mark=false;
+		switch(i_ret)
+		{
+			case 1:
+				if (p->isTaggedBy("desktop")) mark=true;
+				break;
+			case 2:
+				if (p->isTaggedBy("server")) mark=true;
+				break;
+			case 3:
+				if (p->isTaggedBy("thinclient")) mark=true;
+				break;
+			case 4:
+				if (p->isTaggedBy("base")) mark=true;
+				break;
+			case 5:
+				mark=true;
+				break;
+			default:
+				mError("Index " + ret + " is out of range, cannot continue");
+				abort();
+		}
+		if (mark)
+		{
+			p->set_action(ST_INSTALL);
+		}
+	}
+	
+	// Executing adjustment
+group_adjust_menu:
+	menuItems.clear();
+	menuItems.push_back(TagPair("Готово", "Все готово"));
+	for (unsigned int i=0; i<i_tagList.size(); i++)
+	{
+		if (i_tagList[i]!="desktop" && i_tagList[i]!="server" && i_tagList[i]!="thinclient" && i_tagList[i]!="base")
+		{
+			menuItems.push_back(TagPair(i_tagList[i], getTagDescription(i_tagList[i])));
+		}
+	}
+	
+	ret = d.execMenu("Вы выбрали тип установки " + ins_type + "\nОтредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
+	if (ret == "Готово") return 0;
+	else
+	{
+		menuItems.clear();
+		for (unsigned int i=0; i<i_availablePackages.size(); i++)
+		{
+			p = i_availablePackages.get_package(i);
+			if (p->isTaggedBy(ret))
+			{
+				menuItems.push_back(TagPair(IntToStr(p->get_id()), *p->get_name() + " (" + *p->get_short_description() + ")", p->action()==ST_INSTALL));
+			}
+		}
+		if (d.execCheckList("Выберите пакеты для установки (группа " + ret + ")",0,0,0, &menuItems))
+		{
+			for (unsigned int i=0; i<menuItems.size(); i++)
+			{
+				for (unsigned int t=0; t<i_availablePackages.size(); t++)
+				{
+					if (atoi(menuItems[i].tag.c_str()) == i_availablePackages.get_package(t)->get_id())
+					{
+						if (menuItems[i].checkState) i_availablePackages.get_package(t)->set_action(ST_INSTALL);
+						else i_availablePackages.get_package(t)->set_action(ST_NONE);
+					}
+				}
+			}
+
+		}
+		goto group_adjust_menu;
+	}
+
+
+					
+
+
+	
+
 	return 0;
 
 }
@@ -1012,19 +1141,20 @@ int commit()
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
 		    "\n\nВсе в порядке, можно выполнять установку?";
-	d.execYesNo(summary);
-
-	if (!simulate)
+	if (d.execYesNo(summary))
 	{
-		formatPartitions();
-		mountMedia();
-		mountPartitions();
-		if (core==NULL) core = new mpkg;
-		core->commit();
-		syncFS();
-		performConfig();
+		if (!simulate)
+		{
+			formatPartitions();
+			mountMedia();
+			mountPartitions();
+			if (core==NULL) core = new mpkg;
+			core->commit();
+			syncFS();
+			performConfig();
+		}
+		showFinish();
 	}
-	showFinish();
 	return 0;
 }
 
@@ -1196,7 +1326,6 @@ part_menu:
 
 int main(int argc, char *argv[])
 {
-	if (!showLicense()) return -1;
 	simulate=true;
 	if (argc>=2)
 	{
@@ -1224,10 +1353,17 @@ int main(int argc, char *argv[])
 	dialogMode=true;
 
 	showGreeting();
+	if (!showLicense()) return -1;
+	/*else {
+		printf("Accepted\n");
+		sleep(2);
+	}*/
+
 	systemConfig.rootMountPoint="/mnt";
 
 	Dialog d;
 	string ret;
+	string next_item;
 	vector<TagPair> menuItems;
 
 	initDatabaseStructure();
@@ -1244,14 +1380,14 @@ main_menu:
 	//menuItems.push_back(TagPair("8","Настройка временной зоны"));
 	menuItems.push_back(TagPair("6","Установить систему"));
 	menuItems.push_back(TagPair("7","Выход"));
-	ret = d.execMenu("Установка MOPSLinux 6.0", 0,0,0,menuItems);
-	if (ret == "0") diskPartitioningMenu();
-	if (ret == "1") setSwapSpace();
-	if (ret == "2") setRootPartition();
-	if (ret == "3") setOtherPartitions();
-	if (ret == "4") packageSourceSelectionMenu();
-	if (ret == "5") packageSelectionMenu();
-	if (ret == "6") commit();
+	ret = d.execMenu("Установка MOPSLinux 6.0", 0,0,0,menuItems, next_item);
+	if (ret == "0") if (diskPartitioningMenu()==0) next_item="1";
+	if (ret == "1") if (setSwapSpace()==0) next_item="2";
+	if (ret == "2") if (setRootPartition()==0) next_item="3";
+	if (ret == "3") if (setOtherPartitions()==0) next_item="4";
+	if (ret == "4") if (packageSourceSelectionMenu()==0) next_item="5";
+	if (ret == "5") if (packageSelectionMenu()==0) next_item="6";
+	if (ret == "6") if (commit()==0) next_item="7";
 	if (ret == "7" || ret.empty()) return 0;
 	goto main_menu;
 }

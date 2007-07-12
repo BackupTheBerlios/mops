@@ -28,10 +28,10 @@ struct SysConfig
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes);
 bool setPartitionMap();
 void showGreeting();
-void setSwapSpace();
-void setRootPartition();
-void setOtherPartitions();
-void formatPartitions();
+int setSwapSpace();
+int setRootPartition();
+int setOtherPartitions();
+int formatPartitions();
 int mountPartitions();
 int autoInstall();
 int manualInstall();

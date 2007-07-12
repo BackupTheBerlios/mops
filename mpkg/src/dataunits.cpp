@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.63 2007/07/05 13:23:08 i27249 Exp $
+	$Id: dataunits.cpp,v 1.64 2007/07/12 09:28:12 i27249 Exp $
 */
 
 
@@ -360,6 +360,16 @@ void PACKAGE::sortLocations()
 {
 	_sortLocations(&package_locations);
 }
+
+bool PACKAGE::isTaggedBy(string tag)
+{
+	for (unsigned int i=0; i<package_tags.size(); i++)
+	{
+		if (package_tags[i]==tag) return true;
+	}
+	return false;
+}
+
 // Comparsion
 bool PACKAGE::equalTo (PACKAGE *npkg)
 {

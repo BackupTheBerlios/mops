@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.19 2007/07/09 14:41:42 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.20 2007/07/12 09:28:12 i27249 Exp $
  ************************************************************************************/
 
 
@@ -54,7 +54,7 @@ class SQLiteDB
 class SQLProxy
 {
 	private:
-		SQLiteDB sqliteDB;
+		SQLiteDB *sqliteDB;
 	public:
 
 		bool internalDataChanged;

@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.43 2007/07/05 13:23:08 i27249 Exp $
+	$Id: dataunits.h,v 1.44 2007/07/12 09:28:12 i27249 Exp $
 */
 
 
@@ -225,6 +225,7 @@ class PACKAGE
 	bool tagsEqualTo(PACKAGE *pkg);
 	bool depsEqualTo(PACKAGE *pkg);
 
+	bool isTaggedBy(string tag);
 	// Data retrieving	
 	bool isItRequired(PACKAGE *testPackage);
 	bool isUpdate();

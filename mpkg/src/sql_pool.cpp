@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.45 2007/07/09 14:41:42 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.46 2007/07/12 09:28:12 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -138,7 +138,8 @@ long long int SQLiteDB::getLastID()
 }
 long long int SQLProxy::getLastID()
 {
-	return sqliteDB.getLastID();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->getLastID();
 }
 
 int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_name, SQLRecord &search)
@@ -484,65 +485,81 @@ SQLiteDB::~SQLiteDB(){
 
 int SQLProxy::sqlCommit()
 {
-	return sqliteDB.sqlCommit();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->sqlCommit();
 }
 
 int SQLProxy::clear_table(string table_name)
 {
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+
 	internalDataChanged=true;
-	return sqliteDB.clear_table(table_name);
+	return sqliteDB->clear_table(table_name);
 }
 
 int SQLProxy::sqlBegin()
 {
-	return sqliteDB.sqlBegin();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->sqlBegin();
 }
 
 int SQLProxy::sqlFlush()
 {
-	return sqliteDB.sqlFlush();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->sqlFlush();
 }
 int SQLProxy::getLastError()
 {
-	return sqliteDB.getLastError();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->getLastError();
 }
 
 string SQLProxy::getLastErrMsg()
 {
-	return sqliteDB.getLastErrMsg();
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->getLastErrMsg();
 }
 
 int SQLProxy::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
 {
-	return sqliteDB.get_sql_vtable(output, fields, table_name, search);
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
+	return sqliteDB->get_sql_vtable(output, fields, table_name, search);
 }
 
 int SQLProxy::sql_insert(string table_name, SQLRecord values)
 {
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
 	internalDataChanged=true;
-	return sqliteDB.sql_insert(table_name, values);
+	return sqliteDB->sql_insert(table_name, values);
 }
 
 int SQLProxy::sql_insert(string table_name, SQLTable values)
 {
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
 	internalDataChanged=true;
-	return sqliteDB.sql_insert(table_name, values);
+	return sqliteDB->sql_insert(table_name, values);
 }
 
 int SQLProxy::sql_update(string table_name, SQLRecord fields, SQLRecord search)
 {
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
 	internalDataChanged=true;
-	return sqliteDB.sql_update(table_name, fields, search);
+	return sqliteDB->sql_update(table_name, fields, search);
 }
 
 int SQLProxy::sql_delete(string table_name, SQLRecord search)
 {
+	if (sqliteDB==NULL) sqliteDB = new SQLiteDB;
 	internalDataChanged=true;
-	return sqliteDB.sql_delete(table_name, search);
+	return sqliteDB->sql_delete(table_name, search);
 }
 
 SQLProxy::SQLProxy()
 {
+	sqliteDB=NULL;
 	internalDataChanged=true;
 }
-SQLProxy::~SQLProxy(){}
+SQLProxy::~SQLProxy()
+{
+	if (sqliteDB!=NULL) delete sqliteDB;
+}

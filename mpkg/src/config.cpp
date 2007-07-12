@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.36 2007/07/05 13:23:08 i27249 Exp $
+ * $Id: config.cpp,v 1.37 2007/07/12 09:28:12 i27249 Exp $
  *
  * ***************************************************/
 
@@ -10,6 +10,7 @@
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
 
+bool require_root = true;
 bool simulate=false;
 vector<string> removeBlacklist;
 bool force_dep=false;
