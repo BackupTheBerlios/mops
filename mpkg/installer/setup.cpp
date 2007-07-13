@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.19 2007/07/13 12:35:50 i27249 Exp $
+ * $Id: setup.cpp,v 1.20 2007/07/13 14:50:44 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -497,6 +497,9 @@ string getTagDescription(string tag)
 
 int initDatabaseStructure()
 {
+	say("init: deleting core\n");
+	if (core!=NULL) delete core;
+	say("init: core removed\n");
 	if (system("rm -rf /var/mpkg; mkdir -p /var/mpkg && mkdir -p /var/mpkg/scripts && mkdir -p /var/mpkg/backup && mkdir -p /var/mpkg/cache && cp -f /packages.db /var/mpkg/packages.db")!=0)
 	{
 		mError("При создании структуры каталогов базы данных произошла ошибка");
@@ -508,6 +511,9 @@ int initDatabaseStructure()
 
 int moveDatabaseToHdd()
 {
+	say("move: deleting core");
+	if (core!=NULL) delete core;
+	say("move: deleted core");
 	log_directory = "/mnt/var/log/";
 	if (system("rm -rf /mnt/var/mpkg; mkdir -p /mnt/var/log; cp -R /var/mpkg /mnt/var/ && rm -rf /var/mpkg && ln -s /mnt/var/mpkg /var/mpkg")!=0)
 	{
