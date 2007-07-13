@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.20 2007/07/13 14:50:44 i27249 Exp $
+ * $Id: setup.cpp,v 1.21 2007/07/13 15:38:41 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -364,14 +364,15 @@ other_part_menu_main:
 }
 bool formatPartition(string devname, string fstype)
 {
+	string fs_options;
+	if (fstype=="jfs") fs_options="-q";
+	if (fstype=="xfs") fs_options="-fq";
 	if (!simulate)
 	{
-		string cmd = "mkfs -t " + fstype + " " + devname;
+		string cmd = "umount " + devname +  " ; mkfs -t " + fstype + " " + fs_options + " " + devname + " >> /var/log/install.log";
 		if (system(cmd)==0) return true;
 		else return false;
 	}
-	// Simulating format =)
-	sleep(3);
 	return true;
 }
 int formatPartitions()
@@ -498,7 +499,11 @@ string getTagDescription(string tag)
 int initDatabaseStructure()
 {
 	say("init: deleting core\n");
-	if (core!=NULL) delete core;
+	if (core!=NULL)
+	{
+		delete core;
+		core=NULL;
+	}
 	say("init: core removed\n");
 	if (system("rm -rf /var/mpkg; mkdir -p /var/mpkg && mkdir -p /var/mpkg/scripts && mkdir -p /var/mpkg/backup && mkdir -p /var/mpkg/cache && cp -f /packages.db /var/mpkg/packages.db")!=0)
 	{
@@ -512,7 +517,11 @@ int initDatabaseStructure()
 int moveDatabaseToHdd()
 {
 	say("move: deleting core");
-	if (core!=NULL) delete core;
+	if (core!=NULL)
+	{
+		delete core;
+		core=NULL;
+	}
 	say("move: deleted core");
 	log_directory = "/mnt/var/log/";
 	if (system("rm -rf /mnt/var/mpkg; mkdir -p /mnt/var/log; cp -R /var/mpkg /mnt/var/ && rm -rf /var/mpkg && ln -s /mnt/var/mpkg /var/mpkg")!=0)
@@ -951,11 +960,16 @@ int commit()
 			if (formatPartitions()!=0) return -1;
 			//if (mountMedia()!=0) return -1;
 			if (mountPartitions()!=0) return -1;
-			if (core==NULL) core = new mpkg;
+			if (core==NULL)
+			{
+				core = new mpkg;
+			}
 			d.execInfoBox("Построение очереди...");
+
 			for (int i=0; i<i_availablePackages.size(); i++)
 			{
 				if (i_availablePackages.get_package(i)->action()==ST_INSTALL) core->install(i_availablePackages.get_package(i));
+
 			}
 			if (core->commit()!=0) return -1;
 			if (performConfig()!=0) return -1;
@@ -1160,17 +1174,19 @@ string doFormatString(bool input)
 int main(int argc, char *argv[])
 {
 	simulate=false;
+	forceSkipLinkMD5Checks=true;
+
 	if (argc>=2)
 	{
 		if (strcmp(argv[1], "--simulate")==0)
 		{
 			simulate=true;
 			say("Simulation mode!\n");
-			sleep(1);
+			sleep(2);
 		}
-		if (strcmp(argv[1], "--skip-check")==0)
+		if (strcmp(argv[1], "--no-skip-check")==0)
 		{
-			forceSkipLinkMD5Checks=true;
+			forceSkipLinkMD5Checks=false;
 		}
 		else
 		{
@@ -1178,7 +1194,7 @@ int main(int argc, char *argv[])
 			printf("Usage:\n");
 			printf("setup [options]\n\n");
 
-			printf("\t--skip-check     Skip package integrity check\n");
+			printf("\t--no-skip-check     Do NOT skip package integrity check\n");
 			printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
 			exit(0);
 		}
