@@ -3,11 +3,11 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.46 2007/07/12 09:28:12 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.47 2007/07/13 12:35:50 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
-
+#include "dbstruct.h"
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
 	if (\
@@ -446,6 +446,7 @@ check_integrity:
 		errRet = waitResponce(MPKG_SUBSYS_SQLDB_INCORRECT);
 		if (errRet == MPKG_RETURN_REINIT)
 		{
+			say("reinitializing\n");
 			sqlite3_close(db);
 			initDatabaseStructure();
 			goto check_integrity;
@@ -460,6 +461,7 @@ check_integrity:
 
 int SQLiteDB::initDatabaseStructure()
 {
+	system((string) "mv -f " + db_filename + " " + db_filename + "_backup");
 	unlink(db_filename.c_str());
 	int ret;
 	ret = sqlite3_open(db_filename.c_str(), &db);
@@ -468,7 +470,9 @@ int SQLiteDB::initDatabaseStructure()
 		mError("Error opening database, cannot continue");
 		return 1;
 	}
-	sql_exec(ReadFile("/root/mpkg/sql/create_database.sql").c_str());
+
+	WriteFile("test.sql", getDBStructure());
+	sql_exec(getDBStructure());
 	sqlBegin();
 	return ret;
 }

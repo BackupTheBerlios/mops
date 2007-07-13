@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.36 2007/07/12 13:50:26 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.37 2007/07/13 12:35:50 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -316,7 +316,14 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		core.clean_queue();
+		vector<string> db_struct = ReadFileStrings("/root/mpkg/sql/create_database.sql");
+		string dbstruct_cpp = (string) "#include \"dbstruct.h\"\nstring getDBStructure()\n{\n\treturn \"";
+		for (unsigned int i=0; i<db_struct.size(); i++)
+		{
+			dbstruct_cpp += db_struct[i] + "\\n\\\n";
+		}
+		dbstruct_cpp += "\";\n}\n";
+		WriteFile("dbstruct.cpp", dbstruct_cpp);
 		return 0;
 	}
 

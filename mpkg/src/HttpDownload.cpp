@@ -12,7 +12,7 @@
 #endif
 #include <mntent.h>
 string DL_CDROM_DEVICE="/dev/cdrom";
-string DL_CDROM_MOUNTPOINT="/mnt/cdrom";
+string DL_CDROM_MOUNTPOINT="/var/log/mount/";
 
 #define DOWNLOAD_TIMEOUT 10 // 10 seconds, and failing
 int downloadTimeout=0;
@@ -85,15 +85,17 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	// 3. Copy requested packages from CD-ROM media to cache.
 	// 4. If required next media, eject current and require next disk, next go to 1
 	// 5. If all required media is processed, eject the last and return.
-	
+	// Note: VOLNAME should be determined by file .volume_id at root of CD
 	//int mount_ret;
 	//int umount_ret;
+	
+	Dialog d("Монтирование CD-ROM");
 	mkdir(DL_CDROM_MOUNTPOINT.c_str(), 755);
 	// First, check if device mounted in proper directory. 
 	struct mntent *mountList;
 	FILE *mtab = fopen("/proc/mounts", "r");
 	bool mounted = false;
-	char volname[2000];
+	//char volname[2000];
 	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
 	string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
 	mpkgErrorReturn errRet;
@@ -117,6 +119,7 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	if (!mounted)
 	{
 try_mount:
+		d.execInfoBox("Подключение " + DL_CDROM_DEVICE + " к точке монтирования " + DL_CDROM_MOUNTPOINT);
 #ifndef INTERNAL_MOUNT
 		string mnt_cmd = "mount "+DL_CDROM_DEVICE + " " + DL_CDROM_MOUNTPOINT;
 		int mret = system(mnt_cmd.c_str());
@@ -126,7 +129,9 @@ try_mount:
 		if (mret!=0)
 		{
 			perror("Mount error:");
-			errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+			if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + DL_CDROM_DEVICE)) goto try_mount;
+			else return -1;
+			/*errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
 			if (errRet == MPKG_RETURN_RETRY)
 			{
 				goto try_mount;
@@ -134,27 +139,34 @@ try_mount:
 			if (errRet == MPKG_RETURN_ABORT)
 			{
 				return -1;
-			}
+			}*/
 		}
 	}
 
 	string Svolname;
 	
 	// check_volname:
-	string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
-	system(vol_cmd.c_str());
-	FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
-	if (volnameFile)
+	Svolname = ReadFile(DL_CDROM_MOUNTPOINT + "/.volume_id");
+	if (Svolname.empty())
 	{
-		fscanf(volnameFile, "%s", &volname);
-		Svolname=volname;
-		Svolname=Svolname.substr(0,Svolname.find("\n"));
-
-		fclose(volnameFile);
+		
 	}
-	if (Svolname == cdromVolName)
+	//
+	//string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
+	//system(vol_cmd.c_str());
+	//FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
+	//if (volnameFile)
+	//{
+	//	fscanf(volnameFile, "%s", &volname);
+	//	Svolname=volname;
+	//	Svolname=Svolname.substr(0,Svolname.find("\n"));
+//
+//		fclose(volnameFile);
+//	}
+	if (Svolname != cdromVolName)
 	{
 		mError("Wrong volname");
+		
 		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
 		if (errRet == MPKG_RETURN_RETRY)
 		{

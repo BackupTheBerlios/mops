@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.18 2007/07/13 11:25:11 i27249 Exp $
+ * $Id: setup.cpp,v 1.19 2007/07/13 12:35:50 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1124,6 +1124,7 @@ int diskPartitioningMenu()
 	Dialog d("Разбивка диска на разделы");
 	vector<TagPair> menuItems;
 	string ret;
+	string disk_name;
 	int r = 0;
 part_menu:
 	menuItems.clear();
@@ -1134,9 +1135,14 @@ part_menu:
 
 	ret = d.execMenu("Выберите способ разбивки диска",0,0,0,menuItems);
 	if (ret == "Готово" || ret.empty()) return 0;
-	if (ret == "cfdisk") r = system("cfdisk");
+disk_menu:
+	disk_name = d.execInputBox("Какой диск вы хотите разметить? Оставьте поле пустым, если хотите взять первый попавшийся", disk_name);
+	if (disk_name.find("/dev/")!=0) goto disk_menu;
+
+
+	if (ret == "cfdisk") r = system("cfdisk " + disk_name);
 	//if (ret == "fdisk") r = system("fdisk");	// Надо явно указывать какой диск разбивать. Сделаю потом.
-	if (ret == "parted") r = system("parted");
+	if (ret == "parted") r = system("parted " + disk_name);
 	if (r==0) return 0;
 	else goto part_menu;
 }
