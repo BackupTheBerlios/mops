@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.16 2007/07/12 13:50:26 i27249 Exp $
+ * $Id: setup.cpp,v 1.17 2007/07/13 02:01:05 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1202,7 +1202,7 @@ part_menu:
 }
 string doFormatString(bool input)
 {
-	if (input) return "да";
+	if (input) return "ДА";
 	else return "нет";
 }
 int main(int argc, char *argv[])
@@ -1234,11 +1234,11 @@ int main(int argc, char *argv[])
 	dialogMode=true;
 
 	showGreeting();
-	if (!showLicense()) return -1;
-	/*else {
-		printf("Accepted\n");
-		sleep(2);
-	}*/
+	if (!showLicense())
+	{
+		d.execMsgBox("Без принятия условий данной лицензии использование данного программного обеспечения невозможно.\nУстановка прекращена.");
+		return -1;
+	}
 
 	systemConfig.rootMountPoint="/mnt";
 	setOtherPartitionItems();
