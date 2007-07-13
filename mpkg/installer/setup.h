@@ -39,13 +39,13 @@ int formatPartitions();
 int mountPartitions();
 int autoInstall();
 int manualInstall();
-void initDatabaseStructure();
-void mountMedia();
+int initDatabaseStructure();
+int moveDatabaseToHdd();
+int mountMedia();
 int selectInstallMethod();
 void writeFstab();
-void performConfig();
+int performConfig();
 void syncFS();
 int packageSourceSelectionMenu();
 void showFinish();
-void packageSourceSelection();
 #endif

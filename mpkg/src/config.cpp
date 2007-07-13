@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.37 2007/07/12 09:28:12 i27249 Exp $
+ * $Id: config.cpp,v 1.38 2007/07/13 11:25:11 i27249 Exp $
  *
  * ***************************************************/
 
@@ -18,7 +18,7 @@ bool force_skip_conflictcheck=false;
 bool force_essential_remove=false;
 bool force_conflicts=false;
 bool download_only=false;
-
+string log_directory = "/var/log/";
 bool consoleMode=true;
 bool dialogMode=false;
 bool DO_NOT_RUN_SCRIPTS;

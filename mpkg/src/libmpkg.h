@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.24 2007/07/06 08:49:41 i27249 Exp $
+ * $Id: libmpkg.h,v 1.25 2007/07/13 11:25:11 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -120,9 +120,9 @@ class mpkg
 		 * @@*/
 
 		// Cache cleaning
-		int clean_cache();
+		int clean_cache(bool clean_symlinks=false);
 		/* clean_cache():
-		 * Removes all packages from download cache.
+		 * Removes all packages from download cache (or only symlinks if clean_symlinks = true).
 		 * Returns 0 if OK, <0 if fails.
 		 * @@*/
 

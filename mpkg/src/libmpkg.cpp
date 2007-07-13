@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.38 2007/07/06 08:49:41 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.39 2007/07/13 11:25:11 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -146,10 +146,10 @@ int mpkg::update_repository_data()
 }
 
 // Cache cleaning
-int mpkg::clean_cache()
+int mpkg::clean_cache(bool clean_symlinks)
 {
 	currentStatus = "Cleaning cache...";
-	int ret = mpkgSys::clean_cache();
+	int ret = mpkgSys::clean_cache(clean_symlinks);
 	if (ret == 0) currentStatus = "Cache cleanup complete";
 	else currentStatus = "Error cleaning cache!";
 	return ret;

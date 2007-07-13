@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.17 2007/07/13 02:01:05 i27249 Exp $
+ * $Id: setup.cpp,v 1.18 2007/07/13 11:25:11 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -427,7 +427,9 @@ int mountPartitions()
 		abort();
 	}
 	else mDebug("root mkdir and mount OK");
-	
+
+	dialogItem.execInfoBox("Перемещение базы данных на жесткий диск");
+	moveDatabaseToHdd();
 	// Sorting mount points
 	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
@@ -493,32 +495,30 @@ string getTagDescription(string tag)
 	return tag;
 }
 
-void initDatabaseStructure()
+int initDatabaseStructure()
 {
-	//TODO #1 !!  Should be remaked to use RAM while no HDD is mounted.
-	mDebug("start");
-	mDebug("Processing directories");
-	string cmd;
-	cmd = "rm -rf /var/mpkg && mkdir -p /mnt/var/mpkg && ln -sf /mnt/var/mpkg /var/mpkg";
-	mDebug(cmd);
-	system(cmd.c_str());
-	cmd = "mkdir -p " + systemConfig.rootMountPoint+"/var/mpkg/scripts 2>>/var/install.log";
-	mDebug(cmd);
-	system(cmd.c_str());
-	cmd = "mkdir -p "+systemConfig.rootMountPoint+"/var/mpkg/backup 2>>/var/install.log";
-	mDebug(cmd);
-	system(cmd.c_str());
-	cmd = "mkdir -p " +systemConfig.rootMountPoint+"/var/mpkg/cache 2>>/var/install.log";
-	mDebug(cmd);
-	system(cmd.c_str());
-	cmd = "cp -f /packages.db /var/mpkg/packages.db 2>> /var/install.log";
-	mDebug(cmd);
-	system(cmd.c_str());
-	mDebug("end");
+	if (system("rm -rf /var/mpkg; mkdir -p /var/mpkg && mkdir -p /var/mpkg/scripts && mkdir -p /var/mpkg/backup && mkdir -p /var/mpkg/cache && cp -f /packages.db /var/mpkg/packages.db")!=0)
+	{
+		mError("При создании структуры каталогов базы данных произошла ошибка");
+		sleep(2);
+		return -1;
+	}
+	return 0;
 }
 
+int moveDatabaseToHdd()
+{
+	log_directory = "/mnt/var/log/";
+	if (system("rm -rf /mnt/var/mpkg; mkdir -p /mnt/var/log; cp -R /var/mpkg /mnt/var/ && rm -rf /var/mpkg && ln -s /mnt/var/mpkg /var/mpkg")!=0)
+	{
+		mError("Ошибка при перемещении данных на жесткий диск");
+		sleep(2);
+		return -1;
+	}
+	return 0;
+}
 
-void mountMedia()
+int mountMedia()
 {
 	mDebug("start");
 	if (umount("/var/log/mount")==0) mDebug("successfully unmounted old mount");
@@ -603,7 +603,7 @@ void mountMedia()
 			systemConfig.cdromDevice=devList[i];
 			dialogItem.execInfoBox("Диск успешно найден в " + devList[i]);
 			mDebug("end");
-			return;
+			return 0;
 		}
 	}
 	mDebug("Drive not found. Proceeding to manual selection");
@@ -611,28 +611,29 @@ void mountMedia()
 	if (!dialogItem.execYesNo("Автоопределение привода не удалось. Хотите указать вручную?"))
 	{
 		mDebug("aborted");
-		abort();
+		return -1;
 	}
 manual:
 	mDebug("manual selection");
 	string manualMount = dialogItem.execInputBox("Укажите вручную имя устройства (например /dev/hda)", "/dev/");
 	if (manualMount.empty())
 	{
-		if (dialogItem.execYesNo("Вы ничего не указали. Выйти из программы установки?")) { mDebug("aborted"); abort(); }
-		cmd = "mount -t iso9660 " + manualMount + " /var/log/mount 2>> /var/install.log";
-		if (system(cmd.c_str())!=0)
-		{
-			mDebug("manual mount error");
-			dialogItem.execMsgBox("Не удалось смонтировать указанный вами диск");
-			goto manual;
-		}
+		return -1; //if (dialogItem.execYesNo("Вы ничего не указали. Выйти из программы установки?")) { mDebug("aborted"); abort(); }
 	}
+	cmd = "mount -t iso9660 " + manualMount + " /var/log/mount 2>> /var/install.log";
+	if (system(cmd.c_str())!=0)
+	{
+		mDebug("manual mount error");
+		dialogItem.execMsgBox("Не удалось смонтировать указанный вами диск");
+		goto manual;
+	}
+	return 0;
 	mDebug("end");
 }
 bool showLicense()
 {
 	Dialog d("Лицензионное соглашение");
-	if (system((string) "dialog --extra-button --extra-label \"Не принимаю\" --no-cancel --ok-label \"Принимаю\"	--textbox license 0 0")==0) return true;
+	if (system((string) "dialog --extra-button --extra-label \"Не принимаю\" --no-cancel --ok-label \"Принимаю\"	--textbox /license 0 0")==0) return true;
 	else return false;
 	
 }
@@ -705,7 +706,7 @@ void writeFstab()
 
 
 
-void performConfig()
+int performConfig()
 {
 
 	writeFstab();
@@ -717,8 +718,15 @@ void performConfig()
 	{
 		mDebug("Config seems to be ok");
 	}
-	else mDebug("Config seems to be failed");
+	else 
+	{
+		Dialog d("Ошибка");
+		d.execMsgBox("При выполнении настройки системы произошла ошибка. Устраните причины и повторите установку заново.");
+		mDebug("Config seems to be failed");
+		return -1;
+	}
 	mDebug("end");
+	return 0;
 }
 
 void syncFS()
@@ -727,6 +735,12 @@ void syncFS()
 	system("sync");
 	umount(systemConfig.cdromDevice.c_str());
 	mDebug("end");
+}
+
+void cleanup()
+{
+	if (core==NULL) core = new mpkg;
+	core->clean_cache(true);
 }
 
 void showFinish()
@@ -738,91 +752,6 @@ void showFinish()
 	exit(0);
 }
 
-void packageSourceSelection()
-{
-	Dialog dialogItem ("Выбор источника пакетов");
-	vector<string> nullList, rList;
-start:
-	if (core==NULL) core = new mpkg;
-       	rList	= REPOSITORY_LIST;
-	dialogItem.execAddableList("Сформируйте список репозиториев\nЭто должны быть URL стандартного вида, указывающие на корень репозитория\nи заканчивающиеся символом /\nДоступные типы: ftp://, http://, file://, cdrom://\nДля установки с этого диска рекомендуем использовать file:///var/log/mount/mops/", &rList, "://");
-	// Redefine repository list
-	if (rList.empty())
-	{
-		if (dialogItem.execYesNo("Вы не указали ни одного источника пакетов. Использовать список по умолчанию?"))
-		{
-			rList.push_back("file:///var/log/mount/mops/");
-		}
-	}
-	dialogItem.execInfoBox("Обновление списка пакетов...");
-	core->set_repositorylist(rList, nullList);
-	if (core->update_repository_data()!=0)
-	{
-		mDebug("update failed");
-		delete core;
-		core=NULL;
-		if (dialogItem.execYesNo("При создании начальной базы пакетов произошла ошибка. Проверьте доступность источников либо измените список."))
-		{
-			goto start;
-		}
-		else abort();
-	}
-	else
-	{
-		mDebug("ok");
-	}
-
-	delete core;
-	core=NULL;
-}
-/*
-int main_old(int argc, char **argv)
-{
-	if (argc>=2)
-	{
-		if (strcmp(argv[1], "--simulate")==0)
-		{
-			simulate=true;
-			say("Simulation mode!\n");
-			sleep(1);
-		}
-		if (strcmp(argv[1], "--skip-check")==0)
-		{
-			forceSkipLinkMD5Checks=true;
-		}
-		else
-		{
-			printf("MOPSLinux installer 2.0 alpha\n");
-			printf("Usage:\n");
-			printf("setup [options]\n\n");
-
-			printf("\t--skip-check     Skip package integrity check\n");
-			printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
-			exit(0);
-		}
-	}
-	dialogMode=true;
-	mDebug("Main start");
-	systemConfig.rootMountPoint="/mnt";
-	showGreeting();
-	setSwapSpace();
-	setRootPartition();
-	setOtherPartitions();
-	formatPartitions();
-	mountMedia();
-	mountPartitions();
-	if (selectInstallMethod()!=0)
-	{
-		mDebug("Installation failed");
-		return 0;
-	}
-	performConfig();
-	syncFS();
-	showFinish();
-	mDebug("Installation seems to be OK");
-	return 0;
-}
-*/
 int packageSelectionMenu()
 {
 	Dialog d("Выбор пакетов для установки");
@@ -989,7 +918,7 @@ int commit()
 		return -1;
 	}
 	
-	summary = "Проверьте внимательно все данные прежде чем продолжить!\n\n" + \
+	summary = "Проверьте внимательно все данные прежде чем продолжить!\n\n" + (string) \
 		   "Корневой раздел: " + systemConfig.rootPartition + ", " + systemConfig.rootPartitionType + "\n" + \
 		   "Раздел подкачки: ";
        if (systemConfig.swapPartition.empty()) summary += "нет\n";
@@ -1012,24 +941,33 @@ int commit()
 	{
 		if (!simulate)
 		{
-			formatPartitions();
-			mountMedia();
-			mountPartitions();
+			if (activateSwapSpace()!=0) return -1;
+			if (formatPartitions()!=0) return -1;
+			//if (mountMedia()!=0) return -1;
+			if (mountPartitions()!=0) return -1;
 			if (core==NULL) core = new mpkg;
 			d.execInfoBox("Построение очереди...");
 			for (int i=0; i<i_availablePackages.size(); i++)
 			{
 				if (i_availablePackages.get_package(i)->action()==ST_INSTALL) core->install(i_availablePackages.get_package(i));
 			}
-			core->commit();
-			performConfig();
-			syncFS();
+			if (core->commit()!=0) return -1;
+			if (performConfig()!=0) return -1;
+			syncFS();//!=0) return -1;
 		}
 		showFinish();
 	}
 	return 0;
 }
 
+
+int setCDSource()
+{
+	// Todo
+	Dialog d("Установка с набора CD");
+	d.execMsgBox("Пока не доделал, данный вариант недоступен...");
+	return -1;
+}
 
 int setDVDSource()
 {
@@ -1168,6 +1106,7 @@ int packageSourceSelectionMenu()
 	string ret;
 
 	menuItems.clear();
+	menuItems.push_back(TagPair("CD-ROM", "Установка с набора CD"));
 	menuItems.push_back(TagPair("DVD-ROM", "Установка с привода DVD"));
 	menuItems.push_back(TagPair("HDD", "Установка с жесткого диска"));
 	menuItems.push_back(TagPair("Network", "Установка по сети (FTP, HTTP)"));
@@ -1176,6 +1115,7 @@ int packageSourceSelectionMenu()
 	if (ret == "DVD-ROM") setDVDSource();
 	if (ret == "HDD") setHDDSource();
 	if (ret == "Network") setNetworkSource();
+	if (ret == "CD-ROM") setCDSource();
 	return 0;
 }
 	
@@ -1207,12 +1147,12 @@ string doFormatString(bool input)
 }
 int main(int argc, char *argv[])
 {
-	simulate=true;
+	simulate=false;
 	if (argc>=2)
 	{
 		if (strcmp(argv[1], "--simulate")==0)
 		{
-			simulate=false;
+			simulate=true;
 			say("Simulation mode!\n");
 			sleep(1);
 		}
@@ -1233,6 +1173,8 @@ int main(int argc, char *argv[])
 	}
 	dialogMode=true;
 
+
+	Dialog d ("Главное меню");
 	showGreeting();
 	if (!showLicense())
 	{
@@ -1242,7 +1184,6 @@ int main(int argc, char *argv[])
 
 	systemConfig.rootMountPoint="/mnt";
 	setOtherPartitionItems();
-	Dialog d ("Главное меню");
 	string ret;
 	string next_item;
 	vector<TagPair> menuItems;

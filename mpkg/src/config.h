@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.44 2007/07/12 09:28:12 i27249 Exp $
+    $Id: config.h,v 1.45 2007/07/13 11:25:11 i27249 Exp $
 */
 
 
@@ -29,7 +29,7 @@ extern bool force_dep;
 extern bool force_skip_conflictcheck;
 extern bool force_essential_remove;
 extern bool download_only;
-
+extern string log_directory;
 extern bool require_root;
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;

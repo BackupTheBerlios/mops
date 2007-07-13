@@ -39,7 +39,7 @@
 				sqlite3
 			</name>
 			<condition>
-				equal
+				atleast
 			</condition>
 			<version>
 				3.3.17
