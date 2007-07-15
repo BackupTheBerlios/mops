@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.10 2007/06/15 12:40:52 i27249 Exp $
+ * $Id: converter.cpp,v 1.11 2007/07/15 10:49:38 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -85,9 +85,19 @@ int slack_convert(string filename, string xml_output)
 #define DESCRIPTION_PROCESS
 #ifdef DESCRIPTION_PROCESS	
 	//DESCRIPTION
-	string desc_file=get_tmp_file();
-	string desc="tar zxf "+filename+" install/slack-desc --to-stdout > "+desc_file;
-	if (system(desc.c_str())==0)
+	string desc_file= filename.substr(0,filename.length()-3)+"txt";
+	bool can_read=false;
+	if (access(desc_file.c_str(), R_OK)==0)
+	{
+		can_read=true;
+	}
+	else 
+	{
+		desc_file=get_tmp_file();
+		string desc="tar zxf "+filename+" install/slack-desc --to-stdout > "+desc_file;
+		if (system(desc.c_str())==0) can_read=true;
+	}
+	if (can_read)
 	{
 		string description=ReadFile(desc_file);
 		delete_tmp_files();
