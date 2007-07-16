@@ -4,9 +4,19 @@ XMLNode::XMLNode()
 
 }
 
-XMLNode::XMLNode(string filename)
+XMLNode::XMLNode(string node_name)
 {
 
+}
+
+int XMLNode::parseFile(string fileName)
+{
+	// TODO for Andrew: parse in the whole file
+}
+
+int XMLNode::writeToFile(string fileName)
+{
+	// TODO for Andrew: write add contents to a file
 }
 
 // Tree access functions

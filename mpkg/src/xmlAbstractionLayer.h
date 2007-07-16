@@ -1,6 +1,6 @@
 /******************************************************************************
  * MOPSLinux package system: XML abstraction layer
- * $Id: xmlAbstractionLayer.h,v 1.1 2007/07/16 13:55:06 i27249 Exp $
+ * $Id: xmlAbstractionLayer.h,v 1.2 2007/07/16 14:00:00 i27249 Exp $
  * ***************************************************************************/
 #ifndef MPKG_XML_ABS_LAYER
 #define MPKG_XML_ABS_LAYER
