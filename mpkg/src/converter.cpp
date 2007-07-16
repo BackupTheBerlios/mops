@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.11 2007/07/15 10:49:38 i27249 Exp $
+ * $Id: converter.cpp,v 1.12 2007/07/16 08:16:42 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -177,15 +177,17 @@ int slack_convert(string filename, string xml_output)
 	pkg.addChild("description");
 	pkg.getChildNode("description").addText(package.get_description()->c_str());
 #endif
+#ifdef TAG_CONVERTED
 	pkg.addChild("tags");
 	pkg.getChildNode("tags").addChild("tag");
 	pkg.getChildNode("tags").getChildNode("tag").addText("slackware");
+#endif
 	pkg.addChild("maintainer");
 	pkg.getChildNode("maintainer").addChild("name");
 	pkg.getChildNode("maintainer").getChildNode("name").addText("Slackware to MPKG autoconverter by AiX");
 	pkg.getChildNode("maintainer").addChild("email");
 	pkg.getChildNode("maintainer").getChildNode("email").addText("i27249@gmail.com");
-	pkg.writeToFile(xml_output.c_str());
+	pkg.writeToFile(xml_output.c_str(), "utf-8");
 	return 0;
 }
 

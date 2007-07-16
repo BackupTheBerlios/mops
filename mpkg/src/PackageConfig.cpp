@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.17 2007/07/02 12:58:55 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.18 2007/07/16 08:16:42 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -16,7 +16,7 @@ PackageConfig::PackageConfig(string _f)
 	_node = XMLNode::parseFile(fileName.c_str(), "package", &xmlErrCode);
 	if (xmlErrCode.error != eXMLErrorNone)
 	{
-		mError("XML parse error in " + fileName);
+		mError("XML parse error in " + fileName + ": " + (string) XMLNode::getError(xmlErrCode.error));
 		parseOk = false;
 		/*mpkgErrorReturn errRet=waitResponce(MPKG_INSTALL_META_ERROR);
 		if (errRet == MPKG_RETURN_RETRY)

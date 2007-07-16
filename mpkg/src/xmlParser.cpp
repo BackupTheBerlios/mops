@@ -1,4 +1,4 @@
-/** $Id: xmlParser.cpp,v 1.3 2007/07/02 09:04:22 i27249 Exp $
+/** $Id: xmlParser.cpp,v 1.4 2007/07/16 08:16:42 i27249 Exp $
  ****************************************************************************
  * <P> XML.c - implementation file for basic XML parser written in ANSI C++
  * for portability. It works by using recursion and a node tree for breaking
@@ -70,6 +70,7 @@
  *
  ****************************************************************************
  */
+#include "file_routines.h"
 #ifdef WIN32
 //#ifdef _DEBUG
 //#define _CRTDBG_MAP_ALLOC
@@ -224,7 +225,7 @@ static const char XML_utf8ByteTable[256] =
                 NULL,                    // default for unmappable chars
                 NULL                     // set when default char used
                 );
-            if (i<0) return NULL;
+            if (i<0) { printf("WideCharToMultiByte returned i == %d",i); return NULL;}
             char *d=(char*)malloc(i+1);
             WideCharToMultiByte(CP_ACP,  // code page
                 0,                       // performance and mapping flags
@@ -277,7 +278,7 @@ static const char XML_utf8ByteTable[256] =
 	    x1=l;
         const wchar_t *ss=s;
         int i=(int)wcsrtombs(NULL,&ss,0,NULL);
-        if (i<0) return NULL;
+        if (i<0) { printf("wcsrtombs returned i == %d",i); return NULL;}
         char *d=(char *)malloc(i+1);
         wcsrtombs(d,&s,i,NULL);
         d[i]=0;
@@ -398,6 +399,9 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
 {
     int i;
     XMLSTR t=createXMLString(nFormat,&i);
+    if (WriteFile(filename, (string) "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + t)==0) return eXMLErrorNone;
+    else return eXMLErrorCannotWriteFile;
+    /*
     FILE *f=_tfopen(filename,_T("wb"));
     if (!f) return eXMLErrorCannotOpenWriteFile;
 #ifdef _XMLUNICODE
@@ -431,7 +435,7 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) return eXMLErrorCannotWriteFile;
     if (fclose(f)!=0) return eXMLErrorCannotWriteFile;
     free(t);
-    return eXMLErrorNone;
+    return eXMLErrorNone;*/
 }
 
 // Duplicate a given string.
@@ -1533,6 +1537,7 @@ static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults)
 // Parse XML and return the root element.
 XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults)
 {
+	printf("parseString\n");
     if (!lpszXML)
     {
         if (pResults)
@@ -1610,7 +1615,9 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
     if (!l) { if (pResults) pResults->error=eXMLErrorEmpty; return emptyXMLNode; }
     fseek(f,0,SEEK_SET);
     unsigned char *buf=(unsigned char*)malloc(l+1);
+    printf("file length=%d\n",l);
     fread(buf,l,1,f);
+    printf("buf = %s\n", buf);
     fclose(f);
     buf[l]=0;
 #ifdef _XMLUNICODE
@@ -1630,8 +1637,10 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
 #else
     if (guessUnicodeChars)
     {
+	    printf("Guessing unicode chars, buf = %s\n",buf);
         if (myIsTextUnicode(buf,l))
         {
+		say("My text is unicode\n");
             l/=sizeof(wchar_t);
             if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
             if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
@@ -1639,12 +1648,17 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
-            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
+		say("Not unicode\n");
+            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf))
+	    {
+		    headerSz=3;
+		    say("headerSz=3\n");
+	    }
         }
     }
 #endif
 
-    if (!buf) { if (pResults) pResults->error=eXMLErrorCharConversionError; return emptyXMLNode; }
+    if (!buf) { printf("!buf, buf = [%s]\n",buf); if (pResults) pResults->error=eXMLErrorCharConversionError; return emptyXMLNode; }
     XMLNode x=parseString((XMLSTR)(buf+headerSz),tag,pResults);
     free(buf);
     return x;
