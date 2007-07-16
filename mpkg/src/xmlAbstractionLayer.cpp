@@ -1,3 +1,8 @@
+/******************************************************************************
+ * MOPSLinux package system: XML abstraction layer
+ * $Id: xmlAbstractionLayer.cpp,v 1.3 2007/07/16 14:26:14 i27249 Exp $
+ * ***************************************************************************/
+
 #include "xmlAbstractionLayer.h"
 XMLNode::XMLNode()
 {

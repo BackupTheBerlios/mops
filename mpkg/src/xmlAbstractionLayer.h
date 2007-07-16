@@ -1,12 +1,13 @@
 /******************************************************************************
  * MOPSLinux package system: XML abstraction layer
- * $Id: xmlAbstractionLayer.h,v 1.2 2007/07/16 14:00:00 i27249 Exp $
+ * $Id: xmlAbstractionLayer.h,v 1.3 2007/07/16 14:26:15 i27249 Exp $
  * ***************************************************************************/
 #ifndef MPKG_XML_ABS_LAYER
 #define MPKG_XML_ABS_LAYER
 #include <string>
 #include <vector>
 using namespace std;
+
 class XMLAttribute
 {
 	public:
@@ -22,7 +23,9 @@ class XMLNode
 	public:
 		// Constructors
 		XMLNode();
-		XMLNode(string filename);
+		XMLNode(string nodeName);
+		int parseFile(string fileName);
+		int writeToFile(string fileName);
 
 		// Tree access functions
 		XMLNode getChildNode(string nodeName, unsigned int num=0);	// Returns node
