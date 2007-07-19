@@ -1,6 +1,6 @@
 /******************************************************************************
  * MOPSLinux package system: XML abstraction layer
- * $Id: xmlAbstractionLayer.h,v 1.3 2007/07/16 14:26:15 i27249 Exp $
+ * $Id: xmlAbstractionLayer.h,v 1.4 2007/07/19 10:29:44 i27249 Exp $
  * ***************************************************************************/
 #ifndef MPKG_XML_ABS_LAYER
 #define MPKG_XML_ABS_LAYER
@@ -49,7 +49,6 @@ class XMLNode
 		string _text;
 		vector<XMLAttribute> _attributes;
 		string _nodeName;
-		
 };
 
 #endif

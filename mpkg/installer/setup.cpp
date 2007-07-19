@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.21 2007/07/13 15:38:41 i27249 Exp $
+ * $Id: setup.cpp,v 1.22 2007/07/19 10:29:44 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -16,6 +16,7 @@
  * *************************************************/
 
 #include "setup.h"
+#include "net-conf/libnetconf.h"
 string i_menuHead = "Установка MOPSLinux 6.0";
 SysConfig systemConfig;
 PACKAGE_LIST i_availablePackages;
@@ -655,12 +656,16 @@ bool showLicense()
 void writeFstab()
 {
 	mDebug("start");
-	string data = systemConfig.rootPartition + "\t/\t" + systemConfig.rootPartitionType + "\tdefaults\t1 1\n" + \
-	(string) "devpts\t/dev/pts\tdevpts\tgid=5,mode=620\t0 0\n" + \
+	string data;
+	if (!systemConfig.swapPartition.empty()) data = systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
+
+	data+= systemConfig.rootPartition + "\t/\t" + systemConfig.rootPartitionType + "\tdefaults\t1 1\n";
+	/*
+	data += (string) "devpts\t/dev/pts\tdevpts\tgid=5,mode=620\t0 0\n" + \
 	(string) "proc\t/proc\tproc\tdefaults\t0 0\n";
+	*/
 	string options="defaults";
 	string fstype="auto";
-	if (!systemConfig.swapPartition.empty()) data += systemConfig.swapPartition + "\tswap\tswap\tdefaults\t0 0\n";
 	
 	// Sorting
 	vector<int> mountOrder, mountPriority;
@@ -700,16 +705,25 @@ void writeFstab()
 	for (unsigned int i=0; i<mountOrder.size(); i++)
 	{
 		options="defaults";
+#ifdef AUTO_FS_DETECT
 		fstype="auto";
+#else
+		fstype=systemConfig.otherMountFSTypes[mountOrder[i]];
+#endif
 		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("fat")!=std::string::npos)
 		{
-			options="codepage=866,iocharset=utf-8,user,users,umask=022";
+			options="rw,codepage=866,iocharset=utf-8,umask=000,showexec,quiet";
 			fstype="vfat";
 		}
 		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("ntfs")!=std::string::npos)
 		{
-			options="locale=ru_RU.utf8,umask=022";
+#ifdef NTFS3G
+			options="locale=ru_RU.utf8,umask=000";
 			fstype="ntfs-3g";
+#else
+			options="nls=utf-8,umask=000,rw";
+			fstype="ntfs";
+#endif
 		}
 		data += systemConfig.otherMounts[mountOrder[i]].tag + "\t" + systemConfig.otherMounts[mountOrder[i]].value + "\t"+fstype+"\t" + options + "\t0 0";
 	}
@@ -1166,11 +1180,15 @@ disk_menu:
 	if (r==0) return 0;
 	else goto part_menu;
 }
+
+
+
 string doFormatString(bool input)
 {
 	if (input) return "ДА";
 	else return "нет";
 }
+
 int main(int argc, char *argv[])
 {
 	simulate=false;
