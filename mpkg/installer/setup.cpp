@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.23 2007/07/19 12:46:37 i27249 Exp $
+ * $Id: setup.cpp,v 1.24 2007/07/19 13:35:25 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -999,7 +999,14 @@ int setCDSource()
 {
 	//TODO
 	Dialog d("Установка с набора CD");
-	d.execMsgBox("Пока не доделал, данный вариант недоступен...");
+	d.execMsgBox("Приготовьте все диски, с которых вы хотите ставить систему.\nНеобходимо произвести их индексацию.");
+	if (core==NULL) core = new mpkg;
+	while(d.execYesNo("Вставьте очередной установочный диск для индексации.\nЕсли дисков больше не осталось, нажмите НЕТ"))
+	{
+		// TODO: add cdrom
+	}
+
+
 	return -1;
 }
 
