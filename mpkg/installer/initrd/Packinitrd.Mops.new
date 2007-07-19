@@ -1,0 +1,5 @@
+#!/bin/sh
+
+(cd initrd.new
+find . | cpio -o -H newc | gzip --best
+) > initrd.img 

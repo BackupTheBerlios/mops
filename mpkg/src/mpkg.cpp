@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.99 2007/07/06 08:49:41 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.100 2007/07/19 12:46:40 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -198,7 +198,8 @@ int mpkgDatabase::commit_actions()
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + "] Удаляется пакет " + \
 						*remove_list.get_package(i)->get_name() + "-" + \
 						remove_list.get_package(i)->get_fullversion(), 10,80, \
-						(unsigned int) round(i/(remove_list.size()/100)));
+						(unsigned int) round((double)(i)/(double)((double)(remove_list.size())/(double) (100))));
+				dialogItem.closeGauge();
 			}	
 			delete_tmp_files();
 			actionBus.setActionProgress(ACTIONID_REMOVE,i);
@@ -254,15 +255,17 @@ int mpkgDatabase::commit_actions()
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
 		pData.setCurrentAction("Checking cache");
 		bool skip=false;
+		if (dialogMode)
+		{
+			dialogItem.execGauge("Проверка кэша", 10,80,0);
+		}
+
 		for (int i=0; i<install_list.size(); i++)
 		{
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка кэша: " + \
-						*install_list.get_package(i)->get_name() + "-" + \
-						install_list.get_package(i)->get_fullversion(), 10,80, \
-						(unsigned int) round(i/(install_list.size()/100)));
-			}	
+				dialogItem.setGaugeValue((unsigned int) round((double) (i)/((double) (install_list.size())/(double) (100))));
+			}
 			delete_tmp_files();
 
 			actionBus.setActionProgress(ACTIONID_CACHECHECK, i);
@@ -315,14 +318,13 @@ int mpkgDatabase::commit_actions()
 			pData.increaseItemProgress(install_list.get_package(i)->itemID);
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 		}
+		if (dialogMode) dialogItem.closeGauge();
 		actionBus.setActionState(ACTIONID_CACHECHECK);
 		actionBus.setCurrentAction(ACTIONID_DOWNLOAD);
 		mpkgErrorReturn errRet;
 		bool do_download = true;
 	
 		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-		//double dlProgress;
-		//double dlProgressMax;
 		while(do_download)
 		{
 			do_download = false;
@@ -366,6 +368,10 @@ installProcess:
 		skip=false;
 		currentStatus = "Checking files (comparing MD5):";
 		pData.setCurrentAction("Checking md5");
+		if (dialogMode)
+		{
+			dialogItem.execGauge("Проверка целостности файлов", 10,80,0);
+		}
 		for (int i=0; i<install_list.size(); i++)
 		{
 			actionBus.setActionProgress(ACTIONID_MD5CHECK, i);
@@ -380,10 +386,8 @@ installProcess:
 
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Проверка целостности файлов: " + \
-						*install_list.get_package(i)->get_name() + "-" + \
-						install_list.get_package(i)->get_fullversion(), 10,80, \
-						(unsigned int) round(i/(install_list.size()/100)));
+				dialogItem.setGaugeValue((unsigned int) round(((double)(i)/(double) ((double) (install_list.size())/(double) (100)))));
+
 			}
 			else say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
 			currentStatus = "Checking md5 of downloaded files: " + *install_list.get_package(i)->get_name();
@@ -425,6 +429,7 @@ installProcess:
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 		}
+		if (dialogMode) dialogItem.closeGauge();
 		actionBus.setActionState(ACTIONID_MD5CHECK);
 	
 		actionBus.setCurrentAction(ACTIONID_INSTALL);
@@ -459,7 +464,7 @@ installProcess:
 				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Устанавливается пакет " + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
-						(unsigned int) round(i/(install_list.size()/100)));
+						(unsigned int) round((double) (i)/(double) ((double) (install_list.size())/(double) (100))));
 			}	
 			if (install_package(install_list.get_package(i))!=0)
 			{

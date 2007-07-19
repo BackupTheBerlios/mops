@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.9 2007/07/12 13:50:26 i27249 Exp $
+ * $Id: dialog.cpp,v 1.10 2007/07/19 12:46:40 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -275,8 +275,26 @@ begin:
 
 void Dialog::execGauge(string text, unsigned int height, unsigned int width, int value)
 {
-	string exec_str = "echo " + IntToStr(value) + " | " + dialog + " --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
-	system(exec_str.c_str());
+	string exec_str = dialog + " --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
+	if (fd) pclose(fd);
+	if (!fd) fd=popen(exec_str.c_str(), "w");
+	setGaugeValue(value);
+	
+}
+void Dialog::setGaugeValue(int value)
+{
+	if (fd)
+	{
+		fprintf(fd, "%d\n", value);
+		fflush(fd);
+	}
+	else mError("Gauge doesn't exist");
+
+}
+void Dialog::closeGauge()
+{
+	if (fd) pclose(fd);
+	else mError("Gauge doesn't exist");
 }
 bool Dialog::execCheckList(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair>* menuItems)
 {

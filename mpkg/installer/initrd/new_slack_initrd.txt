@@ -1,0 +1,8 @@
+It's an initramfs:
+
+mkdir extract
+cd extract
+zcat ../initrd.img | cpio -div
+
+Then to re-pack it:
+find . | cpio -o -H newc | gzip -9fv > ../initrd.img 

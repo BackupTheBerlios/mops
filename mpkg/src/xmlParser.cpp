@@ -1,4 +1,4 @@
-/** $Id: xmlParser.cpp,v 1.4 2007/07/16 08:16:42 i27249 Exp $
+/** $Id: xmlParser.cpp,v 1.5 2007/07/19 12:46:40 i27249 Exp $
  ****************************************************************************
  * <P> XML.c - implementation file for basic XML parser written in ANSI C++
  * for portability. It works by using recursion and a node tree for breaking
@@ -1537,7 +1537,6 @@ static void CountLinesAndColumns(XMLCSTR lpXML, int nUpto, XMLResults *pResults)
 // Parse XML and return the root element.
 XMLNode XMLNode::parseString(XMLCSTR lpszXML, XMLCSTR tag, XMLResults *pResults)
 {
-	printf("parseString\n");
     if (!lpszXML)
     {
         if (pResults)
@@ -1615,9 +1614,7 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
     if (!l) { if (pResults) pResults->error=eXMLErrorEmpty; return emptyXMLNode; }
     fseek(f,0,SEEK_SET);
     unsigned char *buf=(unsigned char*)malloc(l+1);
-    printf("file length=%d\n",l);
     fread(buf,l,1,f);
-    printf("buf = %s\n", buf);
     fclose(f);
     buf[l]=0;
 #ifdef _XMLUNICODE
@@ -1637,10 +1634,8 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
 #else
     if (guessUnicodeChars)
     {
-	    printf("Guessing unicode chars, buf = %s\n",buf);
         if (myIsTextUnicode(buf,l))
         {
-		say("My text is unicode\n");
             l/=sizeof(wchar_t);
             if ((buf[0]==0xef)&&(buf[1]==0xff)) headerSz=2;
             if ((buf[0]==0xff)&&(buf[1]==0xfe)) headerSz=2;
@@ -1648,17 +1643,15 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
-		say("Not unicode\n");
             if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf))
 	    {
 		    headerSz=3;
-		    say("headerSz=3\n");
 	    }
         }
     }
 #endif
 
-    if (!buf) { printf("!buf, buf = [%s]\n",buf); if (pResults) pResults->error=eXMLErrorCharConversionError; return emptyXMLNode; }
+    if (!buf) { if (pResults) pResults->error=eXMLErrorCharConversionError; return emptyXMLNode; }
     XMLNode x=parseString((XMLSTR)(buf+headerSz),tag,pResults);
     free(buf);
     return x;

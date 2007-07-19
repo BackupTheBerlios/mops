@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.22 2007/07/19 10:29:44 i27249 Exp $
+ * $Id: setup.cpp,v 1.23 2007/07/19 12:46:37 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -997,7 +997,7 @@ int commit()
 
 int setCDSource()
 {
-	// Todo
+	//TODO
 	Dialog d("Установка с набора CD");
 	d.execMsgBox("Пока не доделал, данный вариант недоступен...");
 	return -1;

@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.h,v 1.8 2007/07/12 13:50:26 i27249 Exp $
+ * $Id: dialog.h,v 1.9 2007/07/19 12:46:40 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -46,7 +46,12 @@ class Dialog
 	void execMsgBox(string text, unsigned int height=0, unsigned int width=0);
 	int execMenu(string header, vector<string> menuItems);
 	void execGauge(string text, unsigned int height, unsigned int width, int value);
+	void setGaugeValue(int value);
+	void closeGauge();
 	bool execCheckList(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair>* menuItems);
+	private:
+	FILE *fd;
+
 };
 
 #endif
