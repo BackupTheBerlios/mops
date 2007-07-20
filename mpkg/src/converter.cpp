@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.13 2007/07/19 10:29:44 i27249 Exp $
+ * $Id: converter.cpp,v 1.14 2007/07/20 09:51:46 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -209,13 +209,14 @@ int convert_package(string filename, string output_dir)
 	{
 		real_filename+=filename[i];
 	}
-
+	string ext_outdir = filename.substr(0,filename.find_last_of("/"));
 	string tmp_dir=get_tmp_file();
 	string xml_output=tmp_dir+"/install/data.xml";
 	string reasm="rm "+tmp_dir+" && mkdir "+tmp_dir+" "+/*"2>/dev/null"+*/" && mkdir "+tmp_dir+"/install 2>/dev/null && cp "+filename+" "+tmp_dir+"/ && cd "+tmp_dir+" &&  tar zxf "+real_filename+" > /dev/null";
 	system(reasm.c_str());	
 	slack_convert(filename, xml_output);
-	reasm="cd "+tmp_dir+" && rm "+real_filename+" && makepkg -l n -c n "+real_filename+" 2&>/dev/null &&  mv *.tgz "+output_dir+" && rm -rf "+tmp_dir;
+	system("mkdir -p " + output_dir+"/"+ext_outdir);
+	reasm="cd "+tmp_dir+" && rm "+real_filename+" && makepkg -l y -c n "+real_filename+" 2&>/dev/null &&  mv *.tgz "+output_dir+"/"+ext_outdir +" && rm -rf "+tmp_dir;
 	system(reasm.c_str());
 	delete_tmp_files();
 	return 0;
