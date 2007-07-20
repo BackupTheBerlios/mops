@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.38 2007/07/16 08:16:42 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.39 2007/07/20 12:38:39 adiakin Exp $
  */
 
 #include "libmpkg.h"
@@ -175,10 +175,12 @@ int main (int argc, char **argv)
 			action == ACT_INDEX) 
 		require_root=false;
 
+	/*
 	if (require_root && uid != 0 ) {
 		mError("You must login as root to run this program");
 		exit(1);
 	}
+	*/
 
 	if ( action == ACT_NONE )
 			print_usage(stderr, 1);
@@ -326,87 +328,9 @@ int main (int argc, char **argv)
 		dbstruct_cpp += "\";\n}\n";
 		WriteFile("dbstruct.cpp", dbstruct_cpp);*/
 
-		XMLResults xmlErr;
-		XMLNode a = XMLNode::parseFile("data.xml", "package",&xmlErr);
-		if (xmlErr.error==eXMLErrorNone)
-		{
-			printf("No XML errors\n");
-		}
-		else
-		{
-			switch(xmlErr.error)
-			{
-				case eXMLErrorNone:
-					mError("eXMLErrorNone");
-					break;
-				case eXMLErrorMissingEndTag:
-					mError("eXMLErrorMissingEndTag");
-					break;
-				case eXMLErrorEmpty:
-					mError("eXMLErrorEmpty");
-					break;
-				case eXMLErrorFirstNotStartTag:
-					mError("eXMLErrorFirstNotStartTag:");
-					break;
-    				case eXMLErrorMissingTagName:
-					mError("eXMLErrorMissingTagName");
-					break;
-				case eXMLErrorMissingEndTagName:
-					mError("eXMLErrorMissingEndTagName");
-					break;
-				case eXMLErrorNoMatchingQuote:
-					mError("eXMLErrorNoMatchingQuote");
-					break;
-				case eXMLErrorUnmatchedEndTag:
-					mError("eXMLErrorUnmatchedEndTag");
-					break;
-				case eXMLErrorUnmatchedEndClearTag:
-					mError("eXMLErrorUnmatchedEndClearTag");
-					break;
-				case eXMLErrorUnexpectedToken:
-					mError("eXMLErrorUnexpectedToken");
-					break;
-				case eXMLErrorInvalidTag:
-					mError("eXMLErrorInvalidTag");
-					break;
-				case eXMLErrorNoElements:
-					mError("eXMLErrorNoElements");
-					break;
-				case eXMLErrorFileNotFound:
-					mError("eXMLErrorFileNotFound");
-					break;
-				case eXMLErrorFirstTagNotFound:
-					mError("eXMLErrorFirstTagNotFound");
-					break;
-				case eXMLErrorUnknownEscapeSequence:
-					mError("eXMLErrorUnknownEscapeSequence");
-					break;
-				case eXMLErrorCharConversionError:
-					mError("eXMLErrorCharConversionError");
-					break;
-				case eXMLErrorCannotOpenWriteFile:
-					mError("eXMLErrorCannotOpenWriteFile");
-					break;
-				case eXMLErrorCannotWriteFile:
-					mError("eXMLErrorCannotWriteFile");
-					break;
-				case eXMLErrorBase64DataSizeIsNotMultipleOf4:
-					mError("eXMLErrorBase64DataSizeIsNotMultipleOf4");
-					break;
-				case eXMLErrorBase64DecodeIllegalCharacter:
-					mError("eXMLErrorBase64DecodeIllegalCharacter");
-					break;
-				case eXMLErrorBase64DecodeTruncatedData:
-					mError("eXMLErrorBase64DecodeTruncatedData");
-					break;
-				case eXMLErrorBase64DecodeBufferTooSmall:
-					mError("eXMLErrorBase64DecodeBufferTooSmall");
-					break;
-				default:
-					mError("Unknown XML error");
-			}
-		}
 
+
+		
 		return 0;
 	}
 

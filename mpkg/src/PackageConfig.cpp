@@ -1,43 +1,73 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.18 2007/07/16 08:16:42 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.19 2007/07/20 12:38:39 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
 #include "debug.h"
+#include <libxml/parser.h>
+#include <libxml/xpath.h>
+
 using namespace std;
 
+/**
+ * 
+ * @param _f path to file
+ */
 PackageConfig::PackageConfig(string _f)
 {
+    // new interface using libxml2
+    this->errors = 0;
 
-	XMLResults xmlErrCode;
-	parseOk = true;
-	this->fileName = _f;
-	_node = XMLNode::parseFile(fileName.c_str(), "package", &xmlErrCode);
-	if (xmlErrCode.error != eXMLErrorNone)
-	{
-		mError("XML parse error in " + fileName + ": " + (string) XMLNode::getError(xmlErrCode.error));
-		parseOk = false;
-		/*mpkgErrorReturn errRet=waitResponce(MPKG_INSTALL_META_ERROR);
-		if (errRet == MPKG_RETURN_RETRY)
-				goto retry;
-		if (errRet == MPKG_RETURN_ABORT)
-		{
-			parseOk = false;
-		}*/
+    
+    doc = xmlParseFile(_f.c_str());
+
+    if (doc == NULL) {
+        mDebug("XML Load failed");
+        this->errors++;
+        xmlFreeDoc(doc);
+    }
+
+    curNode = xmlDocGetRootElement(doc);
+
+    if (curNode == NULL) {
+        mDebug("Failed to get root node");
+        this->errors++;
+        xmlFreeDoc(doc);
+    }
+
+    // checking for valid root node
+    if (xmlStrcmp(curNode->name, (const xmlChar *) "package") ) {
+        mDebug("Invalid root node definition");
+        this->errors++;
+        xmlFreeDoc(doc);
+    }
+
+	if (this->errors == 0) {
+		this->parseOk = true;
 	}
-	else mDebug("XML parsed successfully");
-	
-	if (parseOk)
-	{
-		mDebug("XML file opened");
-	}
-	else
-	{
-		mDebug("XML file parse error");
-	}
+    
+
 }
 
+/**
+ * check if we have any errors during parsing
+ * 
+ * @return bool state
+ */
+bool PackageConfig::hasErrors() {
+    if (this->errors == 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+/**
+ * WTF???
+ * 
+ * @param rootnode
+ */
 PackageConfig::PackageConfig(XMLNode *rootnode)
 {
 	parseOk = true;
@@ -46,464 +76,563 @@ PackageConfig::PackageConfig(XMLNode *rootnode)
 
 PackageConfig::~PackageConfig()
 {
+    if (this->doc != NULL) {
+        xmlFreeDoc(doc);
+    }
 }
 
+/**
+ * evaluate XPath expression and return result nodes
+ * 
+ * @param exp XPath expression
+ * 
+ * @return xmlXPathObjectPtr node set
+ */
+xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) {
+    xmlXPathContextPtr context;
+    xmlXPathObjectPtr result;
+
+    context = xmlXPathNewContext(doc);
+    if (context == NULL) {
+        this->errors++;
+        XPATH_CTX_ERR;
+        return NULL;
+    }
+
+    result = xmlXPathEvalExpression(exp, context);
+    if (result == NULL) {
+        (mDebug("XPath eval error"));
+        this->errors++;
+        return NULL;
+    } else {
+        return result;
+    }
+
+}
+
+/**
+ * get /package/name from xml
+ * 
+ * @return string
+ */
 string PackageConfig::getName()
 {
-	if (_node.nChildNode("name")!=0 && _node.getChildNode("name").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("name").getText();
-		return a;
-	}
-	else return "";
+
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_NAME);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+		string __r;
+		if (_result != NULL) {
+			__r = (std::string)_result;
+		} else {
+			__r = EMPTY;
+		}
+        mDebug("NAME = '" + strim(__r) + "'");
+		return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * get /package/version from xml
+ * 
+ * @return string
+ */
 string PackageConfig::getVersion()
 {
-	if (_node.nChildNode("version")!=0 && _node.getChildNode("version").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("version").getText();
-		return a;
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_VERSION);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("VERSION = '" +strim( __r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * return /package/arch
+ * 
+ * @return string
+ */
 string PackageConfig::getArch()
 {
-	if (_node.nChildNode("arch")!=0 && _node.getChildNode("arch").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("arch").getText();
-		return a;
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_ARCH);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("ARCH = '" + strim(__r) + "'");
+
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * return /package/build
+ * 
+ * @return string
+ */
 string PackageConfig::getBuild()
 {
-	if (_node.nChildNode("build")!=0 && _node.getChildNode("build").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("build").getText();
-		return a;
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_BUILD);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("BUILD= '" + strim(__r) + "'");
+        //return (std::string)_result;
+		return "1";
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * return /package/maintainer/name
+ * @return string
+ */
 string PackageConfig::getAuthorName()
 {
-	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("name")!=0  && _node.getChildNode("maintainer").getChildNode("name").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("maintainer").getChildNode("name").getText();
-		return a;
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_MAINT_NAME);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("MNAME = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * return /package/maintainer/email
+ * 
+ * @return string
+ */
 string PackageConfig::getAuthorEmail()
 {
-	if (_node.nChildNode("maintainer")!=0 && _node.getChildNode("maintainer").nChildNode("email")!=0 && _node.getChildNode("maintainer").getChildNode("email").nText()!=0)
-	{
-		string a =  (string )_node.getChildNode("maintainer").getChildNode("email").getText();
-		return a;
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_MAINT_EMAIL);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("MEMAIL = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
+/**
+ * return /package/changelog
+ * 
+ * @return string
+ */
 string PackageConfig::getChangelog()
 {
-	if (_node.nChildNode("changelog")!=0 && _node.getChildNode("changelog").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("changelog").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_CHANGELOG);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("CHANGELOG = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
-#
+/**
+ * return description
+ * really return only 'en' description by
+ * /package/description[@lang='en']
+ * 
+ * @param lang description language
+ * 
+ * @return string
+ */
 string PackageConfig::getDescription(string lang)
 {
-	if (_node.nChildNode("description")!=0)
-	{
-		if (lang.empty())
-		{
-			if (_node.getChildNode("description").nText()!=0)
-			{
-
-				string a = (string )_node.getChildNode("description").getText();
-				return a;
-			}
-			else return "";	
-		}
-		else {
-			if (_node.getChildNodeWithAttribute("description","lang",lang.c_str()).nText()!=0)
-			{
-				string a = (string)_node.getChildNodeWithAttribute("description", "lang", lang.c_str()).getText();
-				return a;
-			}
-			else return "";
-		}
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_DESCRIPTION);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("DESCR = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
-string PackageConfig::getDescriptionI(int num)
-{
-	if (_node.nChildNode("description")>num && _node.getChildNode("description",num).nText()!=0)
-	{
-		string a = (string )_node.getChildNode("description", num).getText();
-		return a;
-	}
-	else return "";
-}
-
-#ifdef ENABLE_INTERNATIONAL
-vector<DESCRIPTION> PackageConfig::getDescriptions()
-{
-	DESCRIPTION desc;
-	vector<DESCRIPTION> descriptions;
-	
-	for (int i=0; i<_node.nChildNode("description"); i++)
-	{
-		if (_node.nChildNode("description")>i)
-		{
-			if (_node.getChildNode("description",i).nText()!=0) desc.set_text((string )_node.getChildNode("description", i).getText());
-			if (_node.getChildNode("description",i).nAttribute()!=0)
-			{
-				desc.set_language((string)_node.getChildNode("description", i).getAttributeValue(0));
-				if (_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).nText()!=0)
-					desc.set_shorttext((string )_node.getChildNodeWithAttribute("short_description", "lang", desc.get_language().c_str()).getText());
-			}
-		}
-		descriptions.push_back(desc);
-	}
-	return descriptions;
-}
-#endif	
-	
-
+/**
+ * return short description
+ * really return only 'en' description by
+ * /package/short_description[@lang='en']
+ * 
+ * @param lang description language
+ * 
+ * @return string
+ */
 string PackageConfig::getShortDescription(string lang)
 {
-	if (_node.nChildNode("short_description")!=0)
-	{
-		if (lang.empty())
-		{
-			if (_node.getChildNode("short_description").nText()!=0)
-			{
-				string a = (string )_node.getChildNode("short_description").getText();
-				return a;
-			}
-			else return "";
-		}
-		else {
-			if (_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).nText()!=0)
-			{
-				string a = (string)_node.getChildNodeWithAttribute("short_description", "lang", lang.c_str()).getText();
-				return a;
-			}
-			else return "";
-		}
-	}
-	else return "";
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_SHORT_DESCRIPTION);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("SDESC = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
-string PackageConfig::getShortDescriptionI(int num)
-{
-	if (_node.nChildNode("short_description")>num && _node.getChildNode("short_description", num).nText()!=0)
-	{
-		string a = (string )_node.getChildNode("short_description", num).getText();
-		return a;
-	}
-	else return "";
-}
-
-#ifdef ENABLE_INTERNATIONAL
-vector<string> PackageConfig::getShortDescriptions()
-{
-	vector<string> descriptions;
-	for (int i=0; i<_node.nChildNode("short_description"); i++)
-	{
-		descriptions.push_back(getShortDescriptionI(i));
-	}
-	return descriptions;
-}
-#endif
-string PackageConfig::getDependencyName(int dep_num)
-{
-	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("name")!=0 && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("name").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("name").getText();
-		return a;
-	}
-	else return "";
-}
-
-string PackageConfig::getDependencyCondition(int dep_num)
-{
-	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("condition")!=0 && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("condition").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("condition").getText();
-		return a;
-	}
-	else return "any";
-}
-
-string PackageConfig::getDependencyVersion(int dep_num)
-{
-	if (_node.nChildNode("dependencies")!=0 && _node.getChildNode("dependencies").nChildNode("dep")>dep_num && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).nChildNode("version")!=0 && \
-			_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("version").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("dependencies").getChildNode("dep", dep_num).getChildNode("version").getText();
-		return a;
-	}
-	else return "";
-}
-
-string PackageConfig::getSuggestName(int suggest_num)
-{
-	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("name")!=0 && \
-			_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("name").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("name").getText();
-		return a;
-	}
-	else return "";
-}
-
-string PackageConfig::getSuggestCondition(int suggest_num)
-{
-	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("condition")!=0 && \
-		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("condition").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("condition").getText();
-		return a;
-	}
-	else return "any";
-}
-
-string PackageConfig::getSuggestVersion(int suggest_num)
-{
-	if (_node.nChildNode("suggests")!=0 && _node.getChildNode("suggests").nChildNode("suggest")>suggest_num && \
-		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).nChildNode("version")!=0 && \
-		_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("version").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("suggests").getChildNode("suggest", suggest_num).getChildNode("version").getText();
-		return a;
-	}
-	else return "";
-}
-
-string PackageConfig::getTag(int tag_num)
-{
-	if (_node.nChildNode("tags")!=0 && _node.getChildNode("tags").nChildNode("tag")>tag_num && _node.getChildNode("tags").getChildNode("tag",tag_num).nText()!=0)
-	{
-		string a = (string )_node.getChildNode("tags").getChildNode("tag", tag_num).getText();
-		return a;
-	}
-	else return "";
-}
 
 vector<string> PackageConfig::getDepNames()
 {
-	vector<string> a_name;
-	if (_node.nChildNode("dependencies")!=0)
-	{
-		a_name.resize(_node.getChildNode("dependencies").nChildNode("dep"));
-		for (unsigned int i=0;i<a_name.size();i++)
-		{
-			a_name[i]=getDependencyName(i);
-		}
-	}
-	return a_name;
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
 
+	res = getNodeSet(GET_PKG_DEP_NAME);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found dep name '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+		return a;
+	} 
+	return a;
 }
 vector<string> PackageConfig::getDepConditions()
 {
-	vector<string> a_cond;
-	if(_node.nChildNode("dependencies")!=0)
-	{
-		a_cond.resize(_node.getChildNode("dependencies").nChildNode("dep"));
-		for (unsigned int i=0;i<a_cond.size();i++)
-		{
-			a_cond[i]=getDependencyCondition(i);
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_DEP_COND);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : "PIZZDECCC!!!!";
+			mDebug("Found dep cond '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
-	return a_cond;
+		return a;
+	} 
+	return a;
 }
 
 vector<string> PackageConfig::getDepVersions()
 {
-	vector<string> a_ver;
-	if(_node.nChildNode("dependencies")!=0)
-	{
-		a_ver.resize(_node.getChildNode("dependencies").nChildNode("dep"));
-		for (unsigned int i=0;i<a_ver.size();i++)
-		{
-			a_ver[i]=getDependencyVersion(i);
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_DEP_VERSION);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found dep ver '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
-	return a_ver;
+		return a;
+	} 
+	return a;;
 }
 
 vector<string> PackageConfig::getSuggestNames()
 {
-	vector<string> a_name;
-	if(_node.nChildNode("suggests")!=0)
-	{
-		a_name.resize(_node.getChildNode("suggests").nChildNode("suggest"));
-		for (unsigned int i=0;i<a_name.size();i++)
-		{
-			a_name[i]=getSuggestName(i);
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_SUG_NAME);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found suggest '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
-	return a_name;
+		return a;
+	} 
+	return a;;
 }
 vector<string> PackageConfig::getSuggestConditions()
 {
-	vector<string> a_cond;
-	if(_node.nChildNode("suggests")!=0)
-	{
-		a_cond.resize(_node.getChildNode("suggests").nChildNode("suggest"));
-		for (unsigned int i=0;i<a_cond.size();i++)
-		{
-			a_cond[i]=getSuggestCondition(i);
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_SUG_COND);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found suggest '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
-	return a_cond;
+		return a;
+	} 
+	return a;
 }
 
 vector<string> PackageConfig::getSuggestVersions()
 {
-	vector<string> a_ver;
-	if(_node.nChildNode("suggests")!=0)
-	{
-		a_ver.resize(_node.getChildNode("suggests").nChildNode("suggest"));
-		for (unsigned int i=0;i<a_ver.size();i++)
-		{
-			a_ver[i]=getSuggestVersion(i);
-		}
-	}
-	return a_ver;
-}
-
-vector<string> PackageConfig::getTags()
-{
 	vector<string> a;
-	if(_node.nChildNode("tags")!=0)
-	{
-		a.resize(_node.getChildNode("tags").nChildNode("tag"));
-		for (unsigned int i=0;i<a.size();i++)
-		{
-			a[i]=getTag(i);
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_SUG_VERSION);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found suggest '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
+		return a;
+	} 
 	return a;
 }
 
-string PackageConfig::getFile(int file_num)
+/**
+ * return tags /package/tags/tag
+ * 
+ * @return vector<string>
+ */
+vector<string> PackageConfig::getTags()
 {
-	if (_node.nChildNode("filelist")!=0 && _node.getChildNode("filelist").nChildNode("file")>file_num && _node.getChildNode("filelist").getChildNode("file", file_num).nText()!=0)
-	{
-		string a = (string )_node.getChildNode("filelist").getChildNode("file", file_num).getText();
-		return a;
-	}
-	else return "";
-}
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+	int i;
 
-string PackageConfig::getConfigFile(int file_num)
-{
-	if (_node.nChildNode("configfiles")!=0 && _node.getChildNode("configfiles").nChildNode("conffile")>file_num && _node.getChildNode("configfiles").getChildNode("conffile").nText()!=0)
-	{
-		string a = (string )_node.getChildNode("configfiles").getChildNode("conffile", file_num).getText();
-		return a;
-	}
-	else return "";
+    res = getNodeSet(GET_PKG_TAGS);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found tag '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+        return a;
+    } 
+
+	return a;
 }
 
 vector<string> PackageConfig::getFilelist()
 {
 	vector<string> a;
-	if(_node.nChildNode("filelist")!=0)
-	{
-		a.resize(_node.getChildNode("filelist").nChildNode("file"));
-		for (unsigned int i=0;i<a.size();i++)
-		{
-			a[i]=getFile(i);
-		}
-	}
+
 	return a;
 }
 
 vector<string> PackageConfig::getConfigFilelist()
 {
 	vector<string> a;
-	if(_node.nChildNode("configfiles")!=0)
-	{
-		a.resize(_node.getChildNode("configfiles").nChildNode("conffile"));
-		for (unsigned int i=0;i<a.size();i++)
-		{
-			a[i]=getConfigFile(i);
+
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_CONFIG_FILE_LIST);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found conf file '" + strim(__r) + "'");
+			a.push_back(strim(__r));
 		}
-	}
+		return a;
+	} 
+
+
 	return a;
 }
 
+/**
+ * NAHUI!!!!
+ * 
+ * @return XMLNode
+ */
 XMLNode PackageConfig::getXMLNode()
 {
 	return _node;
 }
 
+/**
+ * return /package/md5
+ * 
+ * @return string
+ */
 string PackageConfig::getMd5()
 {
-	if (_node.nChildNode("md5")!=0 && _node.getChildNode("md5").nText()!=0)
-	{
-		string a = (string) _node.getChildNode("md5").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_MD5);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("MD5 = '" + strim(__r)+ "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
 string PackageConfig::getCompressedSize()
 {
-	if (_node.nChildNode("compressed_size")!=0 && _node.getChildNode("compressed_size").nText()!=0)
-	{
-		string a = (string) _node.getChildNode("compressed_size").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_COMP_SIZE);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("CSIZE = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
 string PackageConfig::getInstalledSize()
 {
-	if (_node.nChildNode("installed_size")!=0 && _node.getChildNode("installed_size").nText()!=0)
-	{
-		string a = (string) _node.getChildNode("installed_size").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_INST_SIZE);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("ISIZE = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
 string PackageConfig::getFilename()
 {
-	if (_node.nChildNode("filename")!=0 && _node.getChildNode("filename").nText()!=0)
-	{
-		string a = (string) _node.getChildNode("filename").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_FILENAME);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("FILENAME = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }
 
 string PackageConfig::getLocation()
 {
-	if (_node.nChildNode("location")!=0 && _node.getChildNode("location").nText()!=0)
-	{
-		string a = (string) _node.getChildNode("location").getText();
-		return a;
-	}
-	else return "";
+    xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_LOCATION);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("LOCATION = '" + strim(__r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
 }

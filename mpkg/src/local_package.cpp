@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.56 2007/07/02 12:58:55 i27249 Exp $
+$Id: local_package.cpp,v 1.57 2007/07/20 12:38:39 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -205,10 +205,7 @@ int LocalPackage::get_xml()
 	*data.get_short_description()=p.getShortDescription();
 	*data.get_changelog()=p.getChangelog();
 	
-#ifdef ENABLE_INTERNATIONAL
-	// This line enables international descriptions
-	data.get_descriptions(&p.getDescriptions());
-#endif	
+
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
 
@@ -219,22 +216,28 @@ int LocalPackage::get_xml()
 	vec_tmp_names=p.getDepNames();
 	vec_tmp_conditions=p.getDepConditions();
 	vec_tmp_versions=p.getDepVersions();
-
+	mDebug("PIZDEC 1, names.size = "+IntToStr(vec_tmp_names.size()) + ", versions.size = "+IntToStr(vec_tmp_versions.size())+", cond.size = " + IntToStr(vec_tmp_conditions.size()) );
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
+		mDebug("PIZDEC 1-1: " + vec_tmp_names[i]);
 		dep_tmp.set_package_name(&vec_tmp_names[i]);
+		mDebug("PIZDEC 1-2: '" + vec_tmp_versions[i] + "'");
 		dep_tmp.set_package_version(&vec_tmp_versions[i]);
+		mDebug("PIZDEC 1-3: '" + vec_tmp_conditions[i] + "'");
 		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
-		*dep_tmp.get_type()==(string) "DEPENDENCY";
+		*dep_tmp.get_type()=(string) "DEPENDENCY";
 		data.get_dependencies()->push_back(dep_tmp);
-		dep_tmp.clear();
+		mDebug("PIZDEC 1-4: EXIT");
+        dep_tmp.clear();
+		mDebug("PIZDEC 1-5: OK");
+
 	}
 	vec_tmp_names=p.getSuggestNames();
 	vec_tmp_conditions=p.getSuggestConditions();
 	vec_tmp_versions=p.getSuggestVersions();
-
+	mDebug("PIZDEC 2");
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
+	{ 
 		suggest_tmp.set_package_name(&vec_tmp_names[i]);
 		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
 		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
@@ -242,7 +245,7 @@ int LocalPackage::get_xml()
 		data.get_dependencies()->push_back(suggest_tmp);
 		suggest_tmp.clear();
 	}
-
+	mDebug("PIZDEC 3");
 	vec_tmp_names=p.getTags();
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
@@ -251,6 +254,7 @@ int LocalPackage::get_xml()
 
 	vec_tmp_names=p.getConfigFilelist();
 	FILES configfile_tmp;
+	mDebug("PIZDEC 4");
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
 	{
 		configfile_tmp.set_name(&vec_tmp_names[i]);
@@ -305,30 +309,7 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 			package->get_files()->push_back(file_tmp);
 		}
 	}
-	mDebug("Processing XML part");
-	/*
-	// Keeping XML intact
-	if (internal && _packageXMLNode.nChildNode("filelist")==0)
-	{
-		mDebug("Adding core node \"filelist\"");
-		_packageXMLNode.addChild("filelist");
-		mDebug("Done");
-	}
 
-	mDebug("Filling trees");
-	for (unsigned int i=0;i<package->get_files()->size();i++)
-	{
-		if (!index && internal)
-		{
-			_packageXMLNode.getChildNode("filelist").addChild("file");
-			if ((unsigned int) _packageXMLNode.getChildNode("filelist").nChildNode("file")>i) _packageXMLNode.getChildNode("filelist").getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
-			else mError("XML out of space at _packageXMLNode, size = " + IntToStr(_packageXMLNode.getChildNode("filelist").nChildNode("file")) + ", i=" + IntToStr(i));
-
-		}
-		_packageFListNode.addChild("file");
-		if ((unsigned int)_packageFListNode.nChildNode("file")>i) _packageFListNode.getChildNode("file",i).addText(package->get_files()->at(i).get_name()->c_str());
-		else mError("XML out of space at _packageFListNode, size = " + IntToStr(_packageFListNode.nChildNode("file")) + ", i=" + IntToStr(i));
-	}*/
 	delete_tmp_files();
 	return 0;
 }
@@ -399,6 +380,10 @@ int LocalPackage::get_size()
 	isize=i_size;
 	data.set_compressed_size(&csize);
 	data.set_installed_size(&isize);
+
+	/*------------*/
+
+
 	_packageXMLNode.addChild("compressed_size");
 	_packageXMLNode.getChildNode("compressed_size").addText(csize.c_str());
 	_packageXMLNode.addChild("installed_size");
@@ -513,7 +498,7 @@ int LocalPackage::injectFile(bool index)
 	{
 		mDebug("local_package.cpp: injectFile(): get_size() FAILED");
 		return -1;
-	}
+	}/*
 	mDebug("create_md5\n");
 	if (create_md5()!=0)
 	{
@@ -531,7 +516,7 @@ int LocalPackage::injectFile(bool index)
 			mDebug("local_package.cpp: injectFile(): get_scripts FAILED");
 			return -4;
 		}
-	}*/
+	}
 	// NOT Building file list on server, build locally
 	
 	if (!index && fill_filelist(&data, index)!=0)
@@ -544,7 +529,7 @@ int LocalPackage::injectFile(bool index)
 	{
 		mDebug("local_package.cpp: injectFile(): set_additional_data FAILED");
 		return -6;
-	}
+	}*/
 	delete_tmp_files();	
 	mDebug("local_package.cpp: injectFile(): end");
 	return 0;

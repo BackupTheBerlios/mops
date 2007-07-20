@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.8 2007/05/17 15:12:36 i27249 Exp $
+$Id: debug.h,v 1.9 2007/07/20 12:38:39 adiakin Exp $
 */
 
 
@@ -24,6 +24,8 @@ void _mError(char* file, int line, const char *func, std::string message);
 void DbgPrint(char* file, int line, const char *func, std::string message);
 
 //void debug(std::string str);
+
+std::string strim(std::string& s, const std::string& drop = "\n\t ");
 
 #endif //DEBUG_H_
 

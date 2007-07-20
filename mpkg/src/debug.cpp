@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.14 2007/07/13 11:25:11 i27249 Exp $
+ $Id: debug.cpp,v 1.15 2007/07/20 12:38:39 adiakin Exp $
  */
  
 
@@ -40,6 +40,12 @@ void DbgPrint(char* file, int line, const char *func, std::string message) {
 	}
 #endif
 
+}
 
+
+std::string strim(std::string& s, const std::string& drop)
+{
+	std::string r=s.erase(s.find_last_not_of(drop)+1);
+	return r.erase(0, r.find_first_not_of(drop)); 
 }
 
