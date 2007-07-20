@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.33 2007/07/06 08:49:41 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.34 2007/07/20 10:14:24 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -299,7 +299,7 @@ unsigned int CheckFileType(string fname)
 }
 string getCdromVolname()
 {
-	// Not used anyway
+	/*// Not used anyway
 	mpkgErrorReturn errRet;
 check_volname:
 	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
@@ -319,6 +319,12 @@ check_volname:
 		}
 	}
 	volname=volname.substr(0,volname.find("\n"));
-	return volname;
+	return volname;*/
+	string Svolname;
+	
+	// check_volname:
+	Svolname = ReadFile(CDROM_MOUNTPOINT + "/.volume_id");
+	return Svolname;
+
 }
 

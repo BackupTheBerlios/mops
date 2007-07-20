@@ -149,20 +149,9 @@ try_mount:
 	Svolname = ReadFile(DL_CDROM_MOUNTPOINT + "/.volume_id");
 	if (Svolname.empty())
 	{
-		
+		// Means no volname
+		mError("No volname");
 	}
-	//
-	//string vol_cmd = "volname "+DL_CDROM_DEVICE+" > /tmp/mpkg_volname";
-	//system(vol_cmd.c_str());
-	//FILE *volnameFile = fopen("/tmp/mpkg_volname", "r");
-	//if (volnameFile)
-	//{
-	//	fscanf(volnameFile, "%s", &volname);
-	//	Svolname=volname;
-	//	Svolname=Svolname.substr(0,Svolname.find("\n"));
-//
-//		fclose(volnameFile);
-//	}
 	if (Svolname != cdromVolName)
 	{
 		mError("Wrong volname");
