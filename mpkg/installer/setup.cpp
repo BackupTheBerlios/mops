@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.25 2007/07/20 10:14:24 i27249 Exp $
+ * $Id: setup.cpp,v 1.26 2007/07/20 11:14:16 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -997,96 +997,37 @@ int commit()
 
 int setCDSource()
 {
-	//TODO
+	vector<string> nullList,rList;
 	Dialog d("Установка с набора CD");
 	d.execMsgBox("Приготовьте все диски, с которых вы хотите ставить систему.\nНеобходимо произвести их индексацию.");
 	if (core==NULL) core = new mpkg;
+	string volname;
+	string rep_location;
+	mkdir(CDROM_MOUNTPOINT.c_str(), 755);
 	while(d.execYesNo("Вставьте очередной установочный диск для индексации.\nЕсли дисков больше не осталось, нажмите НЕТ"))
 	{
-	Dialog d("Монтирование CD-ROM");
-	mkdir(CDROM_MOUNTPOINT.c_str(), 755);
-	// First, check if device mounted in proper directory. 
-	struct mntent *mountList;
-	FILE *mtab = fopen("/proc/mounts", "r");
-	bool mounted = false;
-	//char volname[2000];
-	//string cdromVolName = source.substr(0,source.find_first_of("/")-1);
-	//string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
-	mpkgErrorReturn errRet;
-	if (mtab)
-	{
-		mountList = getmntent(mtab);
-		while ( !mounted && mountList != NULL )
+		system("mount " + systemConfig.cdromDevice + " /var/log/mount");
+		volname = getCdromVolname(&rep_location);
+		if (!volname.empty() && !rep_location.empty())
 		{
-			if (strcmp(mountList->mnt_fsname, DL_CDROM_DEVICE.c_str())==0)
-			{
-				if (strcmp(mountList->mnt_dir, DL_CDROM_MOUNTPOINT.c_str())!=0)
-				{
-					umount(DL_CDROM_MOUNTPOINT.c_str());
-				}
-				else mounted = true;
-			}
-			mountList = getmntent(mtab);
+			rList.push_back("cdrom://"+volname+"/"+rep_location);
+			cacheCdromIndex(volname, rep_location);
 		}
-		fclose(mtab);
+		system("umount " + systemConfig.cdromDevice);
 	}
-	if (!mounted)
+	// Commit
+	if (rList.empty())
 	{
-try_mount:
-		d.execInfoBox("Подключение " + DL_CDROM_DEVICE + " к точке монтирования " + DL_CDROM_MOUNTPOINT);
-#ifndef INTERNAL_MOUNT
-		string mnt_cmd = "mount "+DL_CDROM_DEVICE + " " + DL_CDROM_MOUNTPOINT;
-		int mret = system(mnt_cmd.c_str());
-#else
-		int mret = mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
-#endif
-		if (mret!=0)
-		{
-			perror("Mount error:");
-			if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + DL_CDROM_DEVICE)) goto try_mount;
-			else return -1;
-			/*errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
-			if (errRet == MPKG_RETURN_RETRY)
-			{
-				goto try_mount;
-			}
-			if (errRet == MPKG_RETURN_ABORT)
-			{
-				return -1;
-			}*/
-		}
+		delete core;
+		core=NULL;
+		return -1;
 	}
-
-	string Svolname;
 	
-	// check_volname:
-	Svolname = ReadFile(DL_CDROM_MOUNTPOINT + "/.volume_id");
-	if (Svolname.empty())
-	{
-		// Means no volname
-		mError("No volname");
-	}
-	if (Svolname != cdromVolName)
-	{
-		mError("Wrong volname");
-		
-		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
-		if (errRet == MPKG_RETURN_RETRY)
-		{
-			umount(DL_CDROM_MOUNTPOINT.c_str());
-			goto try_mount;
-		}
-		if (errRet == MPKG_RETURN_ABORT)
-		{
-			return -1;
-		}
-	}
-
-		getCdromVolname;
-	}
-
-
-	return -1;
+	core->set_repositorylist(&rList, &nullList);
+	core->update_repository_data();
+	delete core;
+	core=NULL;
+	return 0;
 }
 
 int setDVDSource()

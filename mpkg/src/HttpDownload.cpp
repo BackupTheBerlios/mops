@@ -74,6 +74,28 @@ int fileLinker(std::string source, std::string output)
 
 int cdromFetch(std::string source, std::string output, bool do_cache) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
+	// Special case: packages.xml.gz from CD
+	// First, trying to get from cache
+	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
+	string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
+
+	if (source.find("packages.xml.gz")!=std::string::npos && FileExists("/var/mpkg/cdrom_cache/"+cdromVolName+"/packages.xml.gz"))
+	{
+		sourceFileName = "/var/mpkg/cdrom_cache/"+cdromVolName+"/packages.xml.gz";
+		do_cache=true;
+		string _cp_cmd;
+       		int _link_ret;
+		unlink(output.c_str());
+		if (do_cache)
+		{
+			_cp_cmd = "cp -f ";
+			_cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
+			_link_ret = system(_cp_cmd.c_str());
+		}
+		else _link_ret = symlink(sourceFileName.c_str(), output.c_str());	
+		return 0;
+	}
+
 	// input format:
 	// source:
 	// 	CDROM_VOLNAME/dir/fname.tgz
@@ -96,8 +118,6 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	FILE *mtab = fopen("/proc/mounts", "r");
 	bool mounted = false;
 	//char volname[2000];
-	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
-	string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
 	mpkgErrorReturn errRet;
 	if (mtab)
 	{

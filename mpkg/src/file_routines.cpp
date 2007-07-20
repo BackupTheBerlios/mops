@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.34 2007/07/20 10:14:24 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.35 2007/07/20 11:14:16 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -297,34 +297,40 @@ unsigned int CheckFileType(string fname)
 	mDebug("Unknown package type "+ext);
 	return PKGTYPE_UNKNOWN;
 }
-string getCdromVolname()
+string getCdromVolname(string *rep_location)
 {
-	/*// Not used anyway
-	mpkgErrorReturn errRet;
-check_volname:
-	string vol_cmd = "volname "+CDROM_DEVICE+" > /tmp/mpkg_volname";
-	system(vol_cmd.c_str());
-	string volname=ReadFile("/tmp/mpkg_volname");
-	
-	if (volname.empty())
-	{
-		errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
-		if (errRet == MPKG_RETURN_RETRY)
-		{
-			goto check_volname;
-		}
-		if (errRet == MPKG_RETURN_ABORT)
-		{
-			return "";
-		}
-	}
-	volname=volname.substr(0,volname.find("\n"));
-	return volname;*/
-	string Svolname;
-	
+	string Svolname, repLoc;
 	// check_volname:
 	Svolname = ReadFile(CDROM_MOUNTPOINT + "/.volume_id");
+	if (rep_location!=NULL)
+	{
+		repLoc = ReadFile(CDROM_MOUNTPOINT + "/.repository");
+	}
+	// Validating
+	if (Svolname.find_first_of("/><| !@#$%^&*()`\"\'")!=std::string::npos)
+	{
+		mError("Invalid volname " + Svolname);
+		return "";
+	}
+	if (rep_location!=NULL)
+	{
+		if (repLoc.find_first_of("<>| !@#$%^&*()`\"\'")!=std::string::npos || !FileExists(CDROM_MOUNTPOINT+repLoc+"/packages.xml.gz"))
+		{
+			mError("Invalid repository path");
+			return "";
+		}
+		*rep_location = repLoc;
+	}
+	
 	return Svolname;
 
 }
 
+bool cacheCdromIndex(string vol_id, string rep_location)
+{
+	if (system("mkdir -p /var/mpkg/index_cache/"+vol_id) && system("cp -f " + CDROM_MOUNTPOINT + "/"+rep_location+"/packages.xml.gz /var/mpkg/index_cache/"+vol_id)) return true;
+	return false;
+}
+
+
+	
