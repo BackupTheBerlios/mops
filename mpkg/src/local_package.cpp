@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.57 2007/07/20 12:38:39 adiakin Exp $
+$Id: local_package.cpp,v 1.58 2007/07/24 12:59:21 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -104,7 +104,7 @@ LocalPackage::LocalPackage(string _f, unsigned int pkgType)
 	mDebug("LocalPackage created");
 	this->filename=_f;
 	this->packageType=pkgType;
-	_packageFListNode=XMLNode::createXMLTopNode("filelist");
+	//_packageFListNode=XMLNode::createXMLTopNode("filelist");
 }
 
 LocalPackage::~LocalPackage(){}
@@ -335,9 +335,16 @@ int LocalPackage::create_md5()
 		return 1;
 	}
 	data.set_md5(&md5str);
-	_packageXMLNode.addChild("md5");
+	xmlNodePtr __node;
+	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"md5", (const xmlChar *)md5str.c_str());
+	if (__node != NULL) {
+		mDebug("PIZDEC-4-1");
+	} else {
+		mDebug("PIZDEC-4-2");
+	}
+	/*_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
-	mDebug("create_md5 end");
+	*/mDebug("create_md5 end");
 	delete_tmp_files();
 	return 0;
 }
@@ -380,14 +387,30 @@ int LocalPackage::get_size()
 	isize=i_size;
 	data.set_compressed_size(&csize);
 	data.set_installed_size(&isize);
+	mDebug(" Sizes: C: " + csize + ", I: " + isize);
 
-	/*------------*/
+	xmlNodePtr __node;
+	xmlNodePtr __node2;
+	
+	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
+	if (__node != NULL) {
+		mDebug("PIZDEC-5-1");
+	} else {
+		mDebug("PIZDEC-5-2");
+	}
+	__node2 = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"installed-size", (const xmlChar *)isize.c_str());
 
-
-	_packageXMLNode.addChild("compressed_size");
+	if (__node != NULL) {
+		mDebug("PIZDEC-5-3");
+	} else {
+		mDebug("PIZDEC-5-4");
+	}
+	//printf("__node2 name %s\n", __node->name); 
+	/*_packageXMLNode.addChild("compressed_size");
 	_packageXMLNode.getChildNode("compressed_size").addText(csize.c_str());
 	_packageXMLNode.addChild("installed_size");
 	_packageXMLNode.getChildNode("installed_size").addText(isize.c_str());
+	*/
 	mDebug("get_size end");
 	delete_tmp_files();
 	return 0;
@@ -433,11 +456,26 @@ int LocalPackage::set_additional_data()
 	*location.get_server_url()=(string) "local://";
 	location.set_path(&ffname);
 	data.get_locations()->push_back(location);
-	_packageXMLNode.addChild("filename");
+	xmlNodePtr __node;
+	xmlNodePtr __node2;
+
+	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
+	if (__node != NULL) {
+		mDebug("PIZDEC-6-1");
+	} else {
+		mDebug("PIZDEC-6-2");
+	}
+	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
+	if (__node != NULL) {
+		mDebug("PIZDEC-6-3");
+	} else {
+		mDebug("PIZDEC-6-4");
+	}
+	/*_packageXMLNode.addChild("filename");
 	_packageXMLNode.getChildNode("filename").addText(data.get_filename()->c_str());
 	_packageXMLNode.addChild("location");
 	_packageXMLNode.getChildNode("location").addText(fpath.c_str());
-
+*/
 
 	return 0;
 }
@@ -498,7 +536,7 @@ int LocalPackage::injectFile(bool index)
 	{
 		mDebug("local_package.cpp: injectFile(): get_size() FAILED");
 		return -1;
-	}/*
+	}
 	mDebug("create_md5\n");
 	if (create_md5()!=0)
 	{
@@ -563,13 +601,13 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 
 XMLNode LocalPackage::getPackageXMLNode()
 {
-	return _packageXMLNode;
+	return XMLNode();
 }
 
 XMLNode LocalPackage::getPackageFListNode()
 {
-	XMLNode ret = _packageXMLNode;
+	XMLNode ret;// = _packageXMLNode;
 	ret.getChildNode("filelist").deleteNodeContent(1);
-	ret.addChild(_packageFListNode);
+	//ret.addChild(_packageFListNode);
 	return ret;
 }

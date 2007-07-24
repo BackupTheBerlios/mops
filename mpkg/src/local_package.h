@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.15 2007/06/22 00:59:13 i27249 Exp $
+$Id: local_package.h,v 1.16 2007/07/24 12:59:22 adiakin Exp $
 */
 
 
@@ -13,6 +13,8 @@ $Id: local_package.h,v 1.15 2007/06/22 00:59:13 i27249 Exp $
 #include "PackageConfig.h"
 #include "debug.h"
 #include "file_routines.h"
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 // Package type: mpkg
 class LocalPackage
@@ -32,7 +34,8 @@ class LocalPackage
 		bool internal;
 		string files2xml(string input);
 		string filename;
-		XMLNode _packageXMLNode, _packageFListNode;
+		//XMLNode _packageXMLNode, _packageFListNode;
+		xmlNodePtr _packageXMLNode, _packageFListNode;
 		int create_md5();
 		int get_size();
 		int get_xml();

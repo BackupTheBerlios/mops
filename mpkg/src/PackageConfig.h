@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.10 2007/07/20 12:38:39 adiakin Exp $
+ *	$Id: PackageConfig.h,v 1.11 2007/07/24 12:59:21 adiakin Exp $
  *
  * **********************************************************/
 
@@ -53,9 +53,6 @@ using namespace std;
 #define GET_PKG_DEP_COND ((const xmlChar *)"//dependencies/dep/condition")
 #define GET_PKG_DEP_VERSION ((const xmlChar *)"//dependencies/dep/version")
 
-
-
-
 class PackageConfig
 {
 public:
@@ -101,7 +98,7 @@ public:
 	vector <string> getFilelist(void);
 	vector <string> getConfigFilelist(void);
 
-	XMLNode getXMLNode(void);
+	xmlNodePtr getXMLNode(void);
 
 	// Repository-related functions
 	string getMd5(void);

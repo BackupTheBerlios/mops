@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.19 2007/07/20 12:38:39 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.20 2007/07/24 12:59:21 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -104,9 +104,17 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) {
         (mDebug("XPath eval error"));
         this->errors++;
         return NULL;
+    } 
+
+	if(xmlXPathNodeSetIsEmpty(result->nodesetval)){
+        xmlXPathFreeObject(result);
+                printf("No result\n");
+        return NULL;
     } else {
-        return result;
-    }
+		return result;
+	}
+
+
 
 }
 
@@ -127,13 +135,8 @@ string PackageConfig::getName()
 
         xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
         const char * _result = (const char * )key;
-		string __r;
-		if (_result != NULL) {
-			__r = (std::string)_result;
-		} else {
-			__r = EMPTY;
-		}
-        mDebug("NAME = '" + strim(__r) + "'");
+		std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+		mDebug("NAME = '" + strim(__r) + "'");
 		return strim(__r);
     } else {
         return EMPTY;
@@ -263,13 +266,15 @@ string PackageConfig::getAuthorEmail()
  */
 string PackageConfig::getChangelog()
 {
+	mDebug("Goning to fetch changelog");
     xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_CHANGELOG);
-    if (res) {
-        
+    if (res != NULL) {
         nodeset = res->nodesetval;
-        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+		
         const char * _result = (const char * )key;
         std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
         mDebug("CHANGELOG = '" + strim(__r) + "'");
@@ -537,9 +542,9 @@ vector<string> PackageConfig::getConfigFilelist()
  * 
  * @return XMLNode
  */
-XMLNode PackageConfig::getXMLNode()
+xmlNodePtr PackageConfig::getXMLNode()
 {
-	return _node;
+	return this->curNode;
 }
 
 /**
