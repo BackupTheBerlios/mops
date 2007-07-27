@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.58 2007/07/24 12:59:21 adiakin Exp $
+$Id: local_package.cpp,v 1.59 2007/07/27 10:48:04 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -194,6 +194,13 @@ int LocalPackage::get_xml()
 		return -100;
 	}
 	_packageXMLNode = p.getXMLNode(); // To be indexing work
+	__doc = p.getXMLDoc();
+
+	if (__doc == NULL) {
+		mDebug("[get_xml] xml document == NULL");
+	} else {
+		mDebug("[get_xml] xml docuemtn != NULL");
+	}
 
 	*data.get_name()=p.getName();
 	*data.get_version()=p.getVersion();
@@ -204,7 +211,13 @@ int LocalPackage::get_xml()
 	*data.get_description()=p.getDescription();
 	*data.get_short_description()=p.getShortDescription();
 	*data.get_changelog()=p.getChangelog();
-	
+
+
+	if (__doc == NULL) {
+		mDebug("[get_xml2] xml document == NULL");
+	} else {
+		mDebug("[get_xml2] xml docuemtn != NULL");
+	}
 
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
@@ -250,6 +263,13 @@ int LocalPackage::get_xml()
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		data.get_tags()->push_back(vec_tmp_names[i]);
+	}
+
+
+	if (__doc == NULL) {
+		mDebug("[get_xml3] xml document == NULL");
+	} else {
+		mDebug("[get_xml3] xml docuemtn != NULL");
 	}
 
 	vec_tmp_names=p.getConfigFilelist();
@@ -477,6 +497,18 @@ int LocalPackage::set_additional_data()
 	_packageXMLNode.getChildNode("location").addText(fpath.c_str());
 */
 
+	if (this->__doc == NULL) {
+		mDebug("PIZDEC 7-1!");
+	} else {
+		mDebug("PIZDEC 7-2");
+	}
+
+	//xmlSaveFile("/tmp/test.xml", this->__doc);
+	mDebug("Saving current xml doc");
+	xmlSaveFileEnc("/tmp/test.xml", __doc, "NULL");
+	mDebug("XML file saved");
+
+	
 	return 0;
 }
 
@@ -562,12 +594,12 @@ int LocalPackage::injectFile(bool index)
 		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
 		return -5;
 	}
-	
+	*/
 	if (set_additional_data()!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): set_additional_data FAILED");
 		return -6;
-	}*/
+	}
 	delete_tmp_files();	
 	mDebug("local_package.cpp: injectFile(): end");
 	return 0;

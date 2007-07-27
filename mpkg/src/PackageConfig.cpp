@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.20 2007/07/24 12:59:21 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.21 2007/07/27 10:48:04 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -34,17 +34,27 @@ PackageConfig::PackageConfig(string _f)
         mDebug("Failed to get root node");
         this->errors++;
         xmlFreeDoc(doc);
-    }
+    } else {
+		mDebug("PIZDEC 00-5");
+	}
 
     // checking for valid root node
     if (xmlStrcmp(curNode->name, (const xmlChar *) "package") ) {
         mDebug("Invalid root node definition");
         this->errors++;
         xmlFreeDoc(doc);
-    }
+    } else {
+		mDebug("PIZDEC 00-6");
+	}
 
 	if (this->errors == 0) {
 		this->parseOk = true;
+	}
+
+	if (this->doc == NULL) {
+		mDebug("PIZDEC 00-3");
+	} else {
+		mDebug("PIZDEC 00-4");
 	}
     
 
@@ -108,7 +118,7 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) {
 
 	if(xmlXPathNodeSetIsEmpty(result->nodesetval)){
         xmlXPathFreeObject(result);
-                printf("No result\n");
+			printf("No result\n");
         return NULL;
     } else {
 		return result;
@@ -545,6 +555,16 @@ vector<string> PackageConfig::getConfigFilelist()
 xmlNodePtr PackageConfig::getXMLNode()
 {
 	return this->curNode;
+}
+
+xmlDocPtr PackageConfig::getXMLDoc() 
+{
+	if (this->doc == NULL) {
+		mDebug("PIZDEC 00-1");
+	} else {
+		mDebug("PIZDEC 00-2");
+	}
+	return this->doc;
 }
 
 /**

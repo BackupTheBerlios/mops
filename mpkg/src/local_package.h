@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.16 2007/07/24 12:59:22 adiakin Exp $
+$Id: local_package.h,v 1.17 2007/07/27 10:48:04 adiakin Exp $
 */
 
 
@@ -36,6 +36,7 @@ class LocalPackage
 		string filename;
 		//XMLNode _packageXMLNode, _packageFListNode;
 		xmlNodePtr _packageXMLNode, _packageFListNode;
+		xmlDocPtr __doc;
 		int create_md5();
 		int get_size();
 		int get_xml();
