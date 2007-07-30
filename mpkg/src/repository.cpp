@@ -1,13 +1,18 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.52 2007/07/02 09:04:22 i27249 Exp $
+ * $Id: repository.cpp,v 1.53 2007/07/30 09:55:32 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+
 Repository::Repository(){}
 Repository::~Repository(){}
 
-XMLNode _root; 
+//XMLNode _root; 
+xmlNodePtr _rootNode;
+xmlDocPtr _root;
 //XMLNode _rootFList;
 int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url)
 {
@@ -442,21 +447,9 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			fclose(log);
 		}
 		else mError("unable to open log file");
-		_root.addChild(lp.getPackageXMLNode());	
-		
-		//_rootFList.addChild(lp.getPackageFListNode()); // MYSTERIOUS!!! Вот эта строка затирает полностью переменную _root. Спрашивается, ПОЧЕМУ?
-		
-		// tmpX = lp.getPackageFListNode();		// Эти две строки приводят к тому же результату...
-		// _rootFList.addChild(tmpX);
-		
-		// Попытка 3:
-		//tmpX = _root;
 
-		//printf("[2] _root has %d els\n", _root.nChildNode("package"));
-		
-		//_rootFList.addChild(lp.getPackageFListNode());
-		//printf("[3] tmpX has %d els\n", tmpX.nChildNode("package"));
-
+		//_root.addChild(lp.getPackageXMLNode());	
+		xmlNodePtr __node  = xmlAddChild(_rootNode, lp.getPackageXMLNode());
 
 		
 		// Dupe check
@@ -563,13 +556,15 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	pkgcounter=0;
 	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	
-	_root=XMLNode::createXMLTopNode("repository");
+	//_root=XMLNode::createXMLTopNode("repository");
+	_root = xmlNewDoc((const xmlChar *)"1.0");
+	_rootNode = xmlNewNode(NULL, (const xmlChar *)"repository");
+	xmlDocSetRootElement(_root, _rootNode);
 	
-	//_rootFList=XMLNode::createXMLTopNode("repository");
-	
-	
+	/*
 	if (!server_url.empty())
 	{
+		
 		_root.addAttribute("url", server_url.c_str());
 	//	_rootFList.addAttribute("url", server_url.c_str());
 	}
@@ -578,10 +573,8 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 		_root.addAttribute("name", server_name.c_str());
 	//	_rootFList.addAttribute("name", server_name.c_str());
 
-	}
-	_root.addAttribute("type", "compact");
-	//_rootFList.addAttribute("type", "full");
-
+	}*/
+	//_root.addAttribute("type", "compact");
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
@@ -591,7 +584,8 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 
 	// Finally, write our XML tree to file
 	//printf("_rootFList has %d elements\n", _rootFList.nChildNode("package"));
-	_root.writeToFile("packages.xml");
+	xmlSaveFileEnc("packages.xml", _root, NULL);
+	//_root.writeToFile("packages.xml");
 	//_rootFList.writeToFile("filelist.xml");
 	// Analyze file conflicts
 	//mDebug("Analyzing file conflicts");

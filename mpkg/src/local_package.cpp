@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.59 2007/07/27 10:48:04 adiakin Exp $
+$Id: local_package.cpp,v 1.60 2007/07/30 09:55:32 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -588,13 +588,13 @@ int LocalPackage::injectFile(bool index)
 		}
 	}
 	// NOT Building file list on server, build locally
-	
+	*/
 	if (!index && fill_filelist(&data, index)!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
 		return -5;
 	}
-	*/
+	
 	if (set_additional_data()!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): set_additional_data FAILED");
@@ -631,15 +631,15 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	return 0;
 }
 
-XMLNode LocalPackage::getPackageXMLNode()
+xmlNodePtr LocalPackage::getPackageXMLNode()
 {
-	return XMLNode();
+	return this->_packageXMLNode;
 }
 
-XMLNode LocalPackage::getPackageFListNode()
+/*XMLNode LocalPackage::getPackageFListNode()
 {
 	XMLNode ret;// = _packageXMLNode;
 	ret.getChildNode("filelist").deleteNodeContent(1);
 	//ret.addChild(_packageFListNode);
 	return ret;
-}
+}*/
