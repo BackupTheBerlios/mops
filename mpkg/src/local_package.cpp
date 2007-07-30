@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.60 2007/07/30 09:55:32 adiakin Exp $
+$Id: local_package.cpp,v 1.61 2007/07/30 13:04:27 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -193,8 +193,20 @@ int LocalPackage::get_xml()
 		delete_tmp_files();
 		return -100;
 	}
-	_packageXMLNode = p.getXMLNode(); // To be indexing work
-	__doc = p.getXMLDoc();
+	//_packageXMLNode = xmlNewNode(NULL,(const xmlChar *)"");
+	xmlNode __node_tmp = *p.getXMLNode();
+	_nd = *p.getXMLNode();
+	_packageXMLNode = &_nd;
+	//_packageXMLNode = memcpy(_packageXMLNode,*p.getXMLNode(), sizeof(p.getXMLNode())); // To be indexing work
+	if (_packageXMLNode == NULL) {
+		mDebug("FULL PIZDEC!!!!");
+	} else {
+		mDebug("DDDDD");
+		const xmlChar * __n = _nd.name;
+		printf("SSSS __n = '%s'\n", (const char *)__n);
+	}
+	//__doc = p.getXMLDoc();
+	__doc = _nd.doc;
 
 	if (__doc == NULL) {
 		mDebug("[get_xml] xml document == NULL");
@@ -411,14 +423,50 @@ int LocalPackage::get_size()
 
 	xmlNodePtr __node;
 	xmlNodePtr __node2;
+
+	if (_packageXMLNode == NULL) {
+		mDebug("FULL PIZDEC!!!!");
+	} else {
+		mDebug("QQQQ");
+		const xmlChar * __n = _packageXMLNode->name;
+		printf("WWWW __n = '%s'\n", (const char *)__n);
+	}
+
+
+	__node = xmlNewNode(NULL, (const xmlChar *)"compressed_size");
 	
-	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
+	//__node->name = (const xmlChar *)"compressed_size";
+	__node->content = (xmlChar *)csize.c_str();
+	__node2 = xmlAddChild(&_nd, __node);
+	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
+
 	if (__node != NULL) {
 		mDebug("PIZDEC-5-1");
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
-	__node2 = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"installed-size", (const xmlChar *)isize.c_str());
+
+	if (_packageXMLNode == NULL) {
+		mDebug("FULL PIZDEC!!!!");
+	} else {
+		mDebug("QQQQ");
+		const xmlChar * __n = _nd.name;
+		printf("WWWW __n = '%s'\n", (const char *)__n);
+	}
+
+	xmlNodePtr __node3;
+	__node3 = xmlNewNode(NULL, (const xmlChar *)"installed_size");
+	__node3->content = (xmlChar *)isize.c_str();
+	__node2 = xmlAddChild(&_nd,__node3);
+	//__node2 = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"installed-size", (const xmlChar *)isize.c_str());
+
+	if (_packageXMLNode == NULL) {
+		mDebug("FULL PIZDEC!!!!");
+	} else {
+		mDebug("EEEE");
+		const xmlChar * __n = _packageXMLNode->name;
+		printf("TTTT __n = '%s'\n", (const char *)__n);
+	}
 
 	if (__node != NULL) {
 		mDebug("PIZDEC-5-3");
@@ -479,14 +527,22 @@ int LocalPackage::set_additional_data()
 	xmlNodePtr __node;
 	xmlNodePtr __node2;
 
-	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
-	if (__node != NULL) {
+	__node = xmlNewNode(NULL, (const xmlChar *)"filename");
+	__node->content = (xmlChar *)data.get_filename()->c_str();
+	__node2 = xmlAddChild(&_nd, __node);
+	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
+	if (__node2 != NULL) {
 		mDebug("PIZDEC-6-1");
 	} else {
 		mDebug("PIZDEC-6-2");
 	}
-	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
-	if (__node != NULL) {
+
+	xmlNodePtr __node3;
+	__node3 = xmlNewNode(NULL, (const xmlChar *)"location");
+	__node3->content = (xmlChar *)fpath.c_str();
+	__node2 = xmlAddChild(&_nd, __node3);
+	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
+	if (__node2 != NULL) {
 		mDebug("PIZDEC-6-3");
 	} else {
 		mDebug("PIZDEC-6-4");
@@ -501,6 +557,14 @@ int LocalPackage::set_additional_data()
 		mDebug("PIZDEC 7-1!");
 	} else {
 		mDebug("PIZDEC 7-2");
+	}
+
+	if (_packageXMLNode == NULL) {
+		mDebug("YHHHH FULL PIZDEC!!!!");
+	} else {
+		mDebug("LLLLL");
+		const xmlChar * __n = _packageXMLNode->name;
+		printf("MMMMMM __n = '%s'\n", (const char *)__n);
 	}
 
 	//xmlSaveFile("/tmp/test.xml", this->__doc);
@@ -631,9 +695,16 @@ int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 	return 0;
 }
 
-xmlNodePtr LocalPackage::getPackageXMLNode()
+xmlNode LocalPackage::getPackageXMLNode()
 {
-	return this->_packageXMLNode;
+	if (this->_packageXMLNode == NULL) {
+		mDebug("!!! _packageXmlNode == NULL");
+	} else {
+		mDebug("!!! _packageXmlNode != NULL");
+		const xmlChar * __p_node_name = _packageXMLNode->name;
+		printf("BBBBB _p_node_name = '%s'\n", (const char *)__p_node_name);
+	}
+	return *_packageXMLNode;
 }
 
 /*XMLNode LocalPackage::getPackageFListNode()

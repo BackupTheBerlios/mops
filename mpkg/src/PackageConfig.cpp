@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.21 2007/07/27 10:48:04 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.22 2007/07/30 13:04:27 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -554,6 +554,13 @@ vector<string> PackageConfig::getConfigFilelist()
  */
 xmlNodePtr PackageConfig::getXMLNode()
 {
+	if (this->curNode == NULL) {
+		mDebug("Root node == NULL");
+	} else {
+		mDebug("Root node != NULL");
+		const xmlChar * __name = curNode->name;
+		printf("CCCCCCCC __name = '%s'\n", (const char *)__name);
+	}
 	return this->curNode;
 }
 

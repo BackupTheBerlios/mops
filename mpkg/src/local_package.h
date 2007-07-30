@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.18 2007/07/30 09:55:32 adiakin Exp $
+$Id: local_package.h,v 1.19 2007/07/30 13:04:27 adiakin Exp $
 */
 
 
@@ -24,7 +24,8 @@ class LocalPackage
 		~LocalPackage();
 		PACKAGE data;
 		int injectFile(bool index=false);
-		xmlNodePtr getPackageXMLNode();
+		xmlNode getPackageXMLNode();
+		xmlNode _nd;
 		//XMLNode getPackageFListNode();
 		int fill_filelist(PACKAGE *package, bool index=false);
 		int fill_scripts(PACKAGE *package);

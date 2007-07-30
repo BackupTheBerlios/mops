@@ -1,11 +1,12 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.54 2007/07/30 10:23:47 adiakin Exp $
+ * $Id: repository.cpp,v 1.55 2007/07/30 13:04:27 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <libxml/debugXML.h>
 
 Repository::Repository(){}
 Repository::~Repository(){}
@@ -435,6 +436,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		cout<< "indexing file " << filename << "..."<<endl;
 		FILE *log=fopen("index.log", "a");
 		LocalPackage lp(_package);
+		mDebug("PP 0-0");
 		int errCode = lp.injectFile(true);
 		mDebug("PP 00-1");
 		if (log)
@@ -448,9 +450,37 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		}
 		else mError("unable to open log file");
 
+		mDebug("PP 0-2");
 		//_root.addChild(lp.getPackageXMLNode());	
-		xmlNodePtr __node  = xmlAddChild(_rootNode, lp.getPackageXMLNode());
+		if (_rootNode == NULL) {
+			mDebug("[3]_rootNode == NULL");
+		} else {
+			mDebug("[3]_rootNode != NULL");
+		}
+		if (_root == NULL) {
+			mDebug("[2] _root == NULL");
+		} else {
+			mDebug("[2] _root != NULL");
+		}
+		xmlNode __tmp = lp.getPackageXMLNode();
+		/*if (__tmp == NULL) {
+			mDebug("__tmp == NULL");
+		} else {
+			mDebug("__tmp != NULL");*/
+			const xmlChar * __name = __tmp.name;
 
+			printf("AAAAA type: %d, name: '%s'\n", __tmp.type, (const char *)__name);
+		/*}*/
+		xmlNodePtr __node  = xmlAddChild(_rootNode, &__tmp);
+		if (__node == NULL) {
+			mDebug("Fuck!");
+		}
+
+		FILE* dump;
+		dump = fopen("/tmp/test.xml", "w");
+		xmlDebugDumpNode(dump, _rootNode, NULL);
+
+		mDebug("PP 0-3");
 		
 		// Dupe check
 		for (unsigned int i=0; i<pkgDupeNames.size(); i++)
@@ -558,9 +588,23 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	
 	//_root=XMLNode::createXMLTopNode("repository");
 	_root = xmlNewDoc((const xmlChar *)"1.0");
+	if (_root == NULL) {
+		mDebug("_root == NULL");
+	} else {
+		mDebug("_root != NULL");
+	}
 	_rootNode = xmlNewNode(NULL, (const xmlChar *)"repository");
+	if (_rootNode == NULL) {
+		mDebug("_rootNode == NULL");
+	} else {
+		mDebug("_rootNode != NULL");
+	}
 	xmlDocSetRootElement(_root, _rootNode);
-	
+	if (_rootNode == NULL) {
+		mDebug("[2]_rootNode == NULL");
+	} else {
+		mDebug("[2]_rootNode != NULL");
+	}
 	/*
 	if (!server_url.empty())
 	{
@@ -580,8 +624,9 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
 	// and build an XML tree for whole repository, then write it to ./packages.xml
 	
-	ftw(".", ProcessPackage, 600);
-
+	//ftw(".", ProcessPackage, 600);
+	ProcessPackage("coreutils.tgz", NULL, NULL);
+	
 	// Finally, write our XML tree to file
 	//printf("_rootFList has %d elements\n", _rootFList.nChildNode("package"));
 	xmlSaveFileEnc("packages.xml", _root, NULL);
