@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.53 2007/07/30 09:55:32 adiakin Exp $
+ * $Id: repository.cpp,v 1.54 2007/07/30 10:23:47 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -436,7 +436,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		FILE *log=fopen("index.log", "a");
 		LocalPackage lp(_package);
 		int errCode = lp.injectFile(true);
-		
+		mDebug("PP 00-1");
 		if (log)
 		{
 			if (errCode==0)
