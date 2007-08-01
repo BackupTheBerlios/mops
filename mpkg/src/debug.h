@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.9 2007/07/20 12:38:39 adiakin Exp $
+$Id: debug.h,v 1.10 2007/08/01 12:04:44 adiakin Exp $
 */
 
 
@@ -11,6 +11,7 @@ $Id: debug.h,v 1.9 2007/07/20 12:38:39 adiakin Exp $
 #include "config.h"
 #include "colors.h"
 typedef int DEBUG_LEVEL;
+#define TEMP_XML_DOC "/tmp/mpkg-temp-doc.xml"
 
 #define mDebug(m) DbgPrint(__FILE__, __LINE__, __func__, m)
 #define mError(m) _mError(__FILE__, __LINE__, __func__, m)

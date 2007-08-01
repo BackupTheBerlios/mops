@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.61 2007/07/30 13:04:27 adiakin Exp $
+$Id: local_package.cpp,v 1.62 2007/08/01 12:04:44 adiakin Exp $
 */
 
 #include "local_package.h"
@@ -193,8 +193,10 @@ int LocalPackage::get_xml()
 		delete_tmp_files();
 		return -100;
 	}
+/*
 	//_packageXMLNode = xmlNewNode(NULL,(const xmlChar *)"");
 	xmlNode __node_tmp = *p.getXMLNode();
+
 	_nd = *p.getXMLNode();
 	_packageXMLNode = &_nd;
 	//_packageXMLNode = memcpy(_packageXMLNode,*p.getXMLNode(), sizeof(p.getXMLNode())); // To be indexing work
@@ -207,6 +209,12 @@ int LocalPackage::get_xml()
 	}
 	//__doc = p.getXMLDoc();
 	__doc = _nd.doc;
+*/
+    
+
+	std::string __tmp_doc = p.getXMLNodeEx();
+	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", NULL);
+	_packageXMLNode = xmlDocGetRootElement(__doc);
 
 	if (__doc == NULL) {
 		mDebug("[get_xml] xml document == NULL");
@@ -421,9 +429,6 @@ int LocalPackage::get_size()
 	data.set_installed_size(&isize);
 	mDebug(" Sizes: C: " + csize + ", I: " + isize);
 
-	xmlNodePtr __node;
-	xmlNodePtr __node2;
-
 	if (_packageXMLNode == NULL) {
 		mDebug("FULL PIZDEC!!!!");
 	} else {
@@ -433,15 +438,14 @@ int LocalPackage::get_size()
 	}
 
 
-	__node = xmlNewNode(NULL, (const xmlChar *)"compressed_size");
-	
-	//__node->name = (const xmlChar *)"compressed_size";
-	__node->content = (xmlChar *)csize.c_str();
-	__node2 = xmlAddChild(&_nd, __node);
-	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
+	xmlNodePtr __node;
+	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
 
 	if (__node != NULL) {
 		mDebug("PIZDEC-5-1");
+
+		const xmlChar * __n = __node->name;
+		printf("'compressed_size' node name = '%s'\n", (const char *)__n);
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
@@ -450,35 +454,32 @@ int LocalPackage::get_size()
 		mDebug("FULL PIZDEC!!!!");
 	} else {
 		mDebug("QQQQ");
-		const xmlChar * __n = _nd.name;
-		printf("WWWW __n = '%s'\n", (const char *)__n);
+		const xmlChar * __n = _packageXMLNode->name;
+		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
 	}
 
-	xmlNodePtr __node3;
-	__node3 = xmlNewNode(NULL, (const xmlChar *)"installed_size");
-	__node3->content = (xmlChar *)isize.c_str();
-	__node2 = xmlAddChild(&_nd,__node3);
-	//__node2 = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"installed-size", (const xmlChar *)isize.c_str());
+
+	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"installed_size", (const xmlChar *)isize.c_str());
+
+	if (__node != NULL) {
+		mDebug("PIZDEC-5-1");
+
+		const xmlChar * __n = __node->name;
+		printf("'installed_size' node name__n = '%s'\n", (const char *)__n);
+	} else {
+		mDebug("PIZDEC-5-2");
+	}
 
 	if (_packageXMLNode == NULL) {
 		mDebug("FULL PIZDEC!!!!");
 	} else {
-		mDebug("EEEE");
+		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("TTTT __n = '%s'\n", (const char *)__n);
+		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
 	}
 
-	if (__node != NULL) {
-		mDebug("PIZDEC-5-3");
-	} else {
-		mDebug("PIZDEC-5-4");
-	}
-	//printf("__node2 name %s\n", __node->name); 
-	/*_packageXMLNode.addChild("compressed_size");
-	_packageXMLNode.getChildNode("compressed_size").addText(csize.c_str());
-	_packageXMLNode.addChild("installed_size");
-	_packageXMLNode.getChildNode("installed_size").addText(isize.c_str());
-	*/
+	
+	
 	mDebug("get_size end");
 	delete_tmp_files();
 	return 0;
@@ -524,53 +525,54 @@ int LocalPackage::set_additional_data()
 	*location.get_server_url()=(string) "local://";
 	location.set_path(&ffname);
 	data.get_locations()->push_back(location);
+
 	xmlNodePtr __node;
-	xmlNodePtr __node2;
+	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
 
-	__node = xmlNewNode(NULL, (const xmlChar *)"filename");
-	__node->content = (xmlChar *)data.get_filename()->c_str();
-	__node2 = xmlAddChild(&_nd, __node);
-	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
-	if (__node2 != NULL) {
-		mDebug("PIZDEC-6-1");
-	} else {
-		mDebug("PIZDEC-6-2");
-	}
+	if (__node != NULL) {
+		mDebug("PIZDEC-5-1");
 
-	xmlNodePtr __node3;
-	__node3 = xmlNewNode(NULL, (const xmlChar *)"location");
-	__node3->content = (xmlChar *)fpath.c_str();
-	__node2 = xmlAddChild(&_nd, __node3);
-	//__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
-	if (__node2 != NULL) {
-		mDebug("PIZDEC-6-3");
+		const xmlChar * __n = __node->name;
+		printf("'filename' node name__n = '%s'\n", (const char *)__n);
 	} else {
-		mDebug("PIZDEC-6-4");
-	}
-	/*_packageXMLNode.addChild("filename");
-	_packageXMLNode.getChildNode("filename").addText(data.get_filename()->c_str());
-	_packageXMLNode.addChild("location");
-	_packageXMLNode.getChildNode("location").addText(fpath.c_str());
-*/
-
-	if (this->__doc == NULL) {
-		mDebug("PIZDEC 7-1!");
-	} else {
-		mDebug("PIZDEC 7-2");
+		mDebug("PIZDEC-5-2");
 	}
 
 	if (_packageXMLNode == NULL) {
-		mDebug("YHHHH FULL PIZDEC!!!!");
+		mDebug("FULL PIZDEC!!!!");
 	} else {
-		mDebug("LLLLL");
+		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("MMMMMM __n = '%s'\n", (const char *)__n);
+		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
 	}
 
-	//xmlSaveFile("/tmp/test.xml", this->__doc);
-	mDebug("Saving current xml doc");
-	xmlSaveFileEnc("/tmp/test.xml", __doc, "NULL");
-	mDebug("XML file saved");
+	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
+
+	if (__node != NULL) {
+		mDebug("PIZDEC-5-1");
+
+		const xmlChar * __n = __node->name;
+		printf("'location' node name__n = '%s'\n", (const char *)__n);
+	} else {
+		mDebug("PIZDEC-5-2");
+	}
+
+	if (_packageXMLNode == NULL) {
+		mDebug("FULL PIZDEC!!!!");
+	} else {
+		mDebug("QQQQ");
+		const xmlChar * __n = _packageXMLNode->name;
+		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
+	}
+
+
+	mDebug("Saving xml dump");
+	FILE *__xmlDump = fopen("/tmp/xmldump.xml", "w");
+    if (xmlDocDump(__xmlDump, this->__doc) != -1) {
+		mDebug("Xml dump saved");
+	} else {
+		mDebug("Xml dump failed");
+	}
 
 	
 	return 0;
@@ -707,10 +709,15 @@ xmlNode LocalPackage::getPackageXMLNode()
 	return *_packageXMLNode;
 }
 
-/*XMLNode LocalPackage::getPackageFListNode()
+std::string LocalPackage::getPackageXMLNodeEx()
 {
-	XMLNode ret;// = _packageXMLNode;
-	ret.getChildNode("filelist").deleteNodeContent(1);
-	//ret.addChild(_packageFListNode);
-	return ret;
-}*/
+	FILE *__dump = fopen(TEMP_XML_DOC, "w");
+	if (xmlDocDump(__dump, this->__doc) == -1) {
+		fclose(__dump);
+		abort();
+	} else {
+		fclose(__dump);
+		return TEMP_XML_DOC;
+	}
+}
+

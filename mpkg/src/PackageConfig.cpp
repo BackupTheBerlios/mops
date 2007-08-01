@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.22 2007/07/30 13:04:27 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.23 2007/08/01 12:04:44 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -20,8 +20,9 @@ PackageConfig::PackageConfig(string _f)
     this->errors = 0;
 
     
-    doc = xmlParseFile(_f.c_str());
-
+    //doc = xmlParseFile(_f.c_str());
+	doc = xmlReadFile(_f.c_str(), "UTF-8", NULL);
+	
     if (doc == NULL) {
         mDebug("XML Load failed");
         this->errors++;
@@ -562,6 +563,14 @@ xmlNodePtr PackageConfig::getXMLNode()
 		printf("CCCCCCCC __name = '%s'\n", (const char *)__name);
 	}
 	return this->curNode;
+}
+std::string PackageConfig::getXMLNodeEx() {
+	FILE* __dump = fopen(TEMP_XML_DOC, "w");
+	if (xmlDocDump(__dump, this->doc) == -1) {
+		abort();
+	} else {
+		return TEMP_XML_DOC;
+	}
 }
 
 xmlDocPtr PackageConfig::getXMLDoc() 
