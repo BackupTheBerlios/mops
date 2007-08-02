@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.59 2007/08/02 11:15:14 i27249 Exp $
+ * $Id: repository.cpp,v 1.60 2007/08/02 13:40:41 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -332,21 +332,45 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 
 int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 {
+	mDebug("reading package node");
+#ifdef XPTR_MODE // Init using xmlNodePtr
 	PackageConfig p(pkgNode);
-	if (!p.parseOk) return -100;
-	
+#else		// Init using string dump
+
+	FILE *__dump = fopen(TEMP_XML_DOC,"w");
+	xmlDocPtr doc = xmlNewDoc((const xmlChar *) "1.0");
+	xmlDocSetRootElement(doc,pkgNode);
+	xmlDocDump(__dump, doc);
+	fclose(__dump);
+	//xmlFreeDoc(doc);
+	PackageConfig p(TEMP_XML_DOC);
+#endif
+	if (!p.parseOk) 
+	{
+		mDebug("PackageConfig init FAILED, returning -100");
+		return -100;
+	}
+	else mDebug("PackageConfig init OK");
+	mDebug("retrieving name");
 	*data->get_name()=p.getName();
+	mDebug("retrieving version");
 	*data->get_version()=p.getVersion();
+	mDebug("retrieving arch");
 	*data->get_arch()=p.getArch();
+	mDebug("retrieving build");
 	*data->get_build()=p.getBuild();
+	mDebug("retrieving authorName");
 	*data->get_packager()=p.getAuthorName();
+	mDebug("Retrieving authorEmail");
 	*data->get_packager_email()=p.getAuthorEmail();
 	//*data->get_descriptions=(p.getDescriptions());
-
+	mDebug("Retrieving description");
 	*data->get_description()=p.getDescription();
+	mDebug("Retrieving shortDescription");
 	*data->get_short_description()=p.getShortDescription();
+	mDebug("Retrieving changelog");
 	*data->get_changelog()=p.getChangelog();
-
+	mDebug("Retrieving data, part 2");
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
 
@@ -417,7 +441,7 @@ unsigned int pkgcounter;
 vector<string> pkgDupeNames;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
-	XMLNode tmpX;
+	//XMLNode tmpX;
 	unsigned short x=0, y=0;
 
 	if (file_status->st_ino!=0) x=y;
@@ -529,8 +553,8 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	return 0;
 }
 
-void analyzeFTree(XMLNode *node)
-{/*
+/*void analyzeFTree(XMLNode *node)
+{
 	say("Analyzing tree\n");
 	string p1, p2;
 	printf("contains %d packages\n", node->nChildNode("package"));
@@ -586,8 +610,8 @@ void analyzeFTree(XMLNode *node)
 			}
 		}
 	
-*/		
-}
+
+}*/
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
@@ -595,7 +619,7 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	unlink("index.log");
 	unlink("dupes.log");
 	unlink("legacy.log");
-	if (rebuild)
+/*	if (rebuild)
 	{
 		if (system("gunzip packages.xml.gz")!=0)
 		{
@@ -609,9 +633,9 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 			server_url = (string) tmpNode.getAttributeValue(0);
 			server_name = (string) tmpNode.getAttributeValue(1);
 		}
-	}	
+	}*/	
 	pkgcounter=0;
-	// First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
+	// [OBSOLETE] First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	
 	__doc = xmlNewDoc((const xmlChar *)"1.0");
 	if (__doc == NULL) {
@@ -713,7 +737,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			actionBus.getActionState(0);
 			mDebug("download ok, validating contents...");
 			if (system(cm.c_str())==0 && \
-					ReadFile(index_filename).find("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<repository")!=std::string::npos)
+					ReadFile(index_filename).find("<?xml version=\"1.0\"")!=std::string::npos && ReadFile(index_filename).find("<repository>")!=std::string::npos)
 			{
 				currentStatus = "Detected native MPKG repository";
 				type = TYPE_MPKG;
@@ -770,10 +794,10 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 		mError("Error downloading package index: download error, or unsupported repository type");
 		return -1;
 	}
-	
+	mDebug("Starting to parse index");
 	PACKAGE *pkg = new PACKAGE;
 	string xml_name=index_filename;
-	XMLNode *repository_root = new XMLNode;
+//	XMLNode *repository_root = new XMLNode;
 	
 	xmlDocPtr indexDoc;
 	xmlNodePtr indexRootNode;
@@ -789,7 +813,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	}
 	string *pList = new string;
 	string *mList = new string;
-	XMLNode *tmp = new XMLNode;
+	//XMLNode *tmp = new XMLNode;
 	//xmlDocPtr indexDoc;
 	//xmlNodePtr indexRootNode;
 	switch(type)
@@ -801,17 +825,20 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				mError("ппц...");
 				return -1;
 			}
+			else mDebug("indexDoc read successfully");
 			
 			indexRootNode = xmlDocGetRootElement(indexDoc);
 			if (indexRootNode == NULL) {
 				mError("Failed to get index");
 				xmlFreeDoc(indexDoc);
 			}
+			else mDebug("indexRootNode read successfully");
 			
 			if (xmlStrcmp(indexRootNode->name, (const xmlChar *) "repository") ) {
 				mError("Invalid index file");
 				xmlFreeDoc(indexDoc);
 			}
+			else mDebug("Found valid repository index");
 			
 			xmlXPathContextPtr xContext;
 			xmlXPathObjectPtr xResult;
@@ -840,6 +867,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			
 			xNodeSet = xResult->nodesetval;
 			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
+				mDebug("Processing " + IntToStr(xi) + " node");
 				if (actionBus._abortActions) {
 					actionBus._abortComplete = true;
 					actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
@@ -849,7 +877,12 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				
 				actionBus.setActionProgress(ACTIONID_DBUPDATE, xi);
 				pkg->clear();
-				xml2package(xNodeSet->nodeTab[xi], pkg);
+				mDebug("Calling xml2Package");
+				if (xml2package(xNodeSet->nodeTab[xi], pkg)<0) {
+					mError("Failed to parse");
+					abort();
+				}
+				else mDebug("xml2package OK");
 				// Adding location data
 				pkg->get_locations()->at(0).set_server_url(&server_url);
 				packages->add(pkg);
@@ -884,7 +917,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					pkg->get_locations()->at(0).set_server_url(&server_url);
 					packages->add(pkg);
 				}*/
-				delete tmp;
+				//delete tmp;
 			break;
 		case TYPE_SLACK:
 			*pList = ReadFile(index_filename);

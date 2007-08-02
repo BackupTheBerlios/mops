@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.24 2007/08/02 10:49:58 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.25 2007/08/02 13:40:41 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -27,6 +27,7 @@ PackageConfig::PackageConfig(string _f)
         mDebug("XML Load failed");
         this->errors++;
         xmlFreeDoc(doc);
+	doc=NULL;
     }
 
     curNode = xmlDocGetRootElement(doc);
@@ -35,6 +36,7 @@ PackageConfig::PackageConfig(string _f)
         mDebug("Failed to get root node");
         this->errors++;
         xmlFreeDoc(doc);
+	doc=NULL;
     } else {
 		mDebug("PIZDEC 00-5");
 	}
@@ -44,6 +46,7 @@ PackageConfig::PackageConfig(string _f)
         mDebug("Invalid root node definition");
         this->errors++;
         xmlFreeDoc(doc);
+	doc=NULL;
     } else {
 		mDebug("PIZDEC 00-6");
 	}
@@ -81,22 +84,48 @@ bool PackageConfig::hasErrors() {
  */
 PackageConfig::PackageConfig(xmlNodePtr __rootXmlNodePtr)
 {
+	mDebug("Test start");
+	xmlDocPtr xxx = xmlNewDoc((const xmlChar *) "1.0");
+	if (xxx==NULL) mDebug("created document, but it is NULL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+	xmlFreeDoc(xxx);
+	if (xxx==NULL) mDebug("Freed the document, and it is NULL");
+	else mDebug("Freed doc isn't null!");
+	mDebug("test complete");
+	mDebug("INITIALIZATION");
 	parseOk = true;
-	curNode = __rootXmlNodePtr;
+	//curNode = __rootXmlNodePtr;
+	//curNode = xmlNewNode;
+	*curNode=*__rootXmlNodePtr;
+	this->doc=NULL;
+	mDebug("Constructing XML elements");
 	if (this->doc == NULL) {
 		this->doc = xmlNewDoc((const xmlChar *)"1.0");
+		mDebug("Created an empty XML doc");
 		if (this->doc == NULL) {
 			mDebug("in constructor doc == NULL");
+			parseOk=false;
 		}
-		xmlDocSetRootElement(this->doc, this->curNode);
+		if (xmlDocSetRootElement(this->doc, this->curNode))
+		{
+			mDebug("INIT OK");
+			if (this->doc==NULL) mDebug("OMGWTF!");
+		}
+		else {
+			mDebug("INIT FAILED");
+		//	parseOk=false;
+		}
 	}
 }
 
 PackageConfig::~PackageConfig()
 {
+	mDebug("Cleanup...");
     if (this->doc != NULL) {
         xmlFreeDoc(doc);
+	doc=NULL;
+	doc=NULL;
     }
+    mDebug("Cleanup complete");
 }
 
 /**
@@ -106,34 +135,43 @@ PackageConfig::~PackageConfig()
  * 
  * @return xmlXPathObjectPtr node set
  */
-xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) {
-    xmlXPathContextPtr context;
-    xmlXPathObjectPtr result;
+xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) 
+{
+	xmlXPathContextPtr context;
+	xmlXPathObjectPtr result;
+	
+	mDebug("Creating context");
+    	context = xmlXPathNewContext(doc);
+    	if (context == NULL) 
+	{
+		mDebug("Failed to create context");
+        	this->errors++;
+        	XPATH_CTX_ERR;
+        	return NULL;
+    	}
+    	else mDebug("Context created");
 
-    context = xmlXPathNewContext(doc);
-    if (context == NULL) {
-        this->errors++;
-        XPATH_CTX_ERR;
-        return NULL;
-    }
+    	mDebug("Retrieving xpath, expression: " + (string) (const char *) exp);
+    	result = xmlXPathEvalExpression(exp, context);
+    	if (result == NULL) 
+	{
+        	(mDebug("XPath eval error"));
+        	this->errors++;
+        	return NULL;
+    	} 
+	else mDebug("XPath OK"); 
 
-    result = xmlXPathEvalExpression(exp, context);
-    if (result == NULL) {
-        (mDebug("XPath eval error"));
-        this->errors++;
-        return NULL;
-    } 
-
-	if(xmlXPathNodeSetIsEmpty(result->nodesetval)){
-        xmlXPathFreeObject(result);
-			printf("No result\n");
-        return NULL;
-    } else {
+	if(xmlXPathNodeSetIsEmpty(result->nodesetval))
+	{
+        	xmlXPathFreeObject(result);
+		printf("No result\n");
+        	return NULL;
+    	}
+       	else 
+	{
+		mDebug("Returning result");
 		return result;
 	}
-
-
-
 }
 
 /**
@@ -143,12 +181,14 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp) {
  */
 string PackageConfig::getName()
 {
-
+	mDebug("Start");
     xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
+    mDebug("getNodeSet...");
     res = getNodeSet(GET_PKG_NAME);
+    mDebug("getNodeSet complete");
     if (res) {
-        
+        mDebug("Retrieved nodeset");
         nodeset = res->nodesetval;
 
         xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
@@ -549,7 +589,7 @@ vector<string> PackageConfig::getConfigFilelist()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
+	}
 
 
 	return a;
@@ -572,16 +612,20 @@ xmlNodePtr PackageConfig::getXMLNode()
 	return this->curNode;
 }
 std::string PackageConfig::getXMLNodeEx() {
+	mDebug("Dumping the doc");
 	FILE* __dump = fopen(TEMP_XML_DOC, "w");
 	if (xmlDocDump(__dump, this->doc) == -1) {
+		mDebug("Dump failed");
 		abort();
 	} else {
+		mDebug("Dump OK");
 		return TEMP_XML_DOC;
 	}
 }
 
 xmlDocPtr PackageConfig::getXMLDoc() 
 {
+	mDebug("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Returning xmlDocPtr");
 	if (this->doc == NULL) {
 		mDebug("PIZDEC 00-1");
 	} else {

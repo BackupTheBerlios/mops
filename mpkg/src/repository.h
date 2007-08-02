@@ -7,7 +7,7 @@
  * 	Debian (planned)
  * 	RPM (planned)
  *
- * $Id: repository.h,v 1.12 2007/06/22 00:59:13 i27249 Exp $
+ * $Id: repository.h,v 1.13 2007/08/02 13:40:41 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
@@ -34,7 +34,7 @@ class Repository
 	//	int ProcessPackage(const char *filename, const struct stat *file_status, int filetype);
 		PACKAGE_LIST data;
 };
-void analyzeFTree(XMLNode *node);
+//void analyzeFTree(XMLNode *node);
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype);
 int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkglist, string server_url);
 
