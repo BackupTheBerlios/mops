@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.57 2007/08/02 10:49:58 adiakin Exp $
+ * $Id: repository.cpp,v 1.58 2007/08/02 11:01:40 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -529,7 +529,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 }
 
 void analyzeFTree(XMLNode *node)
-{
+{/*
 	say("Analyzing tree\n");
 	string p1, p2;
 	printf("contains %d packages\n", node->nChildNode("package"));
@@ -585,7 +585,7 @@ void analyzeFTree(XMLNode *node)
 			}
 		}
 	
-		
+*/		
 }
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
@@ -789,6 +789,8 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	string *pList = new string;
 	string *mList = new string;
 	XMLNode *tmp = new XMLNode;
+	xmlDocPtr indexDoc;
+	xmlNodePtr indexRootNode;
 	switch(type)
 	{
 		case TYPE_MPKG:
