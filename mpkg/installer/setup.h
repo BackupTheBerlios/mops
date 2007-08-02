@@ -28,6 +28,7 @@ struct SysConfig
 	string cdromDevice;
 	string sourceName;
 };
+string getLastError();
 string doFormatString(bool input);
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes);
 bool setPartitionMap();

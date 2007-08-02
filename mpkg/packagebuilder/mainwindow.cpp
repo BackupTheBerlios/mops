@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.20 2007/06/05 08:45:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.21 2007/08/02 10:39:12 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -340,11 +340,11 @@ void Form::changeHeader()
 
 void Form::changeHeader(const QString & text)
 {
-	if (!text.isEmpty())
+	/*if (!text.isEmpty())
 	{
 		setWindowTitle(text);
 		return;
-	}
+	}*/
 	//printf("headerChange\n");
 	modified=true;
 	QString FLabel=tr("MOPSLinux package builder");
@@ -361,7 +361,6 @@ void Form::changeHeader(const QString & text)
 			}
 		}
 	}
-
 	setWindowTitle(FLabel);
 }
 

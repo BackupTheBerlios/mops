@@ -1,4 +1,4 @@
-/** $Id: xmlParser.h,v 1.2 2006/12/17 19:34:57 i27249 Exp $
+/**
  ****************************************************************************
  * <P> XML.c - implementation file for basic XML parser written in ANSI C++
  * for portability. It works by using recursion and a node tree for breaking

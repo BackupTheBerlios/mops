@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.13 2007/07/02 09:04:22 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.14 2007/08/02 10:39:13 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -67,8 +67,8 @@ char * strMerge(const char *part1, const char *part2)
 
 string cutSpaces(string str)
 {
-	int start = str.find_first_not_of(" ");
-	int end = str.find_last_not_of(" ");
+	int start = str.find_first_not_of(" \n\t");
+	int end = str.find_last_not_of(" \n\t");
 	string ret =  str.substr(start, end-start+1);
 	return ret;
 }
@@ -214,7 +214,7 @@ string humanizeSize(double size)
 	return "0";
 }
 
-string adjustStringWide(string input, unsigned int char_width)
+string adjustStringWide(string input, unsigned int char_width, string prefix)
 {
 	if (char_width < 50) char_width = 50;
 	vector<string> spaces;
@@ -238,8 +238,17 @@ string adjustStringWide(string input, unsigned int char_width)
 	string ret;
 	for (unsigned int i=0; i<chunks.size(); i++)
 	{
-		ret+=chunks[i];
-		ret += "<br>";
+		if (prefix.empty())
+		{
+			ret+=chunks[i];
+		       	ret += "<br>";
+		}
+		else
+		{	
+			ret+=prefix+": " + chunks[i];
+			ret+="\n";
+		}
+
 	}
 	return ret;
 

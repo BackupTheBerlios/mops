@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.100 2007/07/19 12:46:40 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.101 2007/08/02 10:39:13 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -97,6 +97,7 @@ bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 
 int mpkgDatabase::commit_actions()
 {
+	mDebug("Committing");
 	Dialog dialogItem;
 	delete_tmp_files();
 	sqlFlush();
@@ -119,8 +120,8 @@ int mpkgDatabase::commit_actions()
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
 	// Checking available space
-	double rem_size=0;
-	double ins_size=0;
+	long double rem_size=0;
+	long double ins_size=0;
 
 	for (int i=0; i<remove_list.size(); i++)
 	{
@@ -132,11 +133,12 @@ int mpkgDatabase::commit_actions()
 		install_list.get_package(i)->itemID = pData.addItem(*install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size()->c_str()));
 		ins_size += strtod(install_list.get_package(i)->get_installed_size()->c_str(), NULL);
 	}
-	double freespace = get_disk_freespace(SYS_ROOT);
+	long double freespace = get_disk_freespace(SYS_ROOT);
 	mDebug("Freespace is " + IntToStr((long long) freespace));
 	
 	if (freespace < (ins_size - rem_size))
 	{
+		mDebug("Not enough free space, show warning");
 		if (dialogMode)
 		{
 			Dialog dialogItem;
@@ -145,10 +147,12 @@ int mpkgDatabase::commit_actions()
 				return MPKGERROR_COMMITERROR;
 			}
 		}
-		else mError("Seems that free space is not enough to install. Required: " + humanizeSize(ins_size - rem_size) + ", available: " + humanizeSize(freespace));
+		else mError(_("Seems that free space is not enough to install. Required: ") + humanizeSize(ins_size - rem_size) + _(", available: ") + humanizeSize(freespace));
 	}
+	else mDebug("Freespace OK, proceeding");
 
 	// Building action list
+	mDebug("Building action list");
 	actionBus.clear();
 	if (remove_list.size()>0)
 	{
@@ -171,13 +175,14 @@ int mpkgDatabase::commit_actions()
 	}
 	// Done
 
+	mDebug("Building remove queue");
 	if (remove_list.size()>0)
 	{
 		actionBus.setCurrentAction(ACTIONID_REMOVE);
 
-		currentStatus = "Looking for remove queue";
+		currentStatus = _("Looking for remove queue");
 			mDebug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
-		currentStatus = "Removing " + IntToStr(remove_list.size()) + " packages";
+		currentStatus = _("Removing ") + IntToStr(remove_list.size()) + _(" packages");
 		pData.setCurrentAction("Removing packages");
 	
 		int removeItemID=0;
@@ -185,7 +190,7 @@ int mpkgDatabase::commit_actions()
 		{
 			removeItemID=remove_list.get_package(i)->itemID;
 			pData.setItemState(removeItemID, ITEMSTATE_WAIT);
-			pData.setItemCurrentAction(removeItemID, "Waiting");
+			pData.setItemCurrentAction(removeItemID, _("Waiting"));
 			pData.resetIdleTime(removeItemID);
 			pData.setItemProgress(removeItemID, 0);
 			pData.setItemProgressMaximum(removeItemID,8);
@@ -195,11 +200,10 @@ int mpkgDatabase::commit_actions()
 		{
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + "] Удаляется пакет " + \
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + _("] Removing package ") + \
 						*remove_list.get_package(i)->get_name() + "-" + \
 						remove_list.get_package(i)->get_fullversion(), 10,80, \
 						(unsigned int) round((double)(i)/(double)((double)(remove_list.size())/(double) (100))));
-				dialogItem.closeGauge();
 			}	
 			delete_tmp_files();
 			actionBus.setActionProgress(ACTIONID_REMOVE,i);
@@ -215,23 +219,26 @@ int mpkgDatabase::commit_actions()
 			{
 				if (*install_list.get_package(t)->get_name() == *remove_list.get_package(i)->get_name())
 				{
-					say("Updating package %s\n", remove_list.get_package(i)->get_name()->c_str()); 
+					say(_("Updating package %s\n"), remove_list.get_package(i)->get_name()->c_str()); 
 					remove_list.get_package(i)->isUpdating=true;
 					break;
 				}
 			}
-			currentStatus = "Removing package " + *remove_list.get_package(i)->get_name();
+			currentStatus = _("Removing package ") + *remove_list.get_package(i)->get_name();
 			if (remove_package(remove_list.get_package(i))!=0)
 			{
 				removeFailures++;
-				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Remove failed");
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Remove failed"));
 				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 			}
 			else
 			{
-				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, "Removed");
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Removed"));
 				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
+
+			if (dialogMode) 
+				dialogItem.closeGauge();
 		
 		}
 		sqlSearch.clear();
@@ -241,23 +248,23 @@ int mpkgDatabase::commit_actions()
 	}
 
 
-	currentStatus = "Looking for install queue";
+	currentStatus = _("Looking for install queue");
 
 	if (install_list.size()>0)
 	{
 		actionBus.setCurrentAction(ACTIONID_CACHECHECK);
 		// Building download queue
-		currentStatus = "Looking for package locations...";
+		currentStatus = _("Looking for package locations...");
 		DownloadsList downloadQueue;
 		DownloadItem tmpDownloadItem;
 		vector<string> itemLocations;
 		//double totalDownloadSize=0;
-		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
-		pData.setCurrentAction("Checking cache");
+		pData.resetItems(_("waiting"), 0, 1, ITEMSTATE_WAIT);
+		pData.setCurrentAction(_("Checking cache"));
 		bool skip=false;
 		if (dialogMode)
 		{
-			dialogItem.execGauge("Проверка кэша", 10,80,0);
+			dialogItem.execGauge(_("Checking package cache"), 10,80,0);
 		}
 
 		for (int i=0; i<install_list.size(); i++)
@@ -281,17 +288,17 @@ int mpkgDatabase::commit_actions()
 			}
 
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking cache");
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("Checking package cache"));
 			pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
 			pData.setItemProgress(install_list.get_package(i)->itemID, 0);
 	
-			currentStatus = "Checking cache and building download queue: " + *install_list.get_package(i)->get_name();
+			currentStatus = _("Checking cache and building download queue: ") + *install_list.get_package(i)->get_name();
 	
 	
 			if (skip || !check_cache(install_list.get_package(i), false))
 			{
-				if (!skip) pData.setItemCurrentAction(install_list.get_package(i)->itemID, "not cached");
-				else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "check skipped");
+				if (!skip) pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("not cached"));
+				else pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("check skipped"));
 
 				itemLocations.clear();
 				
@@ -313,7 +320,7 @@ int mpkgDatabase::commit_actions()
 				tmpDownloadItem.url_list = itemLocations;
 				downloadQueue.push_back(tmpDownloadItem);
 			}
-			else pData.setItemCurrentAction(install_list.get_package(i)->itemID, "cached");
+			else pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("cached"));
 	
 			pData.increaseItemProgress(install_list.get_package(i)->itemID);
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
@@ -324,7 +331,7 @@ int mpkgDatabase::commit_actions()
 		mpkgErrorReturn errRet;
 		bool do_download = true;
 	
-		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+		pData.resetItems(_("waiting"), 0, 1, ITEMSTATE_WAIT);
 		while(do_download)
 		{
 			do_download = false;
@@ -332,25 +339,25 @@ int mpkgDatabase::commit_actions()
 
 			if (CommonGetFileEx(downloadQueue, &currentItem) == DOWNLOAD_ERROR)
 			{
-				mError("Download failed (returned DOWNLOAD_ERROR)");
+				mError(_("Download failed"));
 				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
 				switch(errRet)
 				{
 					case MPKG_RETURN_IGNORE:
-						say("Download errors ignored, continue installing\n");
+						say(_("Download errors ignored, continue installing\n"));
 						goto installProcess;
 						break;
 				
 					case MPKG_RETURN_RETRY:
-						say("retrying...\n");
+						say(_("retrying...\n"));
 						do_download = true;
 						break;
 					case MPKG_RETURN_ABORT:
-						say("aborting...\n");
+						say(_("aborting...\n"));
 						return MPKGERROR_ABORTED;
 						break;
 					default:
-						mError("Unknown value, don't know what to do, aborting");
+						mError(_("Unknown value, don't know what to do, aborting"));
 						return MPKGERROR_ABORTED;
 				}
 					
@@ -362,15 +369,15 @@ int mpkgDatabase::commit_actions()
 installProcess:
 	
 		actionBus.setCurrentAction(ACTIONID_MD5CHECK);
-		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+		pData.resetItems(_("waiting"), 0, 1, ITEMSTATE_WAIT);
 	
 		//bool hasErrors=false;
 		skip=false;
-		currentStatus = "Checking files (comparing MD5):";
-		pData.setCurrentAction("Checking md5");
+		currentStatus = _("Checking files (comparing MD5):");
+		pData.setCurrentAction(_("Checking md5"));
 		if (dialogMode)
 		{
-			dialogItem.execGauge("Проверка целостности файлов", 10,80,0);
+			dialogItem.execGauge(_("Checking packages integrity"), 10,80,0);
 		}
 		for (int i=0; i<install_list.size(); i++)
 		{
@@ -389,17 +396,17 @@ installProcess:
 				dialogItem.setGaugeValue((unsigned int) round(((double)(i)/(double) ((double) (install_list.size())/(double) (100)))));
 
 			}
-			else say("Checking MD5 for %s\n", install_list.get_package(i)->get_filename()->c_str());
-			currentStatus = "Checking md5 of downloaded files: " + *install_list.get_package(i)->get_name();
+			else say(_("Checking MD5 for %s\n"), install_list.get_package(i)->get_filename()->c_str());
+			currentStatus = _("Checking md5 of downloaded files: ") + *install_list.get_package(i)->get_name();
 	
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Checking md5");
+			pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("Checking md5"));
 			pData.setItemProgressMaximum(install_list.get_package(i)->itemID, 1);
 			pData.setItemProgress(install_list.get_package(i)->itemID, 0);
 	
 			if (!check_cache(install_list.get_package(i), true))
 			{
-				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "md5 failed");
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("md5 incorrect"));
 				pData.increaseItemProgress(install_list.get_package(i)->itemID);
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 	
@@ -407,17 +414,17 @@ installProcess:
 				switch(errRet)
 				{
 					case MPKG_RETURN_IGNORE:
-						say("Wrong checksum ignored, continuing...\n");
+						say(_("Wrong checksum ignored, continuing...\n"));
 						break;
 					case MPKG_RETURN_RETRY:
-						say("Re-downloading...\n");
+						say(_("Re-downloading...\n"));
 						break;
 					case MPKG_RETURN_ABORT:
-						say("Aborting installation\n");
+						say(_("Aborting installation\n"));
 						return MPKGERROR_ABORTED;
 						break;
 					default:
-						mError("Unknown reply, aborting");
+						mError(_("Unknown reply, aborting"));
 						return MPKGERROR_ABORTED;
 						break;
 				}
@@ -433,15 +440,15 @@ installProcess:
 		actionBus.setActionState(ACTIONID_MD5CHECK);
 	
 		actionBus.setCurrentAction(ACTIONID_INSTALL);
-		pData.resetItems("waiting", 0, 1, ITEMSTATE_WAIT);
+		pData.resetItems(_("waiting"), 0, 1, ITEMSTATE_WAIT);
 	
-		pData.setCurrentAction("Installing packages");
+		pData.setCurrentAction(_("Installing packages"));
 		int installItemID;
 		for (int i=0; i<install_list.size(); i++)
 		{
 			installItemID=install_list.get_package(i)->itemID;
 			pData.setItemState(installItemID, ITEMSTATE_WAIT);
-			pData.setItemCurrentAction(installItemID, "Waiting");
+			pData.setItemCurrentAction(installItemID, _("Waiting"));
 			pData.resetIdleTime(installItemID);
 			pData.setItemProgress(installItemID, 0);
 			pData.setItemProgressMaximum(installItemID,8);
@@ -458,10 +465,10 @@ installProcess:
 				return MPKGERROR_ABORTED;
 			}
 			pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			currentStatus = "Installing package " + *install_list.get_package(i)->get_name();
+			currentStatus = _("Installing package ") + *install_list.get_package(i)->get_name();
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + "] Устанавливается пакет " + \
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + _("] Installing package ") + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
 						(unsigned int) round((double) (i)/(double) ((double) (install_list.size())/(double) (100))));
@@ -469,16 +476,16 @@ installProcess:
 			if (install_package(install_list.get_package(i))!=0)
 			{
 				installFailures++;
-				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installation failed");
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("Installation failed"));
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
 			}
 			else
 			{
-				pData.setItemCurrentAction(install_list.get_package(i)->itemID, "Installed");
+				pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("Installed"));
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
 			}
 		}
-		currentStatus = "Installation complete.";
+		currentStatus = _("Installation complete.");
 		actionBus.setActionState(ACTIONID_INSTALL);
 	}
 	if (removeFailures!=0 && installFailures!=0) return MPKGERROR_COMMITERROR;
@@ -489,10 +496,10 @@ installProcess:
 int mpkgDatabase::install_package(PACKAGE* package)
 {
 
-	pData.setItemCurrentAction(package->itemID, "installing");
-	if (!dialogMode) say("Installing %s %s\n",package->get_name()->c_str(), package->get_fullversion().c_str());
-	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Installing package " + *package->get_name()+": ";
-	currentStatus = statusHeader + "initialization";
+	pData.setItemCurrentAction(package->itemID, _("installing"));
+	if (!dialogMode) say(_("Installing %s %s\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
+	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+_("Installing package ") + *package->get_name()+": ";
+	currentStatus = statusHeader + _("initialization");
 	// First of all: EXTRACT file list and scripts!!!
 	LocalPackage lp(SYS_CACHE + *package->get_filename());
 	bool no_purge=true;
@@ -513,10 +520,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		return MPKGERROR_ABORTED;
 	}
 
-	currentStatus = statusHeader + "extracting installation scripts";
+	currentStatus = statusHeader + _("extracting installation scripts");
 	pData.increaseItemProgress(package->itemID);
 	lp.fill_scripts(package);
-	currentStatus = statusHeader + "extracting file list";
+	currentStatus = statusHeader + _("extracting file list");
 	pData.increaseItemProgress(package->itemID);
 	if (actionBus._abortActions)
 	{
@@ -526,7 +533,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		return MPKGERROR_ABORTED;
 	}
 	lp.fill_filelist(package);
-	currentStatus = statusHeader + "detecting configuration files";
+	currentStatus = statusHeader + _("detecting configuration files");
 	pData.increaseItemProgress(package->itemID);
 	if (actionBus._abortActions)
 	{
@@ -548,7 +555,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	if (fileConflictChecking==CHECKFILES_PREINSTALL) 
 	{
-		currentStatus = statusHeader + "checking file conflicts";
+		currentStatus = statusHeader + _("checking file conflicts");
 		pData.increaseItemProgress(package->itemID);
 
 	}
@@ -558,15 +565,15 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
 		{
 			mDebug("Check failed (dupes present)");
-			currentStatus = "Error: Unresolved file conflict on package " + *package->get_name();
-			mError("Unresolved file conflict on package " + *package->get_name() + ", it will be skipped!");
+			currentStatus = _("Error: Unresolved file conflict on package ") + *package->get_name();
+			mError(_("Unresolved file conflict on package ") + *package->get_name() + _(", it will be skipped!"));
 			return -5;
 		}
 		mDebug("Check conflicts ok");
 	}
 	else mDebug("Conflict check skipped");
 	
-	currentStatus = statusHeader + "installing...";
+	currentStatus = statusHeader + _("installing...");
 	pData.increaseItemProgress(package->itemID);
 
 
@@ -587,7 +594,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	if (!DO_NOT_RUN_SCRIPTS)
 	{
-		currentStatus = statusHeader + "executing pre-install scripts";
+		currentStatus = statusHeader + _("executing pre-install scripts");
 		if (FileExists(package->get_scriptdir() + "preinst.sh"))
 		{
 			string preinst="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preinst.sh";
@@ -596,7 +603,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 
 	// Extracting package
-	currentStatus = statusHeader + "extracting...";
+	currentStatus = statusHeader + _("extracting...");
 	pData.increaseItemProgress(package->itemID);
 
 
@@ -649,9 +656,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 //#ifdef ACTUAL_EXTRACT
 	if (!simulate)
 	{
-		if (system(sys.c_str()) == 0) currentStatus = statusHeader + "executing post-install scripts...";
+		if (system(sys.c_str()) == 0) currentStatus = statusHeader + _("executing post-install scripts...");
 		else {
-			currentStatus = "Failed to extract!";
+			currentStatus = _("Failed to extract!");
 			return -10;
 		}
 	}
@@ -686,7 +693,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 {
 	if (!package->isUpdating && package->isRemoveBlacklisted())
 	{
-		mError("Cannot remove package " + *package->get_name() + ", because it is an important system component.");
+		mError(_("Cannot remove package ") + *package->get_name() + _(", because it is an important system component."));
 		set_action(package->get_id(), ST_NONE);
 		return MPKGERROR_IMPOSSIBLE;
 	}
@@ -696,12 +703,12 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.setItemCurrentAction(package->itemID, "removing");
 	if (!dialogMode)
 	{
-		if (package->isUpdating) say("Updating package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
-		else say("Removing package %s %s...\n",package->get_name()->c_str(), package->get_fullversion().c_str());
+		if (package->isUpdating) say(_("Updating package %s %s...\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
+		else say(_("Removing package %s %s...\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
 	}
 
-	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+"Removing package "+*package->get_name()+": ";
-	currentStatus = statusHeader + "initialization";
+	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum()) + "] " + _("Removing package ") + *package->get_name()+": ";
+	currentStatus = statusHeader + _("initialization");
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
@@ -713,7 +720,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			{
 				if (FileExists(package->get_scriptdir() + "preremove.sh"))
 				{
-					currentStatus = statusHeader + "executing pre-remove scripts";
+					currentStatus = statusHeader + _("executing pre-remove scripts");
 					string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
 					if (!simulate) system(prerem.c_str());
 				}
@@ -728,9 +735,9 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
 
 			// Purge is now implemented here; checking all
-			currentStatus = statusHeader + "building file list";
+			currentStatus = statusHeader + _("building file list");
 			vector<FILES> *remove_files=package->get_files();
-			currentStatus = statusHeader + "removing files...";
+			currentStatus = statusHeader + _("removing files...");
 			bool removeThis;
 			for (unsigned int i=0; i<remove_files->size(); i++)
 			{
@@ -744,7 +751,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				}
 			}
 
-			currentStatus = statusHeader + "removing empty directories...";
+			currentStatus = statusHeader + _("removing empty directories...");
 	
 			// Run 2: clearing empty directories
 			vector<string>empty_dirs;
@@ -778,7 +785,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			{
 				if (FileExists(package->get_scriptdir() + "postremove.sh"))
 				{
-					currentStatus = statusHeader + "executing post-removal scripts";
+					currentStatus = statusHeader + _("executing post-removal scripts");
 					string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
 					if (!simulate) system(postrem.c_str());
 				}
@@ -809,20 +816,21 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		}
 		pData.increaseItemProgress(package->itemID);
 		set_installed(package->get_id(), ST_NOTINSTALLED);
+		if (package->action()==ST_PURGE) set_configexist(package->get_id(), 0);
 		set_action(package->get_id(), ST_NONE);
-		currentStatus = statusHeader + "cleaning file list";
+		currentStatus = statusHeader + _("cleaning file list");
 		pData.increaseItemProgress(package->itemID);
 		cleanFileList(package->get_id());
 		pData.increaseItemProgress(package->itemID);
 		sqlFlush();
-		currentStatus = statusHeader + "remove complete";
+		currentStatus = statusHeader + _("remove complete");
 		mDebug("Package removed sussessfully");
 		package->get_files()->clear();
 		return 0;
 	}
 	else
 	{
-		mError("Weird status of package, i'm afraid to remove this...");
+		mError(_("Weird status of package, i'm afraid to remove this..."));
 		return -1;
 	}
 }	// End of remove_package
@@ -878,7 +886,7 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 			
 			if (!used)
 			{
-				say("Deleting tag %s as unused\n", available_tags.getValue(i, "tags_name")->c_str());
+				say(_("Deleting tag %s as unused\n"), available_tags.getValue(i, "tags_name")->c_str());
 				toDelete.push_back(*available_tags.getValue(i,"tags_id"));
 			}
 		}

@@ -1,4 +1,4 @@
-/** $Id: xmlParser.cpp,v 1.5 2007/07/19 12:46:40 i27249 Exp $
+/**
  ****************************************************************************
  * <P> XML.c - implementation file for basic XML parser written in ANSI C++
  * for portability. It works by using recursion and a node tree for breaking
@@ -70,7 +70,6 @@
  *
  ****************************************************************************
  */
-#include "file_routines.h"
 #ifdef WIN32
 //#ifdef _DEBUG
 //#define _CRTDBG_MAP_ALLOC
@@ -225,7 +224,7 @@ static const char XML_utf8ByteTable[256] =
                 NULL,                    // default for unmappable chars
                 NULL                     // set when default char used
                 );
-            if (i<0) { printf("WideCharToMultiByte returned i == %d",i); return NULL;}
+            if (i<0) return NULL;
             char *d=(char*)malloc(i+1);
             WideCharToMultiByte(CP_ACP,  // code page
                 0,                       // performance and mapping flags
@@ -274,11 +273,9 @@ static const char XML_utf8ByteTable[256] =
     }
     char *myWideCharToMultiByte(const wchar_t *s, int l)
     {
-	    int x1;
-	    x1=l;
         const wchar_t *ss=s;
         int i=(int)wcsrtombs(NULL,&ss,0,NULL);
-        if (i<0) { printf("wcsrtombs returned i == %d",i); return NULL;}
+        if (i<0) return NULL;
         char *d=(char *)malloc(i+1);
         wcsrtombs(d,&s,i,NULL);
         d[i]=0;
@@ -399,9 +396,6 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
 {
     int i;
     XMLSTR t=createXMLString(nFormat,&i);
-    if (WriteFile(filename, (string) "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" + t)==0) return eXMLErrorNone;
-    else return eXMLErrorCannotWriteFile;
-    /*
     FILE *f=_tfopen(filename,_T("wb"));
     if (!f) return eXMLErrorCannotOpenWriteFile;
 #ifdef _XMLUNICODE
@@ -435,7 +429,7 @@ XMLError XMLNode::writeToFile(XMLCSTR filename, const char *encoding, char nForm
     if (!fwrite(t,sizeof(XMLCHAR)*i,1,f)) return eXMLErrorCannotWriteFile;
     if (fclose(f)!=0) return eXMLErrorCannotWriteFile;
     free(t);
-    return eXMLErrorNone;*/
+    return eXMLErrorNone;
 }
 
 // Duplicate a given string.
@@ -1643,10 +1637,7 @@ XMLNode XMLNode::parseFile(XMLCSTR filename, XMLCSTR tag, XMLResults *pResults)
             free(buf); buf=(unsigned char*)b2; headerSz=0;
         } else
         {
-            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf))
-	    {
-		    headerSz=3;
-	    }
+            if ((buf[0]==0xef)&&(buf[1]==0xbb)&&(buf[2]==0xbf)) headerSz=3;
         }
     }
 #endif
@@ -2426,8 +2417,6 @@ XMLParserBase64Tool::~XMLParserBase64Tool(){ if (buf) free(buf); }
 
 int XMLParserBase64Tool::encodeLength(unsigned char *inbuf, int inlen, char formatted)
 {
-	unsigned char *t;
-	t=inbuf;
     unsigned int i=((inlen-1)/3*4+4+1),eLen=inlen/3;
     if (formatted) i+=eLen/18; 
     return i;

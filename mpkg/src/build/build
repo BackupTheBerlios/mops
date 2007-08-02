@@ -1,5 +1,3 @@
 #!/bin/sh
-cmake .. ; make -j2 
-sudo chmod +s ./installpkg-ng
-echo "" > /var/log/mpkg-debug.log
+cmake .. ; make -j2 && cp *.so /usr/local/lib/ && mkdir -p /usr/local/include/mpkg && cp ../*.h /usr/local/include/mpkg/ && cp installpkg-ng /usr/local/bin/mpkg && ln -sf /usr/local/bin/mpkg /usr/local/bin/buildpkg
 

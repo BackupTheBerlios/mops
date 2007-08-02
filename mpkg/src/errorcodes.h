@@ -1,17 +1,18 @@
 /*
  * MOPSLinux package system - error codes
- * $Id: errorcodes.h,v 1.4 2007/05/22 16:56:01 i27249 Exp $
+ * $Id: errorcodes.h,v 1.5 2007/08/02 10:39:13 i27249 Exp $
  */
 
 #ifndef ERRORCODES_H_
 #define ERRORCODES_H_
 #include "faststl.h"
-struct errorMessage
-{
-	string itemName;
-	string errorHeader;
-	string errorText;
-};
+#include <vector>
+#include "dialog.h"
+using namespace std;
+#define EMODE_CONSOLE 0
+#define EMODE_DIALOG 1
+#define EMODE_QT 2
+#define _(string) gettext(string)
 
 typedef enum {
     MPKG_OK = 0,
@@ -69,6 +70,7 @@ typedef enum {
 	MPKG_RETURN_DECLINE,
 	MPKG_RETURN_RETRY,
 	MPKG_RETURN_REINIT,
+	MPKG_RETURN_OK
 } mpkgErrorReturn;
 
 mpkgErrorCode getErrorCode();
@@ -79,6 +81,25 @@ void setErrorReturn(mpkgErrorReturn value);
 
 extern mpkgErrorCode errorCode;
 extern mpkgErrorReturn errorReturn;
+
+typedef struct
+{
+	mpkgErrorReturn ret;
+	string text;
+} errorOptions;
+
+typedef struct
+{
+	string text;
+	mpkgErrorCode code;
+	vector<errorOptions> action;
+} errorDescription;
+
+void initErrorManager(int mode=EMODE_CONSOLE);
+
+mpkgErrorReturn callError(mpkgErrorCode, string errDetails="");
+
+extern vector<errorDescription> errorList;
 
 
 #define MPKGERROR_OK		0

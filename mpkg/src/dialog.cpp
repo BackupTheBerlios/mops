@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.10 2007/07/19 12:46:40 i27249 Exp $
+ * $Id: dialog.cpp,v 1.11 2007/08/02 10:39:13 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -275,9 +275,13 @@ begin:
 
 void Dialog::execGauge(string text, unsigned int height, unsigned int width, int value)
 {
+	mDebug("Executing gauge");
 	string exec_str = dialog + " --gauge \"" + text + "\" " + IntToStr(height) + " " + IntToStr(width);
-	if (fd) pclose(fd);
-	if (!fd) fd=popen(exec_str.c_str(), "w");
+	if (fd) {
+		pclose(fd);
+		fd=NULL;
+	}
+	fd=popen(exec_str.c_str(), "w");
 	setGaugeValue(value);
 	
 }
@@ -293,7 +297,12 @@ void Dialog::setGaugeValue(int value)
 }
 void Dialog::closeGauge()
 {
-	if (fd) pclose(fd);
+	mDebug("Closing gauge");
+	if (fd)
+	{
+		pclose(fd);
+		fd=NULL;
+	}
 	else mError("Gauge doesn't exist");
 }
 bool Dialog::execCheckList(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair>* menuItems)
@@ -336,9 +345,25 @@ bool Dialog::execCheckList(string header, unsigned int height, unsigned int widt
 
 Dialog::Dialog(string title, string backtitle)
 {
+	fd=NULL;
+	setTitle(title,backtitle);
+/*	dialog = "dialog ";
+	if (!backtitle.empty()) dialog += " --backtitle \"" + backtitle + "\" ";
+	if (!title.empty()) dialog += " --title \"" + title + "\" ";*/
+}
+void Dialog::setTitle(string title, string backtitle)
+{
 	dialog = "dialog ";
 	if (!backtitle.empty()) dialog += " --backtitle \"" + backtitle + "\" ";
 	if (!title.empty()) dialog += " --title \"" + title + "\" ";
 }
 
-Dialog::~Dialog(){}
+Dialog::~Dialog()
+{
+	if (fd)
+	{
+		pclose(fd);
+		fd=NULL;
+	}
+
+}

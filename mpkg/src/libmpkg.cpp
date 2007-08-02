@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.39 2007/07/13 11:25:11 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.40 2007/08/02 10:39:13 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -8,7 +8,7 @@
 mpkg::mpkg(bool _loadDatabase)
 {
 	mDebug("creating core");
-	currentStatus="Loading database...";
+	currentStatus=_("Loading database...");
 	loadGlobalConfig();
 	db=NULL;
 	DepTracker=NULL;
@@ -19,7 +19,7 @@ mpkg::mpkg(bool _loadDatabase)
 		DepTracker = new DependencyTracker(db);
 	}
 	init_ok=true;
-	currentStatus = "Database loaded (mpkg constructor)";
+	currentStatus = _("Database loaded");
 }
 
 mpkg::~mpkg()
@@ -67,7 +67,7 @@ int mpkg::install(vector<string> fname)
 	int ret=0;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
-		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
+		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
 		if (mpkgSys::requestInstall(fname[i], db, DepTracker)!=0) ret--;
 	}
 	//currentStatus = "Installation complete";
@@ -83,7 +83,7 @@ int mpkg::installGroups(vector<string> groupName)
 }
 int mpkg::install(string fname)
 {
-	currentStatus = "Building queue: "+fname;
+	currentStatus = _("Building queue: ")+fname;
 	return mpkgSys::requestInstall(fname, db, DepTracker);
 }
 
@@ -112,8 +112,8 @@ int mpkg::uninstall(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
-		printf("[%d] REMOVING %s\n", i, pkg_name[i].c_str());
-		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
+		//printf("[%d] REMOVING %s\n", i, pkg_name[i].c_str());
+		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0) ret--;
 	}
 	return ret;
@@ -125,7 +125,7 @@ int mpkg::purge(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
-		currentStatus = "Building queue: "+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
+		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker, true)!=0) ret--;
 	}
 	return ret;
@@ -135,12 +135,12 @@ int mpkg::update_repository_data()
 {
 	if (mpkgSys::update_repository_data(db) == 0 && db->sqlFlush() == 0)
 	{
-		currentStatus = "Repository data updated";
+		currentStatus = _("Repository data updated");
 		return 0;
 	}
 	else 
 	{
-		currentStatus = "Repository data update failed";
+		currentStatus = _("Repository data update failed");
 		return -1;
 	}
 }
@@ -148,20 +148,20 @@ int mpkg::update_repository_data()
 // Cache cleaning
 int mpkg::clean_cache(bool clean_symlinks)
 {
-	currentStatus = "Cleaning cache...";
+	currentStatus = _("Cleaning cache...");
 	int ret = mpkgSys::clean_cache(clean_symlinks);
-	if (ret == 0) currentStatus = "Cache cleanup complete";
-	else currentStatus = "Error cleaning cache!";
+	if (ret == 0) currentStatus = _("Cache cleanup complete");
+	else currentStatus = _("Error cleaning cache!");
 	return ret;
 }
 
 // Package list retrieving
 int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist)
 {
-	currentStatus = "Retrieving package list...";
+	currentStatus = _("Retrieving package list...");
 	int ret = db->get_packagelist(sqlSearch, packagelist);
-	if (ret == 0) currentStatus = "Retriveal complete";
-	else currentStatus = "Failed retrieving package list!";
+	if (ret == 0) currentStatus = _("Retriveal complete");
+	else currentStatus = _("Failed retrieving package list!");
 	return ret;
 }
 
@@ -260,26 +260,28 @@ int mpkg::set_runscripts(bool dorun)
 // Finalizing
 int mpkg::commit()
 {
-	say("Checking dependencies\n");
-	currentStatus = "Checking dependencies...";
+	mDebug("committing");
+	say(_("Checking dependencies\n"));
+	currentStatus = _("Checking dependencies...");
 	int errorCount = DepTracker->renderData();
 	if (errorCount==0)
 	{
-		say("Building queue\n");
+		say(_("Building queue\n"));
+		mDebug("Tracking deps");
 		DepTracker->commitToDb();
-		say("Committing...\n");
-		currentStatus = "Committing changes...";
+		say(_("Committing...\n"));
+		currentStatus = _("Committing changes...");
 		unsigned int ret = db->commit_actions();
-		if (ret==0) say("Complete successfully\n");
-		else mError("Commit failed");
-		currentStatus = "Complete.";
+		if (ret==0) say(_("Complete successfully\n"));
+		else mError(_("Commit failed"));
+		currentStatus = _("Complete.");
 		return ret;
 	}
 	else
 	{
 		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
-		mError("Error in dependencies: " + IntToStr(errorCount) + "failures");
-		currentStatus = "Failed - depencency errors";
+		mError(_("Error in dependencies: ") + IntToStr(errorCount) + _(" failures"));
+		currentStatus = _("Failed - depencency errors");
 		return MPKGERROR_UNRESOLVEDDEPS;
 	}
 }
@@ -293,12 +295,12 @@ bool mpkg::checkPackageIntegrity(string pkgName)
 	get_packagelist(&sqlSearch, &table);
 	if (table.size()==0)
 	{
-		mError("No package \"" + pkgName + "\" is installed");
+		mError(_("No package \"") + pkgName + _("\" is installed"));
 		return true;
 	}
 	if (table.size()!=1)
 	{
-		mError("Received " + IntToStr(table.size()) + " packages, ambiguity!");
+		mError(_("Received ") + IntToStr(table.size()) + _(" packages, ambiguity!"));
 		return false;
 	}
 	return checkPackageIntegrity(table.get_package(0));
@@ -319,12 +321,12 @@ bool mpkg::checkPackageIntegrity(PACKAGE *package)
 		if (!FileExists(SYS_ROOT + *package->get_files()->at(i).get_name(), &broken_sym))
 		{
 			if (integrity_ok) 
-				mError("Package " + (string) CL_YELLOW + *package->get_name() + (string) CL_WHITE + " has broken files or symlinks:");
+				mError(_("Package ") + (string) CL_YELLOW + *package->get_name() + (string) CL_WHITE + _(" has broken files or symlinks:"));
 			integrity_ok = false;
 			if (!broken_sym) 
-				say("%s%s%s: /%s (file doesn't exist)\n", CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
+				say(_("%s%s%s: /%s (file doesn't exist)\n"), CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
 			else
-				say("%s%s%s: /%s (broken symlink)\n", CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
+				say(_("%s%s%s: /%s (broken symlink)\n"), CL_YELLOW, package->get_name()->c_str(),CL_WHITE, package->get_files()->at(i).get_name()->c_str());
 
 
 		}
@@ -336,12 +338,39 @@ bool mpkg::repair(PACKAGE *package)
 {
 	if (!package->available())
 	{
-		mError("Cannot repair " + *package->get_name() + ": package is unavailable");
+		mError(_("Cannot repair ") + *package->get_name() + _(": package is unavailable"));
 		return false;
 	}
 	db->set_action(package->get_id(), ST_REPAIR);
 	return true;
 }
 			
-
+void mpkg::exportBase(string output_dir)
+{
+	printf("Exporting data to %s directory\n",output_dir.c_str());
+	PACKAGE_LIST allPackages;
+	SQLRecord sqlSearch;
+//	sqlSearch.addField("package_installed", 1);
+	get_packagelist(&sqlSearch, &allPackages);
+	PACKAGE *p;
+	mstring data;
+	printf("Received %d packages\n",allPackages.size());
+	for (int i=0; i<allPackages.size(); i++)
+	{
+		data.clear();
+		p = allPackages.get_package(i);
+		data = "PACKAGE NAME:\t" + *p->get_name() +"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build() +\
+			"\nCOMPRESSED PACKAGE SIZE:\t"+*p->get_compressed_size()+ \
+			"\nUNCOMPRESSED PACKAGE SIZE:\t"+*p->get_installed_size()+\
+			"\nPACKAGE LOCATION:\t/var/log/mount/"+*p->get_filename()+\
+			"\nPACKAGE DESCRIPTION:\n"+adjustStringWide(*p->get_short_description()+"\n"+*p->get_description(),70,*p->get_name())+\
+			"\nFILE LIST:\n";
+		for (unsigned int f=0; f<p->get_files()->size(); f++)
+		{
+			data+=*p->get_files()->at(i).get_name();
+		}
+		data+="\n";
+		WriteFile(output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build(), data.s_str());
+	}
+}
 

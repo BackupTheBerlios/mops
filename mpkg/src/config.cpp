@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.38 2007/07/13 11:25:11 i27249 Exp $
+ * $Id: config.cpp,v 1.39 2007/08/02 10:39:13 i27249 Exp $
  *
  * ***************************************************/
 
@@ -59,6 +59,10 @@ int loadGlobalConfig(string config_file)
 #ifdef HTTP_LIB
 	mError("error: core running non-core code\n");
 #endif
+	if (!consoleMode && !dialogMode) initErrorManager(EMODE_QT);
+	if (consoleMode && dialogMode) initErrorManager(EMODE_DIALOG);
+	if (consoleMode && !dialogMode) initErrorManager(EMODE_CONSOLE);
+
 	currentStatus = "Loading configuration...";
 	removeBlacklist = ReadFileStrings("/etc/mpkg-remove-blacklist");
 	string run_scripts="yes";
@@ -521,7 +525,8 @@ mpkgErrorReturn getErrorReturn()
 
 mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 {
-	setErrorCode(errCode);
+	return callError(errCode);
+/*	setErrorCode(errCode);
 	if (consoleMode)
 	{
 		consoleEventResolver();
@@ -533,9 +538,9 @@ mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 			sleep(1);
 		}
 	}
-	return getErrorReturn();
+	return getErrorReturn();*/
 }
-
+/*
 int consoleSendErrorMessage(string header, string text, string actionList, string defaultAction)
 {
 	say("[%s]\n%s\n",header.c_str(), text.c_str());
@@ -569,8 +574,8 @@ int consoleSendErrorMessage(string header, string text, string actionList, strin
 	mDebug("return value = [" + IntToStr(ret_num) + "]");
 	return ret_num;
 }
-
-void consoleEventResolver()
+*/
+/*void consoleEventResolver()
 {
 	int userReply;
 	switch(getErrorCode())
@@ -902,4 +907,4 @@ void consoleEventResolver()
 						setErrorReturn(MPKG_RETURN_IGNORE);
 						break;
 				}
-}
+}*/

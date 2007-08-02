@@ -1,6 +1,6 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.10 2007/07/20 12:38:39 adiakin Exp $
+    $Id: conditions.cpp,v 1.11 2007/08/02 10:39:13 i27249 Exp $
 */
 
 
@@ -8,7 +8,6 @@
 #include "string_operations.h"
 int condition2int(string condition)
 {
-	mDebug("PIZDEC 1-3-1: '" + condition + "'");
 	if (condition==COND_MORE) return VER_MORE;
 	if (condition==COND_LESS) return VER_LESS;
 	if (condition==COND_EQUAL) return VER_EQUAL;

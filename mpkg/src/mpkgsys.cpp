@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.41 2007/07/13 11:25:11 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.42 2007/08/02 10:39:13 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -10,7 +10,7 @@ string output_dir;
 // Cleans system cache
 int mpkgSys::clean_cache(bool symlinks_only)
 {
-	if (!symlinks_only) say("Cleaning package cache\n");
+	if (!symlinks_only) say(_("Cleaning package cache\n"));
 	if (!symlinks_only) ftw(SYS_CACHE.c_str(), _clean, 50);
 	else ftw(SYS_CACHE.c_str(), _clean_symlinks, 50);
 	return 0;
@@ -29,7 +29,7 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	{
 		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);
 	}
-	printf("finished\n");
+	say(_("finished\n"));
 	return 0;
 }
 
@@ -49,7 +49,7 @@ int mpkgSys::build_package()
 	    string pkgname;
 	    string sysline;
 	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
-	    say("Creating package %s\n", pkgname.c_str());
+	    say(_("Creating package %s\n"), pkgname.c_str());
 #ifdef APPLE_DEFINED
 	    sysline = "tar czf "+pkgname+".tgz *";
 #else
@@ -75,7 +75,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepT
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
 
-	say("Updating package data from %d repository(s)...\n", REPOSITORY_LIST.size());
+	say(_("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size());
 	int total_packages=0; // Счетчик полученных пакетов.
 
 	actionBus.setCurrentAction(ACTIONID_DBUPDATE);
@@ -101,7 +101,7 @@ int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepT
 	delete tmpPackages;
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(availablePackages);
-	say("Update complete.\n");
+	say(_("Update complete.\n"));
 	actionBus.setActionState(ACTIONID_DBUPDATE);
 	return ret;
 }
@@ -127,7 +127,7 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		mDebug("checking " + IntToStr(i));
 		if (candidates.get_package(i)->installed() && !candidates.get_package(i)->equalTo(&tmpPackage))
 		{
-			say("Updating package %s\n", candidates.get_package(i)->get_name()->c_str());
+			say(_("Updating package %s\n"), candidates.get_package(i)->get_name()->c_str());
 			requestUninstall(*candidates.get_package(i)->get_name(), db, DepTracker);
 		}
 	}
@@ -135,11 +135,11 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	{
 		if (tmpPackage.installed())
 		{
-			mError("Package "+ *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is already installed");
+			mError(_("Package ") + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + _(" is already installed"));
 		}
 		if (!tmpPackage.available(localInstall))
 		{
-			mError("Package " + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is unavailable");
+			mError(_("Package ") + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + _(" is unavailable"));
 		}
 		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
@@ -154,7 +154,7 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 	}
 	else
 	{
-		mError("get_package error: returned " + IntToStr (ret));
+		mError(_("get_package error: returned ") + IntToStr (ret));
 		return ret;
 	}
 }
@@ -216,12 +216,16 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 			tryLocalInstall=true;
 		}
 	}
-	else return ret;
+	else
+	{
+		mError(_("No such package: ") + package_name);
+		return ret;
+	}
 
 	if (!tryLocalInstall || !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
 	else
 	{
-		say("Installing local package %s\n", package_name.c_str());
+		say(_("Installing local package %s\n"), package_name.c_str());
 		LocalPackage _p(package_name);
 		_p.injectFile();
 		db->emerge_to_db(&_p.data);
@@ -261,7 +265,7 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		else
 		{
-			say("%s-%s doesn't present in the system\n", tmpPackage.get_name()->c_str(), tmpPackage.get_fullversion().c_str());
+			say(_("%s-%s doesn't present in the system\n"), tmpPackage.get_name()->c_str(), tmpPackage.get_fullversion().c_str());
 		}
 		if (process)
 		{
@@ -271,8 +275,8 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		}
 		else
 		{
-			if (purge) mError("Package " + *tmpPackage.get_name() + " "+ tmpPackage.get_fullversion() + " is already purged");
-			else  mError("Package " + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + " is already purged");
+			if (purge) mError(_("Package ") + *tmpPackage.get_name() + " "+ tmpPackage.get_fullversion() + _(" is already purged"));
+			else  mError(_("Package ") + *tmpPackage.get_name() + " " + tmpPackage.get_fullversion() + _(" is already purged"));
 ;
 			return MPKGERROR_IMPOSSIBLE;
 		}
@@ -287,7 +291,8 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 	mDebug("requestUninstall of " + package_name);
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", &package_name);
-	sqlSearch.addField("package_installed", 1);
+	if (!purge) sqlSearch.addField("package_installed", 1);
+	else sqlSearch.addField("package_configexist",1);
 	PACKAGE_LIST candidates;
 	int ret = db->get_packagelist(&sqlSearch, &candidates);
 	mDebug("candidates to uninstall size = " + IntToStr(candidates.size()));
@@ -296,12 +301,12 @@ int mpkgSys::requestUninstall(string package_name, mpkgDatabase *db, DependencyT
 	{
 		if (candidates.size()>1)
 		{
-			mError("Ambiguity in uninstall: multiple packages with some name are installed");	
+			mError(_("Ambiguity in uninstall: multiple packages with some name are installed"));
 			return MPKGERROR_AMBIGUITY;
 		}
 		if (candidates.IsEmpty())
 		{
-			mError("No packages to uninstall");
+			mError(_("No packages to uninstall"));
 			return MPKGERROR_NOPACKAGE;
 		}
 		id = candidates.get_package(0)->get_id();

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.39 2007/07/20 12:38:39 adiakin Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.40 2007/08/02 10:39:13 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -28,7 +28,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.9 beta 1 (public preview state)";
+	char *version="0.9 beta 3 (libxml2 edition)";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -39,7 +39,7 @@ int main (int argc, char **argv)
 	mpkg core;
 	if (!core.init_ok)
 	{
-		mError("Error initializing CORE\n");
+		mError(_("Error initializing CORE"));
 		abort();
 	}
 	if ((string) argv[0] == "buildpkg")
@@ -49,7 +49,7 @@ int main (int argc, char **argv)
 	}
 	
 	ShowBanner();
-	setlocale(LC_ALL, "C");
+	setlocale(LC_ALL, "");
 	bindtextdomain( "installpkg-ng", "/usr/share/locale");
 	textdomain("installpkg-ng");
 
@@ -74,7 +74,7 @@ int main (int argc, char **argv)
 		
 
 	int ich;
-	const char* short_opt = "hvpdfmksDRial";
+	const char* short_opt = "hvpdfmksDRialg";
 	const struct option long_options[] =  {
 		{ "help",	0,	NULL, 'h'},
 		{ "verbose", 0, NULL, 'v'},
@@ -89,6 +89,7 @@ int main (int argc, char **argv)
 		{ "available",0,NULL,'a'},
 		{ "installed",0,NULL,'i'},
 		{ "filelist",0,NULL,'l'},
+		{ "dialog",0,NULL,'g'},
 		{ NULL, 0, NULL, 0}
 	};
 
@@ -144,6 +145,8 @@ int main (int argc, char **argv)
 			case 'l':
 					showFilelist=true;
 					break;
+			case 'g':
+					dialogMode=true;
 					
 			case '?':
 					print_usage(stderr, 1);
@@ -175,12 +178,10 @@ int main (int argc, char **argv)
 			action == ACT_INDEX) 
 		require_root=false;
 
-	/*
 	if (require_root && uid != 0 ) {
-		mError("You must login as root to run this program");
+		mError(_("You must login as root to run this program"));
 		exit(1);
 	}
-	*/
 
 	if ( action == ACT_NONE )
 			print_usage(stderr, 1);
@@ -276,7 +277,7 @@ int main (int argc, char **argv)
 			FILE *install_list = fopen(argv[optind], "r");
 			if (!install_list)
 			{
-				perror("cannot open installation list");
+				perror(_("cannot open installation list"));
 				exit(-1);
 			}
 			char membuff[2000];
@@ -300,7 +301,7 @@ int main (int argc, char **argv)
 		}
 		else
 		{
-			mError("Please select input file\n");
+			mError(_("Please select input file"));
 			exit(-1);
 		}
 	}				
@@ -316,8 +317,27 @@ int main (int argc, char **argv)
 		delete_tmp_files();
 		return 0;
 	}
+
+	if (action == ACT_CONFIG)
+	{
+		say(_("Current configuration:\n"));
+		say(_("System root: %s\n"), SYS_ROOT.c_str());
+		say(_("Package cache: %s\n"), SYS_CACHE.c_str());
+		say(_("Run scripts: %d\n"), !DO_NOT_RUN_SCRIPTS);
+		say(_("Database: %s\n"), DB_FILENAME.c_str());
+		say(_("CD-ROM device: %s\n"), CDROM_DEVICE.c_str());
+		say(_("CD-ROM mountpoint: %s\n"), CDROM_MOUNTPOINT.c_str());
+		say(_("Scripts directory: %s\n"), SCRIPTS_DIR.c_str());
+		list_rep(&core);
+		return 0;
+	}
 	if (action == ACT_TEST)
 	{
+		core.exportBase("/root/export");
+		//bool z = isMounted("/var/log/mount");
+
+
+		return 0;
 		/*
 		vector<string> db_struct = ReadFileStrings("/root/mpkg/sql/create_database.sql");
 		string dbstruct_cpp = (string) "#include \"dbstruct.h\"\nstring getDBStructure()\n{\n\treturn \"";
@@ -327,11 +347,14 @@ int main (int argc, char **argv)
 		}
 		dbstruct_cpp += "\";\n}\n";
 		WriteFile("dbstruct.cpp", dbstruct_cpp);*/
-
-
-
+/*
+		string r_location;
+		CDROM_MOUNTPOINT="/root/distro/";
+		string vname = getCdromVolname(&r_location);
 		
-		return 0;
+		printf("Volname = [%s]\n", vname.c_str());
+		printf("Location = [%s]\n", r_location.c_str());
+		return 0;*/
 	}
 
 	if (action == ACT_CHECKDAMAGE)
@@ -352,7 +375,7 @@ int main (int argc, char **argv)
 					       	checkList.get_package(i)->get_name()->c_str(), CL_GREEN, CL_WHITE);
 				else 
 				{
-					say("%s: %sDAMAGED%s\n", checkList.get_package(i)->get_name()->c_str(), CL_RED, CL_WHITE);
+					say(_("%s: %sDAMAGED%s\n"), checkList.get_package(i)->get_name()->c_str(), CL_RED, CL_WHITE);
 					if (repair_damaged) 
 					{
 						repairList.add(checkList.get_package(i));
@@ -367,7 +390,7 @@ int main (int argc, char **argv)
 				if (core.checkPackageIntegrity((string) argv[i])) say("%s: %sOK%s\n", argv[i], CL_GREEN, CL_WHITE);
 				else 
 				{
-					say("%s: %sDAMAGED%s\n", argv[i], CL_RED, CL_WHITE);
+					say(_("%s: %sDAMAGED%s\n"), argv[i], CL_RED, CL_WHITE);
 				}
 			}
 		}
@@ -377,7 +400,7 @@ int main (int argc, char **argv)
 		}
 		if (repairList.size()>0)
 		{
-			say("\n\n----------Repairing damaged packages----------\n");
+			say(_("\n\n----------Repairing damaged packages----------\n"));
 			core.commit();
 		}
 
@@ -391,7 +414,7 @@ int main (int argc, char **argv)
 			pname.push_back((string) argv[i]);
 		}
 		if (do_purge==0) core.uninstall(pname);
-		else core.purge(pname);
+		else core.uninstall(pname);
 		core.commit();
 		delete_tmp_files();
 		return 0;
@@ -432,7 +455,7 @@ int main (int argc, char **argv)
 		//mDebug("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
 		if (argc == 4)
 		{
-			say("tagging...\n");
+			say(_("tagging...\n"));
 			tag_package(argv[3], argv[2]);
 		}
 		delete_tmp_files();
@@ -447,7 +470,7 @@ int main (int argc, char **argv)
 		}
 		else 
 		{
-			mError("Please define output directory");
+			mError(_("Please define output directory"));
 		}
 		delete_tmp_files();
 
@@ -478,7 +501,7 @@ int main (int argc, char **argv)
 		if (argc == 4)
 		{
 			
-			say("Building repository index\nURL: %s\nName: %s\n", argv[optind], argv[optind+1]);
+			say(_("Building repository index\nURL: %s\nName: %s\n"), argv[optind], argv[optind+1]);
 			core.rep.build_index(argv[optind], argv[optind+1]);
 		}
 		else
@@ -489,7 +512,7 @@ int main (int argc, char **argv)
 			}
 			else
 			{
-				mError("To few arguments to index\n");
+				mError(_("To few arguments to index\n"));
 				print_usage(stderr, 1);
 			}
 		}
@@ -517,7 +540,7 @@ int main (int argc, char **argv)
 	// ACTION SUMMARY - NEED TO FIX!
 	if (!core.DepTracker->get_install_list()->IsEmpty())
 	{
-		say("Next packages will be installed:\n");
+		say(_("Next packages will be installed:\n"));
 		for (int i=0;i<core.DepTracker->get_install_list()->size();i++)
 		{
 			say("%s\n", core.DepTracker->get_install_list()->get_package(i)->get_name()->c_str());
@@ -526,7 +549,7 @@ int main (int argc, char **argv)
 
 	if (!core.DepTracker->get_remove_list()->IsEmpty())
 	{
-		say("\nNext packages will be removed:\n");
+		say(_("\nNext packages will be removed:\n"));
 		for (int i=0;i<core.DepTracker->get_remove_list()->size();i++)
 		{
 			say("%s\n", core.DepTracker->get_remove_list()->get_package(i)->get_name()->c_str());
@@ -536,7 +559,7 @@ int main (int argc, char **argv)
 	if (!core.DepTracker->get_failure_list()->IsEmpty())
 	{
 
-		say("Next packages is failed to install:\n");
+		say(_("Next packages is failed to install:\n"));
 		for (int i=0;i<core.DepTracker->get_failure_list()->size();i++)
 		{
 			say("%s: ", core.DepTracker->get_failure_list()->get_package(i)->get_name()->c_str());
@@ -554,45 +577,45 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("Options:\n"));
 	fprintf(stream,_("\t-h    --help              show this help\n"));
 	fprintf(stream,_("\t-v    --verbose           be verbose\n"));
+	fprintf(stream,_("\t-g    --dialog            use dialog mode UI\n"));
 	fprintf(stream,_("\t-d    --force-dep         interpret dependency errors as warnings\n"));
 	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
 	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity on install\n"));
 	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));
 	fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
 	fprintf(stream,_("\t-D    --download-only     only download packages, do not install\n"));
-	fprintf(stream,_("\t-R    --repair            repair damaged packages (use with \"check\" keyword"));
+	fprintf(stream,_("\t-R    --repair            repair damaged packages (use with \"check\" keyword\n"));
 	fprintf(stream,_("\t-i    --installed         show only installed packages (use with \"list\" keyword)\n"));
 	fprintf(stream,_("\t-a    --available         show only available packages (use with \"list\" keyword)\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));
-	fprintf(stream,_("\tinstall    install packages\n"));
-	fprintf(stream,_("\tupgrade    upgrade selected package or full system if no package selected\n"));
-	fprintf(stream,_("\tremove     remove selected package\n"));
-	fprintf(stream,_("\tpurge      purge selected package\n"));
-	fprintf(stream,_("\tshow       show info about package\n"));
-	fprintf(stream,_("\tshow_queue show actions queue\n"));
-	fprintf(stream,_("\tupdate     update packages info\n"));
-	fprintf(stream,_("\tlist       show the list of all packages in database\n"));
-	fprintf(stream,_("\tlist_rep   list enabled repositories\n"));
-	fprintf(stream,_("\tinstallfromlist install using file with list of items\n"));
-	fprintf(stream,_("\treset      reset queue\n"));
-	fprintf(stream,_("\tshow_queue show queue\n"));
-	fprintf(stream,_("\tcommit     commit queued actions\n"));
-	fprintf(stream,_("\tsearch     search package by name\n"));
-	fprintf(stream,_("\tclean      remove all packages from cache\n"));
-	fprintf(stream,_("\tcheck      checks installed package(s) for damaged files. Use -R flag to to repair\n"));
+	fprintf(stream,_("\tinstall                   install packages\n"));
+	fprintf(stream,_("\tupgrade                   upgrade selected package or full system if no package selected\n"));
+	fprintf(stream,_("\tremove                    remove selected package\n"));
+	fprintf(stream,_("\tpurge                     purge selected package\n"));
+	fprintf(stream,_("\tshow                      show info about package\n"));
+	fprintf(stream,_("\tupdate                    update packages info\n"));
+	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
+	fprintf(stream,_("\tlist_rep                  list enabled repositories\n"));
+	fprintf(stream,_("\tinstallfromlist           install using file with list of items\n"));
+	fprintf(stream,_("\treset                     reset queue\n"));
+	fprintf(stream,_("\tshow_queue                show queue\n"));
+	fprintf(stream,_("\tcommit                    commit queued actions\n"));
+	fprintf(stream,_("\tsearch                    search package by name\n"));
+	fprintf(stream,_("\tclean                     remove all packages from cache\n"));
+	fprintf(stream,_("\tcheck                     checks installed package(s) for damaged files. Use -R flag to to repair\n"));
 
 	fprintf(stream,_("\nInteractive options:\n"));
-	fprintf(stream,_("\tmenu       Shows the package selection menu\n"));
+	fprintf(stream,_("\tmenu                      shows the package selection menu\n"));
 	
 	fprintf(stream,_("\nRepository maintaining functions:\n"));
-	fprintf(stream,_("\tindex <server_url> <file_url>     create a repository index file \"packages.xml.gz\"\n"));
-	fprintf(stream,_("\tconvert <package>      convert specified packages from Slackware to MPKG format\n"));
-	fprintf(stream,_("\tconvert_dir <outp_dir> convert whole directory (including sub-dirs) to MPKG format\n"));
+	fprintf(stream,_("\tindex                     create a repository index file \"packages.xml.gz\"\n"));
+	//fprintf(stream,_("\tconvert <package>         convert specified packages from Slackware to MPKG format\n"));
+	fprintf(stream,_("\tconvert_dir <outp_dir>    convert whole directory (including sub-dirs) to MPKG format\n"));
 
 	fprintf(stream,_("\nDebug options:\n"));
-	fprintf(stream,_("\ttest       Executes unit test\n"));
+	fprintf(stream,_("\ttest                      Executes unit test\n"));
 	fprintf(stream, "\n");
 
 
@@ -601,7 +624,7 @@ void print_usage(FILE* stream, int exit_code)
 
 int list_rep(mpkg *core)
 {
-	say("Repository list:\n");
+	say(_("Repository list:\n"));
 	vector <string> rlist=core->get_repositorylist();
 	for (unsigned int i=0; i<rlist.size(); i++)
 	{
@@ -621,38 +644,38 @@ void show_package_info(mpkg *core, string name)
 	core->get_packagelist(&sqlSearch, &pkgList);
 	if (pkgList.IsEmpty())
 	{
-		say("No such package\n");
+		say(_("No such package\n"));
 	}
 	for (int i=0; i<pkgList.size(); i++)
 	{
-		say("%sID:%s                 %d\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_id());
-		say("%sName:%s               %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_name()->c_str());
-		say("%sVersion:%s            %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_version()->c_str());
-		say("%sArch:%s               %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_arch()->c_str());
-		say("%sBuild:%s              %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_build()->c_str());
-		say("%sPackage size:%s       %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_compressed_size()->c_str());
-		say("%sInstalled size:%s     %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_installed_size()->c_str());
-		say("%sMaintainer:%s         %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager()->c_str());
-		say("%sMaintainer e-mail:%s  %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager_email()->c_str());
-		say("%sStatus:%s             %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_vstatus(true).c_str());
+		say(_("%sID:%s                 %d\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_id());
+		say(_("%sName:%s               %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_name()->c_str());
+		say(_("%sVersion:%s            %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_version()->c_str());
+		say(_("%sArch:%s               %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_arch()->c_str());
+		say(_("%sBuild:%s              %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_build()->c_str());
+		say(_("%sPackage size:%s       %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_compressed_size()->c_str());
+		say(_("%sInstalled size:%s     %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_installed_size()->c_str());
+		say(_("%sMaintainer:%s         %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager()->c_str());
+		say(_("%sMaintainer e-mail:%s  %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_packager_email()->c_str());
+		say(_("%sStatus:%s             %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_vstatus(true).c_str());
 
-		say("%sMD5:%s                %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_md5()->c_str());
-		say("%sFilename:%s           %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_filename()->c_str());
-		say("%sShort description:%s  %s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_short_description()->c_str());
+		say(_("%sMD5:%s                %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_md5()->c_str());
+		say(_("%sFilename:%s           %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_filename()->c_str());
+		say(_("%sShort description:%s  %s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_short_description()->c_str());
 		
 		if (pkgList.get_package(i)->available()) {
-			say("%sLocations:%s\n", CL_GREEN, CL_WHITE);
+			say(_("%sLocations:%s\n"), CL_GREEN, CL_WHITE);
 			for (unsigned int t=0; t<pkgList.get_package(i)->get_locations()->size(); t++)
 			{
 				say("\t\t    %s\n", pkgList.get_package(i)->get_locations()->at(t).get_full_url().c_str());
 			}
 		}
-		else say("%sLocations:%s          %s\n", CL_GREEN, CL_WHITE, "none");
+		else say(_("%sLocations:%s          %s\n"), CL_GREEN, CL_WHITE, _("none"));
 		
-		say("%sTags:%s               \n", CL_GREEN, CL_WHITE);
+		say(_("%sTags:%s               \n"), CL_GREEN, CL_WHITE);
 		if (pkgList.get_package(i)->get_tags()->empty())
 		{
-			say("none\n");
+			say(_("none\n"));
 		}
 		else
 		{
@@ -663,24 +686,24 @@ void show_package_info(mpkg *core, string name)
 		}
 		if (!pkgList.get_package(i)->get_dependencies()->empty())
 		{
-			say("%sDepends on:%s\n", CL_GREEN, CL_WHITE);
+			say(_("%sDepends on:%s\n"), CL_GREEN, CL_WHITE);
 			for (unsigned int t=0; t<pkgList.get_package(i)->get_dependencies()->size(); t++)
 			{
 				say("\t\t    %s\n", pkgList.get_package(i)->get_dependencies()->at(t).getDepInfo().c_str());
 			}
 		}
 
-		say("%sDescription:%s        \n%s\n", CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
+		say(_("%sDescription:%s        \n%s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
 
 		if (showFilelist)
 		{
-			say("%sFilelist:%s\n", CL_GREEN, CL_WHITE);
+			say(_("%sFilelist:%s\n"), CL_GREEN, CL_WHITE);
 			if (pkgList.get_package(i)->installed())
 			{
 				core->db->get_filelist(pkgList.get_package(i)->get_id(), pkgList.get_package(i)->get_files());
 				if (pkgList.get_package(i)->get_files()->size()==0)
 				{
-					say("\tPackage contains no files\n");
+					say(_("\tPackage contains no files\n"));
 				}
 				else for (unsigned int t=0; t<pkgList.get_package(i)->get_files()->size(); t++)
 				{
@@ -689,21 +712,21 @@ void show_package_info(mpkg *core, string name)
 					{
 						if (pkgList.get_package(i)->get_files()->at(t).get_type()==FTYPE_CONFIG)
 						{
-							say (" (config file)\n");
+							say (_(" (config file)\n"));
 						}
 						else 
 						{
 							if (pkgList.get_package(i)->get_files()->at(t).get_type()==FTYPE_SYMLINK)
 							{
-								say(" (symlink)\n");
+								say(_(" (symlink)\n"));
 							}
-							else say (" (plain file)\n");
+							else say (_(" (plain file)\n"));
 						}
 					}
 					else say ("\n");
 				}
 			}
-			else say ("\tPackage is not installed\n");
+			else say (_("\tPackage is not installed\n"));
 		}
 
 	}
@@ -735,8 +758,8 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 	core->get_packagelist(&sqlSearch, &pkglist);
 	if (pkglist.IsEmpty())
 	{
-		if (!search.empty()) say("Package database is empty\n");
-		else say("Nothing is found\n");
+		if (!search.empty()) say(_("Package database is empty\n"));
+		else say(_("Search attempt has no results\n"));
 		return 0;
 	}
 	bool showThis;
@@ -792,7 +815,8 @@ int check_action(char* act)
 		&& _act != "installfromlist"
 		&& _act != "test"
 		&& _act != "check"
-	  	&& _act != "menu" ) {
+	  	&& _act != "menu"
+	        && _act != "config") {
 		res = -1;
 	}
 
@@ -864,6 +888,8 @@ int setup_action(char* act)
 		return ACT_SHOW;
 	if (_act == "menu")
 		return ACT_PACKAGEMENU;
+	if (_act == "config")
+		return ACT_CONFIG;
 
 	return ACT_NONE;
 }

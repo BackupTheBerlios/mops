@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.62 2007/08/01 12:04:44 adiakin Exp $
+$Id: local_package.cpp,v 1.63 2007/08/02 10:39:13 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -367,7 +367,7 @@ int LocalPackage::create_md5()
 
 	string sys="md5sum "+filename+" > "+tmp_md5;
 	system(sys);
-	string md5str=ReadFile(tmp_md5, 32);
+	string md5str=ReadFile(tmp_md5).substr(0,32);
 	mDebug("MD5 = "+md5str);
 	if (md5str.empty())
 	{

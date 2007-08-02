@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.35 2007/07/02 14:04:49 i27249 Exp $
+$Id: dependencies.cpp,v 1.36 2007/08/02 10:39:13 i27249 Exp $
 */
 
 
@@ -144,7 +144,7 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	for (unsigned int i=0; i<package->get_dependencies()->size(); i++)
 	{
 		if (get_dep_package(&package->get_dependencies()->at(i), &tmpPackage)!=0) {
-			mError("package " + *package->get_name() + " " + package->get_fullversion() + " is broken"); package->set_broken();
+			mError(_("package ") + *package->get_name() + " " + package->get_fullversion() + _(" is broken")); package->set_broken();
 		}
 		else requiredPackages.add(&tmpPackage);
 	}
@@ -166,7 +166,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	
 	if (reachablePackages.IsEmpty())
 	{
-		mError("Required package "+ *dep->get_package_name() + " not found");
+		mError(_("Required package ") + *dep->get_package_name() + _(" not found"));
 		return MPKGERROR_NOPACKAGE;
 	}
 	
@@ -180,7 +180,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	}
 	if (candidates.IsEmpty())
 	{
-		mError(dep->getDepInfo() + " is required, but no suitable version was found");
+		mError(dep->getDepInfo() + _(" is required, but no suitable version was found"));
 		return MPKGERROR_NOPACKAGE;
 	}
 	if (candidates.hasInstalledOnes()) *returnPackage = *candidates.getInstalledOne();
@@ -336,32 +336,36 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 
 bool DependencyTracker::commitToDb()
 {
-	if (installList.size()>0) say("Committing %d packages to install:\n", installList.size());
-	else say ("No packages to install\n");
+	mDebug("Tracking and committing to database");
+	if (installList.size()>0) say(_("Committing %d packages to install:\n"), installList.size());
+	else say (_("No packages to install\n"));
 	int iC=1;
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
 		{
-			say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
+			//say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 			iC++;
 			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 		}
 	}
-	if (removeList.size()>0) say("Committing %d packages to remove\n", removeList.size());
-	else say ("No packages to remove\n");
+	if (removeList.size()>0) say(_("Committing %d packages to remove\n"), removeList.size());
+	else say (_("No packages to remove\n"));
 	int rC=1;
 	for (int i=0; i<removeList.size(); i++)
 	{
 		if (removeList.get_package(i)->configexist())
 		{
-			say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+			//say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 			rC++;
 			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 		}
 	}
-	say("Total %d new actions to proceed, committing...\n\n", iC-1+rC-1);
+	int total_actions =  iC-1+rC-1;
+	if (total_actions == 0) say(_("No actions to proceed\n"));
+	else say(_("Total %d new actions to proceed, committing...\n\n"), total_actions);
 
+	mDebug("finished");
 	return true;
 }
 

@@ -11,8 +11,6 @@
 #include <sys/mount.h>
 #endif
 #include <mntent.h>
-string DL_CDROM_DEVICE="/dev/cdrom";
-string DL_CDROM_MOUNTPOINT="/var/log/mount/";
 
 #define DOWNLOAD_TIMEOUT 10 // 10 seconds, and failing
 int downloadTimeout=0;
@@ -23,14 +21,14 @@ HttpDownload::HttpDownload()
 	ch = curl_easy_init();
 }
 
-	double *extDlNow;
-	double *extDlTotal;
-	double *extItemTotal;
-	double *extItemNow;
+double *extDlNow;
+double *extDlTotal;
+double *extItemTotal;
+double *extItemNow;
+ProgressData *ppData;
+ActionBus *ppActionBus;
+int currentItemID;
 
-	ProgressData *ppData;
-	ActionBus *ppActionBus;
-	int currentItemID;
 static int downloadCallback(void *clientp,
                        double dltotal,
                        double dlnow,
@@ -40,7 +38,7 @@ static int downloadCallback(void *clientp,
 	double t = ultotal;
 	t=ulnow;
 	void *t1;
-       t1= clientp;
+	t1= clientp;
 	ppData->setItemProgress(currentItemID, dlnow);
 	if (prevDlValue==dlnow) downloadTimeout++;
 	else {
@@ -51,7 +49,7 @@ static int downloadCallback(void *clientp,
 	{
 		return -2;
 	}
-	if (!dialogMode)
+	if (dialogMode)
 	{
 		Dialog dialogItem;
 		dialogItem.execGauge("Скачивается файл " + ppData->getItemName(currentItemID), 10,80, (unsigned int) round(dlnow/(dltotal/100)));
@@ -72,16 +70,70 @@ int fileLinker(std::string source, std::string output)
 
 #define CACHE_CDROM_CONTENTS true;
 
+bool isMounted(string mountpoint)
+{
+	if (mountpoint.find_last_of("/")>=mountpoint.length()-1) mountpoint = mountpoint.substr(0,mountpoint.length()-1);
+//	mountpoint = mountpoint.substr(0,find_last_of("/")-1);
+	mDebug("Checking if [" + mountpoint + "] is mounted");
+#ifdef _MNTENTMCHECK
+	// First, check if device mounted in proper directory. 
+	bool mounted=false;
+	struct mntent *mountList;
+	FILE *mtab = fopen("/proc/mounts", "r");
+	//char volname[2000];
+	if (mtab)
+	{
+		mountList = getmntent(mtab);
+		while ( !mounted && mountList != NULL )
+		{
+			if (strcmp(mountList->mnt_dir, mountpoint.c_str())==0)
+			{
+				/*if (strcmp(mountList->mnt_dir, CDROM_DEVICE.c_str())!=0)
+				{
+					umount(mountpoint.c_str());
+				}
+				else*/ mounted = true;
+			}
+			mountList = getmntent(mtab);
+		}
+		fclose(mtab);
+	}
+	if (mounted) mDebug(mountpoint + " is mounted");
+	else mDebug(mountpoint + " isn't mounted");
+	return mounted;
+#else
+	string out = get_tmp_file();
+	system("cat /proc/mounts | grep " + mountpoint + " | wc -l >" + out );
+	string ret = ReadFile(out);
+	if (ret[0]=='0') {
+		mDebug(mountpoint + " isn't mounted");
+		return false;
+	}
+	else {
+		mDebug(mountpoint + " is already mounted");
+		return true;
+	}
+#endif
+
+}
+
 int cdromFetch(std::string source, std::string output, bool do_cache) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
+	mDebug("DEV: " + CDROM_DEVICE+", MP: " + CDROM_MOUNTPOINT);
+	mpkgErrorReturn errRet;
+	
+	bool mounted = false;
+	mDebug("source=["+source+"]");
+	mDebug("output=["+output+"]");
 	// Special case: packages.xml.gz from CD
 	// First, trying to get from cache
-	string cdromVolName = source.substr(0,source.find_first_of("/")-1);
-	string sourceFileName = DL_CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
+	string cdromVolName = source.substr(0,source.find_first_of("/"));
+	string sourceFileName = CDROM_MOUNTPOINT + source.substr(source.find_first_of("/"));
 
-	if (source.find("packages.xml.gz")!=std::string::npos && FileExists("/var/mpkg/cdrom_cache/"+cdromVolName+"/packages.xml.gz"))
+	if (source.find("packages.xml.gz")!=std::string::npos && FileExists("/var/mpkg/index_cache/"+cdromVolName+"/packages.xml.gz"))
 	{
-		sourceFileName = "/var/mpkg/cdrom_cache/"+cdromVolName+"/packages.xml.gz";
+		mDebug("cached contents");
+		sourceFileName = "/var/mpkg/index_cache/"+cdromVolName+"/packages.xml.gz";
 		do_cache=true;
 		string _cp_cmd;
        		int _link_ret;
@@ -90,11 +142,15 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 		{
 			_cp_cmd = "cp -f ";
 			_cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
-			_link_ret = system(_cp_cmd.c_str());
+			_link_ret = system(_cp_cmd);
+			if (_link_ret == 0) mDebug("cache download OK");
+			else mDebug("Failed to download the cached file");
 		}
+
 		else _link_ret = symlink(sourceFileName.c_str(), output.c_str());	
 		return 0;
 	}
+	else mDebug("Not cached");
 
 	// input format:
 	// source:
@@ -112,61 +168,60 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	//int umount_ret;
 	
 	Dialog d("Монтирование CD-ROM");
-	mkdir(DL_CDROM_MOUNTPOINT.c_str(), 755);
-	// First, check if device mounted in proper directory. 
-	struct mntent *mountList;
-	FILE *mtab = fopen("/proc/mounts", "r");
-	bool mounted = false;
-	//char volname[2000];
-	mpkgErrorReturn errRet;
-	if (mtab)
-	{
-		mountList = getmntent(mtab);
-		while ( !mounted && mountList != NULL )
-		{
-			if (strcmp(mountList->mnt_fsname, DL_CDROM_DEVICE.c_str())==0)
-			{
-				if (strcmp(mountList->mnt_dir, DL_CDROM_MOUNTPOINT.c_str())!=0)
-				{
-					umount(DL_CDROM_MOUNTPOINT.c_str());
-				}
-				else mounted = true;
-			}
-			mountList = getmntent(mtab);
-		}
-		fclose(mtab);
-	}
+	mounted = isMounted(CDROM_MOUNTPOINT);
+	if (mounted) mDebug("mounted already, proceeding to check the volume");
 	if (!mounted)
 	{
+
+		mkdir(CDROM_MOUNTPOINT.c_str(), 755);
 try_mount:
-		d.execInfoBox("Подключение " + DL_CDROM_DEVICE + " к точке монтирования " + DL_CDROM_MOUNTPOINT);
+		d.execInfoBox("Подключение " + CDROM_DEVICE + " к точке монтирования " + CDROM_MOUNTPOINT);
+		mDebug("Mounting");
 #ifndef INTERNAL_MOUNT
-		string mnt_cmd = "mount "+DL_CDROM_DEVICE + " " + DL_CDROM_MOUNTPOINT;
-		int mret = system(mnt_cmd.c_str());
+		mDebug("Mount using system");
+		string mnt_cmd = "mount "+CDROM_DEVICE + " " + CDROM_MOUNTPOINT;
+		int mret = system(mnt_cmd);
 #else
-		int mret = mount(DL_CDROM_DEVICE.c_str(), DL_CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
+		mDebug("Mount using kernel");
+		int mret = mount(CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
 #endif
 		if (mret!=0)
 		{
-			perror("Mount error:");
-			if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + DL_CDROM_DEVICE)) goto try_mount;
-			else return -1;
-			/*errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
-			if (errRet == MPKG_RETURN_RETRY)
+			mDebug("Mount failed");
+			perror("HttpDownload: Mount error:");
+			//sleep(10);
+			CDROM_VOLUMELABEL = cdromVolName;
+			CDROM_DEVICENAME = CDROM_DEVICE;
+			if (dialogMode) 
 			{
-				goto try_mount;
+				if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + CDROM_DEVICE)) goto try_mount;
+				else return -1;
 			}
-			if (errRet == MPKG_RETURN_ABORT)
+			else
 			{
-				return -1;
-			}*/
+				errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+				if (errRet == MPKG_RETURN_RETRY)
+				{
+					goto try_mount;
+				}
+				if (errRet == MPKG_RETURN_ABORT)
+				{
+					return -1;
+				}
+			}
+		}
+		else 
+		{
+			mDebug("Mount success");
+			mounted=true;
 		}
 	}
+	else mDebug("Already mounted");
 
 	string Svolname;
 	
-	// check_volname:
-	Svolname = ReadFile(DL_CDROM_MOUNTPOINT + "/.volume_id");
+	mDebug("CDROM mounted, checking volume ID");
+	Svolname = ReadFile(CDROM_MOUNTPOINT + "/.volume_id");
 	if (Svolname.empty())
 	{
 		// Means no volname
@@ -179,7 +234,8 @@ try_mount:
 		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
 		if (errRet == MPKG_RETURN_RETRY)
 		{
-			umount(DL_CDROM_MOUNTPOINT.c_str());
+			mDebug("Unmounting");
+			umount(CDROM_MOUNTPOINT.c_str());
 			goto try_mount;
 		}
 		if (errRet == MPKG_RETURN_ABORT)
@@ -189,6 +245,7 @@ try_mount:
 	}
 
 copy_file:
+	mDebug("Copying file");
 	string cp_cmd;
        	int link_ret;
 	unlink(output.c_str());
@@ -207,6 +264,7 @@ copy_file:
 			goto copy_file;
 		else return -1;
 	}
+	mDebug("Copy OK");
 	return 0;
 }
 
@@ -312,8 +370,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		mError("Error! Source and sorted lists doesn't equal in size!!!!");
 	}
 
-	DL_CDROM_DEVICE = cdromDevice;
-	DL_CDROM_MOUNTPOINT = cdromMountPoint;
+	CDROM_DEVICE = cdromDevice;
+	CDROM_MOUNTPOINT = cdromMountPoint;
 
 	// reset status for retry
 	for (unsigned int i = 0; i<list.size(); i++)

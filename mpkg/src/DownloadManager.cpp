@@ -6,14 +6,14 @@
 
 #include "debug.h"
 #include "DownloadManager.h"
-
+#include "HttpDownload.h"
 void *dlhandler=NULL;
 
-IDownload*
+/*HttpDownload*
 InitializeDownloadObjects(DownloadFactory *factory)
 {
 
-	IDownload *handler = NULL;
+	HttpDownload *handler = NULL;
 
 
 	dlhandler = dlopen("libmpkg-http.so", RTLD_LAZY);
@@ -42,24 +42,24 @@ InitializeDownloadObjects(DownloadFactory *factory)
 	
 	factory->addMethodHandler(HTTP, handler);
 
-	return handler;
+	return new HttpDownload;// handler;
 
 }
-
+*/
 DownloadResults
 CommonGetFile(std::string url, std::string output)//, void *callback)
 {
 
-	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
-	IDownload *g_pCurrentMethod = InitializeDownloadObjects(g_pDownloadFactory);
+	//DownloadFactory *g_pDownloadFactory = new DownloadFactory();
+	HttpDownload *g_pCurrentMethod = new HttpDownload;//InitializeDownloadObjects(g_pDownloadFactory);
 
 	assert( g_pCurrentMethod );
 	mDebug("load file " + url + " to " + output);
 
 	
 	DownloadResults ret = g_pCurrentMethod->getFile(url, output); 
-	delete g_pDownloadFactory;
-	dlclose(dlhandler);
+	//delete g_pDownloadFactory;
+	//dlclose(dlhandler);
 	return ret;
 }	
 
@@ -67,14 +67,14 @@ DownloadResults
 CommonGetFileEx(DownloadsList &list, std::string *itemname)//, ActionBus *aaBus, ProgressData *prData)
 {
 
-	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
-	IDownload *g_pCurrentMethod = InitializeDownloadObjects(g_pDownloadFactory);
+//	DownloadFactory *g_pDownloadFactory = new DownloadFactory();
+	HttpDownload *g_pCurrentMethod = new HttpDownload;// InitializeDownloadObjects(g_pDownloadFactory);
 
 	assert( g_pCurrentMethod );
 
 	DownloadResults ret = g_pCurrentMethod->getFile(list, itemname); 
-	delete g_pDownloadFactory;
-	dlclose(dlhandler);
+	//delete g_pDownloadFactory;
+	//dlclose(dlhandler);
 	return ret;
 }	
 

@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.35 2007/07/20 11:14:16 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.36 2007/08/02 10:39:13 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <sys/vfs.h>
 #include <fstream>
+#include <iostream>
 vector<string> temp_files;
 extern int errno;
 
@@ -35,8 +36,9 @@ int system(string cmd)
 	mDebug("[returned " + IntToStr(ret) + "] " + cmd);
 	return ret;
 }
-double get_disk_freespace(string point)
+long double get_disk_freespace(string point)
 {
+	mDebug("Checking free space");
 	struct statfs buf;
 	int s_ret = statfs(point.c_str(), &buf);
 	if (s_ret!=0)
@@ -44,12 +46,10 @@ double get_disk_freespace(string point)
 		mError("Unable to determine FS parameters of " + point);
 		return 0;
 	}
-	printf("f_bsize = %d, f_bfree = %ld\n", buf.f_bsize, buf.f_bfree);
 	long double dfree;
-       dfree	= (long double) buf.f_bfree * (long double) buf.f_bsize;
-       printf("%Lf\n", dfree);
+        dfree	= (long double) buf.f_bfree * (long double) buf.f_bsize;
 	mDebug("Free on " + point + ": " + IntToStr((long long) dfree));
-	return (double) dfree;
+	return (long double) dfree;
 }
 
 
@@ -97,15 +97,18 @@ create_tmp:
 	tmp_fname=t;
 	temp_files.push_back(tmp_fname);
 	close(fd);
+	mDebug("Created temp file " + tmp_fname);
 	return tmp_fname;
 }
 
 void delete_tmp_files()
 {
+	mDebug("Deleting temporary files");
 	string fname;
 	for ( unsigned int i = 0; i < temp_files.size(); i++ ) {
 		fname=temp_files[i]+".gz";
 		unlink(fname.c_str());
+		mDebug("removing " + temp_files[i]);
 		unlink( temp_files[i].c_str() );
 	}
 	temp_files.clear(); // Clean-up list - for future use
@@ -113,8 +116,9 @@ void delete_tmp_files()
 
 bool FileExists(string filename, bool *broken_symlink)
 {
+	mDebug("checking the existance of " + filename);
 	if (broken_symlink != NULL) *broken_symlink=false;
-	if (access(filename.c_str(), F_OK)==0) return true;
+	if (access(filename.c_str(), F_OK)==0) {mDebug("File exists, returning true"); return true; }
 	else 
 	{
 		struct stat st;
@@ -127,6 +131,7 @@ bool FileExists(string filename, bool *broken_symlink)
 			if (S_ISLNK(st.st_mode) && broken_symlink!=NULL) *broken_symlink=true;
 		//}
 	}
+	mDebug("File doesn't exist");
 	return false;
 }
 
@@ -163,34 +168,75 @@ bool FileNotEmpty(string filename)
 }
 		
 
-string ReadFile(string filename, int max_count)
+string ReadFile(string filename) // Reads the text file
 {
+	mDebug("Reading file " + filename);
+	string ret;
+
+	ifstream filestr;
+	long size;
+	filebuf *pbuf;
+	char * buffer;
+
+	mDebug("Opening file");
+	filestr.open(filename.c_str());
+	if (!filestr.is_open()) {
+		mDebug("File not found");
+		return "";
+	}
 	mDebug("Reading file");
+	pbuf=filestr.rdbuf();
+	size=pbuf->pubseekoff(0,ios::end,ios::in);
+	pbuf->pubseekpos(0,ios::in);
+	buffer = new char[size+1];
+	pbuf->sgetn(buffer,size);
+	filestr.close();
+//	cout.write(buffer,size);
+	mDebug("Returning data");
+	// Terminating the string
+	buffer[size]=0;
+	ret = (string) buffer;
+	return ret;
+	/*
+
+
+
+	mDebug("Reading file " + filename);
 	struct stat fStat;
 	if (stat(filename.c_str(), &fStat)!=0)
 	{
 		//perror("ReadFile");
-		mDebug("No such file");
+		mDebug("No such file "+filename);
 		return "";
 	}
+	else mDebug("File exist, reading");
 	long size=fStat.st_size;
 	char *memblock = new char [size];
+	
 
 	string ret;
 	ifstream inputFile(filename.c_str(), ios::in|ios::ate);
-	if (!inputFile.is_open()) return "";
+	if (!inputFile.is_open()) {delete[] memblock; return "";}
 	else
 	{
 		inputFile.seekg(0, ios::beg);
-		inputFile.read(memblock, size);
+		inputFile.get(memblock, size);
 		inputFile.close();
 		ret = (string) memblock;
 		if (max_count > 0) ret = ret.substr(0, max_count);
-		delete memblock;
-		mDebug("Returning data");
+		delete[] memblock;
+		mDebug("Returning data of " + filename);
 		return ret;
-	}
+	}*/
 }
+
+#ifdef NEW_RS
+vector<string> ReadFileStringsN(string filename)
+{
+	mDebug("Trying to read the strings from "+filename);
+	return 
+}
+#endif
 
 vector<string> ReadFileStrings(string filename)
 {
@@ -299,22 +345,23 @@ unsigned int CheckFileType(string fname)
 }
 string getCdromVolname(string *rep_location)
 {
+	mDebug("checking in location " + CDROM_MOUNTPOINT);
 	string Svolname, repLoc;
 	// check_volname:
-	Svolname = ReadFile(CDROM_MOUNTPOINT + "/.volume_id");
+	Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
 	if (rep_location!=NULL)
 	{
-		repLoc = ReadFile(CDROM_MOUNTPOINT + "/.repository");
+		repLoc = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.repository"));
 	}
 	// Validating
-	if (Svolname.find_first_of("/><| !@#$%^&*()`\"\'")!=std::string::npos)
+	if (Svolname.find_first_of("\n\t/><| !@#$%%^&*()`\"\'")!=std::string::npos)
 	{
-		mError("Invalid volname " + Svolname);
+		mError("Invalid volname [" + Svolname+"]");
 		return "";
 	}
 	if (rep_location!=NULL)
 	{
-		if (repLoc.find_first_of("<>| !@#$%^&*()`\"\'")!=std::string::npos || !FileExists(CDROM_MOUNTPOINT+repLoc+"/packages.xml.gz"))
+		if (repLoc.find_first_of("<>|!@#$%^&*()`\"\'")!=std::string::npos)
 		{
 			mError("Invalid repository path");
 			return "";
@@ -328,7 +375,8 @@ string getCdromVolname(string *rep_location)
 
 bool cacheCdromIndex(string vol_id, string rep_location)
 {
-	if (system("mkdir -p /var/mpkg/index_cache/"+vol_id) && system("cp -f " + CDROM_MOUNTPOINT + "/"+rep_location+"/packages.xml.gz /var/mpkg/index_cache/"+vol_id)) return true;
+	mDebug("Caching index for ["+vol_id+"] in with location [" + rep_location+"]");
+	if (system("mkdir -p /var/mpkg/index_cache/"+vol_id)==0 && system("cp -f /var/log/mount/" +rep_location+"/packages.xml.gz /var/mpkg/index_cache/"+vol_id)==0) return true;
 	return false;
 }
 

@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.45 2007/07/13 11:25:11 i27249 Exp $
+    $Id: config.h,v 1.46 2007/08/02 10:39:13 i27249 Exp $
 */
 
 
@@ -35,8 +35,8 @@ extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dang
 extern unsigned int fileConflictChecking;
 extern string CDROM_DEVICE;
 extern string CDROM_MOUNTPOINT;
-extern string CDROM_VOLUMELABEL;
-extern string CDROM_DEVICENAME;
+extern string CDROM_VOLUMELABEL; // For QT GUI
+extern string CDROM_DEVICENAME;  // For QT GUI
 extern vector<string> removeBlacklist;
 // System configuration
 extern bool consoleMode;
@@ -62,7 +62,7 @@ extern string DL_CDROM_MOUNTPOINT;
 #define CONFIG_FILE "/etc/mpkg.xml"
 #endif
 int loadGlobalConfig(string config_file=CONFIG_FILE);
-void consoleEventResolver();
+//void consoleEventResolver();
 
 namespace mpkgconfig
 {
@@ -94,6 +94,5 @@ namespace mpkgconfig
 }
 
 
-#define _(string) gettext(string)
 
 #endif

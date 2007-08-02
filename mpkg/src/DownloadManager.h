@@ -4,15 +4,15 @@
 #include "faststl.h"
 
 #include "IDownload.h"
-#include "DownloadFactory.h"
+//#include "DownloadFactory.h"
+#include "HttpDownload.h"
+//typedef HttpDownload* (*GetHandler)();
 
-typedef IDownload* (*GetHandler)();
 
-
-//extern IDownload *g_pCurrentMethod = NULL;
+//extern HttpDownload *g_pCurrentMethod = NULL;
 //extern DownloadFactory *g_pDownloadFactory = NULL;
 
-IDownload*  InitializeDownloadObjects(DownloadFactory* factory);
+//HttpDownload*  InitializeDownloadObjects(DownloadFactory* factory);
 DownloadResults CommonGetFile( string url, string output);//, void *callback = NULL); 
 DownloadResults CommonGetFileEx( DownloadsList &list, string *itemname);//, ActionBus *aaBus=&actionBus, ProgressData *prData=&pData); 
 

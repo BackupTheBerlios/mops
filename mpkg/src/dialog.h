@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.h,v 1.9 2007/07/19 12:46:40 i27249 Exp $
+ * $Id: dialog.h,v 1.10 2007/08/02 10:39:13 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -49,6 +49,7 @@ class Dialog
 	void setGaugeValue(int value);
 	void closeGauge();
 	bool execCheckList(string header, unsigned int height, unsigned int width, unsigned int menu_height, vector<TagPair>* menuItems);
+	void setTitle(string title="", string backtitle="Установка MOPSLinux 6.0");
 	private:
 	FILE *fd;
 

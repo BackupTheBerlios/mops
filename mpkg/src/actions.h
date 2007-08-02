@@ -23,5 +23,6 @@
 #define ACT_INSTALLFROMLIST 0x15
 #define ACT_PACKAGEMENU 0x16
 #define ACT_CHECKDAMAGE 0x17
+#define ACT_CONFIG	0x18
 #endif
 

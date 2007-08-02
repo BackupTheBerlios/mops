@@ -1,12 +1,14 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.14 2007/07/20 09:51:46 i27249 Exp $
+ * $Id: converter.cpp,v 1.15 2007/08/02 10:39:13 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
 
+#define GET_TXT_DESC
 int slack_convert(string filename, string xml_output)
 {
+	mDebug("Preparing to convert " + filename);
 	PACKAGE package;
 	package.set_filename(&filename);
 	// Resolving name, version, arch and build
@@ -85,11 +87,13 @@ int slack_convert(string filename, string xml_output)
 #define DESCRIPTION_PROCESS
 #ifdef DESCRIPTION_PROCESS	
 	//DESCRIPTION
+	mDebug("Processing description");
 	string desc_file= filename.substr(0,filename.length()-3)+"txt";
 	bool can_read=false;
 #ifdef GET_TXT_DESC
 	if (access(desc_file.c_str(), R_OK)==0)
 	{
+		mDebug("Retrieving from txt");
 		can_read=true;
 	}
 	else 
@@ -97,7 +101,13 @@ int slack_convert(string filename, string xml_output)
 #endif
 		desc_file=get_tmp_file();
 		string desc="tar zxf "+filename+" install/slack-desc --to-stdout > "+desc_file;
-		if (system(desc.c_str())==0) can_read=true;
+		if (system(desc.c_str())==0)
+		{
+
+			mDebug("Retrieving from slack-desc");
+			can_read=true;
+		}
+		else mDebug("Cannot find any description");
 #ifdef GET_TXT_DESC
 	}
 #endif
@@ -163,6 +173,7 @@ int slack_convert(string filename, string xml_output)
 			tmp.clear();
 			package.set_short_description(&short_description);
 			package.set_description(&description);
+			mDebug("Description: " + description);
 		}
 	}
 #endif
@@ -176,6 +187,7 @@ int slack_convert(string filename, string xml_output)
 	pkg.addChild("build");
 	pkg.getChildNode("build").addText(package.get_build()->c_str());
 #ifdef DESCRIPTION_PROCESS
+	mDebug("Adding description to XML node");
 	pkg.addChild("short_description");
 	pkg.getChildNode("short_description").addText(package.get_short_description()->c_str());
 	pkg.addChild("description");

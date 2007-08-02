@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.65 2007/07/20 12:38:39 adiakin Exp $
+	$Id: dataunits.cpp,v 1.66 2007/08/02 10:39:13 i27249 Exp $
 */
 
 
@@ -216,9 +216,7 @@ void DEPENDENCY::set_package_name(string* package_name)
 
 void DEPENDENCY::set_package_version(string* package_version)
 {
-	mDebug("PIZDEC 1-2-1: '" + *package_version + "'");
 	version_data.version=*package_version;
-	mDebug("PIZDEC 1-2-2: EXIT");
 }
 
 void DEPENDENCY::set_broken(int broken)

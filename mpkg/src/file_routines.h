@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.18 2007/07/20 11:14:16 i27249 Exp $
+* $Id: file_routines.h,v 1.19 2007/08/02 10:39:13 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -29,16 +29,17 @@ using namespace std;
 int system(string cmd);
 bool backupDatabase();
 bool restoreDatabaseFromBackup();
-double get_disk_freespace(string point="/");
+long double get_disk_freespace(string point="/");
 string get_file_md5(string filename);
 string get_tmp_file();
 void delete_tmp_files();
 bool FileExists(string filename, bool *broken_symlink=NULL);
 bool FileNotEmpty(string filename);
-string ReadFile(string filename, int max_count=0);
+string ReadFile(string filename);
 int WriteFile(string filename, string data);
 int extractFromTgz(string filename, string file_to_extract, string output);
 string getCdromVolname(string *rep_location=NULL);
+bool cacheCdromIndex(string vol_id, string rep_location);
 // Package type definition (also defines repository type)
 vector<string>ReadFileStrings(string filename);
 unsigned int CheckFileType(string fname);

@@ -4,7 +4,6 @@
 #include "faststl.h"
 #include <vector>
 #include "config.h"
-
 #define DL_STATUS_OK      1
 #define DL_STATUS_WAIT   -1
 #define DL_STATUS_FAILED -2
@@ -40,12 +39,12 @@ typedef std::vector<DownloadItem> DownloadsList;
 
 
 
-class IDownload {
+/*class IDownload {
 public:
 	virtual DownloadResults getFile(string url, string file, string cdromDevice = CDROM_DEVICE, string cdromMountPoint = CDROM_MOUNTPOINT) = 0;
 	virtual DownloadResults getFile(DownloadsList &list, string *itemname, string cdromDevice = CDROM_DEVICE, string cdromMountPoint = CDROM_MOUNTPOINT, ActionBus *aaBus = &actionBus, ProgressData *prData = &pData) = 0;
 	virtual ~IDownload() {};
-};
+};*/
 
 #endif
 

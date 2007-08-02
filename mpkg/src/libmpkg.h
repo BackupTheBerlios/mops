@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.25 2007/07/13 11:25:11 i27249 Exp $
+ * $Id: libmpkg.h,v 1.26 2007/08/02 10:39:13 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -183,6 +183,11 @@ class mpkg
 		bool checkPackageIntegrity(PACKAGE *package);
 		bool checkPackageIntegrity(string pkgName);
 		bool repair(PACKAGE *package);
+
+		// Database export
+		
+
+		void exportBase(string output_dir="/var/log/packages");
 		// Objects to work with. Normally should be private, so try to avoid using it directly.
 		mpkgDatabase *db;
 		DependencyTracker *DepTracker;
