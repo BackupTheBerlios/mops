@@ -1,11 +1,12 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.58 2007/08/02 11:01:40 adiakin Exp $
+ * $Id: repository.cpp,v 1.59 2007/08/02 11:15:14 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <libxml/xpath.h>
 #include <libxml/debugXML.h>
 
 Repository::Repository(){}
@@ -789,8 +790,8 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	string *pList = new string;
 	string *mList = new string;
 	XMLNode *tmp = new XMLNode;
-	xmlDocPtr indexDoc;
-	xmlNodePtr indexRootNode;
+	//xmlDocPtr indexDoc;
+	//xmlNodePtr indexRootNode;
 	switch(type)
 	{
 		case TYPE_MPKG:
@@ -801,7 +802,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				return -1;
 			}
 			
-			indexRootNode = xmlDocGetRootNode(indexDoc);
+			indexRootNode = xmlDocGetRootElement(indexDoc);
 			if (indexRootNode == NULL) {
 				mError("Failed to get index");
 				xmlFreeDoc(indexDoc);
@@ -815,7 +816,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			xmlXPathContextPtr xContext;
 			xmlXPathObjectPtr xResult;
 			
-			xContext = xmlCPathNewContext(indexDoc);
+			xContext = xmlXPathNewContext(indexDoc);
 			if (xContext == NULL) {
 				mError("ппц");
 			}
@@ -846,9 +847,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					return MPKGERROR_ABORTED;
 				}
 				
-				actionBus.setActionProgress(ACTIONID_DBUPDATE, i);
+				actionBus.setActionProgress(ACTIONID_DBUPDATE, xi);
 				pkg->clear();
-				xml2package(xNodeSet->nodeTab[i], pkg);
+				xml2package(xNodeSet->nodeTab[xi], pkg);
 				// Adding location data
 				pkg->get_locations()->at(0).set_server_url(&server_url);
 				packages->add(pkg);
