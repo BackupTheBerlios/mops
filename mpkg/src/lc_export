@@ -1,0 +1,3 @@
+#!/bin/sh
+xgettext --from-code="utf-8" --keyword="_" -d installpkg-ng -j -s -o lang_src/installpkg-ng.po *.cpp
+

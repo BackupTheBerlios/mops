@@ -1,0 +1,5 @@
+#!/bin/sh
+msgfmt -c -v -o i.mo ./lang_src/installpkg-ng.po
+cp i.mo /usr/share/locale/ru/LC_MESSAGES/installpkg-ng.mo
+echo Translation updated.
+
