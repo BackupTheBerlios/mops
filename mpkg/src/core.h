@@ -2,14 +2,14 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.11 2007/06/01 03:38:45 i27249 Exp $
+ *	$Id: core.h,v 1.12 2007/08/02 10:49:58 adiakin Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
 
 #include "dataunits.h"
 #include "constants.h"
-
+#include "string.h"
 //string T="', '"; // Wery helpful element for SQL queries
 
 //#define T "', '"   // Wery helpful element for SQL queries

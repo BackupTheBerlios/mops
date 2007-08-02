@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.56 2007/08/01 12:04:44 adiakin Exp $
+ * $Id: repository.cpp,v 1.57 2007/08/02 10:49:58 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -329,9 +329,9 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 	return 0;
 }	// End slackpackages2list()
 
-int xml2package(XMLNode *pkgnode, PACKAGE *data)
+int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 {
-	PackageConfig p(pkgnode);
+	PackageConfig p(pkgNode);
 	if (!p.parseOk) return -100;
 	
 	*data->get_name()=p.getName();
@@ -773,6 +773,10 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	PACKAGE *pkg = new PACKAGE;
 	string xml_name=index_filename;
 	XMLNode *repository_root = new XMLNode;
+	
+	xmlDocPtr indexDoc;
+	xmlNodePtr indexRootNode;
+	
 	int pkg_count;
 	int ret=0;
 	currentStatus = "["+server_url+"] Importing data...";
@@ -788,7 +792,68 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	switch(type)
 	{
 		case TYPE_MPKG:
-				*repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
+			indexDoc = xmlReadFile(xml_name.c_str(), "UTF-8", NULL);
+			if (indexDoc == NULL) {
+				xmlFreeDoc(indexDoc);
+				mError("ппц...");
+				return -1;
+			}
+			
+			indexRootNode = xmlDocGetRootNode(indexDoc);
+			if (indexRootNode == NULL) {
+				mError("Failed to get index");
+				xmlFreeDoc(indexDoc);
+			}
+			
+			if (xmlStrcmp(indexRootNode->name, (const xmlChar *) "repository") ) {
+				mError("Invalid index file");
+				xmlFreeDoc(indexDoc);
+			}
+			
+			xmlXPathContextPtr xContext;
+			xmlXPathObjectPtr xResult;
+			
+			xContext = xmlCPathNewContext(indexDoc);
+			if (xContext == NULL) {
+				mError("ппц");
+			}
+			
+			xResult = xmlXPathEvalExpression((const xmlChar *)"/repository/package", xContext);
+			if (xResult == NULL) {
+				mError("XPath expression error");
+			}
+			
+			if (xmlXPathNodeSetIsEmpty(xResult->nodesetval)) {
+				xmlXPathFreeObject(xResult);
+				mError("No packages found");
+				return 0;
+			}
+			
+			xmlNodeSetPtr xNodeSet;
+			int xi;
+			
+			actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
+			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
+			
+			xNodeSet = xResult->nodesetval;
+			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
+				if (actionBus._abortActions) {
+					actionBus._abortComplete = true;
+					actionBus.setActionState(ACTIONID_DBUPDATE, ITEMSTATE_ABORTED);
+					
+					return MPKGERROR_ABORTED;
+				}
+				
+				actionBus.setActionProgress(ACTIONID_DBUPDATE, i);
+				pkg->clear();
+				xml2package(xNodeSet->nodeTab[i], pkg);
+				// Adding location data
+				pkg->get_locations()->at(0).set_server_url(&server_url);
+				packages->add(pkg);
+			}
+			/*
+			
+ 				*repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");
 				pkg_count=repository_root->nChildNode("package");
 				if (pkg_count==0)
 				{
@@ -815,7 +880,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 					// Adding location data
 					pkg->get_locations()->at(0).set_server_url(&server_url);
 					packages->add(pkg);
-				}
+				}*/
 				delete tmp;
 			break;
 		case TYPE_SLACK:

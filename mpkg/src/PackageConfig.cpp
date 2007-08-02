@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.23 2007/08/01 12:04:44 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.24 2007/08/02 10:49:58 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -79,10 +79,17 @@ bool PackageConfig::hasErrors() {
  * 
  * @param rootnode
  */
-PackageConfig::PackageConfig(XMLNode *rootnode)
+PackageConfig::PackageConfig(xmlNodePtr __rootXmlNodePtr)
 {
 	parseOk = true;
-	_node = *rootnode;
+	curNode = __rootXmlNodePtr;
+	if (this->doc == NULL) {
+		this->doc = xmlNewDoc((const xmlChar *)"1.0");
+		if (this->doc == NULL) {
+			mDebug("in constructor doc == NULL");
+		}
+		xmlDocSetRootElement(this->doc, this->curNode);
+	}
 }
 
 PackageConfig::~PackageConfig()
