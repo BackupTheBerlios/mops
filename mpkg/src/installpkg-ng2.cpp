@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.40 2007/08/02 10:39:13 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.41 2007/08/03 11:53:11 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -19,7 +19,7 @@ void show_package_info(mpkg *core, string name);
 bool repair_damaged=false;
 int setup_action(char* act);
 int check_action(char* act);
-void print_usage(FILE* stream, int exit_code);
+int print_usage(FILE* stream=stdout, int exit_code=0);
 int list(mpkg *core, vector<string> search, bool onlyQueue=false);
 void ShowBanner();
 int list_rep(mpkg *core);
@@ -102,6 +102,7 @@ int main (int argc, char **argv)
 		switch (ich) {
 			case 'h':
 					print_usage(stdout, 0);
+					return 0;
 
 			case 'v':
 					verbose = 1;
@@ -149,7 +150,7 @@ int main (int argc, char **argv)
 					dialogMode=true;
 					
 			case '?':
-					print_usage(stderr, 1);
+					return print_usage(stderr, 1);
 
 			case -1:
 					break;
@@ -163,7 +164,9 @@ int main (int argc, char **argv)
 
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
-				print_usage(stderr, 1);
+		{
+			return print_usage(stderr, 1);
+		}
 		
 		action = setup_action( argv[optind-1] );
 	}
@@ -184,7 +187,7 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_NONE )
-			print_usage(stderr, 1);
+			return print_usage(stderr, 1);
 	if ( action == ACT_SHOW)
 	{
 		show_package_info(&core, argv[optind]);
@@ -333,7 +336,25 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		core.exportBase("/root/export");
+		//core.exportBase("/root/export");
+		string filename="x11-fonts-adobe-100dpi-1.2-i486-1az.tgz";
+		PACKAGE package;
+		string name_tmp=filename.substr(0,filename.find(".tgz"));
+		
+		package.set_build(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+		package.set_arch(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+		package.set_version(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+		package.set_name(&name_tmp);
+		name_tmp.clear();
+
+		printf("Name: '%s'\n",package.get_name()->c_str());
+		printf("Version: '%s'\n",package.get_version()->c_str());
+		printf("Arch: '%s'\n",package.get_arch()->c_str());
+		printf("Build: '%s'\n",package.get_build()->c_str());
+
 		//bool z = isMounted("/var/log/mount");
 
 
@@ -513,7 +534,7 @@ int main (int argc, char **argv)
 			else
 			{
 				mError(_("To few arguments to index\n"));
-				print_usage(stderr, 1);
+				return print_usage(stderr, 1);
 			}
 		}
 		delete_tmp_files();
@@ -571,7 +592,7 @@ int main (int argc, char **argv)
 }
 
 
-void print_usage(FILE* stream, int exit_code)
+int print_usage(FILE* stream, int exit_code)
 {
 	fprintf(stream, _("\nUsage: %s [options] action package [package ...]\n"), program_name);
 	fprintf(stream,_("Options:\n"));
@@ -619,7 +640,7 @@ void print_usage(FILE* stream, int exit_code)
 	fprintf(stream, "\n");
 
 
-	exit(exit_code);
+	return exit_code;
 }
 
 int list_rep(mpkg *core)

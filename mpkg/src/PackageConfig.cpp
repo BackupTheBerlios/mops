@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.25 2007/08/02 13:40:41 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.26 2007/08/03 11:53:10 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -84,13 +84,6 @@ bool PackageConfig::hasErrors() {
  */
 PackageConfig::PackageConfig(xmlNodePtr __rootXmlNodePtr)
 {
-	mDebug("Test start");
-	xmlDocPtr xxx = xmlNewDoc((const xmlChar *) "1.0");
-	if (xxx==NULL) mDebug("created document, but it is NULL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	xmlFreeDoc(xxx);
-	if (xxx==NULL) mDebug("Freed the document, and it is NULL");
-	else mDebug("Freed doc isn't null!");
-	mDebug("test complete");
 	mDebug("INITIALIZATION");
 	parseOk = true;
 	//curNode = __rootXmlNodePtr;
@@ -125,6 +118,7 @@ PackageConfig::~PackageConfig()
 	doc=NULL;
 	doc=NULL;
     }
+    xmlCleanupMemory();
     mDebug("Cleanup complete");
 }
 
@@ -164,11 +158,13 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp)
 	if(xmlXPathNodeSetIsEmpty(result->nodesetval))
 	{
         	xmlXPathFreeObject(result);
-		printf("No result\n");
+		xmlXPathFreeContext(context);
+		mDebug("No result");
         	return NULL;
     	}
        	else 
 	{
+		xmlXPathFreeContext(context);
 		mDebug("Returning result");
 		return result;
 	}
@@ -607,7 +603,7 @@ xmlNodePtr PackageConfig::getXMLNode()
 	} else {
 		mDebug("Root node != NULL");
 		const xmlChar * __name = curNode->name;
-		printf("CCCCCCCC __name = '%s'\n", (const char *)__name);
+		mDebug("CCCCCCCC __name = " +(string) (const char *)__name);
 	}
 	return this->curNode;
 }
@@ -616,8 +612,10 @@ std::string PackageConfig::getXMLNodeEx() {
 	FILE* __dump = fopen(TEMP_XML_DOC, "w");
 	if (xmlDocDump(__dump, this->doc) == -1) {
 		mDebug("Dump failed");
+		fclose(__dump);
 		abort();
 	} else {
+		fclose(__dump);
 		mDebug("Dump OK");
 		return TEMP_XML_DOC;
 	}

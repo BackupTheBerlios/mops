@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.60 2007/08/02 13:40:41 i27249 Exp $
+ * $Id: repository.cpp,v 1.61 2007/08/03 11:53:11 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -433,7 +433,7 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 		file_tmp.set_type(FTYPE_CONFIG);
 		data->get_files()->push_back(file_tmp);
 	}
-
+	xmlFreeDoc(doc);
 	return 0;
 }
 
@@ -501,7 +501,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		} else {
 			mDebug("package xml root node ok");
 			const xmlChar * __root_node_name = __packagesRootNode->name;
-			printf(" __packagesRootNode->name = '%s'\n", (const char *)__root_node_name);
+			mDebug(" __packagesRootNode->name = " + (string) (const char *)__root_node_name);
 		}
 
 		xmlNodePtr __node  = xmlAddChild(_rootNode, __packagesRootNode);
@@ -510,7 +510,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		} else {
 			mDebug("new package xml node ok");
 			const xmlChar * __st = __node->name;
-			printf("new package xml node name = '%s'\n", (const char *)__st);
+			mDebug("new package xml node name = " + (string) (const char *)__st);
 		}
 
 		if (__packagesRootNode == NULL) {
@@ -518,7 +518,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		} else {
 			mDebug("root package xml after apped ok");
 			const xmlChar * __st = __packagesRootNode->name;
-			printf("root package xml node name = '%s'\n", (const char *)__st);
+			mDebug("root package xml node name = " + (string) (const char *)__st);
 		}
 
 		mDebug("Saving temp repo xml dump ");
@@ -553,65 +553,6 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	return 0;
 }
 
-/*void analyzeFTree(XMLNode *node)
-{
-	say("Analyzing tree\n");
-	string p1, p2;
-	printf("contains %d packages\n", node->nChildNode("package"));
-	PACKAGE_LIST pList;
-	PACKAGE pkg;
-	XMLNode tmp;
-	printf("Building pList\n");
-	for (int i=0; i<node->nChildNode("package"); i++)
-	{
-		printf("package %d...\n", i);
-		pkg.clear();
-		tmp = node->getChildNode("package", i);
-		xml2package(&tmp, &pkg);
-		pList.add(&pkg);
-	}
-	printf("analyzing\n");
-	int i=0;
-	for (int i__=0; i__<pList.size(); i__++)
-	{
-		if (*pList.get_package(i__)->get_name()=="mopscripts")
-		{
-			i=i__;
-			break;
-		}
-	}
-		printf("analyzing package %d\n", i);
-		for (unsigned int x=0; x<pList.get_package(i)->get_files()->size(); x++)
-		{
-			if (pList.get_package(i)->get_files()->at(x).get_name()->at(pList.get_package(i)->get_files()->at(x).get_name()->length()-1)!='/')
-			{
-				for (int i_1=i+1; i_1<pList.size(); i_1++)
-				{
-					for (unsigned int x_1=0; x_1<pList.get_package(i_1)->get_files()->size(); x_1++)
-					{
-						if (*pList.get_package(i)->get_files()->at(x).get_name()==*pList.get_package(i_1)->get_files()->at(x_1).get_name())
-						{
-							printf("found an object\n");
-	
-							FILE *conflog = fopen("file_conflicts.log", "a");
-							if (conflog)
-							{
-								fprintf(conflog, "[%s]::[%s] %s\n", pList.get_package(i)->get_name()->c_str(), \
-									pList.get_package(i_1)->get_name()->c_str(),\
-									pList.get_package(i)->get_files()->at(x).get_name()->c_str());
-									fclose(conflog);
-							}
-							printf("[%s]::[%s] %s\n", pList.get_package(i)->get_name()->c_str(), \
-								pList.get_package(i_1)->get_name()->c_str(),\
-								pList.get_package(i)->get_files()->at(x).get_name()->c_str());
-						}
-					}
-				}
-			}
-		}
-	
-
-}*/
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
@@ -656,6 +597,7 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 		mDebug("[2]_rootNode != NULL");
 	}
 
+#ifdef DEBUG
 	mDebug("Saving repo xml dump");
 	FILE *__xmlDump = fopen("/tmp/xmldump-repo.xml", "w");
     if (xmlDocDump(__xmlDump, __doc) != -1) {
@@ -665,6 +607,8 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 		fclose(__xmlDump);
 		mDebug("Xml dump failed");
 	}
+#endif
+    	
 
 	/*
 	if (!server_url.empty())
@@ -689,7 +633,6 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	//ProcessPackage("coreutils.tgz", NULL, NULL);
 	
 	// Finally, write our XML tree to file
-	//printf("_rootFList has %d elements\n", _rootFList.nChildNode("package"));
 	xmlSaveFileEnc("packages.xml", __doc, "UTF-8");
 	//_root.writeToFile("packages.xml");
 	//_rootFList.writeToFile("filelist.xml");
@@ -866,6 +809,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
 			
 			xNodeSet = xResult->nodesetval;
+			xmlXPathFreeContext(xContext);
 			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
 				mDebug("Processing " + IntToStr(xi) + " node");
 				if (actionBus._abortActions) {
@@ -887,6 +831,8 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				pkg->get_locations()->at(0).set_server_url(&server_url);
 				packages->add(pkg);
 			}
+			xmlCleanupMemory();
+			xmlCleanupParser();
 			/*
 			
  				*repository_root=XMLNode::openFileHelper(xml_name.c_str(), "repository");

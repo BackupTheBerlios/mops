@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.63 2007/08/02 10:39:13 i27249 Exp $
+$Id: local_package.cpp,v 1.64 2007/08/03 11:53:11 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -434,7 +434,7 @@ int LocalPackage::get_size()
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("WWWW __n = '%s'\n", (const char *)__n);
+		mDebug("WWWW __n = " + (string) (const char *)__n);
 	}
 
 
@@ -445,7 +445,7 @@ int LocalPackage::get_size()
 		mDebug("PIZDEC-5-1");
 
 		const xmlChar * __n = __node->name;
-		printf("'compressed_size' node name = '%s'\n", (const char *)__n);
+		mDebug("'compressed_size' node name = "+(string) (const char *)__n);
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
@@ -455,7 +455,7 @@ int LocalPackage::get_size()
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
+		mDebug("check for _packageXMLNode name = " + (string) (const char *)__n);
 	}
 
 
@@ -465,7 +465,7 @@ int LocalPackage::get_size()
 		mDebug("PIZDEC-5-1");
 
 		const xmlChar * __n = __node->name;
-		printf("'installed_size' node name__n = '%s'\n", (const char *)__n);
+		mDebug("'installed_size' node name__n = " + (string) (const char *)__n);
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
@@ -475,7 +475,7 @@ int LocalPackage::get_size()
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
+		mDebug("check for _packageXMLNode name = " + (string) (const char *)__n);
 	}
 
 	
@@ -533,7 +533,7 @@ int LocalPackage::set_additional_data()
 		mDebug("PIZDEC-5-1");
 
 		const xmlChar * __n = __node->name;
-		printf("'filename' node name__n = '%s'\n", (const char *)__n);
+		mDebug("'filename' node name__n = " + (string) (const char *)__n);
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
@@ -543,7 +543,7 @@ int LocalPackage::set_additional_data()
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
+		mDebug("check for _packageXMLNode name = " + (string) (const char *)__n);
 	}
 
 	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
@@ -552,7 +552,7 @@ int LocalPackage::set_additional_data()
 		mDebug("PIZDEC-5-1");
 
 		const xmlChar * __n = __node->name;
-		printf("'location' node name__n = '%s'\n", (const char *)__n);
+		mDebug("'location' node name__n = " + (string) (const char *)__n);
 	} else {
 		mDebug("PIZDEC-5-2");
 	}
@@ -562,7 +562,7 @@ int LocalPackage::set_additional_data()
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
-		printf("check for _packageXMLNode name = '%s'\n", (const char *)__n);
+		mDebug("check for _packageXMLNode name = " + (string) (const char *)__n);
 	}
 
 
@@ -704,7 +704,7 @@ xmlNode LocalPackage::getPackageXMLNode()
 	} else {
 		mDebug("!!! _packageXmlNode != NULL");
 		const xmlChar * __p_node_name = _packageXMLNode->name;
-		printf("BBBBB _p_node_name = '%s'\n", (const char *)__p_node_name);
+		mDebug("BBBBB _p_node_name = "+(string) (const char *)__p_node_name);
 	}
 	return *_packageXMLNode;
 }

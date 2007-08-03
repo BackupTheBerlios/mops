@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.15 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: converter.cpp,v 1.16 2007/08/03 11:53:10 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -22,68 +22,19 @@ int slack_convert(string filename, string xml_output)
 		return 0;
 	}
 	delete_tmp_files();
-	int pos=0;
-	// NAME
-	int name_start=0;
-	for (int i=filename.length()-1; filename[i]!='/' && i>=0; i--)
-	{
-		name_start=i;
-	}
-	for (unsigned int i=name_start; i<filename.length()-1; i++)
-	{
-		if (filename[i]=='-')
-		{
-			if (filename[i+1]=='0' || \
-					filename[i+1] == '1' || \
-					filename[i+1] == '2' || \
-					filename[i+1] == '3' || \
-					filename[i+1] == '4' || \
-					filename[i+1] == '5' || \
-					filename[i+1] == '6' || \
-					filename[i+1] == '7' || \
-					filename[i+1] == '8' || \
-					filename[i+1] == '9')
-			{
-				package.set_name(&tmp);
-				pos=i+2;
-				break;
-			}
-		}
-		tmp+=filename[i];
-	}
-	tmp.clear();
-	//VERSION
-	for (unsigned int i=pos-1; i< filename.length(); i++)
-	{
-		if (filename[i]=='-')
-		{
-			package.set_version(&tmp);
-			pos=i+2;
-			break;
-		}
-		tmp+=filename[i];
-	}
-	tmp.clear();
-	//ARCH
-	for (unsigned int i=pos-1; i< filename.length(); i++)
-	{
-		if (filename[i]=='-')
-		{
-			package.set_arch(&tmp);
-			pos=i+2;
-			break;
-		}
-		tmp+=filename[i];
-	}
-	tmp.clear();
-	//BUILD
-	for (unsigned int i=pos-1; i<filename.length()-4; i++)
-	{
-		tmp+=filename[i];
-	}
-	package.set_build(&tmp);
+	// Name-ver-arch-build parsing
+	string name_tmp=filename.substr(0,filename.find(".tgz"));
+	name_tmp = name_tmp.substr(name_tmp.find_last_of("/")+1);
+	package.set_build(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+	package.set_arch(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+	package.set_version(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
+	package.set_name(&name_tmp);
+	name_tmp.clear();
 
-	tmp.clear();
+
 #define DESCRIPTION_PROCESS
 #ifdef DESCRIPTION_PROCESS	
 	//DESCRIPTION

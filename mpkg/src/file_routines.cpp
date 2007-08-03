@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.36 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.37 2007/08/03 11:53:11 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -196,6 +196,7 @@ string ReadFile(string filename) // Reads the text file
 	// Terminating the string
 	buffer[size]=0;
 	ret = (string) buffer;
+	delete[] buffer;
 	return ret;
 	/*
 

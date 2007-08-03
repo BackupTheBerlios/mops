@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.40 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.41 2007/08/03 11:53:11 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -24,6 +24,7 @@ mpkg::mpkg(bool _loadDatabase)
 
 mpkg::~mpkg()
 {
+	printf("Desctructing mpkg\n");
 	if (DepTracker!=NULL) delete DepTracker;
 	if (db!=NULL) delete db;
 	delete_tmp_files();
