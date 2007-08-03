@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.117 2007/07/06 05:58:33 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.118 2007/08/03 14:24:55 i27249 Exp $
  *
  ****************************************************************/
 
@@ -185,6 +185,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	}
 	mDebug("requesting data");
 
+	
 	emit getAvailableTags();
 	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 	mDebug("constructor complete");

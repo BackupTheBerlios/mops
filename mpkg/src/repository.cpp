@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.61 2007/08/03 11:53:11 i27249 Exp $
+ * $Id: repository.cpp,v 1.62 2007/08/03 14:24:55 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -433,7 +433,7 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 		file_tmp.set_type(FTYPE_CONFIG);
 		data->get_files()->push_back(file_tmp);
 	}
-	xmlFreeDoc(doc);
+	//xmlFreeDoc(doc);
 	return 0;
 }
 
