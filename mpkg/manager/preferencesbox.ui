@@ -399,7 +399,7 @@
              <string>URL</string>
             </property>
             <property name="icon" >
-             <iconset>/opt/kde/share/icons/crystalsvg/32x32/filesystems/ftp.png</iconset>
+             <iconset>/usr/share/icons/crystalsvg/32x32/filesystems/ftp.png</iconset>
             </property>
            </column>
           </widget>
@@ -505,7 +505,7 @@
                   <string>Network (ftp, http...)</string>
                  </property>
                  <property name="icon" >
-                  <iconset>/opt/kde/share/icons/crystalsvg/32x32/filesystems/network.png</iconset>
+                  <iconset>/usr/share/icons/crystalsvg/32x32/filesystems/network.png</iconset>
                  </property>
                 </item>
                 <item>
@@ -513,7 +513,7 @@
                   <string>Folder (file://)</string>
                  </property>
                  <property name="icon" >
-                  <iconset>/opt/kde/share/icons/crystalsvg/32x32/filesystems/folder.png</iconset>
+                  <iconset>/usr/share/icons/crystalsvg/32x32/filesystems/folder.png</iconset>
                  </property>
                 </item>
                 <item>
@@ -521,7 +521,7 @@
                   <string>CD/DVD (cdrom://)</string>
                  </property>
                  <property name="icon" >
-                  <iconset>/opt/kde/share/icons/crystalsvg/32x32/devices/dvd_unmount.png</iconset>
+                  <iconset>/usr/share/icons/crystalsvg/32x32/devices/dvd_unmount.png</iconset>
                  </property>
                 </item>
                </widget>

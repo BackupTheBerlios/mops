@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.118 2007/08/03 14:24:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.119 2007/08/06 13:37:28 i27249 Exp $
  *
  ****************************************************************/
 
@@ -61,12 +61,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	else ui.setupUi(parent);
 	QToolBar *mainToolBar = addToolBar("maintoolbar");
 	applyChangesAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/installed.png"),tr("Apply changes"));
-	resetChangesAction = mainToolBar->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/rotate_ccw.png"), tr("Reset changes"));
+	resetChangesAction = mainToolBar->addAction(QIcon("/usr/share/icons/crystalsvg/48x48/actions/rotate_ccw.png"), tr("Reset changes"));
 	mainToolBar->addSeparator();
 	showConfigAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"), tr("Show core settings"));
 	mainToolBar->addSeparator();
 	showRepositoryConfigAction = mainToolBar->addAction(QIcon("/usr/share/mpkg/icons/icons/taskbar.png"), tr("Add/remove repositories"));
-	updateRepositoryDataAction = mainToolBar->addAction(QIcon("/opt/kde/share/icons/crystalsvg/48x48/actions/reload.png"), tr("Update data"));
+	updateRepositoryDataAction = mainToolBar->addAction(QIcon("/usr/share/icons/crystalsvg/48x48/actions/reload.png"), tr("Update data"));
 	QObject::connect(applyChangesAction, SIGNAL(triggered()), ui.actionCommit_changes, SIGNAL(triggered()));
 	QObject::connect(ui.actionCommit_changes, SIGNAL(triggered()), ui.applyButton, SIGNAL(clicked()));
 	QObject::connect(resetChangesAction, SIGNAL(triggered()), ui.actionReset_changes, SIGNAL(triggered()));
@@ -707,7 +707,7 @@ void MainWindow::updateProgressData()
 				switch (pData.getItemState(i))
 				{
 					case ITEMSTATE_INPROGRESS:
-						__name->setIcon(QIcon(QString::fromUtf8("/opt/kde/share/icons/crystalsvg/32x32/apps/kget.png")));
+						__name->setIcon(QIcon(QString::fromUtf8("/usr/share/icons/crystalsvg/32x32/apps/kget.png")));
 						break;
 					case ITEMSTATE_FINISHED:
 						__name->setIcon(QIcon(QString::fromUtf8("/usr/share/mpkg/icons/installed.png")));
