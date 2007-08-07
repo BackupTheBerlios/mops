@@ -13,3 +13,5 @@ LIBS += -lmpkg -lQtXml
 HEADERS += mainwindow.h
 FORMS += package_builder.ui
 SOURCES += main.cpp mainwindow.cpp
+INCPATH += /usr/include/libxml2
+

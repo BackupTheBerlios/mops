@@ -35,6 +35,7 @@ SOURCES += aboutbox.cpp \
            tablelabel.cpp
 
 LIBS += -lmpkg
+INCPATH += /usr/include/libxml2
 
 CODECFORTR = "UTF-8"
 CODECFORSRC = "UTF-8"

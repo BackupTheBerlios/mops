@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.39 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: config.cpp,v 1.40 2007/08/07 17:26:46 i27249 Exp $
  *
  * ***************************************************/
 
@@ -59,9 +59,6 @@ int loadGlobalConfig(string config_file)
 #ifdef HTTP_LIB
 	mError("error: core running non-core code\n");
 #endif
-	if (!consoleMode && !dialogMode) initErrorManager(EMODE_QT);
-	if (consoleMode && dialogMode) initErrorManager(EMODE_DIALOG);
-	if (consoleMode && !dialogMode) initErrorManager(EMODE_CONSOLE);
 
 	currentStatus = "Loading configuration...";
 	removeBlacklist = ReadFileStrings("/etc/mpkg-remove-blacklist");

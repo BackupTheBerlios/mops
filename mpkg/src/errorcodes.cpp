@@ -384,9 +384,16 @@ eCLI_pickAction:
 			{
 				sleep(1);
 			}
+			break;
 
 		default:
 			mError("Unknown UI mode, aborting");
+			say("errorManagerMode is %d\n", errorManagerMode);
+			if (consoleMode) mError("consoleMode: true");
+			else mError("consoleMode: false");
+			if (dialogMode) mError("dialogMode: true");
+			else mError("dialogMode: false");
+
 			abort();
 	}
 	return getErrorReturn();

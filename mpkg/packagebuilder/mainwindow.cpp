@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.21 2007/08/02 10:39:12 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.22 2007/08/07 17:26:46 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -28,7 +28,7 @@ Form::Form(QWidget *parent)
 
 void Form::loadData()
 {
-	XMLNode node;
+	//XMLNode node;
 	PACKAGE pkg;
 	string tag_tmp;
 	if (FileExists("install/data.xml")) xmlFilename = "install/data.xml";
@@ -36,18 +36,22 @@ void Form::loadData()
 	{
 		xmlFilename = QFileDialog::getOpenFileName(this, tr("Choose package index") + " (data.xml):", "./", "");
 	}
-	XMLResults xmlErr;
+//	XMLResults xmlErr;
 
-	XMLNode *tmp = new XMLNode;
+//	xmlDocPtr doc; 
+	//XMLNode *tmp = new XMLNode;
 	if (!xmlFilename.isEmpty())
 	{
-		*tmp = XMLNode::parseFile(xmlFilename.toStdString().c_str(), "package", &xmlErr);
-	       if (xmlErr.error==eXMLErrorNone)
+		//*tmp = XMLNode::parseFile(xmlFilename.toStdString().c_str(), "package", &xmlErr);
+	//	doc = = xmlReadFile(xmlFilename.toStdString().c_str(),"UTF-8", NULL);
+
+		PackageConfig p(xmlFilename.toStdString().c_str());
+		if (p.parseOk)
 		{
-			//PackageConfig p(xmlFilename.toStdString().c_str());
 			//*tmp = p.getXMLNode();
-			xml2package(tmp, &pkg);
-			delete tmp;
+			
+			xml2package(p.getXMLNode(), &pkg);
+			//delete tmp;
 			pkg.sync();
 	
 			// Filling data 

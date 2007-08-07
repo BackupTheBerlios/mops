@@ -1,12 +1,16 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.41 2007/08/03 11:53:11 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.42 2007/08/07 17:26:46 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
 
 mpkg::mpkg(bool _loadDatabase)
 {
+	if (!consoleMode && !dialogMode) initErrorManager(EMODE_QT);
+	if (consoleMode && dialogMode) initErrorManager(EMODE_DIALOG);
+	if (consoleMode && !dialogMode) initErrorManager(EMODE_CONSOLE);
+
 	mDebug("creating core");
 	currentStatus=_("Loading database...");
 	loadGlobalConfig();

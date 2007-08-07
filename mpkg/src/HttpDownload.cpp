@@ -272,7 +272,6 @@ copy_file:
 DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
 	// Step 1: unlink the file
-	unlink(file.c_str());
 	mDebug("Downloading " + url + " to " + file);
 	string dir = file.substr(0,file.find_last_of("/"));
 	dir = "mkdir -p "+dir;
@@ -450,10 +449,19 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					{
 
 #ifdef ENABLE_DOWNLOAD_RESUMING
-						long size;
+						long size=0;
 						struct stat fStat;
-						if (stat(item->file.c_str(), &fStat)==0) size = fStat.st_size;
-						else size=0;
+						if (stat(item->file.c_str(), &fStat)==0) 
+						{
+							if (S_ISREG(fStat.st_mode))
+							{
+								size = fStat.st_size;
+							}
+							else
+						       	{
+								unlink(item->file.c_str());
+							}
+						}
 						prData->setItemProgress(item->itemID, (double) size);
 #else
 						prData->setItemProgress(item->itemID, 0);
