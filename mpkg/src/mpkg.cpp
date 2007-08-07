@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.101 2007/08/02 10:39:13 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.102 2007/08/07 14:32:14 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -468,7 +468,7 @@ installProcess:
 			currentStatus = _("Installing package ") + *install_list.get_package(i)->get_name();
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + _("] Installing package ") + \
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(install_list.size()) + _("] Installing: ") + \
 						*install_list.get_package(i)->get_name() + "-" + \
 						install_list.get_package(i)->get_fullversion(), 10,80, \
 						(unsigned int) round((double) (i)/(double) ((double) (install_list.size())/(double) (100))));

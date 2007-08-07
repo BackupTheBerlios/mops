@@ -23,6 +23,7 @@ struct SysConfig
 	bool rootPartitionFormat;
 	vector<TagPair>otherMounts;
 	vector<string>otherMountFSTypes;
+	vector<string>oldOtherFSTypes;
 	vector<bool>otherMountFormat;
 	string rootMountPoint;
 	string cdromDevice;

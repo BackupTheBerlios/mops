@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.63 2007/06/22 00:59:12 i27249 Exp $
+ *	$Id: core.cpp,v 1.64 2007/08/07 14:32:14 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -128,7 +128,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
-					say("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), package_id);
+					//say("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), package_id);
 					return backupFile(sqlTable->getValue(k, "file_name"), package_id, package->get_id());
 				}
 			}

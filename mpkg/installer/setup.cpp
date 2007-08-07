@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.27 2007/08/02 10:39:12 i27249 Exp $
+ * $Id: setup.cpp,v 1.28 2007/08/07 14:32:14 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -303,6 +303,7 @@ int setOtherPartitionItems()
 		systemConfig.otherMountFSTypes.push_back(pList_raw[i].fstype);
 		systemConfig.otherMountFormat.push_back(false);
 	}
+	systemConfig.oldOtherFSTypes=systemConfig.otherMountFSTypes;
 	return 0;
 }
 
@@ -328,7 +329,14 @@ int setOtherOptions(string devName)
 			fstype_ret = systemConfig.otherMountFSTypes[i];
 select_mp:
 			mountpoint_ret = d.execInputBox("Выберите точку подключения для " + systemConfig.otherMounts[i].tag, mountpoint_ret);
-			if (mountpoint_ret.empty()) return -1;
+			if (mountpoint_ret.empty())
+			{
+				// clearing
+				systemConfig.otherMounts[i].value="не подключено";
+				systemConfig.otherMountFormat[i]=false;
+				systemConfig.otherMountFSTypes[i]=systemConfig.oldOtherFSTypes[i];
+				return -1;
+			}
 			if (mountpoint_ret[0]!='/')
 			{
 				d.execMsgBox("Точка подключения " + mountpoint_ret + " некорректна. Это должен быть абсолютный путь, например /usr/local");
@@ -773,7 +781,7 @@ void writeFstab()
 			fstype="ntfs";
 #endif
 		}
-		data += systemConfig.otherMounts[mountOrder[i]].tag + "\t" + systemConfig.otherMounts[mountOrder[i]].value + "\t"+fstype+"\t" + options + "\t0 0";
+		data += systemConfig.otherMounts[mountOrder[i]].tag + "\t" + systemConfig.otherMounts[mountOrder[i]].value + "\t"+fstype+"\t" + options + "\t0 0\n";
 	}
 	mDebug("data is:\n"+data);
 	
@@ -789,8 +797,10 @@ int performConfig()
 	writeFstab();
 	mDebug("start");
 	setenv("ROOT_DEVICE", systemConfig.rootPartition.c_str(), 1);
-	WriteFile("/var/log/setup/tmp/SeTT_PX", systemConfig.rootMountPoint);
-	WriteFile("/var/log/setup/tmp/SeTrootdev", systemConfig.rootPartition);
+	setenv("COLOR", "on",1);
+	WriteFile("/var/log/setup/tmp/SeTT_PX", systemConfig.rootMountPoint+"\n");
+	WriteFile("/var/log/setup/tmp/SeTrootdev", systemConfig.rootPartition+"\n");
+	WriteFile("/var/log/setup/tmp/SeTcolor","on\n");
 	if (system("/usr/lib/setup/SeTconfig")==0)
 	{
 		mDebug("Config seems to be ok");
@@ -1009,7 +1019,7 @@ int commit()
 			if (systemConfig.otherMounts[i].value[0]=='/')
 				summary += "                " + \
 				    systemConfig.otherMounts[i].tag + \
-				    " (" + systemConfig.otherMounts[i].value + "), форматирование: " + systemConfig.otherMountFSTypes[i] + "\n";
+				    " (" + systemConfig.otherMounts[i].value + "), файловая система: " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i])+"\n";
 		}
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
@@ -1055,8 +1065,8 @@ int setCDSource()
 	string volname;
 	string rep_location;
 	mkdir(CDROM_MOUNTPOINT.c_str(), 755);
-	while(d.execYesNo("Вставьте очередной установочный диск для индексации.\nЕсли дисков больше не осталось, нажмите НЕТ\n\nПроиндексировано дисков: " +\
-				IntToStr(disc_number) + "\nПоследний проиндексированный диск: "+last_indexed_cd))
+	while(d.execYesNo("Вставьте очередной установочный диск для индексации.\nЕсли дисков больше не осталось, нажмите Готово\n\nПроиндексировано дисков: " +\
+				IntToStr(disc_number) + "\nПоследний проиндексированный диск: "+last_indexed_cd, 0,0,"Индексировать", "Готово"))
 	{
 		mDebug("Mounting and retrieving index)");
 		system("mount " + systemConfig.cdromDevice + " /var/log/mount");
