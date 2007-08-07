@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.62 2007/08/03 14:24:55 i27249 Exp $
+ * $Id: repository.cpp,v 1.63 2007/08/07 10:05:44 adiakin Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -472,6 +472,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			}
 			else fprintf(log, "indexing file %s FAILED: error code %d\n", filename, errCode);
 			fclose(log);
+			return -999;
 		}
 		else mError("unable to open log file");
 
