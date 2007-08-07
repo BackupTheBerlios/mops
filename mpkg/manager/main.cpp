@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.27 2007/05/31 14:17:34 i27249 Exp $
+ *     $Id: main.cpp,v 1.28 2007/08/07 14:41:04 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -12,6 +12,10 @@
 #include "mainwindow.h"
 int main(int argc, char *argv[])
 {
+	setlocale(LC_ALL, "");
+	bindtextdomain( "installpkg-ng", "/usr/share/locale");
+	textdomain("installpkg-ng");
+
 	QApplication app(argc, argv);
 	QTranslator translator;
 	translator.load("/usr/share/mpkg/pkgmanager_ru");

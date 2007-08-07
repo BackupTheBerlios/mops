@@ -271,6 +271,8 @@ copy_file:
 
 DownloadResults HttpDownload::getFile(std::string url, std::string file, std::string cdromDevice, std::string cdromMountPoint )
 {
+	// Step 1: unlink the file
+	unlink(file.c_str());
 	mDebug("Downloading " + url + " to " + file);
 	string dir = file.substr(0,file.find_last_of("/"));
 	dir = "mkdir -p "+dir;
@@ -445,14 +447,19 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					}
 
 					else if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
-					{	
+					{
+
+#ifdef ENABLE_DOWNLOAD_RESUMING
 						long size;
 						struct stat fStat;
 						if (stat(item->file.c_str(), &fStat)==0) size = fStat.st_size;
 						else size=0;
-					
-						out = fopen (item->file.c_str(), "ab");
 						prData->setItemProgress(item->itemID, (double) size);
+#else
+						prData->setItemProgress(item->itemID, 0);
+						unlink(item->file.c_str());
+#endif
+						out = fopen (item->file.c_str(), "ab");
 						if ( out == NULL )
 						{
 							mError("open target file failed");
@@ -463,8 +470,10 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 						{
 							mDebug("Trying to download via CURL");
 							fseek(out,0,SEEK_END);
-							//if (size!=0) say("Resuming download from %i\n", size);
-							//curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
+#ifdef ENABLE_DOWNLOAD_RESUMING
+							if (size!=0) say("Resuming download from %i\n", size);
+							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
+#endif
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);

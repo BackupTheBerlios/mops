@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.28 2007/08/07 14:32:14 i27249 Exp $
+ * $Id: setup.cpp,v 1.29 2007/08/07 14:41:04 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1291,6 +1291,10 @@ string doFormatString(bool input)
 }
 int main(int argc, char *argv[])
 {
+	setlocale(LC_ALL, "");
+	bindtextdomain( "installpkg-ng", "/usr/share/locale");
+	textdomain("installpkg-ng");
+
 	simulate=false;
 	forceSkipLinkMD5Checks=true;
 	bool valid_opt=true;
