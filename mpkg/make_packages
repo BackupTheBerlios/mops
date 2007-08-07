@@ -12,11 +12,13 @@ cp pkg_descriptions/lib/*  out_packages/lib/install/
 mkdir -p out_packages/lib/usr/local/lib
 mkdir -p out_packages/lib/usr/local/include
 mkdir -p out_packages/lib/etc
+mkdir -p out_packages/lib/usr/share/locale/ru/LC_MESSAGES
 cp -R /usr/local/include/mpkg out_packages/lib/usr/local/include/
 cp src/mpkg.xml out_packages/lib/etc/
 cp manager/groups.xml out_packages/lib/etc/mpkg-groups.xml
 cp src/mpkg-remove-blacklist out_packages/lib/etc/
 cp /usr/local/lib/libmpkg* out_packages/lib/usr/local/lib/
+cp /usr/share/locale/ru/LC_MESSAGES/installpkg-ng.mo out_packages/lib/usr/share/locale/ru/LC_MESSAGES/
 cd out_packages/lib/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating console package"
