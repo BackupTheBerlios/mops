@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.26 2007/08/03 11:53:10 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.27 2007/08/07 09:34:22 adiakin Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -26,8 +26,10 @@ PackageConfig::PackageConfig(string _f)
     if (doc == NULL) {
         mDebug("XML Load failed");
         this->errors++;
+		this->parseOk = false;
         xmlFreeDoc(doc);
-	doc=NULL;
+		doc=NULL;
+		return;
     }
 
     curNode = xmlDocGetRootElement(doc);
@@ -35,8 +37,10 @@ PackageConfig::PackageConfig(string _f)
     if (curNode == NULL) {
         mDebug("Failed to get root node");
         this->errors++;
+		this->parseOk = false;
         xmlFreeDoc(doc);
-	doc=NULL;
+		doc=NULL;
+		return;
     } else {
 		mDebug("PIZDEC 00-5");
 	}
@@ -45,8 +49,11 @@ PackageConfig::PackageConfig(string _f)
     if (xmlStrcmp(curNode->name, (const xmlChar *) "package") ) {
         mDebug("Invalid root node definition");
         this->errors++;
-        xmlFreeDoc(doc);
-	doc=NULL;
+        this->parseOk = false;
+		xmlFreeDoc(doc);
+		doc=NULL;
+		return;
+
     } else {
 		mDebug("PIZDEC 00-6");
 	}
@@ -353,7 +360,6 @@ string PackageConfig::getDescription(string lang)
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_DESCRIPTION);
     if (res) {
-        
         nodeset = res->nodesetval;
         xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
         const char * _result = (const char * )key;
