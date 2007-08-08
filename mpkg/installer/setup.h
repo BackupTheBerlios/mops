@@ -24,6 +24,7 @@ struct SysConfig
 	vector<TagPair>otherMounts;
 	vector<string>otherMountFSTypes;
 	vector<string>oldOtherFSTypes;
+	vector<string>otherMountSizes;
 	vector<bool>otherMountFormat;
 	string rootMountPoint;
 	string cdromDevice;

@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.29 2007/08/07 14:41:04 i27249 Exp $
+ * $Id: setup.cpp,v 1.30 2007/08/08 13:22:37 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -38,6 +38,28 @@ void deleteCore()
 		core=NULL;
 	}
 }
+
+vector<TagPair> getDevList()
+{
+	vector<TagPair> ret;
+	PedDevice *tmpDevice=NULL;
+	bool enumFinished=false;
+	ped_device_probe_all();
+	while(!enumFinished)
+	{
+		tmpDevice = ped_device_get_next(tmpDevice);
+		if (tmpDevice==NULL) enumFinished=true;
+		else
+		{
+			if (!tmpDevice->type==PED_DEVICE_UNKNOWN)
+				ret.push_back(TagPair(tmpDevice->path, tmpDevice->model + (string) ", " + IntToStr((tmpDevice->length * tmpDevice->sector_size/1048576)/1024) + " Gb"));
+		}
+	}
+	return ret;
+}
+
+
+
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 {
 	Dialog d;
@@ -63,25 +85,28 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 		}
 		else
 		{
-			devList.push_back(tmpDevice);
-			tmpDisk = ped_disk_new(tmpDevice);
-			partList.push_back(tmpDisk);
-			partFinished=false;
-			tmpPartition=NULL;
-			tmpPartList.clear();
-			while (!partFinished)
+			if (tmpDevice->type!=PED_DEVICE_UNKNOWN)
 			{
-				tmpPartition=ped_disk_next_partition(tmpDisk, tmpPartition);
-				if (tmpPartition==NULL)
+				devList.push_back(tmpDevice);
+				tmpDisk = ped_disk_new(tmpDevice);
+				partList.push_back(tmpDisk);
+				partFinished=false;
+				tmpPartition=NULL;
+				tmpPartList.clear();
+				while (!partFinished)
 				{
-					partFinished=true;
+					tmpPartition=ped_disk_next_partition(tmpDisk, tmpPartition);
+					if (tmpPartition==NULL)
+					{
+						partFinished=true;
+					}
+					else
+					{
+						tmpPartList.push_back(tmpPartition);
+					}
 				}
-				else
-				{
-					tmpPartList.push_back(tmpPartition);
-				}
+				partitionList.push_back(tmpPartList);
 			}
-			partitionList.push_back(tmpPartList);
 		}
 	}
 	pEntry tmpEntry;
@@ -297,9 +322,11 @@ int setOtherPartitionItems()
 	systemConfig.otherMountFSTypes.clear();
 	systemConfig.otherMounts.clear();
 	systemConfig.otherMountFormat.clear();
+	systemConfig.otherMountSizes.clear();
 	for (unsigned int i=0; i<pList_raw.size(); i++)
 	{
-		systemConfig.otherMounts.push_back(TagPair(pList_raw[i].devname, "не подключено"));
+		systemConfig.otherMounts.push_back(TagPair(pList_raw[i].devname, pList_raw[i].size + "Mb, " + pList_raw[i].fstype + ", не подключено"));
+		systemConfig.otherMountSizes.push_back(pList_raw[i].size);
 		systemConfig.otherMountFSTypes.push_back(pList_raw[i].fstype);
 		systemConfig.otherMountFormat.push_back(false);
 	}
@@ -332,7 +359,7 @@ select_mp:
 			if (mountpoint_ret.empty())
 			{
 				// clearing
-				systemConfig.otherMounts[i].value="не подключено";
+				systemConfig.otherMounts[i].value=systemConfig.otherMountSizes[i] + "Mb, " + systemConfig.oldOtherFSTypes[i] +", не подключено";
 				systemConfig.otherMountFormat[i]=false;
 				systemConfig.otherMountFSTypes[i]=systemConfig.oldOtherFSTypes[i];
 				return -1;
@@ -379,7 +406,7 @@ other_part_menu_main:
 		{
 			tmpTag = systemConfig.otherMounts[i];
 			if (tmpTag.value[0]=='/') 
-				tmpTag.value += ", " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i]);
+				tmpTag.value += ", "+systemConfig.otherMountSizes[i] + "Mb, " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i]);
 			menuItems.push_back(tmpTag);
 		}
 	}
@@ -848,7 +875,7 @@ int packageSelectionMenu()
 	bool mark;
 	PACKAGE *p;
 	string ins_type;
-	menuItems.push_back(TagPair("1","Десктоп (для домашнего и офисного применения)"));
+	menuItems.push_back(TagPair("1","Персональный компьютер (для домашнего и офисного применения)"));
 	menuItems.push_back(TagPair("2","Сервер (основные сервисы, без X11)"));
 	menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
 	menuItems.push_back(TagPair("4","Минимальная установка (только базовая система)"));
@@ -860,7 +887,7 @@ int packageSelectionMenu()
 
 	switch(i_ret)
 	{
-		case 1: ins_type = "Десктоп";
+		case 1: ins_type = "Персональный компьютер";
 			break;
 		case 2:
 			ins_type = "Сервер";
@@ -951,7 +978,7 @@ group_adjust_menu:
 				menuItems.push_back(TagPair(IntToStr(p->get_id()), *p->get_name() + " (" + *p->get_short_description() + ")", p->action()==ST_INSTALL));
 			}
 		}
-		if (d.execCheckList("Выберите пакеты для установки (группа " + ret + ")",0,0,0, &menuItems))
+		if (d.execCheckList("Выберите пакеты для установки (группа " + ret + ")\nВыбор осуществляется клавишей ПРОБЕЛ",0,0,0, &menuItems))
 		{
 			for (unsigned int i=0; i<menuItems.size(); i++)
 			{
@@ -1258,6 +1285,7 @@ int diskPartitioningMenu()
 {
 	Dialog d("Разбивка диска на разделы");
 	vector<TagPair> menuItems;
+	vector<TagPair> devList = getDevList();
 	string ret;
 	string disk_name;
 	int r = 0;
@@ -1270,9 +1298,9 @@ part_menu:
 
 	ret = d.execMenu("Выберите способ разбивки диска",0,0,0,menuItems);
 	if (ret == "Готово" || ret.empty()) return 0;
-disk_menu:
-	disk_name = d.execInputBox("Какой диск вы хотите разметить? Оставьте поле пустым, если хотите взять первый попавшийся", disk_name);
-	if (disk_name.find("/dev/")!=0) goto disk_menu;
+//disk_menu:
+	disk_name = d.execMenu("Какой диск вы хотите разметить?",0,0,0, devList);
+	if (disk_name.find("/dev/")!=0) goto part_menu;
 
 
 	if (ret == "cfdisk") r = system("cfdisk " + disk_name);

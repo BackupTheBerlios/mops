@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.63 2007/08/07 10:05:44 adiakin Exp $
+ * $Id: repository.cpp,v 1.64 2007/08/08 13:22:37 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -463,16 +463,23 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		LocalPackage lp(_package);
 		mDebug("PP 0-0");
 		int errCode = lp.injectFile(true);
+		//printf("injectFile returned %d\n", errCode);
 		mDebug("PP 00-1");
 		if (log)
 		{
 			if (errCode==0)
 			{
 				fprintf(log, "indexing package %s: OK\n", filename);
+				fclose(log);
 			}
-			else fprintf(log, "indexing file %s FAILED: error code %d\n", filename, errCode);
-			fclose(log);
-			return -999;
+			else 
+			{
+				fprintf(log, "indexing file %s FAILED: error code %d\n", filename, errCode);
+				fclose(log);
+			//	printf("Returning FAILURE\n");
+				return 0;
+			}
+
 		}
 		else mError("unable to open log file");
 
@@ -551,6 +558,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		}
 		pkgDupeNames.push_back(*lp.data.get_name());
 	}
+	//printf("Normal return\n");
 	return 0;
 }
 
