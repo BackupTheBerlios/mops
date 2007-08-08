@@ -29,6 +29,7 @@ struct SysConfig
 	string rootMountPoint;
 	string cdromDevice;
 	string sourceName;
+	vector<string> cdromList;
 };
 string getLastError();
 string doFormatString(bool input);

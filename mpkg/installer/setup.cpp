@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.30 2007/08/08 13:22:37 i27249 Exp $
+ * $Id: setup.cpp,v 1.31 2007/08/08 14:35:16 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -38,11 +38,40 @@ void deleteCore()
 		core=NULL;
 	}
 }
-
+vector<string> getCdromList()
+{
+	printf("getCdromList start\n");
+	string cdlist = get_tmp_file();
+	system("getcdromlist.sh " + cdlist);
+	vector<string> ret = ReadFileStrings(cdlist);
+	for (unsigned int i=0; i<ret.size(); i++)
+	{
+		ret[i]="/dev/"+ret[i];
+		printf("[%s]\n", ret[i].c_str());
+	}
+	unlink(cdlist.c_str());
+	printf("getCdromList end\n");
+	return ret;
+}
+bool checkIfCd(string devname)
+{
+	printf("checkIfCd start\n");
+	for (unsigned int i=0; i<systemConfig.cdromList.size(); i++)
+	{
+		if (systemConfig.cdromList[i]==devname)
+		{
+			printf("checkIfCd end\n");
+			return true;
+		}
+	}
+	printf("checkIfCd end\n");
+	return false;
+}
 vector<TagPair> getDevList()
 {
 	vector<TagPair> ret;
 	PedDevice *tmpDevice=NULL;
+	PedDisk *tmpDisk=NULL;
 	bool enumFinished=false;
 	ped_device_probe_all();
 	while(!enumFinished)
@@ -51,8 +80,15 @@ vector<TagPair> getDevList()
 		if (tmpDevice==NULL) enumFinished=true;
 		else
 		{
-			if (!tmpDevice->type==PED_DEVICE_UNKNOWN)
-				ret.push_back(TagPair(tmpDevice->path, tmpDevice->model + (string) ", " + IntToStr((tmpDevice->length * tmpDevice->sector_size/1048576)/1024) + " Gb"));
+			if (tmpDevice->type!=PED_DEVICE_UNKNOWN && !checkIfCd(tmpDevice->path))
+			{
+				ret.push_back(TagPair(tmpDevice->path, \
+							tmpDevice->model + (string) ", " + \
+							IntToStr((tmpDevice->length * tmpDevice->sector_size/1048576)/1024) + \
+							" Gb"));
+				printf("Found device %s with type %d\n", tmpDevice->path, tmpDevice->type);
+			}
+
 		}
 	}
 	return ret;
@@ -85,27 +121,30 @@ vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 		}
 		else
 		{
-			if (tmpDevice->type!=PED_DEVICE_UNKNOWN)
+			if (tmpDevice->type!=PED_DEVICE_UNKNOWN && !checkIfCd(tmpDevice->path))
 			{
-				devList.push_back(tmpDevice);
 				tmpDisk = ped_disk_new(tmpDevice);
-				partList.push_back(tmpDisk);
-				partFinished=false;
-				tmpPartition=NULL;
-				tmpPartList.clear();
-				while (!partFinished)
-				{
-					tmpPartition=ped_disk_next_partition(tmpDisk, tmpPartition);
-					if (tmpPartition==NULL)
+				if (tmpDisk != NULL) { // else, device doesn't contain any valid partition table
+
+					devList.push_back(tmpDevice);
+					partList.push_back(tmpDisk);
+					partFinished=false;
+					tmpPartition=NULL;
+					tmpPartList.clear();
+					while (!partFinished)
 					{
-						partFinished=true;
+						tmpPartition=ped_disk_next_partition(tmpDisk, tmpPartition);
+						if (tmpPartition==NULL)
+						{
+							partFinished=true;
+						}
+						else
+						{
+							tmpPartList.push_back(tmpPartition);
+						}
 					}
-					else
-					{
-						tmpPartList.push_back(tmpPartition);
-					}
+					partitionList.push_back(tmpPartList);
 				}
-				partitionList.push_back(tmpPartList);
 			}
 		}
 	}
@@ -387,7 +426,6 @@ select_mp:
 	}
 	// If we reach this point - this mean that nothing was found...
 	mError("No such device " + devName);
-	sleep(4);
 	return -2;
 
 }
@@ -1364,7 +1402,7 @@ int main(int argc, char *argv[])
 	}
 	dialogMode=true;
 
-
+	systemConfig.cdromList=getCdromList();
 	Dialog d ("Главное меню");
 	showGreeting();
 	if (!showLicense())
