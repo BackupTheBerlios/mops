@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.34 2007/08/09 09:26:04 i27249 Exp $
+ * $Id: setup.cpp,v 1.35 2007/08/09 11:24:24 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -409,7 +409,7 @@ select_mp:
 			}
 			systemConfig.otherMounts[i].value = mountpoint_ret;
 
-			fstype_ret = d.execMenu("Выберите способ форматирования раздела " + systemConfig.otherMounts[i].tag,0,0,0,formatOptions);
+			fstype_ret = d.execMenu("Выберите способ форматирования раздела " + systemConfig.otherMounts[i].tag,0,0,0,formatOptions, "---");
 			if (fstype_ret.empty()) return -1;
 			if (fstype_ret == "---")
 			{
@@ -434,6 +434,7 @@ int setOtherPartitions()
 	Dialog d("Подключение других разделов");
 	vector<TagPair> menuItems;
 	string ret;
+	string jump;
 	TagPair tmpTag;
 other_part_menu_main:
 	menuItems.clear();
@@ -443,14 +444,26 @@ other_part_menu_main:
 		{
 			tmpTag = systemConfig.otherMounts[i];
 			if (tmpTag.value[0]=='/') 
-				tmpTag.value += ", "+systemConfig.otherMountSizes[i] + "Mb, " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i]);
+				tmpTag.value += ", " + systemConfig.otherMountSizes[i] + "Mb, " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i]);
 			menuItems.push_back(tmpTag);
 		}
 	}
 	menuItems.push_back(TagPair("Готово", "Продолжить"));
-	ret = d.execMenu("Выберите точки подключения для остальных разделов",0,0,0,menuItems);
+	ret = d.execMenu("Выберите точки подключения для остальных разделов",0,0,0,menuItems, jump);
 	if (ret.empty()) return -1;
 	if (ret == "Готово") return 0;
+	for (unsigned int i=0; i<menuItems.size(); i++)
+	{
+		if (ret==menuItems[i].tag)
+		{
+			if (i+1<menuItems.size()) 
+			{ 
+				jump=menuItems[i+1].tag;
+			}
+			else jump=ret;
+			break;
+		}
+	}
 	setOtherOptions(ret);
 	goto other_part_menu_main;
 }
@@ -464,7 +477,7 @@ bool formatPartition(string devname, string fstype)
 {
 	string fs_options;
 	if (fstype=="jfs") fs_options="-q";
-	if (fstype=="xfs") fs_options="-fq";
+	if (fstype=="xfs") fs_options="-f -q";
 	if (fstype=="reiserfs") fs_options="-q";
 	if (!simulate)
 	{
@@ -1084,7 +1097,7 @@ int commit()
 			if (systemConfig.otherMounts[i].value[0]=='/')
 				summary += "                " + \
 				    systemConfig.otherMounts[i].tag + \
-				    " (" + systemConfig.otherMounts[i].value + "), файловая система: " + systemConfig.otherMountFSTypes[i] + ", форматирование: " + doFormatString(systemConfig.otherMountFormat[i])+"\n";
+				    " (" + systemConfig.otherMounts[i].value + "), " + systemConfig.otherMountFSTypes[i] + ", форматировать: " + doFormatString(systemConfig.otherMountFormat[i])+"\n";
 		}
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
@@ -1279,7 +1292,13 @@ start:
 	else systemConfig.sourceName="Из сети (несколько источников)";
 	d.execInfoBox("Обновление списка пакетов...");
 	core->set_repositorylist(rList, nullList);
-	if (core->update_repository_data()!=0)
+	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
+	SQLRecord *sqlSearch = new SQLRecord;
+	core->get_packagelist(&sqlSearch, pkgList);
+	int pkgCount = pkgList->size();
+	delete pkgList;
+	delete sqlSearch;
+	if (core->update_repository_data()!=0 || pkgCount == 0)
 	{
 		mDebug("update failed");
 		deleteCore();
