@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.33 2007/08/09 08:38:02 i27249 Exp $
+ * $Id: setup.cpp,v 1.34 2007/08/09 09:26:04 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -98,7 +98,7 @@ vector<TagPair> getDevList()
 vector<pEntry> getGoodPartitions(vector<string> goodFSTypes)
 {
 	Dialog d;
-	d.execInfoBox("Поиск разделов на жестких дисках...");
+	d.execInfoBox("Поиск разделов на жестких дисках...",3,40);
 	mDebug("start");
 	ped_device_probe_all();
 	vector<PedDevice *> devList;
@@ -339,7 +339,7 @@ int setRootPartition()
 		systemConfig.rootPartitionFormat=true;
 		systemConfig.rootPartitionType = formatOption;
 		mDebug("set to format " + rootPartition + " as " + formatOption);
-		umount(rootPartition.c_str());
+		system("umount -l " + rootPartition);
 	}
 
 	else
@@ -468,7 +468,7 @@ bool formatPartition(string devname, string fstype)
 	if (fstype=="reiserfs") fs_options="-q";
 	if (!simulate)
 	{
-		string cmd = "umount " + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log 1>>/var/log/mkfs.log";
+		string cmd = "umount -l" + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log 1>>/var/log/mkfs.log";
 		if (system(cmd)==0) return true;
 		else return false;
 	}
@@ -651,7 +651,7 @@ int moveDatabaseToHdd()
 int mountMedia()
 {
 	mDebug("start");
-	if (umount("/var/log/mount")==0) mDebug("successfully unmounted old mount");
+	if (system("umount -l /var/log/mount")==0) mDebug("successfully unmounted old mount");
 	else mDebug("cd wasn't mounted or unmount error. Processing to detection");
 	Dialog dialogItem ("Поиск и монтирование привода CD/DVD");
 	dialogItem.execInfoBox("Попытка автоматического определения привода...");
@@ -884,7 +884,8 @@ void syncFS()
 {
 	mDebug("start");
 	system("sync");
-	umount(systemConfig.cdromDevice.c_str());
+	if (noEject) system("umount " + systemConfig.cdromDevice);
+	else system("eject " + systemConfig.cdromDevice);
 	mDebug("end");
 }
 
@@ -1406,8 +1407,9 @@ int main(int argc, char *argv[])
 	unlink("/var/log/mpkg-lasterror.log");
 	unlink("/var/log/mkfs.log");
 	system("touch /var/log/mkfs.log /var/log/mpkg-lasterror.log");
-	system("tail -f /var/log/mkfs.log > /dev/tty4 &");
-	system("tail -f /var/log/mpkg-lasterror.log > /dev/tty4 &");
+	system("killall tail");
+	system("tail -f /var/log/mkfs.log >> /dev/tty4 &");
+	system("tail -f /var/log/mpkg-lasterror.log >> /dev/tty4 &");
 	Dialog d ("Главное меню");
 	showGreeting();
 	if (!showLicense())
