@@ -28,13 +28,16 @@ double *extItemNow;
 ProgressData *ppData;
 ActionBus *ppActionBus;
 int currentItemID;
-
+Dialog d;
+double i_dlnow=0, i_dltotal=0;
 static int downloadCallback(void *clientp,
                        double dltotal,
                        double dlnow,
                        double ultotal,
                        double ulnow)
 {
+	i_dlnow=dlnow;
+	i_dltotal=dltotal;
 	double t = ultotal;
 	t=ulnow;
 	void *t1;
@@ -51,8 +54,7 @@ static int downloadCallback(void *clientp,
 	}
 	if (dialogMode)
 	{
-		Dialog dialogItem;
-		dialogItem.execGauge("Скачивается файл " + ppData->getItemName(currentItemID), 10,80, (unsigned int) round(dlnow/(dltotal/100)));
+		d.setGaugeValue((unsigned int) round(dlnow/(dltotal/100)));
 	}
 
 	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
@@ -487,8 +489,12 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
     							curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     							curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
-	    						result = curl_easy_perform(ch);
+	    						
+							d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+"] Скачивается файл " + \
+									item->url_list.at(j), 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
+							result = curl_easy_perform(ch);
     							fclose(out);
+							d.closeGauge();
 						}
 					}
 	    				if ( result == CURLE_OK  ) 
@@ -511,6 +517,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					}
 					else 
 					{
+						printf("Download error: %s\n", curl_easy_strerror(result));
+						sleep(2);
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;

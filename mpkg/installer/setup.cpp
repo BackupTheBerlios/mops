@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.35 2007/08/09 11:24:24 i27249 Exp $
+ * $Id: setup.cpp,v 1.36 2007/08/09 12:58:52 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -995,12 +995,42 @@ int packageSelectionMenu()
 			p->set_action(ST_INSTALL);
 		}
 	}
-	
-	// Executing adjustment
+
 	bool showThisItem;
+	goto group_adjust_menu;
+group_mark_menu:
+	printf("group_mark_menu\n");
+	sleep(2);
+	menuItems.clear();
+	//menuItems.push_back(TagPair("Готово", "Все готово"));
+	for (unsigned int i=0; i<i_tagList.size(); i++)
+	{
+		if (i_tagList[i]!="desktop" && i_tagList[i]!="server" && i_tagList[i]!="thinclient" && i_tagList[i]!="base")
+		{
+			menuItems.push_back(TagPair(i_tagList[i],getTagDescription(i_tagList[i])));
+		}
+	}
+	if (!d.execCheckList("Отредактируйте список устанавливаемых групп\nПомните, что все изменения из предыдущего меню будут утеряны", 0,0,0,&menuItems)) goto group_adjust_menu;
+	printf("cycle\n");
+	sleep(2);
+	for (unsigned int i=0; i<menuItems.size(); i++)
+	{
+		for (int t=0; t<i_availablePackages.size(); t++)
+		{
+			if (i_availablePackages.get_package(t)->isTaggedBy(menuItems[i].tag))
+			{
+				if (menuItems[i].checkState) i_availablePackages.get_package(t)->set_action(ST_INSTALL);
+				else i_availablePackages.get_package(t)->set_action(ST_NONE);
+			}
+			if (i_availablePackages.get_package(t)->get_tags()->size()==0) i_availablePackages.get_package(t)->set_action(ST_NONE);
+		}
+	}
+	goto group_adjust_menu;
+	// Executing adjustment
 group_adjust_menu:
 	menuItems.clear();
 	menuItems.push_back(TagPair("Готово", "Все готово"));
+	menuItems.push_back(TagPair("Группы", "Выбор устанавливаемых групп пакетов целиком"));
 	for (unsigned int i=0; i<i_tagList.size(); i++)
 	{
 		if (i_tagList[i]!="desktop" && i_tagList[i]!="server" && i_tagList[i]!="thinclient" && i_tagList[i]!="base")
@@ -1011,8 +1041,9 @@ group_adjust_menu:
 	menuItems.push_back(TagPair("extras", "Пакеты, не вошедшие ни в одну из групп"));
 	menuItems.push_back(TagPair("everything", "Единый список всех пакетов"));
 	
-	ret = d.execMenu("Вы выбрали тип установки " + ins_type + "\nОтредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
+	ret = d.execMenu("Отредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
 	if (ret == "Готово") return 0;
+	if (ret == "Группы") goto group_mark_menu;
 	else
 	{
 		menuItems.clear();
@@ -1292,13 +1323,10 @@ start:
 	else systemConfig.sourceName="Из сети (несколько источников)";
 	d.execInfoBox("Обновление списка пакетов...");
 	core->set_repositorylist(rList, nullList);
-	PACKAGE_LIST *pkgList = new PACKAGE_LIST;
-	SQLRecord *sqlSearch = new SQLRecord;
-	core->get_packagelist(&sqlSearch, pkgList);
-	int pkgCount = pkgList->size();
-	delete pkgList;
-	delete sqlSearch;
-	if (core->update_repository_data()!=0 || pkgCount == 0)
+	PACKAGE_LIST pkgList;// = new PACKAGE_LIST;
+	SQLRecord sqlSearch;// = new SQLRecord;
+	core->get_packagelist(&sqlSearch, &pkgList);
+	if (core->update_repository_data()!=0 && pkgList.size()==0)
 	{
 		mDebug("update failed");
 		deleteCore();

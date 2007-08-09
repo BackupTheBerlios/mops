@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.41 2007/08/03 11:53:11 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.42 2007/08/09 12:58:52 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -337,26 +337,11 @@ int main (int argc, char **argv)
 	if (action == ACT_TEST)
 	{
 		//core.exportBase("/root/export");
-		string filename="x11-fonts-adobe-100dpi-1.2-i486-1az.tgz";
-		PACKAGE package;
-		string name_tmp=filename.substr(0,filename.find(".tgz"));
-		
-		package.set_build(&name_tmp.substr(name_tmp.find_last_of("-")+1));
-		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
-		package.set_arch(&name_tmp.substr(name_tmp.find_last_of("-")+1));
-		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
-		package.set_version(&name_tmp.substr(name_tmp.find_last_of("-")+1));
-		name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
-		package.set_name(&name_tmp);
-		name_tmp.clear();
-
-		printf("Name: '%s'\n",package.get_name()->c_str());
-		printf("Version: '%s'\n",package.get_version()->c_str());
-		printf("Arch: '%s'\n",package.get_arch()->c_str());
-		printf("Build: '%s'\n",package.get_build()->c_str());
-
-		//bool z = isMounted("/var/log/mount");
-
+		Dialog d;
+		for (unsigned int i=0; i<10000; i++)
+		{
+			system("cat /etc/mpkg.xml");
+		}
 
 		return 0;
 		/*
