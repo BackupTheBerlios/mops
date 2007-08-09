@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.36 2007/08/09 12:58:52 i27249 Exp $
+ * $Id: setup.cpp,v 1.37 2007/08/09 13:44:14 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -955,6 +955,7 @@ int packageSelectionMenu()
 		default:
 			ins_type = "Я хз что вы там выбрали...";
 	}
+	systemConfig.setupMode=ins_type;
 
 	createCore();
 	SQLRecord sqlSearch;
@@ -1042,7 +1043,7 @@ group_adjust_menu:
 	menuItems.push_back(TagPair("everything", "Единый список всех пакетов"));
 	
 	ret = d.execMenu("Отредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
-	if (ret == "Готово") return 0;
+	if (ret == "Готово") goto pkgcounter_finalize;
 	if (ret == "Группы") goto group_mark_menu;
 	else
 	{
@@ -1077,13 +1078,13 @@ group_adjust_menu:
 		}
 		goto group_adjust_menu;
 	}
-
-
-					
-
-
-	
-
+pkgcounter_finalize:
+	// Render deps and calculate summary
+	systemConfig.totalQueuedPackages=0;
+	for (int i=0; i<i_availablePackages.size(); i++)
+	{
+		if (i_availablePackages.get_package(i)->action()==ST_INSTALL) systemConfig.totalQueuedPackages++;
+	}
 	return 0;
 
 }
@@ -1132,6 +1133,8 @@ int commit()
 		}
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
+		    "Режим установки: " + systemConfig.setupMode + "\n" + \
+		    "Выбрано пакетов: " + IntToStr(systemConfig.totalQueuedPackages) + ", не включая зависимости\n" + \
 		    "\nМожно выполнять установку?";
 	if (d.execYesNo(summary))
 	{
@@ -1140,10 +1143,9 @@ int commit()
 		{
 			if (activateSwapSpace()!=0) return -1;
 			if (formatPartitions()!=0) return -1;
-			//if (mountMedia()!=0) return -1;
 			if (mountPartitions()!=0) return -1;
 			createCore();
-			d.execInfoBox("Построение очереди пакетов...");
+			d.execInfoBox("Построение очереди пакетов и расчет зависимостей",3,40);
 
 			for (int i=0; i<i_availablePackages.size(); i++)
 			{
@@ -1152,7 +1154,7 @@ int commit()
 			}
 			if (core->commit()!=0) return -1;
 			if (performConfig()!=0) return -1;
-			syncFS();//!=0) return -1;
+			syncFS();
 		}
 		showFinish();
 	}
@@ -1307,17 +1309,14 @@ start:
 	if (systemConfig.sourceName.find("Из сети")==0 && !REPOSITORY_LIST.empty()) ret = REPOSITORY_LIST[0];
 
 	rList.clear();
-	ret = d.execInputBox("Введите URL сетевого репозитория. Позднее вы сможете добавить дополнительные","ftp://");
+	ret = d.execInputBox("Введите URL сетевого репозитория","ftp://ftp.rpunet.ru/mopslinux-current/mops/");
 	if (!ret.empty()) rList.push_back(ret);
 	
 	//d.execAddableList("Введите URL дополнительных сетевых репозиториев. Можете указать несколько.", &rList, "://");
 	// Redefine repository list
 	if (rList.empty())
 	{
-		if (d.execYesNo("Вы не указали ни одного источника пакетов. Использовать репозиторий по умолчанию?"))
-		{
-			rList.push_back("ftp://ftp.rpunet.ru/mopslinux-current/mops/");
-		}
+		return -1;
 	}
 	if (rList.size()==1) systemConfig.sourceName="Из сети: " + rList[0];
 	else systemConfig.sourceName="Из сети (несколько источников)";
@@ -1330,11 +1329,8 @@ start:
 	{
 		mDebug("update failed");
 		deleteCore();
-		if (d.execYesNo("При загрузке списка пакетов произошла ошибка. Проверьте введенные данные, и убедитесь что сеть работает"))
-		{
-			goto start;
-		}
-		else return 0;
+		d.execMsgBox("При загрузке списка пакетов произошла ошибка. Проверьте введенные данные, и убедитесь что сеть работает");
+		goto start;
 	}
 	else
 	{
@@ -1475,17 +1471,23 @@ int main(int argc, char *argv[])
 main_menu:
 	menuItems.clear();
 	menuItems.push_back(TagPair("0","Выполнить разбивку диска"));
+	
 	if (systemConfig.swapPartition.empty()) menuItems.push_back(TagPair("1", "Выбрать раздел подкачки"));
 	else menuItems.push_back(TagPair("1","Раздел подкачки: " + systemConfig.swapPartition));
+	
 	if (systemConfig.rootPartition.empty()) 
 		menuItems.push_back(TagPair("2","Выбрать раздел для корневой файловой системы"));
 	else menuItems.push_back(TagPair("2","Корневой раздел системы: " + systemConfig.rootPartition + \
 				" (" + systemConfig.rootPartitionType + ", форматирование: " + doFormatString(systemConfig.rootPartitionFormat) + ")"));
+	
 	menuItems.push_back(TagPair("3","Настроить подключение других разделов"));
+	
 	if (systemConfig.sourceName.empty()) menuItems.push_back(TagPair("4","Выбор источника пакетов"));
 	else menuItems.push_back(TagPair("4", "Источник пакетов: " + systemConfig.sourceName));
 	
-	menuItems.push_back(TagPair("5","Выбор устанавливаемых пакетов"));
+	if (systemConfig.totalQueuedPackages==0) menuItems.push_back(TagPair("5","Выбор пакетов"));
+	else menuItems.push_back(TagPair("5","Выбор пакетов (режим установки: " + systemConfig.setupMode + ", выбрано " + \
+				IntToStr(systemConfig.totalQueuedPackages) + " пакетов)"));
 	
 	menuItems.push_back(TagPair("6","Установить систему"));
 	

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.42 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.43 2007/08/09 13:44:14 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -10,7 +10,7 @@ string output_dir;
 // Cleans system cache
 int mpkgSys::clean_cache(bool symlinks_only)
 {
-	if (!symlinks_only) say(_("Cleaning package cache\n"));
+	if (!symlinks_only && !dialogMode) say(_("Cleaning package cache\n"));
 	if (!symlinks_only) ftw(SYS_CACHE.c_str(), _clean, 50);
 	else ftw(SYS_CACHE.c_str(), _clean_symlinks, 50);
 	return 0;
@@ -29,7 +29,7 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	{
 		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);
 	}
-	say(_("finished\n"));
+	if (!dialogMode) say(_("finished\n"));
 	return 0;
 }
 
@@ -74,8 +74,9 @@ int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepT
 	// А есть ли у нас вообще репозитории? Может нам и ловить-то нечего?...
 	// Впрочем, надо все равно пойти на принцип и пометить все пакеты как недоступные. Ибо это действительно так.
 	// Поэтому - проверка устранена.
-
-	say(_("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size());
+	Dialog d;
+	if (!dialogMode) say(_("Updating package data from %d repository(s)...\n"), REPOSITORY_LIST.size());
+	else d.execInfoBox("Получение списка пакетов из " + IntToStr(REPOSITORY_LIST.size()) + " репозиториев"); // TODO: LANG_GETTEXT_TRANSLATE
 	int total_packages=0; // Счетчик полученных пакетов.
 
 	actionBus.setCurrentAction(ACTIONID_DBUPDATE);
@@ -101,7 +102,11 @@ int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepT
 	delete tmpPackages;
 	// Вот тут-то и начинается самое главное. Вызываем фильтрацию пакетов (действие будет происходить в функции updateRepositoryData.
 	int ret=db->updateRepositoryData(availablePackages);
-	say(_("Update complete.\n"));
+	if (!dialogMode) say(_("Update complete.\n"));
+	else {
+		d.execInfoBox(_("Update complete.\n"));
+	}
+
 	actionBus.setActionState(ACTIONID_DBUPDATE);
 	return ret;
 }
@@ -127,7 +132,7 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		mDebug("checking " + IntToStr(i));
 		if (candidates.get_package(i)->installed() && !candidates.get_package(i)->equalTo(&tmpPackage))
 		{
-			say(_("Updating package %s\n"), candidates.get_package(i)->get_name()->c_str());
+			if (!dialogMode) say(_("Updating package %s\n"), candidates.get_package(i)->get_name()->c_str());
 			requestUninstall(*candidates.get_package(i)->get_name(), db, DepTracker);
 		}
 	}

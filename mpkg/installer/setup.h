@@ -30,6 +30,9 @@ struct SysConfig
 	string cdromDevice;
 	string sourceName;
 	vector<string> cdromList;
+	unsigned int totalQueuedPackages;
+	string setupMode;
+	string totalRequiredSpace;
 };
 string getLastError();
 string doFormatString(bool input);

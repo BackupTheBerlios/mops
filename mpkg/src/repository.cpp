@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.64 2007/08/08 13:22:37 i27249 Exp $
+ * $Id: repository.cpp,v 1.65 2007/08/09 13:44:14 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -678,7 +678,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	// (and something else for RPM, in future)
 	string index_filename = get_tmp_file();
 	string md5sums_filename = get_tmp_file();
-	say("\t[%s] ...\n",server_url.c_str());
+	if (!dialogMode) say("\t[%s] ...\n",server_url.c_str());
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{
