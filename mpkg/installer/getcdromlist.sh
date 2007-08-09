@@ -8,6 +8,5 @@ while [ 0 ]; do
 	fi
 	PART=`expr $PART + 1`
 	echo $DRIVE >> $1
-	echo $DRIVE
 done
 

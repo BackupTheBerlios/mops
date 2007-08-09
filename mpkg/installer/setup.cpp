@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.32 2007/08/09 08:34:32 i27249 Exp $
+ * $Id: setup.cpp,v 1.33 2007/08/09 08:38:02 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -47,7 +47,7 @@ vector<string> getCdromList()
 	for (unsigned int i=0; i<ret.size(); i++)
 	{
 		ret[i]="/dev/"+ret[i];
-		printf("[%s]\n", ret[i].c_str());
+		//printf("[%s]\n", ret[i].c_str());
 	}
 	unlink(cdlist.c_str());
 	//printf("getCdromList end\n");
@@ -60,7 +60,7 @@ bool checkIfCd(string devname)
 	{
 		if (systemConfig.cdromList[i]==devname)
 		{
-			printf("checkIfCd end\n");
+			//printf("checkIfCd end\n");
 			return true;
 		}
 	}
@@ -621,9 +621,9 @@ string getTagDescription(string tag)
 
 int initDatabaseStructure()
 {
-	say("init: deleting core\n");
+	//say("init: deleting core\n");
 	deleteCore();
-	say("init: core removed\n");
+	//say("init: core removed\n");
 	if (system("rm -rf /var/mpkg; mkdir -p /var/mpkg && mkdir -p /var/mpkg/scripts && mkdir -p /var/mpkg/backup && mkdir -p /var/mpkg/cache && cp -f /packages.db /var/mpkg/packages.db")!=0)
 	{
 		mError("При создании структуры каталогов базы данных произошла ошибка");
@@ -635,9 +635,9 @@ int initDatabaseStructure()
 
 int moveDatabaseToHdd()
 {
-	say("move: deleting core");
+	//say("move: deleting core");
 	deleteCore();
-	say("move: deleted core");
+	//say("move: deleted core");
 	log_directory = "/mnt/var/log/";
 	if (system("rm -rf /mnt/var/mpkg; mkdir -p /mnt/var/log; cp -R /var/mpkg /mnt/var/ && rm -rf /var/mpkg && ln -s /mnt/var/mpkg /var/mpkg")!=0)
 	{
