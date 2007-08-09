@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.31 2007/08/08 14:35:16 i27249 Exp $
+ * $Id: setup.cpp,v 1.32 2007/08/09 08:34:32 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -23,7 +23,7 @@ PACKAGE_LIST i_availablePackages;
 vector<string> i_tagList;
 mpkg *core=NULL;
 
-bool noEject=true;
+bool noEject=true; // TODO: Change before release to false
 
 void createCore()
 {
@@ -40,7 +40,7 @@ void deleteCore()
 }
 vector<string> getCdromList()
 {
-	printf("getCdromList start\n");
+	//printf("getCdromList start\n");
 	string cdlist = get_tmp_file();
 	system("getcdromlist.sh " + cdlist);
 	vector<string> ret = ReadFileStrings(cdlist);
@@ -50,12 +50,12 @@ vector<string> getCdromList()
 		printf("[%s]\n", ret[i].c_str());
 	}
 	unlink(cdlist.c_str());
-	printf("getCdromList end\n");
+	//printf("getCdromList end\n");
 	return ret;
 }
 bool checkIfCd(string devname)
 {
-	printf("checkIfCd start\n");
+	//printf("checkIfCd start\n");
 	for (unsigned int i=0; i<systemConfig.cdromList.size(); i++)
 	{
 		if (systemConfig.cdromList[i]==devname)
@@ -64,14 +64,13 @@ bool checkIfCd(string devname)
 			return true;
 		}
 	}
-	printf("checkIfCd end\n");
+	//printf("checkIfCd end\n");
 	return false;
 }
 vector<TagPair> getDevList()
 {
 	vector<TagPair> ret;
 	PedDevice *tmpDevice=NULL;
-	PedDisk *tmpDisk=NULL;
 	bool enumFinished=false;
 	ped_device_probe_all();
 	while(!enumFinished)
@@ -86,7 +85,7 @@ vector<TagPair> getDevList()
 							tmpDevice->model + (string) ", " + \
 							IntToStr((tmpDevice->length * tmpDevice->sector_size/1048576)/1024) + \
 							" Gb"));
-				printf("Found device %s with type %d\n", tmpDevice->path, tmpDevice->type);
+				//printf("Found device %s with type %d\n", tmpDevice->path, tmpDevice->type);
 			}
 
 		}
@@ -469,7 +468,7 @@ bool formatPartition(string devname, string fstype)
 	if (fstype=="reiserfs") fs_options="-q";
 	if (!simulate)
 	{
-		string cmd = "umount " + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log";
+		string cmd = "umount " + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log 1>>/var/log/mkfs.log";
 		if (system(cmd)==0) return true;
 		else return false;
 	}
@@ -482,7 +481,7 @@ int formatPartitions()
 	if (systemConfig.rootPartitionFormat)
 	{
 		d.execInfoBox("Форматирование корневой файловой системы " + systemConfig.rootPartition + \
-				", подключение: /\nТип файловой системы: " + systemConfig.rootPartitionType);
+				"\nТип файловой системы: " + systemConfig.rootPartitionType);
 		if (!formatPartition(systemConfig.rootPartition, systemConfig.rootPartitionType)) 
 		{
 			d.execMsgBox("При форматировании корневой ФС произошла ошибка: \n"+getLastError());
@@ -945,9 +944,9 @@ int packageSelectionMenu()
 
 	createCore();
 	SQLRecord sqlSearch;
-	printf("cleaning queue\n");
+	//printf("cleaning queue\n");
 	core->clean_queue();
-	printf("clean complete\n");
+	//printf("clean complete\n");
 	core->get_packagelist(&sqlSearch, &i_availablePackages);
 	core->get_available_tags(&i_tagList);
 	
@@ -1369,14 +1368,14 @@ int main(int argc, char *argv[])
 		for (int i=1; i<argc; i++)
 		{
 			valid_opt=false;
-			if (strcmp(argv[i], "--simulate")==0)
+			/*if (strcmp(argv[i], "--simulate")==0)
 			{
 				simulate=true;
 				say("Simulation mode!\n");
 				valid_opt=true;
 				sleep(2);
-			}
-			if (strcmp(argv[i], "--no-skip-check")==0)
+			}*/
+			if (strcmp(argv[i], "--check")==0)
 			{
 				valid_opt=true;
 				forceSkipLinkMD5Checks=false;
@@ -1389,13 +1388,14 @@ int main(int argc, char *argv[])
 		
 			if (strcmp(argv[i], "--help")==0 || !valid_opt) 
 			{
-				printf("MOPSLinux installer 2.0 alpha\n");
-				printf("Usage:\n");
-				printf("setup [options]\n\n");
+				printf("Установка MOPSLinux 6.0\n");
+				printf("Синтаксис:\n");
+				printf("\tsetup [ ОПЦИИ ]\nОпции:\n");
 	
-				printf("\t--no-skip-check     Do NOT skip package integrity check\n");
-				printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
-				printf("\t--no-eject       Do not eject the CD-ROM\n");
+				printf("\t--сheck          Проверять контрольные суммы всех пакетов перед установкой\n");
+				printf("\t--no-eject       Не выдвигать CD-ROM (используйте при установке в виртуальной машине)\n");
+				printf("\t--help           Показать эту справку\n");
+				//printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
 				exit(0);
 			}
 		}
@@ -1403,6 +1403,11 @@ int main(int argc, char *argv[])
 	dialogMode=true;
 
 	systemConfig.cdromList=getCdromList();
+	unlink("/var/log/mpkg-lasterror.log");
+	unlink("/var/log/mkfs.log");
+	system("touch /var/log/mkfs.log /var/log/mpkg-lasterror.log");
+	system("tail -f /var/log/mkfs.log > /dev/tty4 &");
+	system("tail -f /var/log/mpkg-lasterror.log > /dev/tty4 &");
 	Dialog d ("Главное меню");
 	showGreeting();
 	if (!showLicense())
@@ -1444,7 +1449,10 @@ main_menu:
 	if (ret == "4") if (packageSourceSelectionMenu()==0) next_item="5";
 	if (ret == "5") if (packageSelectionMenu()==0) next_item="6";
 	if (ret == "6") if (commit()==0) next_item="7";
-	if (ret == "7" || ret.empty()) return 0;
+	if (ret == "7" || ret.empty()) 
+	{
+		return 0;
+	}
 	goto main_menu;
 }
 
