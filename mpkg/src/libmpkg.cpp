@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.42 2007/08/07 17:26:46 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.43 2007/08/09 13:52:04 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -28,7 +28,6 @@ mpkg::mpkg(bool _loadDatabase)
 
 mpkg::~mpkg()
 {
-	printf("Desctructing mpkg\n");
 	if (DepTracker!=NULL) delete DepTracker;
 	if (db!=NULL) delete db;
 	delete_tmp_files();
@@ -117,7 +116,6 @@ int mpkg::uninstall(vector<string> pkg_name)
 	int ret=0;
 	for (unsigned int i = 0; i < pkg_name.size(); i++)
 	{
-		//printf("[%d] REMOVING %s\n", i, pkg_name[i].c_str());
 		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(pkg_name.size()) +" ["+pkg_name[i]+"]";
 		if (mpkgSys::requestUninstall(pkg_name[i], db, DepTracker)!=0) ret--;
 	}
@@ -265,27 +263,41 @@ int mpkg::set_runscripts(bool dorun)
 // Finalizing
 int mpkg::commit()
 {
+	Dialog d;
 	mDebug("committing");
-	say(_("Checking dependencies\n"));
+	if (!dialogMode) say(_("Checking dependencies\n"));
+	else d.execInfoBox("Проверка зависимостей",3,40); // LANG_GETTEXT
+
 	currentStatus = _("Checking dependencies...");
 	int errorCount = DepTracker->renderData();
 	if (errorCount==0)
 	{
-		say(_("Building queue\n"));
+		if (!dialogMode) say(_("Building queue\n"));
+		else d.execInfoBox("Построение очереди действий",3,40);
 		mDebug("Tracking deps");
 		DepTracker->commitToDb();
-		say(_("Committing...\n"));
+		if (!dialogMode) say(_("Committing...\n"));
+		else d.execInfoBox("Выполнение...");
 		currentStatus = _("Committing changes...");
 		unsigned int ret = db->commit_actions();
-		if (ret==0) say(_("Complete successfully\n"));
-		else mError(_("Commit failed"));
+		if (ret==0) {
+			if (!dialogMode) say(_("Complete successfully\n"));
+			else d.execInfoBox("Запрошенные операции успешно завершены",3,60);
+		}
+		else 
+		{
+			mError(_("Commit failed"));
+			if (dialogMode) d.execInfoBox("Запрошенные операции выполнить не удалось",3,60);
+		}
 		currentStatus = _("Complete.");
 		return ret;
 	}
 	else
 	{
 		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
+		
 		mError(_("Error in dependencies: ") + IntToStr(errorCount) + _(" failures"));
+		if (dialogMode) d.execMsgBox(_("Error in dependencies: ") + IntToStr(errorCount) + _(" failures"));
 		currentStatus = _("Failed - depencency errors");
 		return MPKGERROR_UNRESOLVEDDEPS;
 	}
