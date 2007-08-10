@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.37 2007/08/09 13:44:14 i27249 Exp $
+ * $Id: setup.cpp,v 1.38 2007/08/10 15:00:13 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1088,7 +1088,19 @@ pkgcounter_finalize:
 	return 0;
 
 }
+int dbConfig()
+{
 
+	mDebug("Writing the data");
+	// Goals: create an appropriate configuration
+	system("cp /etc/mpkg.xml /etc/mpkg.xml.backup");
+	createCore();
+	core->set_sysroot("/");
+	deleteCore();
+	system("cp /etc/mpkg.xml /mnt/etc/");
+	system("cp /etc/mpkg.xml.backup /etc/mpkg.xml");
+	return 0;
+}
 int commit()
 {
 	Dialog d("Проверка параметров - ошибка");
@@ -1154,6 +1166,7 @@ int commit()
 			}
 			if (core->commit()!=0) return -1;
 			if (performConfig()!=0) return -1;
+			if (dbConfig()!=0) return -1;
 			syncFS();
 		}
 		showFinish();
@@ -1298,7 +1311,28 @@ enter_path:
 	}
 	return 0;
 }
+int netConfig()
+{
+	// TODO: fault tolerance
+	Dialog d("Настройка сети");
+	string eth_name, eth_ip, eth_netmask, eth_gateway, eth_dns;
+	eth_name = d.execInputBox("Введите имя сетевой карты","eth0");
+	if (eth_name.empty()) return -1;
+	eth_ip = d.execInputBox("Введите IP-адрес сетевой карты","");
+	if (eth_ip.empty()) return -1;
+	eth_netmask = d.execInputBox("Введите маску сети","255.255.255.0");
+	if (eth_netmask.empty()) return -1;
+	eth_gateway = d.execInputBox("Введите IP-адрес шлюза\nЕсли он отсутствует, оставьте поле пустым","");
+	eth_dns = d.execInputBox("Введите IP-адрес DNS-сервера", eth_gateway);
 
+
+	system("ifconfig " + eth_name + " " + eth_ip + " netmask " + eth_netmask + " up");
+	if (!eth_gateway.empty()) { system("route del default"); system("route add default gw " + eth_gateway); }
+	if (!eth_dns.empty()) WriteFile("/etc/resolv.conf", "nameserver " + eth_dns);
+
+
+	return 0;
+}
 int setNetworkSource()
 {
 	Dialog d("Поиск пакетов в сети");
@@ -1329,7 +1363,10 @@ start:
 	{
 		mDebug("update failed");
 		deleteCore();
-		d.execMsgBox("При загрузке списка пакетов произошла ошибка. Проверьте введенные данные, и убедитесь что сеть работает");
+		if (d.execYesNo("При загрузке списка пакетов произошла ошибка. Возможно, у вас не настроена сеть. Произвести настройку?"))
+		{
+			if (netConfig()!=0) return -1;
+		}
 		goto start;
 	}
 	else

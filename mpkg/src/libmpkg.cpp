@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.43 2007/08/09 13:52:04 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.44 2007/08/10 15:00:13 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -380,11 +380,12 @@ void mpkg::exportBase(string output_dir)
 			"\nCOMPRESSED PACKAGE SIZE:\t"+*p->get_compressed_size()+ \
 			"\nUNCOMPRESSED PACKAGE SIZE:\t"+*p->get_installed_size()+\
 			"\nPACKAGE LOCATION:\t/var/log/mount/"+*p->get_filename()+\
-			"\nPACKAGE DESCRIPTION:\n"+adjustStringWide(*p->get_short_description()+"\n"+*p->get_description(),70,*p->get_name())+\
+			"\nPACKAGE DESCRIPTION:\n" + *p->get_name() + ":  " + *p->get_short_description()+\
 			"\nFILE LIST:\n";
+		db->get_filelist(p->get_id(), p->get_files());
 		for (unsigned int f=0; f<p->get_files()->size(); f++)
 		{
-			data+=*p->get_files()->at(i).get_name();
+			data+=*p->get_files()->at(f).get_name()+"\n";
 		}
 		data+="\n";
 		WriteFile(output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build(), data.s_str());

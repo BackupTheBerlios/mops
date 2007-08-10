@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.42 2007/08/09 12:58:52 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.43 2007/08/10 15:00:13 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -336,31 +336,8 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		//core.exportBase("/root/export");
-		Dialog d;
-		for (unsigned int i=0; i<10000; i++)
-		{
-			system("cat /etc/mpkg.xml");
-		}
-
+		core.exportBase("/root/ebase/");
 		return 0;
-		/*
-		vector<string> db_struct = ReadFileStrings("/root/mpkg/sql/create_database.sql");
-		string dbstruct_cpp = (string) "#include \"dbstruct.h\"\nstring getDBStructure()\n{\n\treturn \"";
-		for (unsigned int i=0; i<db_struct.size(); i++)
-		{
-			dbstruct_cpp += db_struct[i] + "\\n\\\n";
-		}
-		dbstruct_cpp += "\";\n}\n";
-		WriteFile("dbstruct.cpp", dbstruct_cpp);*/
-/*
-		string r_location;
-		CDROM_MOUNTPOINT="/root/distro/";
-		string vname = getCdromVolname(&r_location);
-		
-		printf("Volname = [%s]\n", vname.c_str());
-		printf("Location = [%s]\n", r_location.c_str());
-		return 0;*/
 	}
 
 	if (action == ACT_CHECKDAMAGE)
