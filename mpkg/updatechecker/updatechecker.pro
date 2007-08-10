@@ -11,4 +11,5 @@ INCLUDEPATH += .
 HEADERS += monitor.h trayapp.h
 SOURCES += main.cpp monitor.cpp trayapp.cpp
 LIBS+= -lmpkg
+INCPATH+= /usr/include/libxml2
 
