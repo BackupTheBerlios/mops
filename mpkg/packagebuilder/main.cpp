@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.9 2007/06/05 08:45:53 i27249 Exp $
+ *     $Id: main.cpp,v 1.10 2007/08/10 13:08:26 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -14,7 +14,7 @@
  {
      	QApplication app(argc, argv);
 	QTranslator translator;
-	translator.load("packagebuilder_ru");
+	translator.load("/usr/share/mpkg/packagebuilder_ru");
 	app.installTranslator(&translator);
      	Form mw;
 
@@ -33,7 +33,7 @@
 	QObject::connect(mw.ui.BuildEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.ArchComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(changeHeader()));
 	QObject::connect(mw.ui.quitButton, SIGNAL(clicked()), &mw, SLOT(quitApp()));
-	QObject::connect(mw.ui.DescriptionLanguageComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(swapLanguage()));
+	//QObject::connect(mw.ui.DescriptionLanguageComboBox, SIGNAL(currentIndexChanged(const QString &)), &mw, SLOT(swapLanguage()));
 	QObject::connect(mw.ui.ShortDescriptionEdit, SIGNAL(textChanged(const QString &)), &mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw.ui.DescriptionEdit, SIGNAL(textChanged()), &mw, SLOT(changeHeader()));
 	QObject::connect(mw.ui.ChangelogEdit, SIGNAL(textChanged()), &mw, SLOT(changeHeader()));

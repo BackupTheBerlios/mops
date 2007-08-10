@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.22 2007/08/07 17:26:46 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.23 2007/08/10 13:08:26 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -21,7 +21,9 @@ Form::Form(QWidget *parent)
 	description.resize(2);
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
-	ui.DescriptionLanguageComboBox->hide();
+	ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+	ui.DepTableWidget->horizontalHeader()->hide();
+//	ui.DescriptionLanguageComboBox->hide();
 	this->show();
 	loadData();
 }
@@ -370,18 +372,19 @@ void Form::changeHeader(const QString & text)
 
 void Form::swapLanguage()
 {
+	
 	int i;
 	int i2;
-	if (ui.DescriptionLanguageComboBox->currentText()=="ru")
+	/*if (ui.DescriptionLanguageComboBox->currentText()=="ru")
 	{
 		i=0;
 		i2=1;
 	}
 	else 
-	{
+	{*/
 		i=1;
 		i2=0;
-	}
+	//}
 
 	short_description[i]=ui.ShortDescriptionEdit->text();
 	description[i]=ui.DescriptionEdit->toPlainText();
@@ -393,14 +396,14 @@ void Form::storeCurrentDescription()
 {
 	//printf("stored\n");
 	int i;
-	if (ui.DescriptionLanguageComboBox->currentText()=="ru")
+	/*if (ui.DescriptionLanguageComboBox->currentText()=="ru")
 	{
 		i=1;
 	}
 	else 
-	{
+	{*/
 		i=0;
-	}
+	//}
 
 	short_description[i]=ui.ShortDescriptionEdit->text();
 	description[i]=ui.DescriptionEdit->toPlainText();
