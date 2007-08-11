@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.44 2007/08/10 15:00:13 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.45 2007/08/11 11:55:17 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -390,5 +390,43 @@ void mpkg::exportBase(string output_dir)
 		data+="\n";
 		WriteFile(output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build(), data.s_str());
 	}
+}
+
+void generateDeps(string tgz_filename)
+{
+	// Create a temporary directory
+//	string tmpdir = get_tmp_file();
+	string dep_out = get_tmp_file();
+	say("Creating temp directory\n");
+//	unlink(tmpdir);
+//	mkdir(tmpdir);
+//	say("Extracting\n");
+//	system("tar zxf " + tgz_filename + " -C " + tmpdir);
+	say("Building dependencies\n");
+	system("requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
+	say("Parsing\n");
+	vector<string> data = ReadFileStrings(dep_out);
+	string tmp;
+	string tail;
+	DEPENDENCY d;
+	for (unsigned int i=0; i<data.size(); i++)
+	{
+		printf("parse cycle %d start\n",i);
+		tmp = data[i].substr(0,data[i].find_first_of(" "));
+		tail = data[i].substr(tmp.length()+1);
+		printf("dep name = [%s]\n",tmp.c_str());
+		d.set_package_name(&tmp);
+
+		tmp = tail.substr(0, tail.find_first_of(" "));
+		printf("tmp = [%s]\n", tmp.c_str());
+		tail = tail.substr(tmp.length()+1);
+		printf("dep condition = [%s]\n", tmp.c_str());
+		d.set_condition(&IntToStr(condition2int(hcondition2xml(tmp))));
+
+		tmp = tail.substr(0,tail.find_first_of("-"));
+		printf("dep version = [%s]\n", tmp.c_str());
+		d.set_package_version(&tmp);
+	}
+	delete_tmp_files();
 }
 

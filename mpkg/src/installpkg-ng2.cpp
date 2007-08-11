@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.43 2007/08/10 15:00:13 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.44 2007/08/11 11:55:17 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -336,7 +336,8 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		core.exportBase("/root/ebase/");
+	//	core.exportBase("/root/ebase/");
+		generateDeps(argv[2]);
 		return 0;
 	}
 
