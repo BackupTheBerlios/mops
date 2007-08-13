@@ -1,6 +1,6 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.11 2007/08/02 10:39:13 i27249 Exp $
+    $Id: conditions.cpp,v 1.12 2007/08/13 06:27:11 i27249 Exp $
 */
 
 
@@ -17,6 +17,19 @@ int condition2int(string condition)
 	if (condition==COND_ANY) return VER_ANY;
 	mError("error input (unknown condition): " + condition);
 	return -1; // SUPER_PUPER_ERROR
+}
+string condition2xml(string s_condition)
+{
+	int condition = atoi(s_condition.c_str());
+	if (condition==VER_MORE) return COND_MORE;
+	if (condition==VER_LESS) return COND_LESS;
+	if (condition==VER_EQUAL) return COND_EQUAL;
+	if (condition==VER_NOTEQUAL) return COND_NOTEQUAL;
+	if (condition==VER_XMORE) return COND_XMORE;
+	if (condition==VER_XLESS) return COND_XLESS;
+	if (condition==VER_ANY) return COND_ANY;
+	mError("error input (unknown condition): " + condition);
+	return ""; // SUPER_PUPER_ERROR
 }
 
 string hcondition2xml(string condition)

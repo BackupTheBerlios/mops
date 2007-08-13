@@ -1,6 +1,6 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.7 2007/05/17 15:12:36 i27249 Exp $
+    $Id: conditions.h,v 1.8 2007/08/13 06:27:11 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
@@ -38,4 +38,6 @@
 using namespace std;
 int condition2int(string condition);
 string hcondition2xml(string condition);
+string condition2xml(string s_condition);
+
 #endif //CONDITIONS_H_

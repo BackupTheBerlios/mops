@@ -177,7 +177,8 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 
 		mkdir(CDROM_MOUNTPOINT.c_str(), 755);
 try_mount:
-		d.execInfoBox("Подключение " + CDROM_DEVICE + " к точке монтирования " + CDROM_MOUNTPOINT);
+		if (dialogMode) d.execInfoBox("Подключение " + CDROM_DEVICE + " к точке монтирования " + CDROM_MOUNTPOINT);
+		else say(_("Mounting %s to %s\n"), CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str());
 		mDebug("Mounting");
 #ifndef INTERNAL_MOUNT
 		mDebug("Mount using system");
@@ -410,8 +411,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-					if (!dialogMode) say("Downloading %s\n", item->url_list.at(j).c_str());
-					else mDebug("Downloading " + item->url_list.at(j));
+					//if (!dialogMode) say("Downloading %s\n", item->url_list.at(j).c_str());
+					mDebug("Downloading " + item->url_list.at(j));
 					if (prData->size()>0)
 					{
 						prData->setItemCurrentAction(item->itemID, "Downloading");
@@ -490,11 +491,14 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
     							curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     							curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
 	    						
-							d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+"] Скачивается файл " + \
+							if (dialogMode) {
+								d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+"] Скачивается файл " + \
 									item->url_list.at(j), 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
+							}
+							else say(_("[%d/%d] Downloading file %s\n"),i+1, list.size(), item->url_list.at(j).c_str());
 							result = curl_easy_perform(ch);
     							fclose(out);
-							d.closeGauge();
+							if (dialogMode) d.closeGauge();
 						}
 					}
 	    				if ( result == CURLE_OK  ) 

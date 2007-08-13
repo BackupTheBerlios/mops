@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.45 2007/08/11 11:55:17 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.46 2007/08/13 06:27:11 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -392,23 +392,85 @@ void mpkg::exportBase(string output_dir)
 	}
 }
 
+void dumpPackage(PACKAGE *p, string filename)
+{
+	XMLNode node = XMLNode::createXMLTopNode("package");
+	node.addChild("name");
+	node.getChildNode("name").addText(p->get_name()->c_str());
+	node.addChild("version");
+	node.getChildNode("version").addText(p->get_version()->c_str());
+	node.addChild("arch");
+	node.getChildNode("arch").addText(p->get_arch()->c_str());
+	node.addChild("build");
+	node.getChildNode("build").addText(p->get_build()->c_str());
+
+	node.addChild("description");
+	node.getChildNode("description").addText(p->get_description()->c_str());
+	node.addChild("short_description");
+	node.getChildNode("short_description",0).addText(p->get_short_description()->c_str());
+	
+	node.addChild("dependencies");
+	node.addChild("suggests");
+	for (unsigned int i=0; i<p->get_dependencies()->size(); i++)
+	{
+		node.getChildNode("dependencies").addChild("dep");
+		node.getChildNode("dependencies").getChildNode("dep", i).addChild("name");
+		node.getChildNode("dependencies").getChildNode("dep", i).getChildNode("name").addText(p->get_dependencies()->at(i).get_package_name()->c_str());
+		node.getChildNode("dependencies").getChildNode("dep", i).addChild("condition");
+		node.getChildNode("dependencies").getChildNode("dep", i).getChildNode("condition").addText(condition2xml(*p->get_dependencies()->at(i).get_condition()).c_str());
+		node.getChildNode("dependencies").getChildNode("dep", i).addChild("version");
+		node.getChildNode("dependencies").getChildNode("dep", i).getChildNode("version").addText(p->get_dependencies()->at(i).get_package_version()->c_str());
+	}
+	node.addChild("tags");
+	node.addChild("changelog");
+
+	for (unsigned int i=0; i<p->get_tags()->size(); i++)
+	{
+		node.getChildNode("tags").addChild("tag");
+		node.getChildNode("tags").getChildNode("tag",i).addText(p->get_tags()->at(i).c_str());
+	}
+
+	node.getChildNode("changelog").addText(p->get_changelog()->c_str());
+	node.addChild("maintainer");
+	node.getChildNode("maintainer").addChild("name");
+	node.getChildNode("maintainer").getChildNode("name").addText(p->get_packager()->c_str());
+	node.getChildNode("maintainer").addChild("email");
+	node.getChildNode("maintainer").getChildNode("email").addText(p->get_packager_email()->c_str());
+	
+	node.addChild("configfiles");
+	for (unsigned int i=0; i<p->get_config_files()->size(); i++)
+	{
+		node.getChildNode("configfiles").addChild("conffile");
+		node.getChildNode("configfiles").getChildNode("conffile",i).addText(p->get_config_files()->at(i).get_name()->c_str());
+	}
+	node.writeToFile(filename.c_str());
+}
+
 void generateDeps(string tgz_filename)
 {
+	string current_dir = (string) get_current_dir_name();
 	// Create a temporary directory
-//	string tmpdir = get_tmp_file();
+	string tmpdir = get_tmp_file();
 	string dep_out = get_tmp_file();
-	say("Creating temp directory\n");
-//	unlink(tmpdir);
-//	mkdir(tmpdir);
-//	say("Extracting\n");
-//	system("tar zxf " + tgz_filename + " -C " + tmpdir);
+	say("Creating temp directory in %s\n", tmpdir.c_str());
+	unlink(tmpdir.c_str());
+	system("mkdir -p " + tmpdir);
+	say("Extracting\n");
+	system("tar zxf " + tgz_filename + " -C " + tmpdir);
+	say("Importing data\n");
+	PackageConfig p(tmpdir+"/install/data.xml");
+	PACKAGE pkg;
+	if (p.parseOk) xml2package(p.getXMLNode(), &pkg);
 	say("Building dependencies\n");
+	
 	system("requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
 	say("Parsing\n");
 	vector<string> data = ReadFileStrings(dep_out);
+	
 	string tmp;
 	string tail;
 	DEPENDENCY d;
+	pkg.get_dependencies()->clear();
 	for (unsigned int i=0; i<data.size(); i++)
 	{
 		printf("parse cycle %d start\n",i);
@@ -426,7 +488,11 @@ void generateDeps(string tgz_filename)
 		tmp = tail.substr(0,tail.find_first_of("-"));
 		printf("dep version = [%s]\n", tmp.c_str());
 		d.set_package_version(&tmp);
+		pkg.get_dependencies()->push_back(d);
 	}
+	dumpPackage(&pkg, tmpdir+"/install/data.xml");
+	system ("cd " + tmpdir + "; buildpkg; mv *.tgz " + current_dir + "/" +tgz_filename );
+	system("rm -rf " + tmpdir);
 	delete_tmp_files();
 }
 
