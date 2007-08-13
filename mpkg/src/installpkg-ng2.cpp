@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.45 2007/08/13 08:10:46 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.46 2007/08/13 11:41:00 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -36,6 +36,12 @@ void ShowBanner()
 int verbose = 0;
 int main (int argc, char **argv)
 {
+	if (FileExists("/usr/X11")) {
+		printf("INIT: file na meste\n");
+	}
+	else {
+		printf("OMFG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+	}
 	mpkg core;
 	if (!core.init_ok)
 	{
