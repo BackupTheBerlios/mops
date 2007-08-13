@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.103 2007/08/13 11:41:00 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.104 2007/08/13 11:47:56 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -560,8 +560,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 	}
 	mDebug("Checking file conflicts\n");
-	if (FileExists("/usr/X11")) printf("%s: still exists...\n", __func__);
-	else printf("NIO!!!!\n");
 	if (!force_skip_conflictcheck)
 	{
 		if (fileConflictChecking == CHECKFILES_PREINSTALL && check_file_conflicts(package)!=0)
@@ -796,21 +794,17 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 			// Restoring backups
 			vector<FILES>restore;
-			printf("looking for restore files from package %d\n", package->get_id());
        			get_conflict_records(package->get_id(), &restore);
 			if (!restore.empty())
 			{
-				printf("found %d files to restore\n", restore.size());
 				string cmd;
 				string tmpName;
 				for (unsigned int i=0; i<restore.size(); i++)
 				{
-					printf("restoring:\nFILE: %s\nBACKUP: %s\n", restore[i].get_name()->c_str(), restore[i].get_backup_file()->c_str());
 					if (restore[i].get_name()->find_last_of("/")!=std::string::npos)
 					{
 						cmd = "mkdir -p ";
 						cmd += SYS_ROOT + restore[i].get_name()->substr(0, restore[i].get_name()->find_last_of("/"));
-						printf("mkdir-CMD: [%s]\n", cmd.c_str());
 						if (!simulate) system(cmd.c_str());
 					}
 					cmd = "mv ";
@@ -818,7 +812,6 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 					tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
 					tmpName = tmpName.substr(tmpName.find("/"));
 				        cmd += SYS_ROOT + tmpName.substr(0,tmpName.find_last_of("/"))+"/";
-					printf("COMMAND: [%s]\n", cmd.c_str());
 					if (!simulate) system(cmd);
 					delete_conflict_record(package->get_id(), restore[i].get_backup_file());
 				}
