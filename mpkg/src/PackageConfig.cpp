@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.27 2007/08/07 09:34:22 adiakin Exp $
+* $Id: PackageConfig.cpp,v 1.28 2007/08/13 08:10:46 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -269,7 +269,8 @@ string PackageConfig::getBuild()
         std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
         mDebug("BUILD= '" + strim(__r) + "'");
         //return (std::string)_result;
-		return "1";
+	return strim(__r);
+	//	return "1";
     } else {
         return EMPTY;
     }

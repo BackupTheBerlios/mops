@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.44 2007/08/11 11:55:17 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.45 2007/08/13 08:10:46 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -178,7 +178,8 @@ int main (int argc, char **argv)
 			action == ACT_CONVERT_DIR || \
 			action == ACT_TAG || \
 			action == ACT_LIST || \
-			action == ACT_INDEX) 
+			action == ACT_INDEX || \
+			action == ACT_GENDEPS) 
 		require_root=false;
 
 	if (require_root && uid != 0 ) {
@@ -334,9 +335,20 @@ int main (int argc, char **argv)
 		list_rep(&core);
 		return 0;
 	}
+	if (action == ACT_EXPORT)
+	{
+		string dest_dir="/var/log/packages/";
+		if (argc==3) dest_dir=argv[2];
+
+		core.exportBase(dest_dir);
+		return 0;
+	}
 	if (action == ACT_TEST)
 	{
-	//	core.exportBase("/root/ebase/");
+		return 0;
+	}
+	if (action == ACT_GENDEPS)
+	{
 		generateDeps(argv[2]);
 		return 0;
 	}
@@ -597,6 +609,8 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tindex                     create a repository index file \"packages.xml.gz\"\n"));
 	//fprintf(stream,_("\tconvert <package>         convert specified packages from Slackware to MPKG format\n"));
 	fprintf(stream,_("\tconvert_dir <outp_dir>    convert whole directory (including sub-dirs) to MPKG format\n"));
+	fprintf(stream,_("\texport [dir]              export database in slackware format to dir (by default, /var/log/packages/)\n"));
+	fprintf(stream,_("\tgendeps <package>         generate dependencies and import it into package\n"));
 
 	fprintf(stream,_("\nDebug options:\n"));
 	fprintf(stream,_("\ttest                      Executes unit test\n"));
@@ -800,7 +814,10 @@ int check_action(char* act)
 		&& _act != "test"
 		&& _act != "check"
 	  	&& _act != "menu"
-	        && _act != "config") {
+	        && _act != "config"
+		&& _act != "export"
+		&& _act != "gendeps"		
+		) {
 		res = -1;
 	}
 
@@ -874,6 +891,10 @@ int setup_action(char* act)
 		return ACT_PACKAGEMENU;
 	if (_act == "config")
 		return ACT_CONFIG;
+	if (_act == "export")
+		return ACT_EXPORT;
+	if (_act == "gendeps")
+		return ACT_GENDEPS;
 
 	return ACT_NONE;
 }

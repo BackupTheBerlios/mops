@@ -24,5 +24,7 @@
 #define ACT_PACKAGEMENU 0x16
 #define ACT_CHECKDAMAGE 0x17
 #define ACT_CONFIG	0x18
+#define ACT_EXPORT	0x19
+#define ACT_GENDEPS	0x1a
 #endif
 
