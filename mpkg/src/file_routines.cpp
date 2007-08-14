@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.38 2007/08/13 11:41:00 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.39 2007/08/14 07:44:26 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -116,12 +116,10 @@ void delete_tmp_files()
 
 bool FileExists(string filename, bool *broken_symlink)
 {
-	printf("FileExists: filename = [%s]\n", filename.c_str());
 	
 	mDebug("checking the existance of " + filename);
 	if (broken_symlink != NULL) *broken_symlink=false;
 	if (access(filename.c_str(), F_OK)==0) {
-		printf("file [%s] exist\n", filename.c_str());
 		mDebug("File exists, returning true"); 
 		return true; 
 	}
