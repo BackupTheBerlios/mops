@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.23 2007/08/10 13:08:26 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.24 2007/08/14 14:29:54 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -13,8 +13,10 @@
 #include <QtXml/QXmlSimpleReader>
 #include <QtXml/QXmlInputSource>
 
-Form::Form(QWidget *parent)
+Form::Form(QWidget *parent, TargetType type, string arg)
 {
+	_type = type;
+	_arg = arg;
 	modified=false;
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	short_description.resize(2);
@@ -33,10 +35,32 @@ void Form::loadData()
 	//XMLNode node;
 	PACKAGE pkg;
 	string tag_tmp;
-	if (FileExists("install/data.xml")) xmlFilename = "install/data.xml";
-	else
+	switch(_type)
 	{
-		xmlFilename = QFileDialog::getOpenFileName(this, tr("Choose package index") + " (data.xml):", "./", "");
+		case TYPE_NONE:
+			if (FileExists("install/data.xml")) xmlFilename = "install/data.xml";
+			else
+			{
+				xmlFilename = QFileDialog::getOpenFileName(this, tr("Choose package index") + " (data.xml):", "./", "");
+			}
+			break;
+		case TYPE_XML:
+			if (FileExists(_arg)) xmlFilename = _arg.c_str();
+			else _type = TYPE_NONE;
+			break;
+		case TYPE_TGZ:
+			if (FileExists(_arg))
+			{
+				// Extract package to somewhere and open the file
+				// Create a temporary directory
+				_tmpdir = get_tmp_file();
+				say("Creating temp directory in %s\n", _tmpdir.c_str());
+				unlink(_tmpdir.c_str());
+				system("mkdir -p " + _tmpdir);
+				say("Extracting\n");
+				system("tar zxf " + _arg + " -C " + _tmpdir);
+				if (FileExists(_tmpdir+"/install/data.xml")) xmlFilename = _tmpdir.c_str() + (QString) "/install/data.xml";
+			}
 	}
 //	XMLResults xmlErr;
 
@@ -258,6 +282,24 @@ void Form::saveData()
 	node.writeToFile(xmlFilename.toStdString().c_str());
 	setWindowTitle(windowTitle()+tr(" (saved)"));
 	modified=false;
+	if (_type==TYPE_TGZ)
+	{
+		string cdir = get_current_dir_name();
+		// Pack the file back
+		string arg_dir;
+		if (_arg[0]!='/') 
+		{
+
+			arg_dir=cdir;
+		}
+		if (_arg.find_last_of("/")!=std::string::npos) 
+		{
+			arg_dir += _arg.substr(0,_arg.find_last_of("/"));
+		}
+		string cmd = "cd " + _tmpdir + "; buildpkg; rm " + _arg+"; mv *.tgz " +arg_dir+"/";
+		printf("cmd = [%s]\n",cmd.c_str());
+		system(cmd);
+	}
 }
 
 void Form::addTag(){
@@ -425,10 +467,13 @@ void Form::quitApp()
 		//printf("ret = %d\n", ret);
 		switch(ret)
 		{
-			case QMessageBox::Save: saveData();
+			case QMessageBox::Save: 
+				saveData();
+				if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
 				qApp->quit();
 				break;
 			case QMessageBox::Discard:
+				if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
 				qApp->quit();
 				break;
 			case QMessageBox::Cancel:

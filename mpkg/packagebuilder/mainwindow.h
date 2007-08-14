@@ -1,18 +1,24 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.5 2007/06/05 08:45:53 i27249 Exp $
+ * $Id: mainwindow.h,v 1.6 2007/08/14 14:29:54 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
 #define MV_H
 #include "ui_package_builder.h"
-
+#include <string>
+typedef enum {
+       	TYPE_NONE=0,
+	TYPE_TGZ,
+	TYPE_XML
+} TargetType;
+using namespace std;
 class Form: public QWidget
 {
 	Q_OBJECT
 	public:
-		Form (QWidget *parent = 0);
+		Form (QWidget *parent = 0, TargetType type=TYPE_NONE, string arg="");
 	public slots:
 		void loadData();
 		void saveData();
@@ -31,10 +37,13 @@ class Form: public QWidget
 	public:
 		Ui::Form ui;
 	private:
+		TargetType _type;
+		string _arg;
 		std::vector<QString> short_description;
 		std::vector<QString> description;
 		QString xmlFilename;
 		QString pkgRoot;
+		std::string _tmpdir;
 		bool modified;
 };
 #endif

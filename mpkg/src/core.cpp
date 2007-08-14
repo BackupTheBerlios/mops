@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.66 2007/08/13 11:47:56 i27249 Exp $
+ *	$Id: core.cpp,v 1.67 2007/08/14 14:29:54 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -102,7 +102,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	
 	if (package->get_files()->size()==0)
 	{
-	//	printf("Package %s has no files?\n", package->get_name()->c_str());
 		return 0; // If a package has no files, it cannot conflict =)
 	}
 	for (unsigned int i=0;i<package->get_files()->size();i++)
@@ -111,24 +110,17 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		fname=*package->get_files()->at(i).get_name();
 		if (fname[fname.length()-1]!='/') 
 		{
-	//		printf("Adding to search: %s\n", package->get_files()->at(i).get_name()->c_str());
 			sqlSearch.addField("file_name", package->get_files()->at(i).get_name());
 		}
 	}
-	//debug("Requesting data from sql");
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
-	//debug("Request complete");
 	if (!sqlTable->empty())
 	{
 		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
 		{
-	//		printf("found %s\n", sqlTable->getValue(k, "file_name")->c_str());
-		//	if (FileExists(*sqlTable->getValue(k, "file_name"))) printf("file %s still exist\n", sqlTable->getValue(k, "file_name")->c_str());
 			package_id=atoi(sqlTable->getValue(k, "packages_package_id")->c_str());
-
 			if (package_id!=prev_package_id)
 			{
-
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
 					say("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), package_id);
@@ -137,7 +129,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 			}
 		}
 	}
-	//else printf("found NO CONFLICTS\n");
 	delete sqlTable;
 	return 0; // End of check_file_conflicts
 }
