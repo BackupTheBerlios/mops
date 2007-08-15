@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.36 2007/08/02 10:39:13 i27249 Exp $
+$Id: dependencies.cpp,v 1.37 2007/08/15 13:27:44 i27249 Exp $
 */
 
 
@@ -337,31 +337,58 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 bool DependencyTracker::commitToDb()
 {
 	mDebug("Tracking and committing to database");
-	if (installList.size()>0) say(_("Committing %d packages to install:\n"), installList.size());
-	else say (_("No packages to install\n"));
-	int iC=1;
+	//if (installList.size()>0) say(_("Committing %d packages to install:\n"), installList.size());
+	//else say (_("No packages to install\n"));
+	int iC=0;
+	vector<int> i_ids;
+	bool alreadyThere;
+	if (!dialogMode) say(_("Will be installed:\n"));
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
 		{
-			//say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
-			iC++;
-			db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+			alreadyThere=false;
+			for (unsigned int v=0; v<i_ids.size(); v++)
+			{
+				if (i_ids[v]==installList.get_package(i)->get_id())
+				{
+					alreadyThere=true;
+				}
+			}
+			if (!alreadyThere)
+			{
+				if (!dialogMode) say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
+				iC++;
+				db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+				i_ids.push_back(installList.get_package(i)->get_id());
+			}
 		}
 	}
-	if (removeList.size()>0) say(_("Committing %d packages to remove\n"), removeList.size());
-	else say (_("No packages to remove\n"));
-	int rC=1;
+	//if (removeList.size()>0) say(_("Committing %d packages to remove\n"), removeList.size());
+	//else say (_("No packages to remove\n"));
+	int rC=0;
+	vector<int> r_ids;
+	if (!dialogMode) say(_("Will be removed:\n"));
 	for (int i=0; i<removeList.size(); i++)
 	{
 		if (removeList.get_package(i)->configexist())
 		{
-			//say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
-			rC++;
-			db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+			alreadyThere=false;
+			for (unsigned int v=0; v<r_ids.size(); v++)
+			{
+				if (r_ids[v]==removeList.get_package(i)->get_id()) alreadyThere=true;
+			}
+			if (!alreadyThere)
+			{
+				if (!dialogMode) say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+				rC++;
+				db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+				r_ids.push_back(removeList.get_package(i)->get_id());
+			}
 		}
 	}
-	int total_actions =  iC-1+rC-1;
+	say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
+	int total_actions =  iC+rC;
 	if (total_actions == 0) say(_("No actions to proceed\n"));
 	else say(_("Total %d new actions to proceed, committing...\n\n"), total_actions);
 

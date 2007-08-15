@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.104 2007/08/13 11:47:56 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.105 2007/08/15 13:27:44 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -680,6 +680,10 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	set_installed(package->get_id(), ST_INSTALLED);
 	set_configexist(package->get_id(), ST_CONFIGEXIST);
 	set_action(package->get_id(), ST_NONE);
+	if (purge_id!=0){
+		set_configexist(purge_id, ST_CONFIGNOTEXIST); // Clear old purge status
+		cleanFileList(purge_id);
+	}
 	sqlFlush();
 	mDebug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
 	pData.increaseItemProgress(package->itemID);
