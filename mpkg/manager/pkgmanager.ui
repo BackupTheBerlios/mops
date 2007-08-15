@@ -13,18 +13,33 @@
    <string>MOPSLinux package manager</string>
   </property>
   <property name="windowIcon" >
-   <iconset>/usr/share/mpkg/icons/removed_available.png</iconset>
+   <iconset>../../../usr/share/mpkg/icons/removed_available.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget" >
    <layout class="QVBoxLayout" >
-    <property name="margin" >
-     <number>9</number>
-    </property>
     <property name="spacing" >
      <number>6</number>
     </property>
+    <property name="leftMargin" >
+     <number>9</number>
+    </property>
+    <property name="topMargin" >
+     <number>9</number>
+    </property>
+    <property name="rightMargin" >
+     <number>9</number>
+    </property>
+    <property name="bottomMargin" >
+     <number>9</number>
+    </property>
     <item>
      <widget class="QSplitter" name="splitter_3" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Expanding" >
+        <horstretch>0</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
       <property name="orientation" >
        <enum>Qt::Horizontal</enum>
       </property>
@@ -34,9 +49,7 @@
        </property>
        <widget class="QGroupBox" name="packageListBox" >
         <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>5</hsizetype>
-          <vsizetype>4</vsizetype>
+         <sizepolicy vsizetype="Maximum" hsizetype="Preferred" >
           <horstretch>0</horstretch>
           <verstretch>144</verstretch>
          </sizepolicy>
@@ -57,11 +70,20 @@
          <string>Package categories</string>
         </property>
         <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>9</number>
-         </property>
          <property name="spacing" >
           <number>6</number>
+         </property>
+         <property name="leftMargin" >
+          <number>9</number>
+         </property>
+         <property name="topMargin" >
+          <number>9</number>
+         </property>
+         <property name="rightMargin" >
+          <number>9</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>9</number>
          </property>
          <item>
           <widget class="QSplitter" name="splitter" >
@@ -88,9 +110,7 @@
        </widget>
        <widget class="QGroupBox" name="packageInfoBox" >
         <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>1</hsizetype>
-          <vsizetype>4</vsizetype>
+         <sizepolicy vsizetype="Maximum" hsizetype="Minimum" >
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -111,11 +131,20 @@
          <string>Info about package</string>
         </property>
         <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>9</number>
-         </property>
          <property name="spacing" >
           <number>6</number>
+         </property>
+         <property name="leftMargin" >
+          <number>9</number>
+         </property>
+         <property name="topMargin" >
+          <number>9</number>
+         </property>
+         <property name="rightMargin" >
+          <number>9</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>9</number>
          </property>
          <item>
           <widget class="QTabWidget" name="tabWidget" >
@@ -136,11 +165,20 @@
              <string>Overview</string>
             </attribute>
             <layout class="QVBoxLayout" >
-             <property name="margin" >
-              <number>9</number>
-             </property>
              <property name="spacing" >
               <number>6</number>
+             </property>
+             <property name="leftMargin" >
+              <number>9</number>
+             </property>
+             <property name="topMargin" >
+              <number>9</number>
+             </property>
+             <property name="rightMargin" >
+              <number>9</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>9</number>
              </property>
              <item>
               <widget class="QTextEdit" name="overviewEdit" />
@@ -152,11 +190,20 @@
              <string>Details</string>
             </attribute>
             <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>9</number>
-             </property>
              <property name="spacing" >
               <number>6</number>
+             </property>
+             <property name="leftMargin" >
+              <number>9</number>
+             </property>
+             <property name="topMargin" >
+              <number>9</number>
+             </property>
+             <property name="rightMargin" >
+              <number>9</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>9</number>
              </property>
              <item>
               <widget class="QTextEdit" name="detailedEdit" />
@@ -168,14 +215,29 @@
              <string>Dependencies</string>
             </attribute>
             <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>9</number>
-             </property>
              <property name="spacing" >
               <number>6</number>
              </property>
+             <property name="leftMargin" >
+              <number>9</number>
+             </property>
+             <property name="topMargin" >
+              <number>9</number>
+             </property>
+             <property name="rightMargin" >
+              <number>9</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>9</number>
+             </property>
              <item>
-              <widget class="QTreeWidget" name="depTreeWidget" />
+              <widget class="QTreeWidget" name="depTreeWidget" >
+               <column>
+                <property name="text" >
+                 <string>1</string>
+                </property>
+               </column>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -186,9 +248,7 @@
       </widget>
       <widget class="QGroupBox" name="packagesBox" >
        <property name="sizePolicy" >
-        <sizepolicy>
-         <hsizetype>4</hsizetype>
-         <vsizetype>5</vsizetype>
+        <sizepolicy vsizetype="Preferred" hsizetype="Maximum" >
          <horstretch>10</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -206,11 +266,20 @@
         <bool>false</bool>
        </property>
        <layout class="QVBoxLayout" >
-        <property name="margin" >
-         <number>9</number>
-        </property>
         <property name="spacing" >
          <number>6</number>
+        </property>
+        <property name="leftMargin" >
+         <number>9</number>
+        </property>
+        <property name="topMargin" >
+         <number>9</number>
+        </property>
+        <property name="rightMargin" >
+         <number>9</number>
+        </property>
+        <property name="bottomMargin" >
+         <number>9</number>
         </property>
         <item>
          <widget class="QFrame" name="splashFrame" >
@@ -224,11 +293,20 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QVBoxLayout" >
-           <property name="margin" >
-            <number>9</number>
-           </property>
            <property name="spacing" >
             <number>6</number>
+           </property>
+           <property name="leftMargin" >
+            <number>9</number>
+           </property>
+           <property name="topMargin" >
+            <number>9</number>
+           </property>
+           <property name="rightMargin" >
+            <number>9</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>9</number>
            </property>
            <item>
             <spacer>
@@ -245,11 +323,20 @@
            </item>
            <item>
             <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
              <property name="spacing" >
               <number>6</number>
+             </property>
+             <property name="leftMargin" >
+              <number>0</number>
+             </property>
+             <property name="topMargin" >
+              <number>0</number>
+             </property>
+             <property name="rightMargin" >
+              <number>0</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>0</number>
              </property>
              <item>
               <spacer>
@@ -288,11 +375,20 @@
            </item>
            <item>
             <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
              <property name="spacing" >
               <number>6</number>
+             </property>
+             <property name="leftMargin" >
+              <number>0</number>
+             </property>
+             <property name="topMargin" >
+              <number>0</number>
+             </property>
+             <property name="rightMargin" >
+              <number>0</number>
+             </property>
+             <property name="bottomMargin" >
+              <number>0</number>
              </property>
              <item>
               <spacer>
@@ -433,11 +529,20 @@
         </item>
         <item>
          <layout class="QHBoxLayout" >
-          <property name="margin" >
-           <number>0</number>
-          </property>
           <property name="spacing" >
            <number>6</number>
+          </property>
+          <property name="leftMargin" >
+           <number>0</number>
+          </property>
+          <property name="topMargin" >
+           <number>0</number>
+          </property>
+          <property name="rightMargin" >
+           <number>0</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>0</number>
           </property>
           <item>
            <widget class="QPushButton" name="selectAllButton" >
@@ -445,7 +550,7 @@
              <string/>
             </property>
             <property name="icon" >
-             <iconset>/usr/share/mpkg/icons/install.png</iconset>
+             <iconset>../../../usr/share/mpkg/icons/install.png</iconset>
             </property>
            </widget>
           </item>
@@ -455,7 +560,7 @@
              <string/>
             </property>
             <property name="icon" >
-             <iconset>/usr/share/mpkg/icons/purge.png</iconset>
+             <iconset>../../../usr/share/mpkg/icons/purge.png</iconset>
             </property>
            </widget>
           </item>
@@ -475,7 +580,7 @@
              <string>...</string>
             </property>
             <property name="icon" >
-             <iconset>/usr/share/mpkg/icons/clear_left.png</iconset>
+             <iconset>../../../usr/share/mpkg/icons/clear_left.png</iconset>
             </property>
            </widget>
           </item>
@@ -483,10 +588,22 @@
         </item>
         <item>
          <layout class="QGridLayout" >
-          <property name="margin" >
+          <property name="leftMargin" >
            <number>0</number>
           </property>
-          <property name="spacing" >
+          <property name="topMargin" >
+           <number>0</number>
+          </property>
+          <property name="rightMargin" >
+           <number>0</number>
+          </property>
+          <property name="bottomMargin" >
+           <number>0</number>
+          </property>
+          <property name="horizontalSpacing" >
+           <number>6</number>
+          </property>
+          <property name="verticalSpacing" >
            <number>6</number>
           </property>
           <item row="0" column="0" >
@@ -543,18 +660,25 @@
     </item>
     <item>
      <layout class="QHBoxLayout" >
-      <property name="margin" >
-       <number>0</number>
-      </property>
       <property name="spacing" >
        <number>6</number>
+      </property>
+      <property name="leftMargin" >
+       <number>0</number>
+      </property>
+      <property name="topMargin" >
+       <number>0</number>
+      </property>
+      <property name="rightMargin" >
+       <number>0</number>
+      </property>
+      <property name="bottomMargin" >
+       <number>0</number>
       </property>
       <item>
        <widget class="QLabel" name="statLabel" >
         <property name="sizePolicy" >
-         <sizepolicy>
-          <hsizetype>3</hsizetype>
-          <vsizetype>5</vsizetype>
+         <sizepolicy vsizetype="Preferred" hsizetype="MinimumExpanding" >
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -573,11 +697,20 @@
       </item>
       <item>
        <layout class="QHBoxLayout" >
-        <property name="margin" >
-         <number>0</number>
-        </property>
         <property name="spacing" >
          <number>6</number>
+        </property>
+        <property name="leftMargin" >
+         <number>0</number>
+        </property>
+        <property name="topMargin" >
+         <number>0</number>
+        </property>
+        <property name="rightMargin" >
+         <number>0</number>
+        </property>
+        <property name="bottomMargin" >
+         <number>0</number>
         </property>
         <item>
          <widget class="QPushButton" name="skipButton" >
@@ -612,7 +745,7 @@
      <x>0</x>
      <y>0</y>
      <width>1008</width>
-     <height>28</height>
+     <height>31</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuRepositories" >
@@ -669,7 +802,7 @@
   <widget class="QStatusBar" name="statusbar" />
   <action name="actionAdd_remove_repositories" >
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/icons/taskbar.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/icons/taskbar.png</iconset>
    </property>
    <property name="text" >
     <string>Add/remove repositories</string>
@@ -698,7 +831,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/installed.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/installed.png</iconset>
    </property>
    <property name="text" >
     <string>Show installed</string>
@@ -715,7 +848,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/available.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/available.png</iconset>
    </property>
    <property name="text" >
     <string>Show available</string>
@@ -732,7 +865,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/warning.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/warning.png</iconset>
    </property>
    <property name="text" >
     <string>Show broken</string>
@@ -749,7 +882,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/remove.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/remove.png</iconset>
    </property>
    <property name="text" >
     <string>Show not purged</string>
@@ -775,7 +908,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/install.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/install.png</iconset>
    </property>
    <property name="text" >
     <string>Show queued</string>
@@ -816,7 +949,7 @@
   </action>
   <action name="actionAbout" >
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/warning.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/warning.png</iconset>
    </property>
    <property name="text" >
     <string>About...</string>
@@ -824,7 +957,7 @@
   </action>
   <action name="actionPreferences" >
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/icons/default.kde/32x32/apps/package_utilities.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/icons/default.kde/32x32/apps/package_utilities.png</iconset>
    </property>
    <property name="text" >
     <string>Preferences</string>
@@ -835,7 +968,7 @@
   </action>
   <action name="actionCore_settings" >
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png</iconset>
    </property>
    <property name="text" >
     <string>Core settings</string>
@@ -843,7 +976,7 @@
   </action>
   <action name="actionCommit_changes" >
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/installed.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/installed.png</iconset>
    </property>
    <property name="text" >
     <string>Commit changes</string>
@@ -854,7 +987,7 @@
   </action>
   <action name="actionReset_changes" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/48x48/actions/rotate_ccw.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/48x48/actions/rotate_ccw.png</iconset>
    </property>
    <property name="text" >
     <string>Reset changes</string>
@@ -865,7 +998,7 @@
   </action>
   <action name="actionReset_all_queue" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/48x48/actions/eraser.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/48x48/actions/eraser.png</iconset>
    </property>
    <property name="text" >
     <string>Reset all queue</string>
@@ -873,7 +1006,7 @@
   </action>
   <action name="actionSave_queue" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/32x32/actions/filesave.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/filesave.png</iconset>
    </property>
    <property name="text" >
     <string>Save queue</string>
@@ -881,7 +1014,7 @@
   </action>
   <action name="actionQuit" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/48x48/actions/exit.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/48x48/actions/exit.png</iconset>
    </property>
    <property name="text" >
     <string>Quit</string>
@@ -892,7 +1025,7 @@
   </action>
   <action name="actionClean_cache" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/128x128/filesystems/trashcan_full.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/128x128/filesystems/trashcan_full.png</iconset>
    </property>
    <property name="text" >
     <string>Clean cache</string>
@@ -934,7 +1067,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/unknown.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/unknown.png</iconset>
    </property>
    <property name="text" >
     <string>Show unavailable</string>
@@ -945,7 +1078,7 @@
   </action>
   <action name="actionUpdate_data" >
    <property name="icon" >
-    <iconset>/usr/share/icons/crystalsvg/48x48/actions/reload.png</iconset>
+    <iconset>../../../usr/share/icons/crystalsvg/48x48/actions/reload.png</iconset>
    </property>
    <property name="text" >
     <string>Update data</string>
@@ -959,7 +1092,7 @@
     <bool>true</bool>
    </property>
    <property name="icon" >
-    <iconset>/usr/share/mpkg/icons/deprecated_available.png</iconset>
+    <iconset>../../../usr/share/mpkg/icons/deprecated_available.png</iconset>
    </property>
    <property name="text" >
     <string>Show deprecated</string>
