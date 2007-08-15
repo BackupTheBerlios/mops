@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.66 2007/08/02 10:39:13 i27249 Exp $
+	$Id: dataunits.cpp,v 1.67 2007/08/15 14:09:55 i27249 Exp $
 */
 
 
@@ -548,29 +548,45 @@ string PACKAGE::get_vstatus(bool color)
 {
 
 	string stat;
-	if (available()) stat +="A";
+	if (available())
+	{
+		if (color) stat+=CL_6;
+		stat +="A";
+		if (color) stat+=CL_WHITE;
+	}
 	else stat+="_";
 
-	if (installed()) stat += "I";
+	if (installed()) 
+	{
+		if (color) stat+=CL_GREEN;
+		stat += "I";
+		if (color) stat+=CL_WHITE;
+	}
 	else {
 		stat += "_";
-		if (configexist()) stat += "C";
-		else stat+="_";
 	}
+	if (configexist())
+	{
+		if (color) stat+=CL_BLUE;
+		stat += "C";
+		if (color) stat+=CL_WHITE;
+	}
+	else stat+="_";
+	
 	switch(action())
 	{
 		case ST_INSTALL:
-			if (color) stat+=CL_GREEN;
+			if (color) stat+=CL_YELLOW;
 			stat+="i";
 			if (color) stat+=CL_WHITE;
 			break;
 		case ST_REMOVE:
-			if (color) stat+=CL_YELLOW;
+			if (color) stat+=CL_RED;
 			stat+="r";
 			if (color) stat+=CL_WHITE;
 			break;
 		case ST_PURGE:
-			if (color) stat+=CL_RED;
+			if (color) stat+=CL_8;
 			stat+="p";
 			if (color) stat+=CL_WHITE;
 			break;

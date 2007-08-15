@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.65 2007/08/09 13:44:14 i27249 Exp $
+ * $Id: repository.cpp,v 1.66 2007/08/15 14:09:55 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -815,11 +815,14 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			int xi;
 			
 			actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
-			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
 			
 			xNodeSet = xResult->nodesetval;
 			xmlXPathFreeContext(xContext);
+
+			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, xNodeSet->nodeNr);
 			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
+				
+				actionBus.setActionProgress(ACTIONID_DBUPDATE, xi);
 				mDebug("Processing " + IntToStr(xi) + " node");
 				if (actionBus._abortActions) {
 					actionBus._abortComplete = true;
@@ -854,7 +857,6 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				}
 				
 				actionBus.setActionProgress(ACTIONID_DBUPDATE, 0);
-				actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, pkg_count);
 				for (int i=0; i<pkg_count; i++)
 				{
 					if (actionBus._abortActions)
