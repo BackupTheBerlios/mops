@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.64 2007/08/03 11:53:11 i27249 Exp $
+$Id: local_package.cpp,v 1.65 2007/08/16 14:39:10 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -603,14 +603,17 @@ int LocalPackage::fill_configfiles(PACKAGE *package)
 	}
 	vector<string> vec_tmp_names=p.getConfigFilelist();
 	FILES configfile_tmp;
+	printf("searching for config files\n");
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
 	{
+		printf("conf file: %s\n", vec_tmp_names[i].c_str());
 		configfile_tmp.set_name(&vec_tmp_names[i]);
 		configfile_tmp.set_type(FTYPE_CONFIG);
 		package->get_config_files()->push_back(configfile_tmp);
 	}
 	vec_tmp_names.clear();
 	package->sync();
+	printf("total: %d config files\n",package->get_config_files()->size());
 	mDebug("fill_configfiles end");
 	delete_tmp_files();
 	return 0;

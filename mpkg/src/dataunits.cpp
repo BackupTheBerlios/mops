@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.67 2007/08/15 14:09:55 i27249 Exp $
+	$Id: dataunits.cpp,v 1.68 2007/08/16 14:39:10 i27249 Exp $
 */
 
 
@@ -834,8 +834,9 @@ void PACKAGE::sync()
 	{
 		for (unsigned int t=0; t<package_files.size(); t++)
 		{
-			if (config_files[i].get_name()=='/' + package_files[t].get_name())
+			if (*config_files[i].get_name()=='/' + *package_files[t].get_name())
 			{
+				printf("set file %s as config\n", config_files[i].get_name()->c_str());
 				package_files[t].set_type(FTYPE_CONFIG);
 				break;
 			}
@@ -912,6 +913,7 @@ void PACKAGE::clearVersioning()
 
 void PACKAGE_LIST::sortByPriority(bool reverse_order)
 {
+//	printf("sorting priority\n");
 	
 	if (!priorityInitialized) buildDependencyOrder();
 	int min_priority = 0;
@@ -920,13 +922,16 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 		if (packages[i].priority>min_priority) min_priority = packages[i].priority;
 	}
 
+//	printf("continue sorting, packages.size = %d, min_priority = %d...\n",packages.size(),min_priority);
 	vector<PACKAGE> sorted;
 	if (!reverse_order)
 	{	
 		for (int p=0; p<=min_priority; p++)
 		{
+			//printf("!rev_order, p=%d, min_priority=%d\n",p,min_priority);
 			for (unsigned int i=0; i<packages.size(); i++)
 			{
+			//	printf("pkg[%d]\n",i);
 				if (packages[i].priority==p) sorted.push_back(packages[i]);
 			}
 		}
@@ -941,6 +946,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 			}
 		}
 	}
+	//printf("sorting finished\n");
 	packages = sorted;
 }
 
@@ -1503,15 +1509,39 @@ int PACKAGE_LIST::getPackageNumberByName(string *name)
 void PACKAGE_LIST::buildDependencyOrder()
 {
 	int pkgSize = this->size();
+	vector<int> callList;
 	for (int i=0; i<pkgSize; i++)
 	{
-		get_max_dtree_length(this, i);
+		callList.clear();
+		callList.push_back(i);
+		//printf("%s cycle %d\n", __func__, i);
+		get_max_dtree_length(this, i, callList);
 	}
+//	printf("%s: build complete\n",__func__);
 	priorityInitialized=true;
 }
 
-int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
+int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id, vector<int> callList)
 {
+	// Check for looping
+//	printf("callList size=%d\n", callList.size());
+	bool loop=false;
+
+	for (unsigned int i=0; i<callList.size(); i++)
+	{
+//		printf("callList[%d]==%d\n", i,callList[i]);
+		for (unsigned int t=0; t<callList.size(); t++)
+		{
+//			printf("Comparing with %d\n", callList[t]);
+			if (i!=t && callList[i]==callList[t])
+			{
+//				printf("Loop dependencies!\n");
+				loop=true;
+				//return pkgList->get_package(package_id)->priority;
+			}
+		}
+	}
+//	printf("%s start for package %d\n",__func__, package_id);
 	PACKAGE *_p = pkgList->get_package(package_id);
 	int ret=0;
 	int max_ret=-1;
@@ -1519,10 +1549,13 @@ int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id)
 	//if (dependencies.size()>0) ret = 1;
 	for (unsigned int i=0; i<_p->get_dependencies()->size(); i++)
 	{
+		//printf("%s: cycle %d\n", __func__, i);
 		pkgNum = pkgList->getPackageNumberByName(_p->get_dependencies()->at(i).get_package_name());
 		if (pkgNum>=0)
 		{
-			ret = 1 + get_max_dtree_length(pkgList, pkgNum);
+//			printf("callback\n");
+			callList.push_back(pkgNum);
+			if (!loop) ret = 1 + get_max_dtree_length(pkgList, pkgNum,callList);
 			if (max_ret < ret) max_ret = ret;
 		}
 	}

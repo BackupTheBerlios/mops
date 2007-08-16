@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.28 2007/08/13 08:10:46 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.29 2007/08/16 14:39:10 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -574,6 +574,7 @@ vector<string> PackageConfig::getFilelist()
 
 vector<string> PackageConfig::getConfigFilelist()
 {
+	// SEEMS NOT TO WORK!!!!!!!!!!!!!!!!!
 	vector<string> a;
 
 	xmlNodeSetPtr nodeset;

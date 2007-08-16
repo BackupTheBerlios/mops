@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.44 2007/07/12 09:28:12 i27249 Exp $
+	$Id: dataunits.h,v 1.45 2007/08/16 14:39:10 i27249 Exp $
 */
 
 
@@ -362,7 +362,7 @@ class PACKAGE_LIST
 };
 
 bool meetVersion(versionData *condition, string *packageVersion);
-int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id);
+int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id, vector<int> callList);
 
 #endif //DATAUNITS_H_
 

@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.14 2007/08/02 10:49:58 adiakin Exp $
+ *	$Id: PackageConfig.h,v 1.15 2007/08/16 14:39:10 i27249 Exp $
  *
  * **********************************************************/
 
@@ -48,7 +48,7 @@ using namespace std;
 #define GET_PKG_SUG_COND ((const xmlChar *) "//suggests/suggest/condition")
 #define GET_PKG_SUG_NAME ((const xmlChar *) "//suggests/suggest/name")
 #define GET_PKG_SUG_VERSION ((const xmlChar *) "//suggests/suggest/version")
-#define GET_PKG_CONFIG_FILE_LIST ((const xmlChar *)"//package/configfiles/configfile")
+#define GET_PKG_CONFIG_FILE_LIST ((const xmlChar *)"//package/configfiles/conffile")
 #define GET_PKG_DEP_NAME ((const xmlChar *)"//dependencies/dep/name")
 #define GET_PKG_DEP_COND ((const xmlChar *)"//dependencies/dep/condition")
 #define GET_PKG_DEP_VERSION ((const xmlChar *)"//dependencies/dep/version")

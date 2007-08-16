@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.37 2007/08/15 13:27:44 i27249 Exp $
+$Id: dependencies.cpp,v 1.38 2007/08/16 14:39:10 i27249 Exp $
 */
 
 
@@ -76,6 +76,7 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 
 int DependencyTracker::renderData()
 {
+	//printf("Retrieving data from SQL\n");
 	// Retrieving common package list from database - we will use C++ logic.
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_installed", 1);
@@ -83,11 +84,14 @@ int DependencyTracker::renderData()
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
+	//printf("rendering required list\n");
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
 
 	mDebug("Rendering removing");
+	//printf("Rendering remove queue\n");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	mDebug("Filtering dupes: install");
+	//printf("Filtering dupes\n");
 	filterDupes(&installStream);
 	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
@@ -95,6 +99,13 @@ int DependencyTracker::renderData()
 	PACKAGE_LIST fullWillBeList = installedPackages;
 	fullWillBeList.add(&installStream);
 	bool requested=false;
+	//printf("Starting a loop of rollbacking\n");
+	// 
+	//
+	// NOTE: ROLLBACK MECHANISM HAS SOME MAJOR BUGS! TODO: FIXME! =)
+	//
+	//
+	//
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		requested=false;
@@ -102,15 +113,23 @@ int DependencyTracker::renderData()
 		{
 			if (removeStream.get_package(i)->equalTo(removeQueryList.get_package(t)))
 			{
+				// Package is requested to remove by user, we shouldn't roll back
 				requested=true;
 			}
 		}
 		if (!requested && checkBrokenDeps(removeStream.get_package(i), fullWillBeList))
 		{
+			// If package:
+			//    - isn't requested to remove by user, and
+			//    - some of packages requested to install depends on it
+			// then we should cancel it's removal
+
+			//printf("rolling back %s\n", removeStream.get_package(i)->get_name()->c_str());
 			mDebug("Rolling back " + *removeStream.get_package(i)->get_name());
 			installStream.add(removeStream.get_package(i));
 		}
 	}
+	// END OF ROLLBACK MECHANISM
 
 	mDebug("Muxing streams");
 	muxStreams(installStream, removeStream);
@@ -123,16 +142,31 @@ int DependencyTracker::renderData()
 // Tree
 PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQueue)
 {
+	mDebug("Rendering required list\n");
 	// installationQueue - user-composed request for installation
 	// outStream - result, including all required packages.
 	PACKAGE_LIST outStream;
 	PACKAGE_LIST req;
 	outStream.add(installationQueue);
+	bool skipThis;
 	for (int i=0; i<outStream.size(); i++)
 	{
+		//printf("cycle %d\n",i);
 		req=get_required_packages(outStream.get_package(i));
-		outStream.add(&req);
+		// Check if this package is already in stream
+		for (int t=0; t<req.size(); t++)
+		{
+			skipThis=false;
+			// Will check and add by one
+			for (int c=0; c<outStream.size(); c++)
+			{
+				if (req.get_package(t)->equalTo(outStream.get_package(c))) skipThis=true;
+			}
+			if (!skipThis) outStream.add(req.get_package(t));
+		}
+		//outStream.add(&req);
 	}
+	//printf("end\n");
 	return outStream;
 }
 
@@ -193,10 +227,30 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 	// removeQueue - user-composed remove queue
 	// removeStream - result. Filtered.
 	PACKAGE_LIST removeStream;
+	PACKAGE_LIST tmp;
 	removeStream.add(removeQueue);
+	bool skipThis;
 	for (int i=0; i<removeStream.size(); i++)
 	{
-		removeStream.push_back(get_dependant_packages(removeStream.get_package(i)));
+		tmp = get_dependant_packages(removeStream.get_package(i));
+		//printf( "dependant for %s has %d items\n",removeStream.get_package(i)->get_name()->c_str(), tmp.size());
+		for (int t=0; t<tmp.size(); t++)
+		{
+			skipThis=false;
+			for (int c=0; c<removeStream.size(); c++)
+			{
+				if (removeStream.get_package(c)->equalTo(tmp.get_package(t)))
+				{
+					//printf("Skipping %s\n",removeStream.get_package(c)->get_name()->c_str());
+					skipThis=true;
+				}
+			}
+			if (!skipThis) 
+			{
+				//printf("adding to remove stream: %s\n", tmp.get_package(t)->get_name()->c_str());
+				removeStream.add(tmp.get_package(t));
+			}
+		}
 	}
 	return removeStream;
 }
@@ -308,28 +362,43 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 
 bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) // Tests if all items in searchList can be installed without pkg
 {
-	bool passed;
+	// Returns true if it is required by someone in searchList, or it is already in searchList himself
+	// False if no package depends on it
+	bool hasdependant;
 	// Step 1. Check if it conflicts with someone in searchlist
-	for (int i=0; i<searchList.size(); i++)
+	/*for (int i=0; i<searchList.size(); i++)
 	{
-		if (*pkg->get_name() == *searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
-	}
-
-	for (unsigned int i=0; i<pkg->get_dependencies()->size(); i++)
-	{
-		passed=false;
-		for (int t=0; t<searchList.size(); t++)
+		if (pkg->equalTo(searchList.get_package(i))) 
 		{
-			if (*pkg->get_dependencies()->at(i).get_package_name() == *searchList.get_package(t)->get_name() && \
-					meetVersion(pkg->get_dependencies()->at(i).get_version_data(), searchList.get_package(t)->get_version()))
+			printf("%s: equals to item in searchList, returning TRUE\n",__func__);
+			return true;
+		}
+		//if (*pkg->get_name() == *searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
+	}*/
+
+
+	for (int t=0; t<searchList.size(); t++)
+	{
+		hasdependant=false;
+
+		for (unsigned int i=0; i<searchList.get_package(t)->get_dependencies()->size(); i++)
+		{
+			if (*searchList.get_package(t)->get_dependencies()->at(i).get_package_name() == *pkg->get_name() && \
+					meetVersion(searchList.get_package(t)->get_dependencies()->at(i).get_version_data(), pkg->get_version()))
 			{
-				passed=true;
+				hasdependant=true;
 				break;
 			}
 		}
-		if (!passed) return false;
+		if (!hasdependant)
+		{
+			//printf("%s: All clean, we don't remove this\n",__func__);
+			return false; // We can remove it
+		}
 	}
-	return true;
+	
+	//printf("%s: No packages to complain\n",__func__);
+	return false; // No packages to complain - it's alone one :)
 	
 }
 
