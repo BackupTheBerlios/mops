@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.106 2007/08/16 14:39:10 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.107 2007/08/17 11:53:37 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -120,7 +120,7 @@ int mpkgDatabase::commit_actions()
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	install_list.sortByPriority();
 	// Checking available space
-	printf("checking available space\n");
+	//printf("checking available space\n");
 	long double rem_size=0;
 	long double ins_size=0;
 
@@ -580,11 +580,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 // Filtering file list...
 	vector<FILES> package_files;
-	for (unsigned int i=0; i<package->get_files()->size(); i++)
+	/*for (unsigned int i=0; i<package->get_files()->size(); i++)
 	{
 		if (package->get_files()->at(i).get_type()==FTYPE_CONFIG) printf("config file\n");
 		else printf("not a config file %s\n", package->get_files()->at(i).get_name()->c_str());
-	}
+	}*/
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	mDebug("Preparing scripts");
@@ -927,19 +927,19 @@ int mpkgDatabase::cleanFileList(int package_id)
 	bool cexist = get_configexist(package_id);
 	if (cexist)
 	{
-		printf("leaving configs intact\n");
+		//printf("leaving configs intact\n");
 		sqlSearch.addField("file_type", FTYPE_PLAIN);
 	}
 	int ret = db.sql_delete("files", sqlSearch);
 	if (ret!=0) return ret;
 	if (cexist)
 	{
-		printf("checking if it has any configs\n");
+		//printf("checking if it has any configs\n");
 		vector<FILES> flist;
 		get_filelist(package_id, &flist);
 		if (flist.size()==0) 
 		{
-			printf("it has no configs...\n");
+			//printf("it has no configs...\n");
 			set_configexist(package_id,0);
 		}
 	}

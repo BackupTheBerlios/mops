@@ -7,7 +7,7 @@
 		0.1alpha1
 	</version>
 	<arch>
-		i686
+		i486
 	</arch>
 	<build>
 		1
@@ -25,13 +25,244 @@
 	<dependencies>
 		<dep>
 			<name>
-				mpkg-core
+				libmpkg
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				0.9beta1
+				0.11
+			</version>
+		</dep>
+		<dep>
+			<name>
+				qt4
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				4.3.1
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libxcb
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libpng
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.2.18
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libidn
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.6.10
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXrender
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXrandr
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.2.1
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXinerama
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXi
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.4
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXfixes
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				4.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXext
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXdmcp
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXcursor
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.1.8
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXau
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libX11
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.1.1
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libSM
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libICE
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				glibc-solibs
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.5
+			</version>
+		</dep>
+		<dep>
+			<name>
+				glib2
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.12.12
+			</version>
+		</dep>
+		<dep>
+			<name>
+				freetype
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.3.4
+			</version>
+		</dep>
+		<dep>
+			<name>
+				fontconfig
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.4.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				expat
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.0.1
 			</version>
 		</dep>
 	</dependencies>
@@ -39,9 +270,6 @@
 	<tags>
 		<tag>
 			xapps
-		</tag>
-		<tag>
-			depelopment
 		</tag>
 	</tags>
 	<changelog>
@@ -54,4 +282,5 @@
 			i27249@gmail.com
 		</email>
 	</maintainer>
+	<configfiles/>
 </package>

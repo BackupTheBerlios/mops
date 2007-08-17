@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.24 2007/08/14 14:29:54 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.25 2007/08/17 11:53:37 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -278,7 +278,7 @@ void Form::saveData()
 		node.getChildNode("configfiles").addChild("conffile");
 		node.getChildNode("configfiles").getChildNode("conffile",i).addText(ui.configFilesListWidget->item(i)->text().toStdString().c_str());
 	}
-	(new QDir())->mkdir("install");
+	//(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
 	setWindowTitle(windowTitle()+tr(" (saved)"));
 	modified=false;
@@ -296,7 +296,7 @@ void Form::saveData()
 		{
 			arg_dir += _arg.substr(0,_arg.find_last_of("/"));
 		}
-		string cmd = "cd " + _tmpdir + "; buildpkg; rm " + _arg+"; mv *.tgz " +arg_dir+"/";
+		string cmd = "cd " + _tmpdir + "; buildpkg; rm " +arg_dir+"/"+ _arg+"; mv *.tgz " +arg_dir+"/";
 		printf("cmd = [%s]\n",cmd.c_str());
 		system(cmd);
 	}

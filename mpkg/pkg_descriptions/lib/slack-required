@@ -1,2 +1,7 @@
-curl>=7.15
-sqlite3=3.3.17
+curl>=7.16
+zlib>=1.2.3
+openssl>=0.9.8e
+libxml2>=2.6.28
+libidn>=0.6.10
+glibc-solibs>=2.5
+cxxlibs>=6.0.8

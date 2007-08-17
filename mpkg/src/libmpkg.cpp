@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.46 2007/08/13 06:27:11 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.47 2007/08/17 11:53:37 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -364,18 +364,19 @@ bool mpkg::repair(PACKAGE *package)
 			
 void mpkg::exportBase(string output_dir)
 {
-	printf("Exporting data to %s directory\n",output_dir.c_str());
+	say("Exporting data to %s directory\n",output_dir.c_str());
 	PACKAGE_LIST allPackages;
 	SQLRecord sqlSearch;
 //	sqlSearch.addField("package_installed", 1);
 	get_packagelist(&sqlSearch, &allPackages);
 	PACKAGE *p;
 	mstring data;
-	printf("Received %d packages\n",allPackages.size());
+	say("Received %d packages\n",allPackages.size());
 	for (int i=0; i<allPackages.size(); i++)
 	{
 		data.clear();
 		p = allPackages.get_package(i);
+		say("[%d/%d] Exporting package %s\n",i+1,allPackages.size(),p->get_name()->c_str());
 		data = "PACKAGE NAME:\t" + *p->get_name() +"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build() +\
 			"\nCOMPRESSED PACKAGE SIZE:\t"+*p->get_compressed_size()+ \
 			"\nUNCOMPRESSED PACKAGE SIZE:\t"+*p->get_installed_size()+\
@@ -448,23 +449,24 @@ void dumpPackage(PACKAGE *p, string filename)
 
 void generateDeps(string tgz_filename)
 {
+	say("Generating dependencies for %s\n",tgz_filename.c_str());
 	string current_dir = (string) get_current_dir_name();
 	// Create a temporary directory
 	string tmpdir = get_tmp_file();
 	string dep_out = get_tmp_file();
-	say("Creating temp directory in %s\n", tmpdir.c_str());
+	//say("Creating temp directory in %s\n", tmpdir.c_str());
 	unlink(tmpdir.c_str());
 	system("mkdir -p " + tmpdir);
 	say("Extracting\n");
 	system("tar zxf " + tgz_filename + " -C " + tmpdir);
-	say("Importing data\n");
+	//say("Importing data\n");
 	PackageConfig p(tmpdir+"/install/data.xml");
 	PACKAGE pkg;
 	if (p.parseOk) xml2package(p.getXMLNode(), &pkg);
 	say("Building dependencies\n");
 	
 	system("requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
-	say("Parsing\n");
+	//say("Parsing\n");
 	vector<string> data = ReadFileStrings(dep_out);
 	
 	string tmp;
@@ -473,20 +475,20 @@ void generateDeps(string tgz_filename)
 	pkg.get_dependencies()->clear();
 	for (unsigned int i=0; i<data.size(); i++)
 	{
-		printf("parse cycle %d start\n",i);
+	//	printf("parse cycle %d start\n",i);
 		tmp = data[i].substr(0,data[i].find_first_of(" "));
 		tail = data[i].substr(tmp.length()+1);
-		printf("dep name = [%s]\n",tmp.c_str());
+	//	printf("dep name = [%s]\n",tmp.c_str());
 		d.set_package_name(&tmp);
 
 		tmp = tail.substr(0, tail.find_first_of(" "));
-		printf("tmp = [%s]\n", tmp.c_str());
+	//	printf("tmp = [%s]\n", tmp.c_str());
 		tail = tail.substr(tmp.length()+1);
-		printf("dep condition = [%s]\n", tmp.c_str());
+	//	printf("dep condition = [%s]\n", tmp.c_str());
 		d.set_condition(&IntToStr(condition2int(hcondition2xml(tmp))));
 
 		tmp = tail.substr(0,tail.find_first_of("-"));
-		printf("dep version = [%s]\n", tmp.c_str());
+	//	printf("dep version = [%s]\n", tmp.c_str());
 		d.set_package_version(&tmp);
 		pkg.get_dependencies()->push_back(d);
 	}

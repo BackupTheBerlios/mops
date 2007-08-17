@@ -4,10 +4,10 @@
 		mpkg-core
 	</name>
 	<version>
-		0.11beta1
+		0.11
 	</version>
 	<arch>
-		i686
+		i486
 	</arch>
 	<build>
 		1
@@ -31,18 +31,73 @@
 				atleast
 			</condition>
 			<version>
-				7.15
+				7.16
 			</version>
 		</dep>
 		<dep>
 			<name>
-				sqlite3
+				zlib
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				3.3.17
+				1.2.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				openssl
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9.8e
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libxml2
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.6.28
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libidn
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.6.10
+			</version>
+		</dep>
+		<dep>
+			<name>
+				glibc-solibs
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.5
+			</version>
+		</dep>
+		<dep>
+			<name>
+				cxxlibs
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				6.0.8
 			</version>
 		</dep>
 	</dependencies>
@@ -65,10 +120,7 @@
 	</maintainer>
 	<configfiles>
 		<conffile>
-			etc/mpkg.xml
-		</conffile>
-		<conffile>
-			etc/mpkg-groups.xml
+			/etc/mpkg.xml
 		</conffile>
 	</configfiles>
 </package>

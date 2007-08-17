@@ -4,10 +4,10 @@
 		mpkg-console
 	</name>
 	<version>
-		0.6beta1
+		0.9
 	</version>
 	<arch>
-		i686
+		i486
 	</arch>
 	<build>
 		1
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.9beta1
+				0.9
 			</version>
 		</dep>
 	</dependencies>
@@ -39,9 +39,6 @@
 	<tags>
 		<tag>
 			base
-		</tag>
-		<tag>
-			console
 		</tag>
 	</tags>
 	<changelog>
