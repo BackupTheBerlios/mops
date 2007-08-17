@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.25 2007/08/17 11:53:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.26 2007/08/17 14:58:13 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -29,7 +29,22 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	this->show();
 	loadData();
 }
-
+string cleanDescr(string str)
+{
+	string ret;
+	if (str.find_first_of("\n")==std::string::npos) return str;
+	while (str.find_first_of("\n")!=std::string::npos)
+	{
+		ret += str.substr(0,str.find_first_of("\n"));
+		if (str.find_first_of("\n")<str.length()-1) str=str.substr(str.find_first_of("\n")+1);
+		else {
+			ret+=str;
+			str.clear();
+		}
+	}
+	ret+=str;
+	return ret;
+}
 void Form::loadData()
 {
 	//XMLNode node;
@@ -87,10 +102,10 @@ void Form::loadData()
 			ui.BuildEdit->setText(pkg.get_build()->c_str());
 			ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
 		
-			{
-				short_description[0]=pkg.get_short_description()->c_str();
-				description[0]=pkg.get_description()->c_str();
-			}
+			//{
+			short_description[0]=pkg.get_short_description()->c_str();
+			description[0]=cleanDescr(*pkg.get_description()).c_str();
+			//}
 			ui.ShortDescriptionEdit->setText(short_description[0]);
 			ui.DescriptionEdit->setText(description[0]);
 

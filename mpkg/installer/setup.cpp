@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.38 2007/08/10 15:00:13 i27249 Exp $
+ * $Id: setup.cpp,v 1.39 2007/08/17 14:58:13 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -605,6 +605,7 @@ int mountPartitions()
 
 string getTagDescription(string tag)
 {
+	if (tag=="base-utils") return "Базовые утилиты";
 	if (tag=="kde") return "Рабочий стол KDE";
 	if (tag=="x11") return "Система X-Window";
 	if (tag=="apple") return "Поддержка Apple Macintosh";
@@ -925,7 +926,8 @@ int packageSelectionMenu()
 	int i_ret=0;
 	bool mark;
 	PACKAGE *p;
-	string ins_type;
+	string ins_type=systemConfig.setupMode;
+	menuItems.push_back(TagPair("0","Редактировать текущий список"));
 	menuItems.push_back(TagPair("1","Персональный компьютер (для домашнего и офисного применения)"));
 	menuItems.push_back(TagPair("2","Сервер (основные сервисы, без X11)"));
 	menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
@@ -938,6 +940,7 @@ int packageSelectionMenu()
 
 	switch(i_ret)
 	{
+		case 0: break;
 		case 1: ins_type = "Персональный компьютер";
 			break;
 		case 2:
@@ -947,10 +950,10 @@ int packageSelectionMenu()
 			ins_type = "Тонкий клиент";
 			break;
 		case 4:
-			ins_type = "Минимум";
+			ins_type = "Минимальная установка";
 			break;
 		case 5:
-			ins_type = "Полностью";
+			ins_type = "Полная установка";
 			break;
 		default:
 			ins_type = "Я хз что вы там выбрали...";
@@ -970,8 +973,11 @@ int packageSelectionMenu()
 	{
 		p = i_availablePackages.get_package(i);
 		mark=false;
+
+		if (p->isTaggedBy("base")) mark=true;
 		switch(i_ret)
 		{
+			case 0: break;
 			case 1:
 				if (p->isTaggedBy("desktop")) mark=true;
 				break;
@@ -982,7 +988,6 @@ int packageSelectionMenu()
 				if (p->isTaggedBy("thinclient")) mark=true;
 				break;
 			case 4:
-				if (p->isTaggedBy("base")) mark=true;
 				break;
 			case 5:
 				mark=true;
