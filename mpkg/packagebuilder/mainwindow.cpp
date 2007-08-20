@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.26 2007/08/17 14:58:13 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.27 2007/08/20 12:50:15 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -26,6 +26,7 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 	ui.DepTableWidget->horizontalHeader()->hide();
 //	ui.DescriptionLanguageComboBox->hide();
+	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	this->show();
 	loadData();
 }
@@ -318,10 +319,16 @@ void Form::saveData()
 }
 
 void Form::addTag(){
-	if (!ui.TagEdit->text().isEmpty()) {
-	       ui.TagListWidget->addItem(ui.TagEdit->text());
-	       ui.TagEdit->clear();
+	if (!ui.tagBox->currentText().isEmpty())
+	{
+		ui.TagListWidget->addItem(ui.tagBox->currentText());
 	}
+}
+
+void Form::saveAndExit()
+{
+	saveData();
+	quitApp();
 }
 void Form::addDependency(){
 

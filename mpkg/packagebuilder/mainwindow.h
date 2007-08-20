@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.6 2007/08/14 14:29:54 i27249 Exp $
+ * $Id: mainwindow.h,v 1.7 2007/08/20 12:50:15 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -30,6 +30,7 @@ class Form: public QWidget
 		void deleteTag();
 		void deleteDependency();
 		void changeHeader(const QString & text);
+		void saveAndExit();
 		void changeHeader();
 		void swapLanguage();
 		void storeCurrentDescription();
