@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.67 2007/08/14 14:29:54 i27249 Exp $
+ *	$Id: core.cpp,v 1.68 2007/08/21 14:25:55 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -99,7 +99,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlSearch.setSearchMode(SEARCH_IN);
 	sqlFields.addField("packages_package_id");
 	sqlFields.addField("file_name");
-	
+	PACKAGE tmpP;
 	if (package->get_files()->size()==0)
 	{
 		return 0; // If a package has no files, it cannot conflict =)
@@ -123,7 +123,8 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 			{
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
-					say("File %s conflicts with package ID %d, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), package_id);
+					get_package(package_id, &tmpP);
+					say("File %s conflicts with package %s, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), tmpP.get_name()->c_str());
 					backupFile(sqlTable->getValue(k, "file_name"), package_id, package->get_id());
 				}
 			}
@@ -137,7 +138,7 @@ int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, str
 {
 //	printf("adding conflict record: conflicted_id = %d, overwritten_id = %d, file = %s\n", conflicted_id, overwritten_id, file_name->c_str());
 	PACKAGE pkg;
-	get_package(overwritten_id, &pkg);
+	get_package(overwritten_id, &pkg,true);
 
 	SQLRecord sqlFill;
 	sqlFill.addField("conflicted_package_id", conflicted_id);
@@ -175,18 +176,20 @@ void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 
 int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int conflicted_package_id)
 {
-//	printf("backing up %s\n", filename->c_str());
+	//printf("backing up %s\n", filename->c_str());
 	if (FileExists(SYS_ROOT + *filename))
 	{
-//		printf("backupFile: file exists\n");
+		//printf("backupFile: file exists, get_package\n");
 		PACKAGE pkg;
-		get_package(overwritten_package_id, &pkg);
+		get_package(overwritten_package_id, &pkg, true);
+		//printf("get_package OK\n");
 		string bkpDir = SYS_BACKUP + *pkg.get_name() + "_" + *pkg.get_md5();
 		string bkpDir2 = bkpDir + "/" + filename->substr(0, filename->find_last_of("/"));
 		string mkd = "mkdir -p " + bkpDir2;
 		
 		string mv = "mv ";
 	        mv += SYS_ROOT + *filename + " " + bkpDir2 + "/";
+		//printf("mkdir && mv\n");
 		if (!simulate)
 		{
 			if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
@@ -195,16 +198,18 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 				return MPKGERROR_FILEOPERATIONS;
 			}
 		}
-//		printf("adding record\n");
+		//printf("adding conflict record\n");
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
-		// Adding some logging facility
+		//printf("Adding some logging facility\n");
 		FILE *log = fopen("/var/log/mpkg-backups.log","a");
 		if (log)
 		{
+			//printf("adding log record\n");
 			string target_name = *pkg.get_name() + "-" + pkg.get_fullversion();
-			get_package(conflicted_package_id, &pkg);
+			get_package(conflicted_package_id, &pkg, true);
 			string overwriter_name = *pkg.get_name() + "-" + pkg.get_fullversion();
 			fprintf(log, "FILE: [%s] TARGET: [%s] OVERWRITER: [%s]\n", filename->c_str(), target_name.c_str(), overwriter_name.c_str());
+			//printf("log recorded\n");
 			fclose(log);
 		}
 		else
@@ -216,6 +221,7 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 	{
 		//printf("backupFile: file %s%s doesn't exist\n", SYS_ROOT.c_str(), filename->c_str());
 	}
+	//printf("backup complete\n");
 	return 0;
 }
 
@@ -437,8 +443,21 @@ void mpkgDatabase::createDBCache()
 	}
 }
 
-int mpkgDatabase::get_package(int package_id, PACKAGE *package)//, bool GetExtraInfo)
+int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool no_cache)//, bool GetExtraInfo)
 {
+	if (no_cache && db.internalDataChanged)
+	{
+		SQLRecord sqlSearch;
+		PACKAGE_LIST pkgList;
+		sqlSearch.addField("package_id", package_id);
+		get_packagelist(&sqlSearch, &pkgList);
+		if (pkgList.size()==1) {
+			*package = *pkgList.get_package(0);
+			return 0;
+		}
+		else return MPKGERROR_NOPACKAGE;
+
+	}
 	createDBCache();
 	for (int i=0; i<packageDBCache.size(); i++)
 	{

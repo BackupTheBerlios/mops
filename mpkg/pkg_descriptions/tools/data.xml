@@ -25,7 +25,7 @@
 	<dependencies>
 		<dep>
 			<name>
-				libmpkg
+				mpkg-core
 			</name>
 			<condition>
 				atleast

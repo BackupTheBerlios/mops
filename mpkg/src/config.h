@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.46 2007/08/02 10:39:13 i27249 Exp $
+    $Id: config.h,v 1.47 2007/08/21 14:25:55 i27249 Exp $
 */
 
 
@@ -39,6 +39,7 @@ extern string CDROM_VOLUMELABEL; // For QT GUI
 extern string CDROM_DEVICENAME;  // For QT GUI
 extern vector<string> removeBlacklist;
 // System configuration
+extern bool ignoreDeps;
 extern bool consoleMode;
 extern bool dialogMode;
 extern string SYS_ROOT;		// "/root/development/sys_root/"

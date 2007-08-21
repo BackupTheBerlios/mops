@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.47 2007/08/14 07:44:26 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.48 2007/08/21 14:25:55 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -80,6 +80,7 @@ int main (int argc, char **argv)
 		{ "verbose", 0, NULL, 'v'},
 		{ "purge", 0, NULL, 'p'},
 		{ "force-dep", 0, NULL, 'd'},
+		{ "no-dep",0,NULL,'z'},
 		{ "force-conflicts",0,NULL,'f'},
 		{ "skip-md5check",0,NULL,'m'},
 		{ "force-essential",0,NULL,'k'},
@@ -148,6 +149,12 @@ int main (int argc, char **argv)
 					break;
 			case 'g':
 					dialogMode=true;
+					break;
+	
+			case 'z':
+					ignoreDeps=true;
+					break;
+
 					
 			case '?':
 					return print_usage(stderr, 1);
@@ -575,6 +582,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-v    --verbose           be verbose\n"));
 	fprintf(stream,_("\t-g    --dialog            use dialog mode UI\n"));
 	fprintf(stream,_("\t-d    --force-dep         interpret dependency errors as warnings\n"));
+	fprintf(stream,_("\t-z    --no-dep            totally ignore dependencies existance\n"));
 	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
 	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity on install\n"));
 	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));

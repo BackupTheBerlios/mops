@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.43 2007/08/09 13:44:14 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.44 2007/08/21 14:25:55 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -149,7 +149,8 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		if (tmpPackage.available(localInstall) && !tmpPackage.installed())
 		{
 			tmpPackage.set_action(ST_INSTALL);
-			DepTracker->addToInstallQuery(&tmpPackage);
+			if (!ignoreDeps) DepTracker->addToInstallQuery(&tmpPackage);
+			else db->set_action(tmpPackage.get_id(), ST_INSTALL);
 			return tmpPackage.get_id();
 		}
 		else
@@ -275,7 +276,12 @@ int mpkgSys::requestUninstall(int package_id, mpkgDatabase *db, DependencyTracke
 		if (process)
 		{
 			mDebug("Processing deps");
-			DepTracker->addToRemoveQuery(&tmpPackage);
+			if (!ignoreDeps) DepTracker->addToRemoveQuery(&tmpPackage);
+			else {
+				if (purge) db->set_action(tmpPackage.get_id(), ST_PURGE);
+				else db->set_action(tmpPackage.get_id(), ST_REMOVE);
+			}
+
 			return tmpPackage.get_id();
 		}
 		else

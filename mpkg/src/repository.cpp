@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.66 2007/08/15 14:09:55 i27249 Exp $
+ * $Id: repository.cpp,v 1.67 2007/08/21 14:25:55 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -439,6 +439,8 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 
 unsigned int pkgcounter;
 vector<string> pkgDupeNames;
+
+int pkgcount_ftw;
 int ProcessPackage(const char *filename, const struct stat *file_status, int filetype)
 {
 	//XMLNode tmpX;
@@ -458,7 +460,8 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	{
 
 		pkgcounter++;
-		cout<< "indexing file " << filename << "..."<<endl;
+		printf("[%d/%d] indexing file %s\n",pkgcounter,pkgcount_ftw, filename);
+//		cout<< "indexing file " << filename << "..."<<endl;
 		FILE *log=fopen("index.log", "a");
 		LocalPackage lp(_package);
 		mDebug("PP 0-0");
@@ -563,29 +566,36 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 }
 
 
+int countPackage(const char *filename, const struct stat *file_status, int filetype)
+{
+	
+	//XMLNode tmpX;
+	unsigned short x=0, y=0;
+
+	if (file_status->st_ino!=0) x=y;
+
+	mDebug("processing package "+ (string) filename);
+	string _package=filename;
+       	string ext;
+	for (unsigned int i=_package.length()-4;i<_package.length();i++)
+	{
+		ext+=_package[i];
+	}
+
+	if (filetype==FTW_F && ext==".tgz")
+	{
+		pkgcount_ftw++;
+	}
+	return 0;
+}
+
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
 	pkgDupeNames.clear();
 	unlink("index.log");
 	unlink("dupes.log");
 	unlink("legacy.log");
-/*	if (rebuild)
-	{
-		if (system("gunzip packages.xml.gz")!=0)
-		{
-			say("No previous index found, using defaults\n");
-			server_url="no_url";
-			server_name="no_name";
-		}
-		else
-		{
-			XMLNode tmpNode = XMLNode::parseFile("packages.xml", "repository");
-			server_url = (string) tmpNode.getAttributeValue(0);
-			server_name = (string) tmpNode.getAttributeValue(1);
-		}
-	}*/	
 	pkgcounter=0;
-	// [OBSOLETE] First of all, initialise main XML tree. Due to some code restrictions, we use global variable _root.
 	
 	__doc = xmlNewDoc((const xmlChar *)"1.0");
 	if (__doc == NULL) {
@@ -618,36 +628,18 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	}
 #endif
     	
-
-	/*
-	if (!server_url.empty())
-	{
-		
-		_root.addAttribute("url", server_url.c_str());
-	//	_rootFList.addAttribute("url", server_url.c_str());
-	}
-	if (!server_name.empty())
-	{
-		_root.addAttribute("name", server_name.c_str());
-	//	_rootFList.addAttribute("name", server_name.c_str());
-
-	}*/
-	//_root.addAttribute("type", "compact");
 	// Next, run thru files and extract data.
 	// We consider that repository root is current directory. So, what we need to do:
 	// Enter each sub-dir, get each file which name ends with .tgz, extracts xml (and other) data from them, 
 	// and build an XML tree for whole repository, then write it to ./packages.xml
 	
-	ftw(".", ProcessPackage, 600);
-	//ProcessPackage("coreutils.tgz", NULL, NULL);
 	
+	// for the first, let's calculate the package count
+	pkgcount_ftw=0;
+	ftw(".", countPackage,600);
+	ftw(".", ProcessPackage, 600);
 	// Finally, write our XML tree to file
 	xmlSaveFileEnc("packages.xml", __doc, "UTF-8");
-	//_root.writeToFile("packages.xml");
-	//_rootFList.writeToFile("filelist.xml");
-	// Analyze file conflicts
-	//mDebug("Analyzing file conflicts");
-	//analyzeFTree(&_rootFList);
 	// Compress file
 	mDebug("Compressing files");
 	say("Compressing files\n");
