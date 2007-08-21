@@ -3,8 +3,9 @@
 #######################################################
 # Build script for manager
 # Just to simplify =)
-# $Id: build,v 1.5 2007/06/15 12:40:52 i27249 Exp $
+# $Id: build,v 1.6 2007/08/21 18:05:22 i27249 Exp $
 #######################################################
+qmake
 make -j2
 strip manager
 cp manager /usr/local/bin/

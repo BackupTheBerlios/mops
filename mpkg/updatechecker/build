@@ -1,8 +1,8 @@
 #!/bin/sh
 # Build script for update checker
 # Just for simplify the deals
-# $Id: build,v 1.1 2007/05/16 01:38:32 i27249 Exp $
+# $Id: build,v 1.2 2007/08/21 18:05:22 i27249 Exp $
 
-make -j2 && strip updatechecker && cp updatechecker /usr/local/bin/
+qmake && make -j2 && strip updatechecker && cp updatechecker /usr/local/bin/
 echo "Update monitor: build complete"
 

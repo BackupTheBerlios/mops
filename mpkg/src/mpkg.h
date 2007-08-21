@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.37 2007/08/21 14:25:55 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.38 2007/08/21 18:05:22 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -15,6 +15,8 @@
 class mpkgDatabase
 {
 	public:
+		int get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+
 		// Functions to get data
 		int get_package(int package_id, PACKAGE *package, bool no_cache=false);
 		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist);

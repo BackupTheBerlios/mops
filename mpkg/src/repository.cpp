@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.67 2007/08/21 14:25:55 i27249 Exp $
+ * $Id: repository.cpp,v 1.68 2007/08/21 18:05:22 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -644,8 +644,7 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	mDebug("Compressing files");
 	say("Compressing files\n");
 	if (/*system("gzip -f filelist.xml")==0 && */system("gzip -f packages.xml")==0)
-	       say("\n-------------SUMMARY------------------\nRepository URL: %s\nRepository name: %s\nTotal: %d packages\n\nRepository index created successfully\n",\
-			       server_url.c_str(), server_name.c_str(), pkgcounter);
+	       say("\n-------------SUMMARY------------------\nTotal: %d packages\n\nRepository index created successfully\n",pkgcounter);
 	else mError("Error creating repository index!");
 	return 0;
 }

@@ -26,5 +26,7 @@
 #define ACT_CONFIG	0x18
 #define ACT_EXPORT	0x19
 #define ACT_GENDEPS	0x1a
+#define ACT_FILESEARCH  0x1b
+#define ACT_WHICH	0x1c
 #endif
 

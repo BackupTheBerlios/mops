@@ -3,8 +3,9 @@
 ###########################################
 # Build script for package builder
 # Just for simplify! =)
-# $Id: build,v 1.1 2007/05/16 01:38:32 i27249 Exp $
+# $Id: build,v 1.2 2007/08/21 18:05:22 i27249 Exp $
 ###########################################
+qmake
 make -j2
 strip packagebuilder
 cp packagebuilder /usr/local/bin/

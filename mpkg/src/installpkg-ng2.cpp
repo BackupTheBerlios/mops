@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.48 2007/08/21 14:25:55 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.49 2007/08/21 18:05:22 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -23,6 +23,8 @@ int print_usage(FILE* stream=stdout, int exit_code=0);
 int list(mpkg *core, vector<string> search, bool onlyQueue=false);
 void ShowBanner();
 int list_rep(mpkg *core);
+
+void searchByFile(mpkg *core, string filename, bool strict=false);
 bool showOnlyAvailable=false;
 bool showOnlyInstalled=false;
 bool showFilelist=false;
@@ -354,6 +356,23 @@ int main (int argc, char **argv)
 	{
 		return 0;
 	}
+	if (action == ACT_FILESEARCH)
+	{
+		if (argc!=3) { print_usage(stderr); exit(0); }
+		searchByFile(&core, argv[2]);
+		return 0;
+	}
+
+
+	if (action == ACT_WHICH)
+	{
+		if (argc!=3) { print_usage(stderr); exit(0); }
+		searchByFile(&core, argv[2],true);
+		return 0;
+	}
+	
+
+
 	if (action == ACT_GENDEPS)
 	{
 		generateDeps(argv[2]);
@@ -501,25 +520,10 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_INDEX ) {
-		if (argc == 4)
-		{
-			
-			say(_("Building repository index\nURL: %s\nName: %s\n"), argv[optind], argv[optind+1]);
-			core.rep.build_index(argv[optind], argv[optind+1]);
-		}
-		else
-		{
-			if (FileExists("packages.xml.gz"))
-			{
-				core.rep.build_index("", "", true);
-			}
-			else
-			{
-				mError(_("To few arguments to index\n"));
-				return print_usage(stderr, 1);
-			}
-		}
+		
+		core.rep.build_index("","");
 		delete_tmp_files();
+	
 		return 0;
 	}
 
@@ -601,6 +605,9 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tshow                      show info about package\n"));
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
+	
+	fprintf(stream,_("\tfilesearch                look for owner of the file in installed packages (LIKE mode).\n"));
+	fprintf(stream,_("\twhich                     look for owner of the file in installed packages (EQUAL mode).\n"));
 	fprintf(stream,_("\tlist_rep                  list enabled repositories\n"));
 	fprintf(stream,_("\tinstallfromlist           install using file with list of items\n"));
 	fprintf(stream,_("\treset                     reset queue\n"));
@@ -741,6 +748,55 @@ void show_package_info(mpkg *core, string name)
 
 }
 
+void searchByFile(mpkg *core, string filename, bool strict)
+{
+	string filename_orig=filename;
+	if (filename.length()==0) {
+		say(_("No filename specified\n"));
+		return;
+	}
+	if (filename[0]=='/') filename=filename.substr(1);
+	printf("searching for [%s]\n",filename.c_str());
+	SQLRecord sqlSearch, sqlFields, sqlPkgSearch;
+	
+	if (!strict) sqlSearch.setEqMode(EQ_LIKE);
+	sqlSearch.addField("file_name", &filename);
+	sqlFields.addField("packages_package_id");
+	sqlFields.addField("file_name");
+	SQLTable results;
+	core->db->get_sql_vtable(&results, sqlFields, "files", sqlSearch);
+	PACKAGE_LIST pkgList;
+	if (results.size()==0) {
+		say(_("File %s doesn't belong to any installed package\n"),filename.c_str());
+		return;
+	}
+	sqlPkgSearch.setSearchMode(SEARCH_OR);
+	for (int i=0; i<results.size(); i++)
+	{
+		printf("%s: %s\n", results.getValue(i, "file_name")->c_str(), results.getValue(i,"packages_package_id")->c_str());
+		sqlPkgSearch.addField("package_id", results.getValue(i,"packages_package_id"));
+	}
+	core->get_packagelist(&sqlPkgSearch, &pkgList);
+	if (pkgList.size()==0) {
+		say(_("Hm... no package was returned. Seems to be malformed SQL query\n"));
+		return;
+	}
+	say(_("File %s found in %d package(s):\n"),filename_orig.c_str(), pkgList.size());
+	string pattern;
+	for (int i=0; i<results.size(); i++)
+	{
+		for (int t=0; t<pkgList.size(); t++)
+		{
+			if (*results.getValue(i,"packages_package_id")==IntToStr(pkgList.get_package(t)->get_id()))
+			{
+				pattern=*results.getValue(i,"file_name");
+				say(_("/%s: %s-%s\n"), pattern.c_str(), pkgList.get_package(t)->get_name()->c_str(), \
+				pkgList.get_package(t)->get_fullversion().c_str());
+			}
+		}
+	}
+}
+
 int list(mpkg *core, vector<string> search, bool onlyQueue)
 {
 	PACKAGE_LIST pkglist;
@@ -755,12 +811,12 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 	}
 	if (onlyQueue)
 	{
-		sqlSearch.setSearchMode(SEARCH_OR);
+		sqlSearch.setSearchMode(SEARCH_IN);
 		sqlSearch.addField("package_action", ST_INSTALL);
 		sqlSearch.addField("package_action", ST_REMOVE);
 		sqlSearch.addField("package_action", ST_PURGE);
 	}
-
+	say(_("Querying database...\n"));
 	core->get_packagelist(&sqlSearch, &pkglist);
 	if (pkglist.IsEmpty())
 	{
@@ -824,7 +880,9 @@ int check_action(char* act)
 	  	&& _act != "menu"
 	        && _act != "config"
 		&& _act != "export"
-		&& _act != "gendeps"		
+		&& _act != "gendeps"
+		&& _act != "filesearch"
+		&& _act != "which"
 		) {
 		res = -1;
 	}
@@ -903,6 +961,10 @@ int setup_action(char* act)
 		return ACT_EXPORT;
 	if (_act == "gendeps")
 		return ACT_GENDEPS;
+	if (_act == "filesearch")
+		return ACT_FILESEARCH;
+	if (_act == "which")
+		return ACT_WHICH;
 
 	return ACT_NONE;
 }

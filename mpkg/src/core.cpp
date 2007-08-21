@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.68 2007/08/21 14:25:55 i27249 Exp $
+ *	$Id: core.cpp,v 1.69 2007/08/21 18:05:22 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -627,6 +627,10 @@ int mpkgDatabase::get_filelist(int package_id, vector<FILES> *filelist, bool con
 	}
 	delete sqlTable;
 	return 0;
+}
+int mpkgDatabase::get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search)
+{
+	return db.get_sql_vtable(output, fields, table_name, search);
 }
 
 void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
