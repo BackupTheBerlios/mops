@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.119 2007/08/06 13:37:28 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.120 2007/08/23 23:28:17 i27249 Exp $
  *
  ****************************************************************/
 
@@ -20,6 +20,14 @@
 
 MainWindow::MainWindow(QMainWindow *parent)
 {
+	if (isDatabaseLocked()) 
+	{
+		QMessageBox::critical(this, tr("MOPSLinux package manager"),
+				tr("Database is locked.\nPlease close another application that uses it"),
+				QMessageBox::Ok, QMessageBox::Ok);
+		qApp->quit();
+
+	}
 	mDebug("initializing");
 	totalInstalledSize=0;
 	totalAvailableSize=0;
@@ -175,6 +183,8 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
 	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
 	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
+	
+	lockDatabase();
 	mDebug("init ok, let's show the UI");
 	this->show();
 	// Wait threads to start
@@ -1065,6 +1075,7 @@ void MainWindow::quitApp()
 	else currentStatus = tr("Exiting...").toStdString();
 	thread->callQuit();
 	this->hide();
+	unlockDatabase();
 	qApp->quit();
 
 }

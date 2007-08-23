@@ -1,6 +1,6 @@
 /****************************************************************
  * Basic C++ bingings to dialog utility
- * $Id: dialog.cpp,v 1.12 2007/08/07 14:32:14 i27249 Exp $
+ * $Id: dialog.cpp,v 1.13 2007/08/23 23:28:17 i27249 Exp $
  *
  * Developed as part of MOPSLinux package system, but can be used
  * separately
@@ -36,14 +36,15 @@ string Dialog::getReturnValue(string tmp_file)
 		perror("cannot open temp file");
 		abort();
 	}
-	char membuff[2000];
+	char *membuff = (char *) malloc(2000);
 	string ret;
-	memset(&membuff, 0, sizeof(membuff));
-	if (fscanf(returnValues, "%s", &membuff)!=EOF)
+	memset(membuff, 0, 2000);
+	if (fscanf(returnValues, "%s", membuff)!=EOF)
 	{
 		ret = (string) membuff;
 	}
 	fclose(returnValues);
+	free(membuff);
 	mDebug("returned [" + ret + "]");
 	return ret;
 }
@@ -56,17 +57,18 @@ vector<string> Dialog::getReturnValues(string tmp_file, bool quoted)
 		perror("cannot open temp file");
 		abort();
 	}
-	char membuff[2000];
+	char *membuff = (char *) malloc(2000);
 	vector<string> ret;
 	string tmp;
-	memset(&membuff, 0, sizeof(membuff));
-	while (fscanf(returnValues, "%s", &membuff)!=EOF)
+	memset(membuff, 0, 2000);
+	while (fscanf(returnValues, "%s", membuff)!=EOF)
 	{
 		tmp = (string) membuff;
 		if (quoted) tmp = tmp.substr(1, tmp.size()-2);
 		ret.push_back(tmp);
 	}
 
+	free(membuff);
 	fclose(returnValues);
 	return ret;
 }

@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.38 2007/08/16 14:39:10 i27249 Exp $
+$Id: dependencies.cpp,v 1.39 2007/08/23 23:28:17 i27249 Exp $
 */
 
 
@@ -91,21 +91,18 @@ int DependencyTracker::renderData()
 	//printf("Rendering remove queue\n");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	mDebug("Filtering dupes: install");
+	currentStatus=_("Checking dependencies: filtering (stage 1: installation queue dupes");
 	//printf("Filtering dupes\n");
 	filterDupes(&installStream);
+	currentStatus=_("Checking dependencies: filtering (stage 2: remove queue dupes");
 	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
+	currentStatus=_("Checking dependencies: filtering (stage 3: rollback)");
 	mDebug("Rolling back the items who was dropped on update");
 	PACKAGE_LIST fullWillBeList = installedPackages;
 	fullWillBeList.add(&installStream);
 	bool requested=false;
 	//printf("Starting a loop of rollbacking\n");
-	// 
-	//
-	// NOTE: ROLLBACK MECHANISM HAS SOME MAJOR BUGS! TODO: FIXME! =)
-	//
-	//
-	//
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		requested=false;
@@ -132,16 +129,20 @@ int DependencyTracker::renderData()
 	// END OF ROLLBACK MECHANISM
 
 	mDebug("Muxing streams");
+	currentStatus=_("Checking dependencies: muxing queues");
 	muxStreams(installStream, removeStream);
+	currentStatus=_("Checking dependencies: searching for broken packages");
 	mDebug("Searching for broken packages");
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	mDebug("done");
+	currentStatus=_("Dependency check completed, error count: ") + IntToStr(failureCounter);
 	if (!force_dep) return failureCounter;
 	else return 0;
 }
 // Tree
 PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQueue)
 {
+	currentStatus=_("Checking dependencies: rendering requirements");
 	mDebug("Rendering required list\n");
 	// installationQueue - user-composed request for installation
 	// outStream - result, including all required packages.
@@ -151,6 +152,7 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 	bool skipThis;
 	for (int i=0; i<outStream.size(); i++)
 	{
+		currentStatus = _("Checking dependencies: rendering requirements") + (string) " (" + IntToStr(i) + "/"+IntToStr(outStream.size()) + ")";
 		//printf("cycle %d\n",i);
 		req=get_required_packages(outStream.get_package(i));
 		// Check if this package is already in stream
@@ -224,6 +226,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 
 PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 {
+	currentStatus=_("Checking dependencies: rendering remove queue");
 	// removeQueue - user-composed remove queue
 	// removeStream - result. Filtered.
 	PACKAGE_LIST removeStream;
@@ -232,6 +235,9 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 	bool skipThis;
 	for (int i=0; i<removeStream.size(); i++)
 	{
+		currentStatus=_("Checking dependencies: rendering remove queue") + (string) " (" + IntToStr(i) + "/" + IntToStr(removeStream.size())+")";
+
+
 		tmp = get_dependant_packages(removeStream.get_package(i));
 		//printf( "dependant for %s has %d items\n",removeStream.get_package(i)->get_name()->c_str(), tmp.size());
 		for (int t=0; t<tmp.size(); t++)

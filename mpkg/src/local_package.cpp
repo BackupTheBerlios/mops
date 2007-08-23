@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.66 2007/08/17 11:53:37 i27249 Exp $
+$Id: local_package.cpp,v 1.67 2007/08/23 23:28:18 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -213,7 +213,7 @@ int LocalPackage::get_xml()
     
 
 	std::string __tmp_doc = p.getXMLNodeEx();
-	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", NULL);
+	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", 0);
 	_packageXMLNode = xmlDocGetRootElement(__doc);
 
 	if (__doc == NULL) {
@@ -406,25 +406,29 @@ int LocalPackage::get_size()
 		mError("Unable to extract size of package");
 		return -1;
 	}
-	char c_size[40000]; //FIXME: Overflow are possible here
-	char i_size[40000]; //FIXME: Same problem
+	char *c_size = (char *) malloc(40000); //FIXME: Overflow are possible here
+	char *i_size = (char *) malloc(40000); //FIXME: Same problem
 	mDebug("reading file...");
 
 	for (int i=1; i<=5; i++)
 	{
-		if (fscanf(zdata, "%s", &c_size)==EOF)
+		if (fscanf(zdata, "%s", c_size)==EOF)
 		{
 			delete_tmp_files();
 			mError("Unexcepted EOF while reading gzip data");
+			free(c_size);
+			free(i_size);
 			return -1;
 		}
 	}
-	fscanf(zdata, "%s", &i_size);
+	fscanf(zdata, "%s", i_size);
 	fclose(zdata);
 	string csize;
 	csize=c_size;
 	string isize;
 	isize=i_size;
+	free(c_size);
+	free(i_size);
 	data.set_compressed_size(&csize);
 	data.set_installed_size(&isize);
 	mDebug(" Sizes: C: " + csize + ", I: " + isize);

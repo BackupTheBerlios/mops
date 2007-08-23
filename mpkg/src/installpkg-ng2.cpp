@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.49 2007/08/21 18:05:22 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.50 2007/08/23 23:28:17 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -23,7 +23,7 @@ int print_usage(FILE* stream=stdout, int exit_code=0);
 int list(mpkg *core, vector<string> search, bool onlyQueue=false);
 void ShowBanner();
 int list_rep(mpkg *core);
-
+void list_pkglist(PACKAGE_LIST *pkglist);
 void searchByFile(mpkg *core, string filename, bool strict=false);
 bool showOnlyAvailable=false;
 bool showOnlyInstalled=false;
@@ -38,6 +38,7 @@ void ShowBanner()
 int verbose = 0;
 int main (int argc, char **argv)
 {
+	// Check database lock
 	mpkg core;
 	if (!core.init_ok)
 	{
@@ -195,9 +196,16 @@ int main (int argc, char **argv)
 		mError(_("You must login as root to run this program"));
 		exit(1);
 	}
+	if (require_root && isDatabaseLocked())
+	{
+		mError(_("Error: database is locked. Please close all other programs that use this"));
+		exit(1);
+	}
 
 	if ( action == ACT_NONE )
 			return print_usage(stderr, 1);
+
+
 	if ( action == ACT_SHOW)
 	{
 		show_package_info(&core, argv[optind]);
@@ -208,6 +216,7 @@ int main (int argc, char **argv)
 	if (action == ACT_COMMIT)
 	{
 		core.commit();
+		unlockDatabase();
 		return 0;
 	}
 
@@ -221,6 +230,7 @@ int main (int argc, char **argv)
 
 	if (action == ACT_RESETQUEUE)
 	{
+		lockDatabase();
 		PACKAGE_LIST tmp;
 		SQLRecord sqlSearch;
 		sqlSearch.setSearchMode(SEARCH_OR);
@@ -235,11 +245,13 @@ int main (int argc, char **argv)
 		}
 		//core.commit();
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 	}
 
 	if (action == ACT_PACKAGEMENU)
 	{
+		lockDatabase();
 		Dialog dialogItem;
 		vector<TagPair> pkgList;
 		SQLRecord sqlSearch;
@@ -279,6 +291,7 @@ int main (int argc, char **argv)
 			core.commit();
 		}
 		else printf("Cancelled\n");
+		unlockDatabase();
 		return 0;
 	}
 
@@ -293,15 +306,17 @@ int main (int argc, char **argv)
 				perror(_("cannot open installation list"));
 				exit(-1);
 			}
-			char membuff[2000];
+			char *membuff=(char *) malloc(2000);
 			vector<string> installQuery;
-			memset(&membuff, 0, sizeof(membuff));
+			memset(membuff, 0, 2000);
 			string tmp;
-			while (fscanf(install_list, "%s", &membuff)!=EOF)
+			while (fscanf(install_list, "%s", membuff)!=EOF)
 			{
 				tmp = (string) membuff;
 				installQuery.push_back(tmp.substr(1, tmp.size()-2));
 			}
+			free(membuff);
+			lockDatabase();
 			fclose(install_list);
 			for (unsigned int i=0; i<installQuery.size(); i++)
 			{
@@ -310,6 +325,7 @@ int main (int argc, char **argv)
 			core.install(installQuery);
 			core.commit();
 			delete_tmp_files();
+			unlockDatabase();
 			return 0;
 		}
 		else
@@ -321,13 +337,16 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALL)
 	{
+		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
 			fname.push_back((string) argv[i]);
 		}
 		core.install(fname);
 		core.commit();
+		core.clean_queue();
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 	}
 
@@ -356,6 +375,82 @@ int main (int argc, char **argv)
 	{
 		return 0;
 	}
+
+	if (action == ACT_LISTGROUP)
+	{
+		if (argc!=3)
+		{
+			print_usage(stderr);
+			exit(0);
+		}
+		string group=argv[2];
+		PACKAGE_LIST pkgList1;
+		PACKAGE_LIST pkgList2;
+		SQLRecord sqlSearch;
+		core.get_packagelist(&sqlSearch, &pkgList1);
+		for (int i=0; i<pkgList1.size(); i++)
+		{
+			if (pkgList1.get_package(i)->isTaggedBy(group)) pkgList2.add(pkgList1.get_package(i));
+		}
+		list_pkglist(&pkgList2);
+		return 0;
+	}
+
+	if (action == ACT_INSTALLGROUP)
+	{
+		if (argc!=3)
+		{
+			print_usage(stderr);
+			exit(0);
+		}
+
+		lockDatabase();
+		string group=argv[2];
+		PACKAGE_LIST pkgList1;
+		vector<string> queue;
+		SQLRecord sqlSearch;
+		core.get_packagelist(&sqlSearch, &pkgList1);
+		for (int i=0; i<pkgList1.size(); i++)
+		{
+			if (pkgList1.get_package(i)->isTaggedBy(group) && !pkgList1.get_package(i)->installed()) queue.push_back(*pkgList1.get_package(i)->get_name());
+		}
+		core.install(queue);
+		core.commit();
+		core.clean_queue();
+		delete_tmp_files();
+
+		unlockDatabase();
+		
+
+		return 0;
+	}
+
+	if (action == ACT_REMOVEGROUP)
+	{
+		if (argc!=3)
+		{
+			print_usage(stderr);
+			exit(0);
+		}
+		lockDatabase();
+		string group=argv[2];
+		PACKAGE_LIST pkgList1;
+		vector<string> queue;
+		SQLRecord sqlSearch;
+		core.get_packagelist(&sqlSearch, &pkgList1);
+		for (int i=0; i<pkgList1.size(); i++)
+		{
+			if (pkgList1.get_package(i)->isTaggedBy(group) && pkgList1.get_package(i)->installed()) queue.push_back(*pkgList1.get_package(i)->get_name());
+		}
+		core.uninstall(queue);
+		core.commit();
+		core.clean_queue();
+		delete_tmp_files();
+		unlockDatabase();
+		return 0;
+
+	}
+
 	if (action == ACT_FILESEARCH)
 	{
 		if (argc!=3) { print_usage(stderr); exit(0); }
@@ -381,6 +476,7 @@ int main (int argc, char **argv)
 
 	if (action == ACT_CHECKDAMAGE)
 	{
+		lockDatabase();
 
 		PACKAGE_LIST repairList;
 		if (optind>=argc)
@@ -426,11 +522,13 @@ int main (int argc, char **argv)
 			core.commit();
 		}
 
+		unlockDatabase();
 		return 0;
 	}
 	
 	if (action == ACT_REMOVE)
 	{
+		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
 			pname.push_back((string) argv[i]);
@@ -438,7 +536,9 @@ int main (int argc, char **argv)
 		if (do_purge==0) core.uninstall(pname);
 		else core.uninstall(pname);
 		core.commit();
+		core.clean_queue();
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 	}
 
@@ -453,12 +553,14 @@ int main (int argc, char **argv)
 		return 0;
 	}
 	if (action == ACT_UPGRADE ) {
+		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
 			pname.push_back((string) argv[i]);
 		}
 		core.install(pname);
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 	}
 
@@ -507,8 +609,10 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_UPDATE ) {
+		lockDatabase();
 		core.update_repository_data();
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 		
 	}
@@ -528,13 +632,16 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_PURGE ) {
+		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
 			pname.push_back((string) argv[i]);
 		}
 		core.purge(pname);
 		core.commit();
+		core.clean_queue();
 		delete_tmp_files();
+		unlockDatabase();
 		return 0;
 	}
 
@@ -574,6 +681,7 @@ int main (int argc, char **argv)
 	}
 	say("\n");
 
+	unlockDatabase();
 	return 0;
 }
 
@@ -602,9 +710,12 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tupgrade                   upgrade selected package or full system if no package selected\n"));
 	fprintf(stream,_("\tremove                    remove selected package\n"));
 	fprintf(stream,_("\tpurge                     purge selected package\n"));
+	fprintf(stream,_("\tinstallgroup              install all the packages from group\n"));
 	fprintf(stream,_("\tshow                      show info about package\n"));
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
+	fprintf(stream,_("\tlistgroup                 show the list of packages belonged to group\n"));
+	
 	
 	fprintf(stream,_("\tfilesearch                look for owner of the file in installed packages (LIKE mode).\n"));
 	fprintf(stream,_("\twhich                     look for owner of the file in installed packages (EQUAL mode).\n"));
@@ -797,6 +908,23 @@ void searchByFile(mpkg *core, string filename, bool strict)
 	}
 }
 
+void list_pkglist(PACKAGE_LIST *pkglist)
+{
+	for (int i=0; i<pkglist->size(); i++)
+	{
+		say("[ %s ]\t", pkglist->get_package(i)->get_vstatus(true).c_str());
+		say("%s-%s-%s-%s\t(%s)\n", \
+			pkglist->get_package(i)->get_name()->c_str(), \
+			pkglist->get_package(i)->get_version()->c_str(), \
+			pkglist->get_package(i)->get_arch()->c_str(), \
+			pkglist->get_package(i)->get_build()->c_str(), \
+			pkglist->get_package(i)->get_short_description()->c_str());
+	}
+}
+
+
+
+
 int list(mpkg *core, vector<string> search, bool onlyQueue)
 {
 	PACKAGE_LIST pkglist;
@@ -883,6 +1011,9 @@ int check_action(char* act)
 		&& _act != "gendeps"
 		&& _act != "filesearch"
 		&& _act != "which"
+		&& _act != "listgroup"
+		&& _act != "installgroup"
+		&& _act != "removegroup"
 		) {
 		res = -1;
 	}
@@ -965,6 +1096,12 @@ int setup_action(char* act)
 		return ACT_FILESEARCH;
 	if (_act == "which")
 		return ACT_WHICH;
+	if (_act == "listgroup")
+		return ACT_LISTGROUP;
+	if (_act == "installgroup")
+		return ACT_INSTALLGROUP;
+	if (_act == "removegroup")
+		return ACT_REMOVEGROUP;
 
 	return ACT_NONE;
 }

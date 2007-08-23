@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.29 2007/08/16 14:39:10 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.30 2007/08/23 23:28:17 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -21,7 +21,7 @@ PackageConfig::PackageConfig(string _f)
 
     
     //doc = xmlParseFile(_f.c_str());
-	doc = xmlReadFile(_f.c_str(), "UTF-8", NULL);
+	doc = xmlReadFile(_f.c_str(), "UTF-8", 0);
 	
     if (doc == NULL) {
         mDebug("XML Load failed");
@@ -357,6 +357,7 @@ string PackageConfig::getChangelog()
  */
 string PackageConfig::getDescription(string lang)
 {
+    if (!lang.empty()) say("warning: languaged descriptions disabled\n");
     xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_DESCRIPTION);
@@ -383,6 +384,8 @@ string PackageConfig::getDescription(string lang)
  */
 string PackageConfig::getShortDescription(string lang)
 {
+	if (!lang.empty()) say("warning: languaged descriptions disabled\n");
+
 	xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_SHORT_DESCRIPTION);

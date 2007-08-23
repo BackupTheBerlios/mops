@@ -1,6 +1,6 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.16 2007/08/03 11:53:10 i27249 Exp $
+ * $Id: converter.cpp,v 1.17 2007/08/23 23:28:17 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
@@ -21,15 +21,19 @@ int slack_convert(string filename, string xml_output)
 		delete_tmp_files();
 		return 0;
 	}
+	string ptrstr;
 	delete_tmp_files();
 	// Name-ver-arch-build parsing
 	string name_tmp=filename.substr(0,filename.find(".tgz"));
 	name_tmp = name_tmp.substr(name_tmp.find_last_of("/")+1);
-	package.set_build(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	ptrstr = name_tmp.substr(name_tmp.find_last_of("-")+1);
+	package.set_build(&ptrstr);
 	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
-	package.set_arch(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	ptrstr = name_tmp.substr(name_tmp.find_last_of("-")+1);
+	package.set_arch(&ptrstr);
 	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
-	package.set_version(&name_tmp.substr(name_tmp.find_last_of("-")+1));
+	ptrstr=name_tmp.substr(name_tmp.find_last_of("-")+1);
+	package.set_version(&ptrstr);
 	name_tmp = name_tmp.substr(0,name_tmp.find_last_of("-"));
 	package.set_name(&name_tmp);
 	name_tmp.clear();

@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package manager - main file
- *     $Id: main.cpp,v 1.28 2007/08/07 14:41:04 i27249 Exp $
+ *     $Id: main.cpp,v 1.29 2007/08/23 23:28:17 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 
 
 
-	return app.exec();
+	int ret = app.exec();
+	return ret;
 }
 

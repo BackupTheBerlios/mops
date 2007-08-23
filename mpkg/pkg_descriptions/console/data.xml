@@ -10,7 +10,7 @@
 		i486
 	</arch>
 	<build>
-		1
+		3
 	</build>
 	<description lang="en">
 		Console interface for MPKG. I recommend to intall this, because many scripts may be relied on this.

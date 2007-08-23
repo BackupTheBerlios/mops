@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.19 2007/08/02 10:39:13 i27249 Exp $
+* $Id: file_routines.h,v 1.20 2007/08/23 23:28:17 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -26,6 +26,10 @@ using namespace std;
 #include <sys/dir.h>
 #include <sys/types.h>
 #include <sys/param.h>
+
+bool lockDatabase();
+bool unlockDatabase();
+bool isDatabaseLocked();
 int system(string cmd);
 bool backupDatabase();
 bool restoreDatabaseFromBackup();

@@ -1,9 +1,8 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.17 2007/08/06 13:37:28 i27249 Exp $
+ $Id: debug.cpp,v 1.18 2007/08/23 23:28:17 i27249 Exp $
  */
  
 
-#define ENABLE_LOGGING
 #include "debug.h"
 void _mError(char* file, int line, const char *func, std::string message)
 {

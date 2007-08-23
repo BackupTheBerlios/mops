@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.47 2007/08/17 11:53:37 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.48 2007/08/23 23:28:18 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -473,6 +473,7 @@ void generateDeps(string tgz_filename)
 	string tail;
 	DEPENDENCY d;
 	pkg.get_dependencies()->clear();
+	string condptr;
 	for (unsigned int i=0; i<data.size(); i++)
 	{
 	//	printf("parse cycle %d start\n",i);
@@ -485,7 +486,8 @@ void generateDeps(string tgz_filename)
 	//	printf("tmp = [%s]\n", tmp.c_str());
 		tail = tail.substr(tmp.length()+1);
 	//	printf("dep condition = [%s]\n", tmp.c_str());
-		d.set_condition(&IntToStr(condition2int(hcondition2xml(tmp))));
+		condptr=IntToStr(condition2int(hcondition2xml(tmp)));
+		d.set_condition(&condptr);
 
 		tmp = tail.substr(0,tail.find_first_of("-"));
 	//	printf("dep version = [%s]\n", tmp.c_str());

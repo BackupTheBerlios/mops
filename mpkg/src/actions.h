@@ -28,5 +28,8 @@
 #define ACT_GENDEPS	0x1a
 #define ACT_FILESEARCH  0x1b
 #define ACT_WHICH	0x1c
+#define ACT_INSTALLGROUP 0x1d
+#define ACT_LISTGROUP	0x1e
+#define ACT_REMOVEGROUP 0x1f
 #endif
 

@@ -224,7 +224,7 @@ try_mount:
 	string Svolname;
 	
 	mDebug("CDROM mounted, checking volume ID");
-	Svolname = ReadFile(CDROM_MOUNTPOINT + "/.volume_id");
+	Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
 	if (Svolname.empty())
 	{
 		// Means no volname

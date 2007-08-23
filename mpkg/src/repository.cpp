@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.68 2007/08/21 18:05:22 i27249 Exp $
+ * $Id: repository.cpp,v 1.69 2007/08/23 23:28:18 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -498,7 +498,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			mDebug("[2] _root != NULL");
 		}
 
-		xmlDocPtr __tmpXmlDoc = xmlReadFile(lp.getPackageXMLNodeEx().c_str(), "UTF-8", NULL);
+		xmlDocPtr __tmpXmlDoc = xmlReadFile(lp.getPackageXMLNodeEx().c_str(), "UTF-8", 0);
 		xmlNodePtr __packagesRootNode = xmlDocGetRootElement(__tmpXmlDoc);
 
 		if (__tmpXmlDoc == 0) {
@@ -591,6 +591,7 @@ int countPackage(const char *filename, const struct stat *file_status, int filet
 
 int Repository::build_index(string server_url, string server_name, bool rebuild)
 {
+	if (rebuild) server_name=server_url;  // Temp warning workaround
 	pkgDupeNames.clear();
 	unlink("index.log");
 	unlink("dupes.log");
@@ -745,7 +746,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	xmlDocPtr indexDoc;
 	xmlNodePtr indexRootNode;
 	
-	int pkg_count;
+//	int pkg_count;
 	int ret=0;
 	currentStatus = "["+server_url+"] Importing data...";
 	if (actionBus._abortActions)
@@ -762,7 +763,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	switch(type)
 	{
 		case TYPE_MPKG:
-			indexDoc = xmlReadFile(xml_name.c_str(), "UTF-8", NULL);
+			indexDoc = xmlReadFile(xml_name.c_str(), "UTF-8", 0);
 			if (indexDoc == NULL) {
 				xmlFreeDoc(indexDoc);
 				mError("ппц...");

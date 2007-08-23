@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.39 2007/08/14 07:44:26 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.40 2007/08/23 23:28:17 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -12,6 +12,43 @@
 vector<string> temp_files;
 extern int errno;
 
+bool lockDatabase()
+{
+	// Lock file will be /var/run/mpkg.lock
+	if (FileExists("/var/run/mpkg.lock"))
+	{
+		mError("Database is already locked by process " + ReadFile("/var/run/mpkg.lock"));
+		return false;
+	}
+	WriteFile("/var/run/mpkg.lock", IntToStr(getpid()));
+	return true;
+}
+
+bool unlockDatabase()
+{
+	if (FileExists("/var/run/mpkg.lock"))
+	{
+		if (ReadFile("/var/run/mpkg.lock")==IntToStr(getpid()))
+		{
+			// Mean that the database is locked by this process
+			unlink("/var/run/mpkg.lock");
+			return true;
+		}
+		else {
+			mError("Database is locked by another process, cannot unlock");
+			return false;
+		}
+	}
+	else {
+		mError("Database isn't locked");
+		return true;
+	}
+}
+
+bool isDatabaseLocked()
+{
+	return FileExists("/var/run/mpkg.lock");
+}
 bool backupDatabase()
 {
 	return true; // Backup is disabled for now
@@ -65,12 +102,13 @@ string get_file_md5(string filename)
 		mError("Unable to open md5 temp file");
 		return "";
 	}
-	char _c_md5[1000];
-	memset(&_c_md5, 0, sizeof(_c_md5));
-	fscanf(md5, "%s", &_c_md5);
+	char *_c_md5 = (char *) malloc(1000);
+	memset(_c_md5, 0, 1000);
+	fscanf(md5, "%s", _c_md5);
 	string md5str;
-	md5str=_c_md5;
+	md5str= (string) _c_md5;
 	fclose(md5);
+	free(_c_md5);
 	unlink(tmp_md5.c_str());
 	return md5str;
 }
