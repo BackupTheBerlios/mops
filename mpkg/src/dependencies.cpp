@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.39 2007/08/23 23:28:17 i27249 Exp $
+$Id: dependencies.cpp,v 1.40 2007/08/24 10:47:45 i27249 Exp $
 */
 
 
@@ -162,7 +162,11 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 			// Will check and add by one
 			for (int c=0; c<outStream.size(); c++)
 			{
-				if (req.get_package(t)->equalTo(outStream.get_package(c))) skipThis=true;
+				if (req.get_package(t)->installed() || req.get_package(t)->equalTo(outStream.get_package(c))) 
+				{
+					skipThis=true;
+					break;
+				}
 			}
 			if (!skipThis) outStream.add(req.get_package(t));
 		}
@@ -245,10 +249,11 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 			skipThis=false;
 			for (int c=0; c<removeStream.size(); c++)
 			{
-				if (removeStream.get_package(c)->equalTo(tmp.get_package(t)))
+				if (!tmp.get_package(t)->installed() || removeStream.get_package(c)->equalTo(tmp.get_package(t)))
 				{
 					//printf("Skipping %s\n",removeStream.get_package(c)->get_name()->c_str());
 					skipThis=true;
+					break;
 				}
 			}
 			if (!skipThis) 
