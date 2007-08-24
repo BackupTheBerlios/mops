@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.41 2007/08/24 09:57:51 i27249 Exp $
+ * $Id: setup.cpp,v 1.42 2007/08/24 11:38:29 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1487,7 +1487,13 @@ int main(int argc, char *argv[])
 		}
 	}
 	dialogMode=true;
-
+	if (!isDatabaseLocked()) {
+		lockDatabase();
+	}
+	else {
+		mError(_("Database is locked, cannot continue"));
+		abort();
+	}
 	systemConfig.cdromList=getCdromList();
 	unlink("/var/log/mpkg-lasterror.log");
 	unlink("/var/log/mkfs.log");
