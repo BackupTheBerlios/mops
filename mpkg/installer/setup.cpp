@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.42 2007/08/24 11:38:29 i27249 Exp $
+ * $Id: setup.cpp,v 1.43 2007/08/24 11:41:06 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -915,6 +915,7 @@ void showFinish()
 	Dialog dialogItem("Завершение установки");
 	dialogItem.execMsgBox("Установка завершена успешно! Перезагрузитесь и наслаждайтесь!");
 	mDebug("finish");
+	unlockDatabase();
 	exit(0);
 }
 
@@ -1550,6 +1551,7 @@ main_menu:
 	if (ret == "6") if (commit()==0) next_item="7";
 	if (ret == "7" || ret.empty()) 
 	{
+		unlockDatabase();
 		return 0;
 	}
 	goto main_menu;
