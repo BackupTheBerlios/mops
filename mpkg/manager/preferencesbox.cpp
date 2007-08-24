@@ -1,6 +1,6 @@
 /***************************************************************************
  * MOPSLinux packaging system - package manager - preferences
- * $Id: preferencesbox.cpp,v 1.20 2007/05/30 14:29:08 i27249 Exp $
+ * $Id: preferencesbox.cpp,v 1.21 2007/08/24 11:36:13 i27249 Exp $
  * ************************************************************************/
 
 #include "preferencesbox.h"
@@ -12,6 +12,10 @@ PreferencesBox::PreferencesBox(mpkg *mDB)
 	mDb=mDB;
 	ui.setupUi(this);
 	ui.addModifyRepositoryFrame->hide();
+	ui.tabWidget->removeTab(0);
+	ui.tabWidget->removeTab(2);
+	ui.tabWidget->removeTab(2);
+	ui.fcheckRemove->hide();
 	QObject::connect(ui.urlEdit, SIGNAL(textEdited(const QString &)), this, SLOT(changeRepositoryType()));
 	QObject::connect(ui.repTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(changeRepositoryType()));
 	QObject::connect(ui.authCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchAuthMode()));
@@ -282,12 +286,13 @@ void PreferencesBox::openRepositories()
 //	{
 		loadData();
 //	}
-	ui.tabWidget->setCurrentIndex(2);
+	ui.tabWidget->setCurrentIndex(1);
 	show();
 }
 
 void PreferencesBox::openInterface()
 {
+	return;
 	loadData();
 	ui.tabWidget->setCurrentIndex(0);
 	show();
@@ -454,12 +459,13 @@ void PreferencesBox::cancelRepositoryEdit()
 void PreferencesBox::openCore()
 {
 	loadData();
-	ui.tabWidget->setCurrentIndex(1);
+	ui.tabWidget->setCurrentIndex(0);
 	show();
 }
 
 void PreferencesBox::openUpdates()
 {
+	return;
 	loadData();
 	ui.tabWidget->setCurrentIndex(4);
 	show();
