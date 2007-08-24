@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.40 2007/08/24 06:20:52 i27249 Exp $
+ * $Id: setup.cpp,v 1.41 2007/08/24 09:57:51 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -930,9 +930,9 @@ int packageSelectionMenu()
 	menuItems.push_back(TagPair("0","Редактировать текущий список"));
 	menuItems.push_back(TagPair("1","Персональный компьютер (для домашнего и офисного применения)"));
 	menuItems.push_back(TagPair("2","Сервер (основные сервисы, без X11)"));
-	menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
-	menuItems.push_back(TagPair("4","Минимальная установка (только базовая система)"));
-	menuItems.push_back(TagPair("5","Полная установка (абсолютно все пакеты)"));
+	//menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
+	menuItems.push_back(TagPair("3","Минимальная установка (только базовая система)"));
+	menuItems.push_back(TagPair("4","Полная установка (абсолютно все пакеты)"));
 	ret = d.execMenu("Выберите набор пакетов для установки.\nОни используются как отправная точка в выборе пакетов.\nВы сможете детально отредактировать список устанавливаемых компонентов",0,0,0,menuItems);
 	if (ret.empty()) return 0;
 
@@ -946,13 +946,13 @@ int packageSelectionMenu()
 		case 2:
 			ins_type = "Сервер";
 			break;
-		case 3:
+		/*case 3:
 			ins_type = "Тонкий клиент";
-			break;
-		case 4:
+			break;*/
+		case 3:
 			ins_type = "Минимальная установка";
 			break;
-		case 5:
+		case 4:
 			ins_type = "Полная установка";
 			break;
 		default:
@@ -984,12 +984,12 @@ int packageSelectionMenu()
 			case 2:
 				if (p->isTaggedBy("server")) mark=true;
 				break;
-			case 3:
+			/*case 3:
 				if (p->isTaggedBy("thinclient")) mark=true;
+				break;*/
+			case 3:
 				break;
 			case 4:
-				break;
-			case 5:
 				mark=true;
 				break;
 			default:
@@ -1006,7 +1006,7 @@ int packageSelectionMenu()
 	goto group_adjust_menu;
 group_mark_menu:
 	printf("group_mark_menu\n");
-	sleep(2);
+	//sleep(2);
 	menuItems.clear();
 	//menuItems.push_back(TagPair("Готово", "Все готово"));
 	for (unsigned int i=0; i<i_tagList.size(); i++)
@@ -1017,8 +1017,8 @@ group_mark_menu:
 		}
 	}
 	if (!d.execCheckList("Отредактируйте список устанавливаемых групп\nПомните, что все изменения из предыдущего меню будут утеряны", 0,0,0,&menuItems)) goto group_adjust_menu;
-	printf("cycle\n");
-	sleep(2);
+	//printf("cycle\n");
+	//sleep(2);
 	for (unsigned int i=0; i<menuItems.size(); i++)
 	{
 		for (int t=0; t<i_availablePackages.size(); t++)

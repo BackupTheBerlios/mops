@@ -1,15 +1,15 @@
 # translation of installpkg-ng.po to
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
+# AiX <i27249@gmail.com>, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: installpkg-ng\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-08-07 17:00+0400\n"
-"PO-Revision-Date: 2007-08-07 17:01+0400\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2007-08-24 14:54+0400\n"
+"PO-Revision-Date: 2007-08-24 15:04+0400\n"
+"Last-Translator: AiX <i27249@gmail.com>\n"
 "Language-Team:  <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,11 +17,13 @@ msgstr ""
 "X-Generator: KBabel 1.11.4\n"
 
 #: installpkg-ng2.cpp:582 installpkg-ng2.cpp:586 installpkg-ng2.cpp:607
+#: installpkg-ng2.cpp:734
 #, c-format
 msgid "\t-D    --download-only     only download packages, do not install\n"
 msgstr "\t-D    --download-only     только скачать, не устанавливать\n"
 
 #: installpkg-ng2.cpp:583 installpkg-ng2.cpp:587 installpkg-ng2.cpp:608
+#: installpkg-ng2.cpp:735
 #, c-format
 msgid ""
 "\t-R    --repair            repair damaged packages (use with \"check\" "
@@ -31,6 +33,7 @@ msgstr ""
 "check)\n"
 
 #: installpkg-ng2.cpp:585 installpkg-ng2.cpp:589 installpkg-ng2.cpp:610
+#: installpkg-ng2.cpp:737
 #, c-format
 msgid ""
 "\t-a    --available         show only available packages (use with \"list\" "
@@ -40,26 +43,30 @@ msgstr ""
 "с \"list\")\n"
 
 #: installpkg-ng2.cpp:577 installpkg-ng2.cpp:581 installpkg-ng2.cpp:602
+#: installpkg-ng2.cpp:728
 #, c-format
 msgid "\t-d    --force-dep         interpret dependency errors as warnings\n"
 msgstr "\t-d    --force-dep         Игнорировать ошибки зависимостей\n"
 
 #: installpkg-ng2.cpp:578 installpkg-ng2.cpp:582 installpkg-ng2.cpp:603
+#: installpkg-ng2.cpp:730
 #, c-format
 msgid "\t-f    --force-conflicts   do not perform file conflict checking\n"
 msgstr "\t-f    --force-conflicts   не выполнять проверку конфликтов файлов\n"
 
-#: installpkg-ng2.cpp:580 installpkg-ng2.cpp:601
+#: installpkg-ng2.cpp:580 installpkg-ng2.cpp:601 installpkg-ng2.cpp:727
 #, c-format
 msgid "\t-g    --dialog            use dialog mode UI\n"
 msgstr "\t-g    --dialog            использовать диалоговый интерфейс\n"
 
 #: installpkg-ng2.cpp:575 installpkg-ng2.cpp:578 installpkg-ng2.cpp:599
+#: installpkg-ng2.cpp:725
 #, c-format
 msgid "\t-h    --help              show this help\n"
 msgstr "\t-h    --help              показать эту справку\n"
 
 #: installpkg-ng2.cpp:584 installpkg-ng2.cpp:588 installpkg-ng2.cpp:609
+#: installpkg-ng2.cpp:736
 #, c-format
 msgid ""
 "\t-i    --installed         show only installed packages (use with \"list\" "
@@ -69,34 +76,45 @@ msgstr ""
 "(используйте с \"list\")\n"
 
 #: installpkg-ng2.cpp:580 installpkg-ng2.cpp:584 installpkg-ng2.cpp:605
+#: installpkg-ng2.cpp:732
 #, c-format
 msgid "\t-k    --force-essential   allow removing essential packages\n"
 msgstr "\t-k    --force-essential   разрешить удаление системных пакетов\n"
 
 #: installpkg-ng2.cpp:579 installpkg-ng2.cpp:583 installpkg-ng2.cpp:604
+#: installpkg-ng2.cpp:731
 #, c-format
 msgid "\t-m    --skip-md5check     do not check package integrity on install\n"
 msgstr "\t-m    --skip-md5check     не проверять целостность пакетов при установке\n"
 
 #: installpkg-ng2.cpp:581 installpkg-ng2.cpp:585 installpkg-ng2.cpp:606
+#: installpkg-ng2.cpp:733
 #, c-format
 msgid "\t-s    --simulate          just simulate all actions\n"
 msgstr "\t-s    --simulate          режим симуляции\n"
 
 #: installpkg-ng2.cpp:576 installpkg-ng2.cpp:579 installpkg-ng2.cpp:600
+#: installpkg-ng2.cpp:726
 #, c-format
 msgid "\t-v    --verbose           be verbose\n"
 msgstr "\t-v    --verbose           подробный вывод\n"
 
+#: installpkg-ng2.cpp:729
+#, c-format
+msgid "\t-z    --no-dep            totally ignore dependencies existance\n"
+msgstr "\t-z    --no-dep            полностью игнорировать существование зависимостей\n"
+
 #: installpkg-ng2.cpp:703 installpkg-ng2.cpp:707 installpkg-ng2.cpp:727
+#: installpkg-ng2.cpp:862
 msgid "\tPackage contains no files\n"
 msgstr "\tПакет не имеет никаких файлов\n"
 
 #: installpkg-ng2.cpp:726 installpkg-ng2.cpp:730 installpkg-ng2.cpp:750
+#: installpkg-ng2.cpp:885
 msgid "\tPackage is not installed\n"
 msgstr "\tПакет не установлен\n"
 
-#: installpkg-ng2.cpp:608 installpkg-ng2.cpp:628
+#: installpkg-ng2.cpp:608 installpkg-ng2.cpp:628 installpkg-ng2.cpp:761
 #, c-format
 msgid ""
 "\tcheck                     checks installed package(s) for damaged files. "
@@ -114,7 +132,7 @@ msgstr ""
 "\tcheck      проверить установленные пакеты на предмет поврежденных файлов. "
 "Используйте -R для восстановления\n"
 
-#: installpkg-ng2.cpp:607 installpkg-ng2.cpp:627
+#: installpkg-ng2.cpp:607 installpkg-ng2.cpp:627 installpkg-ng2.cpp:760
 #, c-format
 msgid "\tclean                     remove all packages from cache\n"
 msgstr "\tclean                     очистить кэш пакетов\n"
@@ -124,7 +142,7 @@ msgstr "\tclean                     очистить кэш пакетов\n"
 msgid "\tclean      remove all packages from cache\n"
 msgstr "\tclean      очистить кэш пакетов\n"
 
-#: installpkg-ng2.cpp:605 installpkg-ng2.cpp:625
+#: installpkg-ng2.cpp:605 installpkg-ng2.cpp:625 installpkg-ng2.cpp:758
 #, c-format
 msgid "\tcommit                    commit queued actions\n"
 msgstr "\tcommit                    выполнить запланированные действия\n"
@@ -141,7 +159,7 @@ msgid ""
 "format\n"
 msgstr "\tconvert <package>      сконвертировать пакет из формата Slackware в MPKG\n"
 
-#: installpkg-ng2.cpp:616 installpkg-ng2.cpp:636
+#: installpkg-ng2.cpp:616 installpkg-ng2.cpp:636 installpkg-ng2.cpp:769
 #, c-format
 msgid ""
 "\tconvert_dir <outp_dir>    convert whole directory (including sub-dirs) to "
@@ -159,7 +177,32 @@ msgstr ""
 "\tconvert_dir <outp_dir> сконвертировать всю директорию (включая вложенные) "
 "из Slackware-формата в MPKG\n"
 
-#: installpkg-ng2.cpp:614 installpkg-ng2.cpp:634
+#: installpkg-ng2.cpp:770
+#, c-format
+msgid ""
+"\texport [dir]              export database in slackware format to dir (by "
+"default, /var/log/packages/)\n"
+msgstr ""
+"\texport [dir]              экспортировать базу данных в формат slackware в указанную директорию (по "
+"умолчанию, /var/log/packages/)\n"
+
+#: installpkg-ng2.cpp:752
+#, c-format
+msgid ""
+"\tfilesearch                look for owner of the file in installed packages "
+"(LIKE mode).\n"
+msgstr ""
+"\tfilesearch                поиск пакетов по имени файла "
+"(LIKE-режим).\n"
+
+#: installpkg-ng2.cpp:771
+#, c-format
+msgid ""
+"\tgendeps <package>         generate dependencies and import it into "
+"package\n"
+msgstr "\tgendeps <package>         сгенерироватьть зависимости и импортировать в пакет\n"
+
+#: installpkg-ng2.cpp:614 installpkg-ng2.cpp:634 installpkg-ng2.cpp:767
 #, c-format
 msgid ""
 "\tindex                     create a repository index file \"packages.xml.gz"
@@ -177,7 +220,7 @@ msgstr ""
 "\tindex <server_url> <file_url>     создать индекс каталога для репозитория "
 "(packages.xml.gz)\n"
 
-#: installpkg-ng2.cpp:593 installpkg-ng2.cpp:614
+#: installpkg-ng2.cpp:593 installpkg-ng2.cpp:614 installpkg-ng2.cpp:741
 #, c-format
 msgid "\tinstall                   install packages\n"
 msgstr "\tinstall                   установить пакеты\n"
@@ -187,7 +230,7 @@ msgstr "\tinstall                   установить пакеты\n"
 msgid "\tinstall    install packages\n"
 msgstr "\tinstall    установить пакеты\n"
 
-#: installpkg-ng2.cpp:602 installpkg-ng2.cpp:622
+#: installpkg-ng2.cpp:602 installpkg-ng2.cpp:622 installpkg-ng2.cpp:755
 #, c-format
 msgid "\tinstallfromlist           install using file with list of items\n"
 msgstr "\tinstallfromlist           установить пакеты по списку из файла\n"
@@ -197,7 +240,12 @@ msgstr "\tinstallfromlist           установить пакеты по сп�
 msgid "\tinstallfromlist install using file with list of items\n"
 msgstr "\tinstallfromlist установить пакеты по списку из файла\n"
 
-#: installpkg-ng2.cpp:600 installpkg-ng2.cpp:620
+#: installpkg-ng2.cpp:745
+#, c-format
+msgid "\tinstallgroup              install all the packages from group\n"
+msgstr "\tinstallgroup              установить все пакеты из группы\n"
+
+#: installpkg-ng2.cpp:600 installpkg-ng2.cpp:620 installpkg-ng2.cpp:748
 #, c-format
 msgid "\tlist                      show the list of all packages in database\n"
 msgstr "\tlist                      показать список всех пакетов в базе данных\n"
@@ -207,7 +255,7 @@ msgstr "\tlist                      показать список всех па�
 msgid "\tlist       show the list of all packages in database\n"
 msgstr "\tlist       показать список всех пакетов в базе данных\n"
 
-#: installpkg-ng2.cpp:601 installpkg-ng2.cpp:621
+#: installpkg-ng2.cpp:601 installpkg-ng2.cpp:621 installpkg-ng2.cpp:754
 #, c-format
 msgid "\tlist_rep                  list enabled repositories\n"
 msgstr "\tlist_rep                  показать список репозиториев\n"
@@ -217,7 +265,12 @@ msgstr "\tlist_rep                  показать список репозит
 msgid "\tlist_rep   list enabled repositories\n"
 msgstr "\tlist_rep   показать список репозиториев\n"
 
-#: installpkg-ng2.cpp:611 installpkg-ng2.cpp:631
+#: installpkg-ng2.cpp:749
+#, c-format
+msgid "\tlistgroup                 show the list of packages belonged to group\n"
+msgstr "\tlistgroup                 вывести список пакетов из группы\n"
+
+#: installpkg-ng2.cpp:611 installpkg-ng2.cpp:631 installpkg-ng2.cpp:764
 #, c-format
 msgid "\tmenu                      shows the package selection menu\n"
 msgstr "\tmenu                      Показать меню пакетов\n"
@@ -227,7 +280,7 @@ msgstr "\tmenu                      Показать меню пакетов\n"
 msgid "\tmenu       Shows the package selection menu\n"
 msgstr "\tmenu       Показать меню пакетов\n"
 
-#: installpkg-ng2.cpp:596 installpkg-ng2.cpp:617
+#: installpkg-ng2.cpp:596 installpkg-ng2.cpp:617 installpkg-ng2.cpp:744
 #, c-format
 msgid "\tpurge                     purge selected package\n"
 msgstr "\tpurge                     удалить пакет, включая конфигурационные файлы\n"
@@ -237,7 +290,7 @@ msgstr "\tpurge                     удалить пакет, включая к
 msgid "\tpurge      purge selected package\n"
 msgstr "\tpurge      удалить пакет, включая конфигурационные файлы\n"
 
-#: installpkg-ng2.cpp:595 installpkg-ng2.cpp:616
+#: installpkg-ng2.cpp:595 installpkg-ng2.cpp:616 installpkg-ng2.cpp:743
 #, c-format
 msgid "\tremove                    remove selected package\n"
 msgstr "\tremove                    удалить пакеты\n"
@@ -247,7 +300,7 @@ msgstr "\tremove                    удалить пакеты\n"
 msgid "\tremove     remove selected package\n"
 msgstr "\tremove     удалить пакеты\n"
 
-#: installpkg-ng2.cpp:603 installpkg-ng2.cpp:623
+#: installpkg-ng2.cpp:603 installpkg-ng2.cpp:623 installpkg-ng2.cpp:756
 #, c-format
 msgid "\treset                     reset queue\n"
 msgstr "\treset                     сбросить очередь\n"
@@ -257,7 +310,7 @@ msgstr "\treset                     сбросить очередь\n"
 msgid "\treset      reset queue\n"
 msgstr "\treset      сбросить очередь\n"
 
-#: installpkg-ng2.cpp:606 installpkg-ng2.cpp:626
+#: installpkg-ng2.cpp:606 installpkg-ng2.cpp:626 installpkg-ng2.cpp:759
 #, c-format
 msgid "\tsearch                    search package by name\n"
 msgstr "\tsearch                    поиск пакета по имени\n"
@@ -267,7 +320,7 @@ msgstr "\tsearch                    поиск пакета по имени\n"
 msgid "\tsearch     search package by name\n"
 msgstr "\tsearch     поиск пакета по имени\n"
 
-#: installpkg-ng2.cpp:597 installpkg-ng2.cpp:618
+#: installpkg-ng2.cpp:597 installpkg-ng2.cpp:618 installpkg-ng2.cpp:746
 #, c-format
 msgid "\tshow                      show info about package\n"
 msgstr "\tshow                      показать информацию о пакете\n"
@@ -282,7 +335,7 @@ msgstr "\tshow       показать информацию о пакете\n"
 msgid "\tshow_queue                show actions queue\n"
 msgstr "\tshow_queue                показать очередь\n"
 
-#: installpkg-ng2.cpp:604 installpkg-ng2.cpp:624
+#: installpkg-ng2.cpp:604 installpkg-ng2.cpp:624 installpkg-ng2.cpp:757
 #, c-format
 msgid "\tshow_queue                show queue\n"
 msgstr "\tshow_queue                показать очередь\n"
@@ -297,7 +350,7 @@ msgstr "\tshow_queue показать очередь\n"
 msgid "\tshow_queue show queue\n"
 msgstr "\tshow_queue показать очередь\n"
 
-#: installpkg-ng2.cpp:619 installpkg-ng2.cpp:639
+#: installpkg-ng2.cpp:619 installpkg-ng2.cpp:639 installpkg-ng2.cpp:774
 #, c-format
 msgid "\ttest                      Executes unit test\n"
 msgstr "\ttest                      Запустить тестовые процедуры\n"
@@ -307,7 +360,7 @@ msgstr "\ttest                      Запустить тестовые проц
 msgid "\ttest       Executes unit test\n"
 msgstr "\ttest       Запустить тестовые процедуры\n"
 
-#: installpkg-ng2.cpp:599 installpkg-ng2.cpp:619
+#: installpkg-ng2.cpp:599 installpkg-ng2.cpp:619 installpkg-ng2.cpp:747
 #, c-format
 msgid "\tupdate                    update packages info\n"
 msgstr "\tupdate                    обновить базу доступных пакетов\n"
@@ -317,7 +370,7 @@ msgstr "\tupdate                    обновить базу доступных
 msgid "\tupdate     update packages info\n"
 msgstr "\tupdate     обновить базу доступных пакетов\n"
 
-#: installpkg-ng2.cpp:594 installpkg-ng2.cpp:615
+#: installpkg-ng2.cpp:594 installpkg-ng2.cpp:615 installpkg-ng2.cpp:742
 #, c-format
 msgid ""
 "\tupgrade                   upgrade selected package or full system if no "
@@ -333,7 +386,17 @@ msgstr ""
 "\tupgrade    обновить выбранный пакет, либо всю систему, если пакет не "
 "указан\n"
 
+#: installpkg-ng2.cpp:753
+#, c-format
+msgid ""
+"\twhich                     look for owner of the file in installed packages "
+"(EQUAL mode).\n"
+msgstr ""
+"\twhich                     поиск пакета по файлам "
+"(EQUAL-режим).\n"
+
 #: installpkg-ng2.cpp:400 installpkg-ng2.cpp:403 installpkg-ng2.cpp:424
+#: installpkg-ng2.cpp:553
 msgid ""
 "\n"
 "\n"
@@ -344,6 +407,7 @@ msgstr ""
 "----------Восстановление поврежденных пакетов----------\n"
 
 #: installpkg-ng2.cpp:588 installpkg-ng2.cpp:592 installpkg-ng2.cpp:613
+#: installpkg-ng2.cpp:740
 #, c-format
 msgid ""
 "\n"
@@ -353,6 +417,7 @@ msgstr ""
 "Действия:\n"
 
 #: installpkg-ng2.cpp:614 installpkg-ng2.cpp:618 installpkg-ng2.cpp:638
+#: installpkg-ng2.cpp:773
 #, c-format
 msgid ""
 "\n"
@@ -362,6 +427,7 @@ msgstr ""
 "Опции отладки:\n"
 
 #: installpkg-ng2.cpp:606 installpkg-ng2.cpp:610 installpkg-ng2.cpp:630
+#: installpkg-ng2.cpp:763
 #, c-format
 msgid ""
 "\n"
@@ -371,6 +437,7 @@ msgstr ""
 "Интерактивные опции:\n"
 
 #: installpkg-ng2.cpp:549 installpkg-ng2.cpp:552 installpkg-ng2.cpp:573
+#: installpkg-ng2.cpp:698
 msgid ""
 "\n"
 "Next packages will be removed:\n"
@@ -379,6 +446,7 @@ msgstr ""
 "Следующие пакеты будут удалены:\n"
 
 #: installpkg-ng2.cpp:609 installpkg-ng2.cpp:613 installpkg-ng2.cpp:633
+#: installpkg-ng2.cpp:766
 #, c-format
 msgid ""
 "\n"
@@ -388,6 +456,7 @@ msgstr ""
 "Функции для обслуживания репозитория:\n"
 
 #: installpkg-ng2.cpp:573 installpkg-ng2.cpp:576 installpkg-ng2.cpp:597
+#: installpkg-ng2.cpp:723
 #, c-format
 msgid ""
 "\n"
@@ -397,98 +466,106 @@ msgstr ""
 "Синтаксис: %s [опции] ДЕЙСТВИЕ пакет [пакет ...]\n"
 
 #: installpkg-ng2.cpp:712 installpkg-ng2.cpp:716 installpkg-ng2.cpp:736
+#: installpkg-ng2.cpp:871
 msgid " (config file)\n"
 msgstr " (конфигурационный файл)\n"
 
 #: installpkg-ng2.cpp:720 installpkg-ng2.cpp:724 installpkg-ng2.cpp:744
+#: installpkg-ng2.cpp:879
 msgid " (plain file)\n"
 msgstr " (обычный файл)\n"
 
 #: installpkg-ng2.cpp:718 installpkg-ng2.cpp:722 installpkg-ng2.cpp:742
+#: installpkg-ng2.cpp:877
 msgid " (symlink)\n"
 msgstr " (символьная ссылка)\n"
 
-#: libmpkg.cpp:283 libmpkg.cpp:284
+#: libmpkg.cpp:283 libmpkg.cpp:284 libmpkg.cpp:299 libmpkg.cpp:300
 msgid " failures"
 msgstr " ошибок"
 
-#: libmpkg.cpp:324 libmpkg.cpp:325
+#: libmpkg.cpp:324 libmpkg.cpp:325 libmpkg.cpp:341
 msgid " has broken files or symlinks:"
 msgstr " имеет поврежденные файлы и/или симлинки:"
 
-#: mpkgsys.cpp:138
+#: mpkgsys.cpp:138 mpkgsys.cpp:143
 msgid " is already installed"
 msgstr " уже установлен"
 
-#: mpkgsys.cpp:278 mpkgsys.cpp:279
+#: mpkgsys.cpp:278 mpkgsys.cpp:279 mpkgsys.cpp:289 mpkgsys.cpp:290
 msgid " is already purged"
 msgstr " уже удален"
 
-#: dependencies.cpp:147
+#: dependencies.cpp:147 dependencies.cpp:183
 msgid " is broken"
 msgstr " сломан"
 
-#: dependencies.cpp:183
+#: dependencies.cpp:183 dependencies.cpp:219
 msgid " is required, but no suitable version was found"
 msgstr " требуется, но подходящей версии не найдено"
 
-#: mpkgsys.cpp:142
+#: mpkgsys.cpp:142 mpkgsys.cpp:147
 msgid " is unavailable"
 msgstr " недоступен"
 
-#: dependencies.cpp:169
+#: dependencies.cpp:169 dependencies.cpp:205
 msgid " not found"
 msgstr " не найден"
 
-#: mpkg.cpp:185
+#: mpkg.cpp:185 mpkg.cpp:186
 msgid " packages"
 msgstr " пакетов"
 
-#: libmpkg.cpp:303 libmpkg.cpp:304
+#: libmpkg.cpp:303 libmpkg.cpp:304 libmpkg.cpp:320
 msgid " packages, ambiguity!"
 msgstr " пакетов, неоднозначность!"
 
-#: libmpkg.cpp:298 libmpkg.cpp:299
+#: libmpkg.cpp:298 libmpkg.cpp:299 libmpkg.cpp:315
 msgid "\" is installed"
 msgstr "\" установлен"
 
-#: libmpkg.cpp:329 libmpkg.cpp:330
+#: libmpkg.cpp:329 libmpkg.cpp:330 libmpkg.cpp:346
 #, c-format
 msgid "%s%s%s: /%s (broken symlink)\n"
 msgstr "%s%s%s: /%s (битая символическая ссылка)\n"
 
-#: libmpkg.cpp:327 libmpkg.cpp:328
+#: libmpkg.cpp:327 libmpkg.cpp:328 libmpkg.cpp:344
 #, c-format
 msgid "%s%s%s: /%s (file doesn't exist)\n"
 msgstr "%s%s%s: /%s (файл не существует)\n"
 
-#: mpkgsys.cpp:268
+#: mpkgsys.cpp:268 mpkgsys.cpp:274
 #, c-format
 msgid "%s-%s doesn't present in the system\n"
 msgstr "%s-%s отсутствует в системе\n"
 
 #: installpkg-ng2.cpp:375 installpkg-ng2.cpp:390 installpkg-ng2.cpp:378
 #: installpkg-ng2.cpp:393 installpkg-ng2.cpp:399 installpkg-ng2.cpp:414
+#: installpkg-ng2.cpp:528 installpkg-ng2.cpp:543
 #, c-format
 msgid "%s: %sDAMAGED%s\n"
 msgstr "%s: %sПОВРЕЖДЕН%s\n"
 
 #: installpkg-ng2.cpp:651 installpkg-ng2.cpp:655 installpkg-ng2.cpp:675
+#: installpkg-ng2.cpp:810
 #, c-format
 msgid "%sArch:%s               %s\n"
 msgstr "%sАрхитектура:%s               %s\n"
 
 #: installpkg-ng2.cpp:652 installpkg-ng2.cpp:656 installpkg-ng2.cpp:676
+#: installpkg-ng2.cpp:811
 #, c-format
 msgid "%sBuild:%s              %s\n"
 msgstr "%sСборка:%s              %s\n"
 
 #: installpkg-ng2.cpp:686 installpkg-ng2.cpp:690 installpkg-ng2.cpp:710
+#: installpkg-ng2.cpp:845
 #, c-format
 msgid "%sDepends on:%s\n"
 msgstr "%sЗависит от:%s\n"
 
 #: installpkg-ng2.cpp:693 installpkg-ng2.cpp:697 installpkg-ng2.cpp:717
+#: installpkg-ng2.cpp:852
 #, c-format
 msgid ""
 "%sDescription:%s        \n"
@@ -503,93 +580,113 @@ msgid "%sError:%s %s\n"
 msgstr "%sОшибка:%s %s\n"
 
 #: installpkg-ng2.cpp:697 installpkg-ng2.cpp:701 installpkg-ng2.cpp:721
+#: installpkg-ng2.cpp:856
 #, c-format
 msgid "%sFilelist:%s\n"
 msgstr "%sСписок файлов:%s\n"
 
 #: installpkg-ng2.cpp:660 installpkg-ng2.cpp:664 installpkg-ng2.cpp:684
+#: installpkg-ng2.cpp:819
 #, c-format
 msgid "%sFilename:%s           %s\n"
 msgstr "%sИмя файла:%s           %s\n"
 
 #: installpkg-ng2.cpp:648 installpkg-ng2.cpp:652 installpkg-ng2.cpp:672
+#: installpkg-ng2.cpp:807
 #, c-format
 msgid "%sID:%s                 %d\n"
 msgstr "%sID:%s                 %d\n"
 
 #: installpkg-ng2.cpp:654 installpkg-ng2.cpp:658 installpkg-ng2.cpp:678
+#: installpkg-ng2.cpp:813
 #, c-format
 msgid "%sInstalled size:%s     %s\n"
 msgstr "%sРазмер после установки:%s     %s\n"
 
 #: installpkg-ng2.cpp:664 installpkg-ng2.cpp:668 installpkg-ng2.cpp:688
+#: installpkg-ng2.cpp:823
 #, c-format
 msgid "%sLocations:%s\n"
 msgstr "%sИсточники:%s\n"
 
 #: installpkg-ng2.cpp:670 installpkg-ng2.cpp:674 installpkg-ng2.cpp:694
+#: installpkg-ng2.cpp:829
 #, c-format
 msgid "%sLocations:%s          %s\n"
 msgstr "%sИсточники:%s          %s\n"
 
 #: installpkg-ng2.cpp:659 installpkg-ng2.cpp:663 installpkg-ng2.cpp:683
+#: installpkg-ng2.cpp:818
 #, c-format
 msgid "%sMD5:%s                %s\n"
 msgstr "%sMD5:%s                %s\n"
 
 #: installpkg-ng2.cpp:656 installpkg-ng2.cpp:660 installpkg-ng2.cpp:680
+#: installpkg-ng2.cpp:815
 #, c-format
 msgid "%sMaintainer e-mail:%s  %s\n"
 msgstr "%sE-mail мейнтейнера:%s  %s\n"
 
 #: installpkg-ng2.cpp:655 installpkg-ng2.cpp:659 installpkg-ng2.cpp:679
+#: installpkg-ng2.cpp:814
 #, c-format
 msgid "%sMaintainer:%s         %s\n"
 msgstr "%sМейнтейнер:%s         %s\n"
 
 #: installpkg-ng2.cpp:649 installpkg-ng2.cpp:653 installpkg-ng2.cpp:673
+#: installpkg-ng2.cpp:808
 #, c-format
 msgid "%sName:%s               %s\n"
 msgstr "%sИмя:%s               %s\n"
 
 #: installpkg-ng2.cpp:653 installpkg-ng2.cpp:657 installpkg-ng2.cpp:677
+#: installpkg-ng2.cpp:812
 #, c-format
 msgid "%sPackage size:%s       %s\n"
 msgstr "%sРазмер пакета:%s       %s\n"
 
 #: installpkg-ng2.cpp:661 installpkg-ng2.cpp:665 installpkg-ng2.cpp:685
+#: installpkg-ng2.cpp:820
 #, c-format
 msgid "%sShort description:%s  %s\n"
 msgstr "%sКраткое описание:%s  %s\n"
 
 #: installpkg-ng2.cpp:657 installpkg-ng2.cpp:661 installpkg-ng2.cpp:681
+#: installpkg-ng2.cpp:816
 #, c-format
 msgid "%sStatus:%s             %s\n"
 msgstr "%sСостояние:%s             %s\n"
 
 #: installpkg-ng2.cpp:672 installpkg-ng2.cpp:676 installpkg-ng2.cpp:696
+#: installpkg-ng2.cpp:831
 #, c-format
 msgid "%sTags:%s               \n"
 msgstr "%sТэги:%s               \n"
 
 #: installpkg-ng2.cpp:650 installpkg-ng2.cpp:654 installpkg-ng2.cpp:674
+#: installpkg-ng2.cpp:809
 #, c-format
 msgid "%sVersion:%s            %s\n"
 msgstr "%sВерсия:%s            %s\n"
 
-#: mpkg.cpp:150
+#: mpkg.cpp:150 mpkg.cpp:151
 msgid ", available: "
 msgstr ", доступно: "
 
-#: mpkg.cpp:696
+#: mpkg.cpp:696 mpkg.cpp:708
 msgid ", because it is an important system component."
 msgstr ", так как это важный системный компонент."
 
-#: mpkg.cpp:569
+#: mpkg.cpp:569 mpkg.cpp:572
 msgid ", it will be skipped!"
 msgstr ", он будет пропущен!"
 
-#: libmpkg.cpp:341 libmpkg.cpp:342
+#: installpkg-ng2.cpp:936
+#, c-format
+msgid "/%s: %s-%s\n"
+msgstr ""
+
+#: libmpkg.cpp:341 libmpkg.cpp:342 libmpkg.cpp:358
 msgid ": package is unavailable"
 msgstr ": пакет недоступен"
 
@@ -603,20 +700,21 @@ msgstr "Отмена"
 msgid "Abort and exit"
 msgstr "Отменить и выйти"
 
-#: mpkg.cpp:423
+#: mpkg.cpp:423 mpkg.cpp:424
 msgid "Aborting installation\n"
 msgstr "Отмена установки\n"
 
-#: mpkgsys.cpp:303 mpkgsys.cpp:304
+#: mpkgsys.cpp:303 mpkgsys.cpp:304 mpkgsys.cpp:315
 msgid "Ambiguity in uninstall: multiple packages with some name are installed"
 msgstr "Неоднозначность: установлено несколько пакетов с одинаковым именем"
 
-#: libmpkg.cpp:269 libmpkg.cpp:270
+#: libmpkg.cpp:269 libmpkg.cpp:270 libmpkg.cpp:275
 msgid "Building queue\n"
 msgstr "Построение очереди\n"
 
 #: libmpkg.cpp:70 libmpkg.cpp:86 libmpkg.cpp:116 libmpkg.cpp:128
 #: libmpkg.cpp:71 libmpkg.cpp:87 libmpkg.cpp:117 libmpkg.cpp:129
+#: libmpkg.cpp:74 libmpkg.cpp:90 libmpkg.cpp:119 libmpkg.cpp:131
 msgid "Building queue: "
 msgstr "Построение очереди: "
 
@@ -632,65 +730,95 @@ msgstr ""
 "Название репозитория: %s\n"
 
 #: installpkg-ng2.cpp:325 installpkg-ng2.cpp:328 installpkg-ng2.cpp:331
+#: installpkg-ng2.cpp:392
 #, c-format
 msgid "CD-ROM device: %s\n"
 msgstr "Имя CD-ROM: %s\n"
 
 #: installpkg-ng2.cpp:326 installpkg-ng2.cpp:329 installpkg-ng2.cpp:332
+#: installpkg-ng2.cpp:393
 #, c-format
 msgid "CD-ROM mountpoint: %s\n"
 msgstr "Точка монтирования CD-ROM: %s\n"
 
-#: libmpkg.cpp:153 libmpkg.cpp:154
+#: libmpkg.cpp:153 libmpkg.cpp:154 libmpkg.cpp:156
 msgid "Cache cleanup complete"
 msgstr "Очистка кеша завершена"
 
-#: mpkg.cpp:696
+#: mpkg.cpp:696 mpkg.cpp:708
 msgid "Cannot remove package "
 msgstr "Невозможно удалить пакет "
 
-#: libmpkg.cpp:341 libmpkg.cpp:342
+#: libmpkg.cpp:341 libmpkg.cpp:342 libmpkg.cpp:358
 msgid "Cannot repair "
 msgstr "Невозможно восстановить "
 
-#: mpkg.cpp:399
+#: mpkg.cpp:399 mpkg.cpp:400
 #, c-format
 msgid "Checking MD5 for %s\n"
 msgstr "Проверка MD5 для %s\n"
 
-#: mpkg.cpp:263
+#: mpkg.cpp:263 mpkg.cpp:264
 msgid "Checking cache"
 msgstr "Проверка кеша"
 
-#: mpkg.cpp:295
+#: mpkg.cpp:295 mpkg.cpp:296
 msgid "Checking cache and building download queue: "
 msgstr "Проверка кеша и построение очереди закачки: "
 
-#: libmpkg.cpp:264 libmpkg.cpp:265
+#: libmpkg.cpp:264 libmpkg.cpp:265 libmpkg.cpp:268
 msgid "Checking dependencies\n"
 msgstr "Проверка зависимостей\n"
 
-#: libmpkg.cpp:265 libmpkg.cpp:266
+#: libmpkg.cpp:265 libmpkg.cpp:266 libmpkg.cpp:271
 msgid "Checking dependencies..."
 msgstr "Проверка зависимостей..."
 
-#: mpkg.cpp:376
+#: dependencies.cpp:94
+msgid "Checking dependencies: filtering (stage 1: installation queue dupes"
+msgstr "Проверка зависимостей: фильтрация (часть 1: двойники в очереди установки)"
+
+#: dependencies.cpp:97
+msgid "Checking dependencies: filtering (stage 2: remove queue dupes"
+msgstr "Проверка зависимостей: фильтрация (часть 2: двойники очереди удаления)"
+
+#: dependencies.cpp:100
+msgid "Checking dependencies: filtering (stage 3: rollback)"
+msgstr "Проверка зависимостей: фильтрация (часть 3: обратные связи)"
+
+#: dependencies.cpp:132
+msgid "Checking dependencies: muxing queues"
+msgstr "Проверка зависимостей: смешивание очередей"
+
+#: dependencies.cpp:229 dependencies.cpp:238
+msgid "Checking dependencies: rendering remove queue"
+msgstr "Проверка зависимостей: построение очереди удаления"
+
+#: dependencies.cpp:145 dependencies.cpp:155
+msgid "Checking dependencies: rendering requirements"
+msgstr "Проверка зависимостей: построение требований"
+
+#: dependencies.cpp:134
+msgid "Checking dependencies: searching for broken packages"
+msgstr "Проверка зависимостей: поиск сломанных пакетов"
+
+#: mpkg.cpp:376 mpkg.cpp:377
 msgid "Checking files (comparing MD5):"
 msgstr "Проверка файлов (сравнение MD5):"
 
-#: mpkg.cpp:377 mpkg.cpp:403
+#: mpkg.cpp:377 mpkg.cpp:403 mpkg.cpp:378 mpkg.cpp:404
 msgid "Checking md5"
 msgstr "Проверка MD5"
 
-#: mpkg.cpp:400
+#: mpkg.cpp:400 mpkg.cpp:401
 msgid "Checking md5 of downloaded files: "
 msgstr "Проверка MD5 закаченных файлов: "
 
-#: mpkg.cpp:267 mpkg.cpp:291
+#: mpkg.cpp:267 mpkg.cpp:291 mpkg.cpp:268 mpkg.cpp:292
 msgid "Checking package cache"
 msgstr "Проверка кеша пакетов"
 
-#: mpkg.cpp:380
+#: mpkg.cpp:380 mpkg.cpp:381
 msgid "Checking packages integrity"
 msgstr "Проверка целостности пакетов"
 
@@ -698,7 +826,7 @@ msgstr "Проверка целостности пакетов"
 msgid "Choose an action:"
 msgstr "Выберите действие:"
 
-#: libmpkg.cpp:151 libmpkg.cpp:152
+#: libmpkg.cpp:151 libmpkg.cpp:152 libmpkg.cpp:154
 msgid "Cleaning cache..."
 msgstr "Очистка кеша..."
 
@@ -706,7 +834,7 @@ msgstr "Очистка кеша..."
 msgid "Cleaning package cache\n"
 msgstr "Проверка кеша пакетов\n"
 
-#: libmpkg.cpp:276 libmpkg.cpp:277
+#: libmpkg.cpp:276 libmpkg.cpp:277 libmpkg.cpp:289
 msgid "Commit failed"
 msgstr "Операции завершились с ошибками"
 
@@ -720,19 +848,19 @@ msgstr "Постановка %d пакетов в очередь на устан
 msgid "Committing %d packages to remove\n"
 msgstr "Постановка %d пакетов в очередь на удаление\n"
 
-#: libmpkg.cpp:273 libmpkg.cpp:274
+#: libmpkg.cpp:273 libmpkg.cpp:274 libmpkg.cpp:281
 msgid "Committing changes..."
 msgstr "Применение изменений..."
 
-#: libmpkg.cpp:272 libmpkg.cpp:273
+#: libmpkg.cpp:272 libmpkg.cpp:273 libmpkg.cpp:279
 msgid "Committing...\n"
 msgstr "Выполнение...\n"
 
-#: libmpkg.cpp:275 libmpkg.cpp:276
+#: libmpkg.cpp:275 libmpkg.cpp:276 libmpkg.cpp:284
 msgid "Complete successfully\n"
 msgstr "Удачно завершено\n"
 
-#: libmpkg.cpp:277 libmpkg.cpp:278
+#: libmpkg.cpp:277 libmpkg.cpp:278 libmpkg.cpp:292
 msgid "Complete."
 msgstr "Готово."
 
@@ -742,10 +870,11 @@ msgid "Creating package %s\n"
 msgstr "Создание пакета %s\n"
 
 #: installpkg-ng2.cpp:320 installpkg-ng2.cpp:323 installpkg-ng2.cpp:326
+#: installpkg-ng2.cpp:387
 msgid "Current configuration:\n"
 msgstr "Текущая конфигурация:\n"
 
-#: libmpkg.cpp:22
+#: libmpkg.cpp:22 libmpkg.cpp:26
 msgid "Database loaded"
 msgstr "База данных подключена"
 
@@ -788,14 +917,19 @@ msgid "Database updated successfully"
 msgstr "Обновление базы данных успешно завершено"
 
 #: installpkg-ng2.cpp:324 installpkg-ng2.cpp:327 installpkg-ng2.cpp:330
+#: installpkg-ng2.cpp:391
 #, c-format
 msgid "Database: %s\n"
 msgstr "База данных: %s\n"
 
-#: mpkg.cpp:888 mpkg.cpp:889
+#: mpkg.cpp:888 mpkg.cpp:889 mpkg.cpp:904
 #, c-format
 msgid "Deleting tag %s as unused\n"
 msgstr "Удаление тега %s как неиспользуемого\n"
+
+#: dependencies.cpp:138
+msgid "Dependency check completed, error count: "
+msgstr "Проверка зависимостей завершена, количество ошибок: "
 
 #: errorcodes.cpp:321
 msgid "Details: "
@@ -846,51 +980,73 @@ msgstr "Ошибка при закачке: недостаточно места 
 msgid "Download error: timeout"
 msgstr "Ошибка при закачке: время ожидания истекло"
 
-#: mpkg.cpp:347
+#: mpkg.cpp:347 mpkg.cpp:348
 msgid "Download errors ignored, continue installing\n"
 msgstr "Ошибки закачки игнорированы, продолжаем установку\n"
 
-#: mpkg.cpp:342
+#: mpkg.cpp:342 mpkg.cpp:343
 msgid "Download failed"
 msgstr "Закачка не удалась"
 
-#: libmpkg.cpp:154 libmpkg.cpp:155
+#: libmpkg.cpp:154 libmpkg.cpp:155 libmpkg.cpp:157
 msgid "Error cleaning cache!"
 msgstr "Ошибка очистки кеша!"
 
-#: libmpkg.cpp:283 libmpkg.cpp:284
+#: libmpkg.cpp:283 libmpkg.cpp:284 libmpkg.cpp:299 libmpkg.cpp:300
 msgid "Error in dependencies: "
 msgstr "Неразрешенные зависимости: "
 
-#: installpkg-ng2.cpp:42
+#: installpkg-ng2.cpp:42 installpkg-ng2.cpp:45
 msgid "Error initializing CORE"
 msgstr "Ошибка при инициализации"
 
-#: mpkg.cpp:568
+#: mpkg.cpp:568 mpkg.cpp:571
 msgid "Error: Unresolved file conflict on package "
 msgstr "Ошибка: неразрешенный конфликт файлов в пакете "
+
+#: installpkg-ng2.cpp:201
+msgid "Error: database is locked. Please close all other programs that use this"
+msgstr "Ошибка: база данных заблокирована другим процессом"
+
+#: mpkg.cpp:494
+msgid "Executing ldconfig\n"
+msgstr "Выполнение ldconfig\n"
 
 #: errorcodes.cpp:280
 msgid "Exit"
 msgstr "Выход"
 
-#: libmpkg.cpp:284 libmpkg.cpp:285
+#: libmpkg.cpp:284 libmpkg.cpp:285 libmpkg.cpp:301
 msgid "Failed - depencency errors"
 msgstr "Ошибка - неразрешенные зависимости"
 
-#: libmpkg.cpp:164 libmpkg.cpp:165
+#: libmpkg.cpp:164 libmpkg.cpp:165 libmpkg.cpp:167
 msgid "Failed retrieving package list!"
 msgstr "Ошибка при получении списка пакетов!"
 
-#: mpkg.cpp:661
+#: mpkg.cpp:661 mpkg.cpp:669
 msgid "Failed to extract!"
 msgstr "Ошибка при распаковке!"
+
+#: installpkg-ng2.cpp:913
+#, c-format
+msgid "File %s doesn't belong to any installed package\n"
+msgstr "Файл %s не относится ни к одному из установленных пакетов\n"
+
+#: installpkg-ng2.cpp:927
+#, c-format
+msgid "File %s found in %d package(s):\n"
+msgstr "Файл %s найден в %d пакетах:\n"
+
+#: installpkg-ng2.cpp:924
+msgid "Hm... no package was returned. Seems to be malformed SQL query\n"
+msgstr ""
 
 #: errorcodes.cpp:152 errorcodes.cpp:171
 msgid "Ignore"
 msgstr "Игнорировать"
 
-#: mpkg.cpp:488
+#: mpkg.cpp:488 mpkg.cpp:489
 msgid "Installation complete."
 msgstr "Установка завершена."
 
@@ -930,29 +1086,29 @@ msgstr "Ошибка установки: неразрешенные конфли
 msgid "Installation error: wrong CD-ROM media"
 msgstr "Ошибка установки: неправильный диск в CD-ROM"
 
-#: mpkg.cpp:479
+#: mpkg.cpp:479 mpkg.cpp:480
 msgid "Installation failed"
 msgstr "Установка не удалась"
 
-#: mpkg.cpp:484
+#: mpkg.cpp:484 mpkg.cpp:485
 msgid "Installed"
 msgstr "Установлен"
 
-#: mpkg.cpp:500
+#: mpkg.cpp:500 mpkg.cpp:503
 #, c-format
 msgid "Installing %s %s\n"
 msgstr "Установка %s %s\n"
 
-#: mpkgsys.cpp:228
+#: mpkgsys.cpp:228 mpkgsys.cpp:234
 #, c-format
 msgid "Installing local package %s\n"
 msgstr "Установка локального пакета %s\n"
 
-#: mpkg.cpp:468 mpkg.cpp:501
+#: mpkg.cpp:468 mpkg.cpp:501 mpkg.cpp:469 mpkg.cpp:504
 msgid "Installing package "
 msgstr "Установка пакета "
 
-#: mpkg.cpp:445
+#: mpkg.cpp:445 mpkg.cpp:446
 msgid "Installing packages"
 msgstr "Установка пакетов"
 
@@ -992,35 +1148,46 @@ msgstr "Внутренняя ошибка: невозможно записать
 msgid "Invalid input\n"
 msgstr "Некорректный ввод\n"
 
-#: libmpkg.cpp:11
+#: libmpkg.cpp:11 libmpkg.cpp:15
 msgid "Loading database..."
 msgstr "Загрузка базы данных..."
 
-#: mpkg.cpp:251
+#: mpkg.cpp:251 mpkg.cpp:252
 msgid "Looking for install queue"
 msgstr "Поиск очереди на установку"
 
-#: mpkg.cpp:257
+#: mpkg.cpp:257 mpkg.cpp:258
 msgid "Looking for package locations..."
 msgstr "Определение источников пакета..."
 
-#: mpkg.cpp:183
+#: mpkg.cpp:183 mpkg.cpp:184
 msgid "Looking for remove queue"
 msgstr "Определение очереди для удаления"
 
+#: HttpDownload.cpp:181
+#, c-format
+msgid "Mounting %s to %s\n"
+msgstr "Монтирование %s в %s\n"
+
 #: installpkg-ng2.cpp:559 installpkg-ng2.cpp:562 installpkg-ng2.cpp:583
+#: installpkg-ng2.cpp:708
 msgid "Next packages is failed to install:\n"
 msgstr "Следующие пакеты установить не удалось:\n"
 
 #: installpkg-ng2.cpp:540 installpkg-ng2.cpp:543 installpkg-ng2.cpp:564
+#: installpkg-ng2.cpp:689
 msgid "Next packages will be installed:\n"
 msgstr "Следующие пакеты будут установлены:\n"
 
-#: dependencies.cpp:365
+#: dependencies.cpp:365 dependencies.cpp:467
 msgid "No actions to proceed\n"
 msgstr "Нет действий для выполнения\n"
 
-#: libmpkg.cpp:298 libmpkg.cpp:299
+#: installpkg-ng2.cpp:898
+msgid "No filename specified\n"
+msgstr "Не указано имя файла\n"
+
+#: libmpkg.cpp:298 libmpkg.cpp:299 libmpkg.cpp:315
 msgid "No package \""
 msgstr "Нет пакета \""
 
@@ -1032,50 +1199,61 @@ msgstr "Нет пакетов для установки\n"
 msgid "No packages to remove\n"
 msgstr "Нет пакетов для удаления\n"
 
-#: mpkgsys.cpp:308 mpkgsys.cpp:309
+#: mpkgsys.cpp:308 mpkgsys.cpp:309 mpkgsys.cpp:320
 msgid "No packages to uninstall"
 msgstr "Нет пакетов для удаления"
 
 #: installpkg-ng2.cpp:644 installpkg-ng2.cpp:648 installpkg-ng2.cpp:668
+#: installpkg-ng2.cpp:803
 msgid "No such package\n"
 msgstr "Нет такого пакета\n"
 
-#: mpkgsys.cpp:221
+#: mpkgsys.cpp:221 mpkgsys.cpp:227
 msgid "No such package: "
 msgstr "Нет такого пакета: "
 
 #: installpkg-ng2.cpp:574 installpkg-ng2.cpp:577 installpkg-ng2.cpp:598
+#: installpkg-ng2.cpp:724
 #, c-format
 msgid "Options:\n"
 msgstr "Опции:\n"
 
 #: mpkgsys.cpp:138 mpkgsys.cpp:142 mpkgsys.cpp:278 mpkgsys.cpp:279
-#: libmpkg.cpp:324 libmpkg.cpp:325
+#: libmpkg.cpp:324 libmpkg.cpp:325 libmpkg.cpp:341 mpkgsys.cpp:143
+#: mpkgsys.cpp:147 mpkgsys.cpp:289 mpkgsys.cpp:290
 msgid "Package "
 msgstr "Пакет "
 
 #: installpkg-ng2.cpp:322 installpkg-ng2.cpp:325 installpkg-ng2.cpp:328
+#: installpkg-ng2.cpp:389
 #, c-format
 msgid "Package cache: %s\n"
 msgstr "Кеш пакетов: %s\n"
 
 #: installpkg-ng2.cpp:758 installpkg-ng2.cpp:762 installpkg-ng2.cpp:782
+#: installpkg-ng2.cpp:983
 msgid "Package database is empty\n"
 msgstr "База данных пуста\n"
 
 #: installpkg-ng2.cpp:470 installpkg-ng2.cpp:473 installpkg-ng2.cpp:494
+#: installpkg-ng2.cpp:629
 msgid "Please define output directory"
 msgstr "Укажите выходную директорию"
 
 #: installpkg-ng2.cpp:301 installpkg-ng2.cpp:304 installpkg-ng2.cpp:307
+#: installpkg-ng2.cpp:333
 msgid "Please select input file"
 msgstr "Укажите входной файл"
 
-#: mpkg.cpp:420
+#: installpkg-ng2.cpp:979
+msgid "Querying database...\n"
+msgstr "Запрос базы данных...\n"
+
+#: mpkg.cpp:420 mpkg.cpp:421
 msgid "Re-downloading...\n"
 msgstr "Повторная закачка...\n"
 
-#: libmpkg.cpp:303 libmpkg.cpp:304
+#: libmpkg.cpp:303 libmpkg.cpp:304 libmpkg.cpp:320
 msgid "Received "
 msgstr "Принято "
 
@@ -1083,48 +1261,49 @@ msgstr "Принято "
 msgid "Recreate structure (ALL DATA WILL BE LOST!)"
 msgstr "Пересоздать структуру (ВСЯ ИНФОРМАЦИЯ В БАЗЕ БУДЕТ УТЕРЯНА!)"
 
-#: mpkg.cpp:231
+#: mpkg.cpp:231 mpkg.cpp:232
 msgid "Remove failed"
 msgstr "Удаление не удалось"
 
-#: mpkg.cpp:236
+#: mpkg.cpp:236 mpkg.cpp:237
 msgid "Removed"
 msgstr "Удален"
 
-#: mpkg.cpp:185
+#: mpkg.cpp:185 mpkg.cpp:186
 msgid "Removing "
 msgstr "Удаление "
 
-#: mpkg.cpp:227 mpkg.cpp:710
+#: mpkg.cpp:227 mpkg.cpp:710 mpkg.cpp:228 mpkg.cpp:722
 msgid "Removing package "
 msgstr "Удаление пакета "
 
-#: mpkg.cpp:707
+#: mpkg.cpp:707 mpkg.cpp:719
 #, c-format
 msgid "Removing package %s %s...\n"
 msgstr "Удаление пакета %s %s...\n"
 
-#: libmpkg.cpp:143 libmpkg.cpp:144
+#: libmpkg.cpp:143 libmpkg.cpp:144 libmpkg.cpp:146
 msgid "Repository data update failed"
 msgstr "Обновление данных с репозиториев не удалось"
 
-#: libmpkg.cpp:138 libmpkg.cpp:139
+#: libmpkg.cpp:138 libmpkg.cpp:139 libmpkg.cpp:141
 msgid "Repository data updated"
 msgstr "База данных обновлена "
 
 #: installpkg-ng2.cpp:624 installpkg-ng2.cpp:628 installpkg-ng2.cpp:648
+#: installpkg-ng2.cpp:783
 msgid "Repository list:\n"
 msgstr "Список репозиториев:\n"
 
-#: dependencies.cpp:169
+#: dependencies.cpp:169 dependencies.cpp:205
 msgid "Required package "
 msgstr "Требуемый пакет "
 
-#: libmpkg.cpp:161 libmpkg.cpp:162
+#: libmpkg.cpp:161 libmpkg.cpp:162 libmpkg.cpp:164
 msgid "Retrieving package list..."
 msgstr "Получение списка пакетов..."
 
-#: libmpkg.cpp:163 libmpkg.cpp:164
+#: libmpkg.cpp:163 libmpkg.cpp:164 libmpkg.cpp:166
 msgid "Retriveal complete"
 msgstr "Получение завершено"
 
@@ -1134,20 +1313,23 @@ msgid "Retry"
 msgstr "Повторить"
 
 #: installpkg-ng2.cpp:323 installpkg-ng2.cpp:326 installpkg-ng2.cpp:329
+#: installpkg-ng2.cpp:390
 #, c-format
 msgid "Run scripts: %d\n"
 msgstr "Выполнять скрипты: %d\n"
 
 #: installpkg-ng2.cpp:327 installpkg-ng2.cpp:330 installpkg-ng2.cpp:333
+#: installpkg-ng2.cpp:394
 #, c-format
 msgid "Scripts directory: %s\n"
 msgstr "Директория для скриптов: %s\n"
 
 #: installpkg-ng2.cpp:759 installpkg-ng2.cpp:763 installpkg-ng2.cpp:783
+#: installpkg-ng2.cpp:984
 msgid "Search attempt has no results\n"
 msgstr "Поиск не дал результатов\n"
 
-#: mpkg.cpp:150
+#: mpkg.cpp:150 mpkg.cpp:151
 msgid "Seems that free space is not enough to install. Required: "
 msgstr "Похоже, свободного места недостаточно для установки. Необходимо: "
 
@@ -1169,7 +1351,19 @@ msgstr ""
 "Ошибка при запуске: эту программу следует выполнять от имени "
 "суперпользователя"
 
+#: dependencies.cpp:465
+#, c-format
+msgid ""
+"Summary: \n"
+"  to install: %d\n"
+"  to remove: %d\n"
+msgstr ""
+"Итого: \n"
+"  к установке: %d\n"
+"  к удалению: %d\n"
+
 #: installpkg-ng2.cpp:321 installpkg-ng2.cpp:324 installpkg-ng2.cpp:327
+#: installpkg-ng2.cpp:388
 #, c-format
 msgid "System root: %s\n"
 msgstr "Корень системы: %s\n"
@@ -1178,7 +1372,7 @@ msgstr "Корень системы: %s\n"
 msgid "To few arguments to index\n"
 msgstr "Недостаточно аргументов для индексации\n"
 
-#: dependencies.cpp:364 dependencies.cpp:366
+#: dependencies.cpp:364 dependencies.cpp:366 dependencies.cpp:468
 #, c-format
 msgid ""
 "Total %d new actions to proceed, committing...\n"
@@ -1192,28 +1386,28 @@ msgstr ""
 msgid "Unable to write error log!\n"
 msgstr "Невозможно сделать запись в лог ошибок!\n"
 
-#: mpkg.cpp:427
+#: mpkg.cpp:427 mpkg.cpp:428
 msgid "Unknown reply, aborting"
 msgstr "Неизвестный ответ, отменяем"
 
-#: mpkg.cpp:360
+#: mpkg.cpp:360 mpkg.cpp:361
 msgid "Unknown value, don't know what to do, aborting"
 msgstr "Неизвестное значение, не знаю что делать, выход"
 
-#: mpkg.cpp:569
+#: mpkg.cpp:569 mpkg.cpp:572
 msgid "Unresolved file conflict on package "
 msgstr "Неразрешенный файловый конфликт в пакете "
 
-#: mpkgsys.cpp:104
+#: mpkgsys.cpp:104 mpkgsys.cpp:105 mpkgsys.cpp:107
 msgid "Update complete.\n"
 msgstr "Обновление завершено.\n"
 
-#: mpkgsys.cpp:130 mpkg.cpp:222
+#: mpkgsys.cpp:130 mpkg.cpp:222 mpkg.cpp:223 mpkgsys.cpp:135
 #, c-format
 msgid "Updating package %s\n"
 msgstr "Обновление пакета %s\n"
 
-#: mpkg.cpp:706
+#: mpkg.cpp:706 mpkg.cpp:718
 #, c-format
 msgid "Updating package %s %s...\n"
 msgstr "Обновление пакета %s %s...\n"
@@ -1223,15 +1417,23 @@ msgstr "Обновление пакета %s %s...\n"
 msgid "Updating package data from %d repository(s)...\n"
 msgstr "Обновление списка доступных пакетов из %d репозиториев...\n"
 
-#: mpkg.cpp:193 mpkg.cpp:451
+#: mpkg.cpp:193 mpkg.cpp:451 mpkg.cpp:194 mpkg.cpp:452
 msgid "Waiting"
 msgstr "Ожидание"
 
-#: mpkg.cpp:832 mpkg.cpp:833
+#: mpkg.cpp:832 mpkg.cpp:833 mpkg.cpp:848
 msgid "Weird status of package, i'm afraid to remove this..."
 msgstr "Странный статус пакета, страшновато его удалять..."
 
-#: mpkg.cpp:417
+#: dependencies.cpp:420
+msgid "Will be installed:\n"
+msgstr "Будут установлены:\n"
+
+#: dependencies.cpp:446
+msgid "Will be removed:\n"
+msgstr "Будут удалены:\n"
+
+#: mpkg.cpp:417 mpkg.cpp:418
 msgid "Wrong checksum ignored, continuing...\n"
 msgstr "Несовпадение контрольной суммы проигнорировано, продолжаем...\n"
 
@@ -1241,50 +1443,57 @@ msgid "You decided to %s\n"
 msgstr "Вы выбрали %s\n"
 
 #: installpkg-ng2.cpp:179 installpkg-ng2.cpp:182 installpkg-ng2.cpp:185
+#: installpkg-ng2.cpp:196
 msgid "You must login as root to run this program"
 msgstr "Данная программа должна выполняться от имени суперпользователя"
+
+#: HttpDownload.cpp:498
+#, c-format
+msgid "[%d/%d] Downloading file %s\n"
+msgstr "[%d/%d] Скачивается файл %s\n"
 
 #: mpkg.cpp:471
 msgid "] Installing package "
 msgstr "] Устанавливается пакет "
 
-#: mpkg.cpp:471
+#: mpkg.cpp:471 mpkg.cpp:472
 msgid "] Installing: "
 msgstr "] Устанавливается пакет: "
 
-#: mpkg.cpp:203
+#: mpkg.cpp:203 mpkg.cpp:204
 msgid "] Removing package "
 msgstr "] Удаляется пакет "
 
-#: mpkg.cpp:356
+#: mpkg.cpp:356 mpkg.cpp:357
 msgid "aborting...\n"
 msgstr "отмена...\n"
 
-#: mpkg.cpp:738
+#: mpkg.cpp:738 mpkg.cpp:750
 msgid "building file list"
 msgstr "построение списка файлов"
 
-#: mpkg.cpp:323
+#: mpkg.cpp:323 mpkg.cpp:324
 msgid "cached"
 msgstr "кеширован"
 
 #: installpkg-ng2.cpp:277 installpkg-ng2.cpp:280 installpkg-ng2.cpp:283
+#: installpkg-ng2.cpp:306
 msgid "cannot open installation list"
 msgstr "не могу открыть список установки"
 
-#: mpkg.cpp:301
+#: mpkg.cpp:301 mpkg.cpp:302
 msgid "check skipped"
 msgstr "проверка пропущена"
 
-#: mpkg.cpp:558
+#: mpkg.cpp:558 mpkg.cpp:561
 msgid "checking file conflicts"
 msgstr "проверка конфликтов файлов"
 
-#: mpkg.cpp:820 mpkg.cpp:821
+#: mpkg.cpp:820 mpkg.cpp:821 mpkg.cpp:836
 msgid "cleaning file list"
 msgstr "очистка списка файлов"
 
-#: mpkg.cpp:536
+#: mpkg.cpp:536 mpkg.cpp:539
 msgid "detecting configuration files"
 msgstr "поиск конфигурационных файлов"
 
@@ -1292,31 +1501,31 @@ msgstr "поиск конфигурационных файлов"
 msgid "error"
 msgstr "ошибка"
 
-#: mpkg.cpp:659
+#: mpkg.cpp:659 mpkg.cpp:667
 msgid "executing post-install scripts..."
 msgstr "выполнение пост-установочных скриптов"
 
-#: mpkg.cpp:788
+#: mpkg.cpp:788 mpkg.cpp:800
 msgid "executing post-removal scripts"
 msgstr "выполнение скриптов после удаления"
 
-#: mpkg.cpp:597
+#: mpkg.cpp:597 mpkg.cpp:605
 msgid "executing pre-install scripts"
 msgstr "выполнение предустановочных скриптов"
 
-#: mpkg.cpp:723
+#: mpkg.cpp:723 mpkg.cpp:735
 msgid "executing pre-remove scripts"
 msgstr "выполнение скриптов перед удалением"
 
-#: mpkg.cpp:526
+#: mpkg.cpp:526 mpkg.cpp:529
 msgid "extracting file list"
 msgstr "извлечение списка файлов"
 
-#: mpkg.cpp:523
+#: mpkg.cpp:523 mpkg.cpp:526
 msgid "extracting installation scripts"
 msgstr "извлечение установочных скриптов"
 
-#: mpkg.cpp:606
+#: mpkg.cpp:606 mpkg.cpp:614
 msgid "extracting..."
 msgstr "распаковка..."
 
@@ -1324,63 +1533,67 @@ msgstr "распаковка..."
 msgid "finished\n"
 msgstr "завершено\n"
 
-#: mpkgsys.cpp:157
+#: mpkgsys.cpp:157 mpkgsys.cpp:163
 msgid "get_package error: returned "
 msgstr "get_package ошибка: возвращено "
 
-#: mpkg.cpp:502 mpkg.cpp:711
+#: mpkg.cpp:502 mpkg.cpp:711 mpkg.cpp:505 mpkg.cpp:723
 msgid "initialization"
 msgstr "инициализация"
 
-#: mpkg.cpp:499
+#: mpkg.cpp:499 mpkg.cpp:502
 msgid "installing"
 msgstr "установка"
 
-#: mpkg.cpp:576
+#: mpkg.cpp:576 mpkg.cpp:579
 msgid "installing..."
 msgstr "установка..."
 
-#: mpkg.cpp:409
+#: mpkg.cpp:409 mpkg.cpp:410
 msgid "md5 incorrect"
 msgstr "md5 не совпадает"
 
 #: installpkg-ng2.cpp:670 installpkg-ng2.cpp:674 installpkg-ng2.cpp:694
+#: installpkg-ng2.cpp:829
 msgid "none"
 msgstr "нет"
 
 #: installpkg-ng2.cpp:675 installpkg-ng2.cpp:679 installpkg-ng2.cpp:699
+#: installpkg-ng2.cpp:834
 msgid "none\n"
 msgstr "нет\n"
 
-#: mpkg.cpp:300
+#: mpkg.cpp:300 mpkg.cpp:301
 msgid "not cached"
 msgstr "не закеширован"
 
-#: dependencies.cpp:147
+#: dependencies.cpp:147 dependencies.cpp:183
 msgid "package "
 msgstr "пакет "
 
-#: mpkg.cpp:825 mpkg.cpp:826
+#: mpkg.cpp:825 mpkg.cpp:826 mpkg.cpp:841
 msgid "remove complete"
 msgstr "удаление завершено"
 
-#: mpkg.cpp:754
+#: mpkg.cpp:754 mpkg.cpp:766
 msgid "removing empty directories..."
 msgstr "удаление пустых директорий..."
 
-#: mpkg.cpp:740
+#: mpkg.cpp:740 mpkg.cpp:752
 msgid "removing files..."
 msgstr "удаление файлов..."
 
-#: mpkg.cpp:352
+#: mpkg.cpp:352 mpkg.cpp:353
 msgid "retrying...\n"
 msgstr "повторная попытка...\n"
 
 #: installpkg-ng2.cpp:455 installpkg-ng2.cpp:458 installpkg-ng2.cpp:479
+#: installpkg-ng2.cpp:614
 msgid "tagging...\n"
 msgstr "присвоение тега...\n"
 
-#: mpkg.cpp:262 mpkg.cpp:334 mpkg.cpp:372 mpkg.cpp:443
+#: mpkg.cpp:262 mpkg.cpp:334 mpkg.cpp:372 mpkg.cpp:443 mpkg.cpp:263
+#: mpkg.cpp:335 mpkg.cpp:373 mpkg.cpp:444
 msgid "waiting"
 msgstr "ожидание"
 
