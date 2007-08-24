@@ -2,7 +2,7 @@
  *					core.h
  * 			Central core for MOPSLinux package system
  *					Headers
- *	$Id: core.h,v 1.12 2007/08/02 10:49:58 adiakin Exp $
+ *	$Id: core.h,v 1.13 2007/08/24 06:20:52 i27249 Exp $
  ********************************************************************************/
 #ifndef CORE_H_
 #define CORE_H_
@@ -19,6 +19,7 @@
 #define SEARCH_IN	0x03
 #define EQ_LIKE 0x01
 #define EQ_EQUAL 0x02
+#define EQ_CUSTOMLIKE 0x03
 typedef struct
 {
 	string fieldname;

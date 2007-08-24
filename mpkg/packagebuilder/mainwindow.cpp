@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.27 2007/08/20 12:50:15 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.28 2007/08/24 06:20:52 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -27,9 +27,13 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	ui.DepTableWidget->horizontalHeader()->hide();
 //	ui.DescriptionLanguageComboBox->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
+	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 	this->show();
 	loadData();
 }
+
+
+
 string cleanDescr(string str)
 {
 	string ret;
@@ -153,6 +157,10 @@ void Form::loadData()
 
 void Form::saveData()
 {
+	QString currentWindowTitle = windowTitle();
+	setWindowTitle(windowTitle()+tr(": saving, please wait..."));
+	modified=false;
+
 	string slack_desc;
 	string slack_required;
 	string slack_suggests;
@@ -296,7 +304,7 @@ void Form::saveData()
 	}
 	//(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
-	setWindowTitle(windowTitle()+tr(" (saved)"));
+	setWindowTitle(currentWindowTitle+tr(" (saved)"));
 	modified=false;
 	if (_type==TYPE_TGZ)
 	{
@@ -330,6 +338,29 @@ void Form::saveAndExit()
 	saveData();
 	quitApp();
 }
+void Form::addDepsFromFiles()
+{
+	QStringList files;
+	QFileDialog *dialog = new QFileDialog;
+	dialog->setFileMode(QFileDialog::ExistingFiles);
+	if (dialog->exec()) files = dialog->selectedFiles();
+	PackageConfig *p;
+	string tmp_xml = get_tmp_file();
+	for (unsigned int i=0; i<files.size(); i++)
+	{
+		if (extractFromTgz(files.at(i).toStdString(), "install/data.xml", tmp_xml)==0)
+		{
+			p = new PackageConfig(tmp_xml);
+			ui.DepNameEdit->setText(p->getName().c_str());
+			ui.DepConditionComboBox->setCurrentIndex(1);
+			ui.DepVersionEdit->setText(p->getVersion().c_str());
+			addDependency();
+			delete p;
+			unlink(tmp_xml.c_str());
+		}
+	}
+}
+
 void Form::addDependency(){
 
 	if (!ui.DepNameEdit->text().isEmpty())

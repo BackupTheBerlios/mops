@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.107 2007/08/17 11:53:37 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.108 2007/08/24 06:20:52 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -491,6 +491,8 @@ installProcess:
 	}
 	if (removeFailures!=0 && installFailures!=0) return MPKGERROR_COMMITERROR;
 	actionBus.clear();
+	say(_("Executing ldconfig\n"));
+	system("ldconfig");
 	return 0;
 }
 

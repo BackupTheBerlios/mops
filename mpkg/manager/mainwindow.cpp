@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.120 2007/08/23 23:28:17 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.121 2007/08/24 06:20:52 i27249 Exp $
  *
  ****************************************************************/
 
@@ -25,8 +25,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 		QMessageBox::critical(this, tr("MOPSLinux package manager"),
 				tr("Database is locked.\nPlease close another application that uses it"),
 				QMessageBox::Ok, QMessageBox::Ok);
-		qApp->quit();
-
+		abort();
 	}
 	mDebug("initializing");
 	totalInstalledSize=0;

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.50 2007/08/23 23:28:17 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.51 2007/08/24 06:20:52 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -30,7 +30,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.9 beta 4 (libxml2 edition - backup engaged)";
+	char *version="0.12 beta";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -342,6 +342,38 @@ int main (int argc, char **argv)
 		{
 			fname.push_back((string) argv[i]);
 		}
+		// Check for wildcards
+		bool hasWilds=false;
+		for (unsigned int i=0; i<fname.size(); i++)
+		{
+			if (fname[i].find("*")!=std::string::npos)
+			{
+				hasWilds=true;
+			}
+		}
+		if (hasWilds)
+		{
+			SQLTable pl;
+			SQLRecord sqlr, sqlfields;
+			sqlr.setEqMode(EQ_CUSTOMLIKE);
+			vector<string> srch=fname;
+			sqlfields.addField("package_name");
+			for (unsigned int i=0; i<srch.size(); i++)
+			{
+				while(srch[i].find_first_of("*")!=std::string::npos)
+				{
+					srch[i][srch[i].find_first_of("*")]='%';
+				}
+				sqlr.addField("package_name", &srch[i]);
+			}
+			core.db->get_sql_vtable(&pl, sqlfields, (string) "packages", sqlr);
+			fname.clear();
+			for (int i=0; i<pl.size(); i++)
+			{
+				fname.push_back(*pl.getValue(i,"package_name"));
+			}
+		}
+
 		core.install(fname);
 		core.commit();
 		core.clean_queue();

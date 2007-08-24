@@ -462,6 +462,13 @@
               </spacer>
              </item>
              <item>
+              <widget class="QToolButton" name="addDepFromFilesBtn" >
+               <property name="text" >
+                <string>...</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QPushButton" name="DepAddButton" >
                <property name="text" >
                 <string>Add</string>

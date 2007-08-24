@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.40 2007/08/23 23:28:17 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.41 2007/08/24 06:20:52 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -12,6 +12,18 @@
 vector<string> temp_files;
 extern int errno;
 
+bool isProcessRunning(string pid)
+{
+	string tmp_file = get_tmp_file();
+	system("ps -p " + pid + " > " + tmp_file);
+	string result = ReadFile(tmp_file);
+	if (result.find(pid)!=std::string::npos)
+	{
+		// Process is running
+		return true;
+	}
+	else return false;
+}
 bool lockDatabase()
 {
 	// Lock file will be /var/run/mpkg.lock
@@ -40,14 +52,24 @@ bool unlockDatabase()
 		}
 	}
 	else {
-		mError("Database isn't locked");
 		return true;
 	}
 }
 
 bool isDatabaseLocked()
 {
-	return FileExists("/var/run/mpkg.lock");
+	if (FileExists("/var/run/mpkg.lock"))
+	{
+		// Check if the process created this id is alive
+		if (!isProcessRunning(ReadFile("/var/run/mpkg.lock"))) {
+			say("Database was locked by died process\n");
+			unlink("/var/run/mpkg.lock");
+			return false;
+		}
+		mError("Database is locked by process " + ReadFile("/var/run/mpkg.lock"));
+		return true;
+	}
+	else return false;
 }
 bool backupDatabase()
 {

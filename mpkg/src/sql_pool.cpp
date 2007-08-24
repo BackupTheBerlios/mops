@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.47 2007/07/13 12:35:50 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.48 2007/08/24 06:20:52 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -189,8 +189,10 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 		{
 			for (int i=0; i<search.size(); i++)
 			{
-				if (search.getEqMode()!=EQ_LIKE) sql_where += *search.getFieldName(i) + "='" + *search.getValueI(i)+"'";
-				else sql_where+= *search.getFieldName(i) + " like '%" + *search.getValueI(i)+"%'";
+				if (search.getEqMode()==EQ_EQUAL) sql_where += *search.getFieldName(i) + "='" + *search.getValueI(i)+"'";
+				if (search.getEqMode()==EQ_LIKE) sql_where+= *search.getFieldName(i) + " like '%" + *search.getValueI(i)+"%'";
+				if (search.getEqMode()==EQ_CUSTOMLIKE) sql_where+= *search.getFieldName(i) + " like '" + *search.getValueI(i)+"'";
+
 				if (i!=search.size()-1/* && search.getSearchMode()==SEARCH_AND*/) sql_where+=" and ";
 				//if (i!=search.size()-1 && search.getSearchMode()==SEARCH_OR) sql_where+=" or ";
 			}

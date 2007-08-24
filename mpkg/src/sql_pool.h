@@ -2,7 +2,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.h,v 1.20 2007/07/12 09:28:12 i27249 Exp $
+ *	$Id: sql_pool.h,v 1.21 2007/08/24 06:20:52 i27249 Exp $
  ************************************************************************************/
 
 
@@ -35,6 +35,7 @@ class SQLiteDB
 		int getLastError();
 		string getLastErrMsg();
 		int get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_name, SQLRecord &search);
+		//int get_sql_vtable_by_query(string *query, SQLTable *output);
 		int init();
 		int sqlBegin();
 		int sqlCommit();
@@ -63,6 +64,7 @@ class SQLProxy
 		string getLastErrMsg();
 		int clear_table(string table_name);
 		int get_sql_vtable(SQLTable *output, SQLRecord fields, string table_name, SQLRecord search);
+		//int get_sql_vtable_by_query(string *query, SQLTable *output);
 		int sql_insert(string table_name, SQLRecord values);
 		int sql_insert(string table_name, SQLTable values);
 		int sql_update(string table_name, SQLRecord fields, SQLRecord search);

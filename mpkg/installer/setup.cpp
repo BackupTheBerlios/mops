@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.39 2007/08/17 14:58:13 i27249 Exp $
+ * $Id: setup.cpp,v 1.40 2007/08/24 06:20:52 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1162,7 +1162,7 @@ int commit()
 			if (formatPartitions()!=0) return -1;
 			if (mountPartitions()!=0) return -1;
 			createCore();
-			d.execInfoBox("Построение очереди пакетов и расчет зависимостей",3,40);
+			d.execInfoBox("Построение очереди пакетов и расчет зависимостей",3,60);
 
 			for (int i=0; i<i_availablePackages.size(); i++)
 			{

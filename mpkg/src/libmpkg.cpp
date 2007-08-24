@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.48 2007/08/23 23:28:18 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.49 2007/08/24 06:20:52 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -266,7 +266,7 @@ int mpkg::commit()
 	Dialog d;
 	mDebug("committing");
 	if (!dialogMode) say(_("Checking dependencies\n"));
-	else d.execInfoBox("Проверка зависимостей",3,40); // LANG_GETTEXT
+	else d.execInfoBox("Построение дерева зависимостей",3,60); // LANG_GETTEXT
 
 	currentStatus = _("Checking dependencies...");
 	int errorCount = DepTracker->renderData();
