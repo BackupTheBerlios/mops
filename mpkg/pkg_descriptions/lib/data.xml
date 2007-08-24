@@ -4,13 +4,13 @@
 		mpkg-core
 	</name>
 	<version>
-		0.11
+		0.12
 	</version>
 	<arch>
 		i486
 	</arch>
 	<build>
-		3
+		4
 	</build>
 	<description lang="en">
 		This is a core of MOPSLinux package system. It contains the main library, download library, default configuration file, and group descriptions. Considering that you are already have a directory structure (should be done on install)
@@ -25,57 +25,24 @@
 	<dependencies>
 		<dep>
 			<name>
-				curl
+				sqlite3
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				7.16
+				3.4.1
 			</version>
 		</dep>
 		<dep>
 			<name>
-				zlib
+				cxxlibs
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				1.2.3
-			</version>
-		</dep>
-		<dep>
-			<name>
-				openssl
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.9.8e
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libxml2
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				2.6.28
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libidn
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.6.10
+				6.0.8
 			</version>
 		</dep>
 		<dep>
@@ -91,13 +58,57 @@
 		</dep>
 		<dep>
 			<name>
-				cxxlibs
+				libidn
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				6.0.8
+				0.6.10
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libxml2
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.6.28
+			</version>
+		</dep>
+		<dep>
+			<name>
+				openssl
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9.8e
+			</version>
+		</dep>
+		<dep>
+			<name>
+				zlib
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.2.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				curl
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				7.16
 			</version>
 		</dep>
 	</dependencies>
@@ -118,9 +129,5 @@
 			i27249@gmail.com
 		</email>
 	</maintainer>
-	<configfiles>
-		<conffile>
-			/etc/mpkg.xml
-		</conffile>
-	</configfiles>
+	<configfiles/>
 </package>

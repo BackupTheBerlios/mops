@@ -4,13 +4,13 @@
 		mpkg-console
 	</name>
 	<version>
-		0.9
+		0.12
 	</version>
 	<arch>
 		i486
 	</arch>
 	<build>
-		3
+		1
 	</build>
 	<description lang="en">
 		Console interface for MPKG. I recommend to intall this, because many scripts may be relied on this.

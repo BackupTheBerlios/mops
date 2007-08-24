@@ -1,3 +1,4 @@
 mpkg-gui: MOPSLinux package system: GUI
 mpkg-gui: 
-mpkg-gui: This package contains a GUI package manager, and update monitor.
+mpkg-gui: Пакет содержит графический менеджер
+mpkg-gui:  пакетов и монитор обновлений

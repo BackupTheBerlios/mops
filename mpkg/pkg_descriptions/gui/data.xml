@@ -4,7 +4,7 @@
 		mpkg-gui
 	</name>
 	<version>
-		0.11
+		0.12
 	</version>
 	<arch>
 		i486
@@ -13,7 +13,7 @@
 		1
 	</build>
 	<description lang="en">
-		This package contains a GUI package manager, and update monitor.
+		Пакет содержит графический менеджер пакетов и монитор обновлений
 	</description>
 	<description lang="ru">
 	</description>
@@ -25,17 +25,6 @@
 	<dependencies>
 		<dep>
 			<name>
-				mpkg-core
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.11
-			</version>
-		</dep>
-		<dep>
-			<name>
 				qt4
 			</name>
 			<condition>
@@ -45,15 +34,28 @@
 				4.3
 			</version>
 		</dep>
+		<dep>
+			<name>
+				mpkg-core
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.11
+			</version>
+		</dep>
 	</dependencies>
 	<suggests/>
 	<tags>
 		<tag>
 			xapps
 		</tag>
+		<tag>
+			desktop
+		</tag>
 	</tags>
 	<changelog>
-		This is a first public beta release. Please send bug reports to maintainer.
 	</changelog>
 	<maintainer>
 		<name>
