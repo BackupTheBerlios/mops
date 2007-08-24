@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.41 2007/08/24 13:03:56 i27249 Exp $
+$Id: dependencies.cpp,v 1.42 2007/08/24 13:08:28 i27249 Exp $
 */
 
 
@@ -76,7 +76,7 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 
 int DependencyTracker::renderData()
 {
-	//printf("Retrieving data from SQL\n");
+	printf("Retrieving data from SQL\n");
 	// Retrieving common package list from database - we will use C++ logic.
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_installed", 1);
@@ -84,25 +84,26 @@ int DependencyTracker::renderData()
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
-	//printf("rendering required list\n");
+	printf("rendering required list\n");
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
 
 	mDebug("Rendering removing");
-	//printf("Rendering remove queue\n");
+	printf("Rendering remove queue\n");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	mDebug("Filtering dupes: install");
 	currentStatus=_("Checking dependencies: filtering (stage 1: installation queue dupes");
-	//printf("Filtering dupes\n");
+	printf("Filtering dupes\n");
 	filterDupes(&installStream);
 	currentStatus=_("Checking dependencies: filtering (stage 2: remove queue dupes");
 	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
+	printf("preparing rollback\n");
 	currentStatus=_("Checking dependencies: filtering (stage 3: rollback)");
 	mDebug("Rolling back the items who was dropped on update");
 	PACKAGE_LIST fullWillBeList = installedPackages;
 	fullWillBeList.add(&installStream);
 	bool requested=false;
-	//printf("Starting a loop of rollbacking\n");
+	printf("Starting a loop of rollbacking\n");
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		requested=false;
@@ -126,16 +127,20 @@ int DependencyTracker::renderData()
 			installStream.add(removeStream.get_package(i));
 		}
 	}
+	printf("rollback end\n");
 	// END OF ROLLBACK MECHANISM
 
 	mDebug("Muxing streams");
+	printf("muxing streams\n");
 	currentStatus=_("Checking dependencies: muxing queues");
 	muxStreams(installStream, removeStream);
 	currentStatus=_("Checking dependencies: searching for broken packages");
 	mDebug("Searching for broken packages");
+	printf("Searching for broken packages\n");
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	mDebug("done");
 	currentStatus=_("Dependency check completed, error count: ") + IntToStr(failureCounter);
+	printf("renderData complete\n");
 	if (!force_dep) return failureCounter;
 	else return 0;
 }
