@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.51 2007/08/24 06:20:52 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.52 2007/08/25 18:54:49 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -85,11 +85,11 @@ int main (int argc, char **argv)
 		{ "force-dep", 0, NULL, 'd'},
 		{ "no-dep",0,NULL,'z'},
 		{ "force-conflicts",0,NULL,'f'},
-		{ "skip-md5check",0,NULL,'m'},
+		{ "no-md5",0,NULL,'m'},
 		{ "force-essential",0,NULL,'k'},
 		{ "simulate",0,NULL,'s'},
 		{ "download-only",0,NULL,'D'},
-		{ "repair",0,NULL,'R'},
+		{ "repair",0,NULL,'r'},
 		{ "available",0,NULL,'a'},
 		{ "installed",0,NULL,'i'},
 		{ "filelist",0,NULL,'l'},
@@ -143,7 +143,7 @@ int main (int argc, char **argv)
 					download_only=true;
 					break;
 
-			case 'R':
+			case 'r':
 					repair_damaged=true;
 					break;
 
@@ -208,6 +208,8 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_SHOW)
 	{
+		if (argc<=optind) return print_usage(stderr,1);
+		//printf("optind = %d, argc=%d\n", optind,argc);
 		show_package_info(&core, argv[optind]);
 		// show info about package
 	}
@@ -215,6 +217,8 @@ int main (int argc, char **argv)
 	vector<string> pname;
 	if (action == ACT_COMMIT)
 	{
+		if (argc!=optind) return print_usage(stderr,1);
+
 		core.commit();
 		unlockDatabase();
 		return 0;
@@ -222,6 +226,8 @@ int main (int argc, char **argv)
 
 	if (action == ACT_SHOWQUEUE)
 	{
+		if (argc!=optind) return print_usage(stderr,1);
+
 		vector<string> list_empty;
 		list(&core, list_empty,true);
 		delete_tmp_files();
@@ -230,6 +236,8 @@ int main (int argc, char **argv)
 
 	if (action == ACT_RESETQUEUE)
 	{
+		if (argc!=optind) return print_usage(stderr,1);
+
 		lockDatabase();
 		PACKAGE_LIST tmp;
 		SQLRecord sqlSearch;
@@ -251,6 +259,8 @@ int main (int argc, char **argv)
 
 	if (action == ACT_PACKAGEMENU)
 	{
+		if (argc!=optind) return print_usage(stderr,1);
+
 		lockDatabase();
 		Dialog dialogItem;
 		vector<TagPair> pkgList;
@@ -297,46 +307,41 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALLFROMLIST)
 	{
-		if (argc>2)
+		if (argc<=optind) return print_usage(stderr,1);
+
+		// Read the file
+		FILE *install_list = fopen(argv[optind], "r");
+		if (!install_list)
 		{
-			// Read the file
-			FILE *install_list = fopen(argv[optind], "r");
-			if (!install_list)
-			{
-				perror(_("cannot open installation list"));
-				exit(-1);
-			}
-			char *membuff=(char *) malloc(2000);
-			vector<string> installQuery;
-			memset(membuff, 0, 2000);
-			string tmp;
-			while (fscanf(install_list, "%s", membuff)!=EOF)
-			{
-				tmp = (string) membuff;
-				installQuery.push_back(tmp.substr(1, tmp.size()-2));
-			}
-			free(membuff);
-			lockDatabase();
-			fclose(install_list);
-			for (unsigned int i=0; i<installQuery.size(); i++)
-			{
-				mDebug("Installing from list " + installQuery[i]);
-			}
-			core.install(installQuery);
-			core.commit();
-			delete_tmp_files();
-			unlockDatabase();
-			return 0;
-		}
-		else
-		{
-			mError(_("Please select input file"));
+			perror(_("cannot open installation list"));
 			exit(-1);
 		}
+		char *membuff=(char *) malloc(2000);
+		vector<string> installQuery;
+		memset(membuff, 0, 2000);
+		string tmp;
+		while (fscanf(install_list, "%s", membuff)!=EOF)
+		{
+			tmp = (string) membuff;
+			installQuery.push_back(tmp.substr(1, tmp.size()-2));
+		}
+		free(membuff);
+		lockDatabase();
+		fclose(install_list);
+		for (unsigned int i=0; i<installQuery.size(); i++)
+		{
+			mDebug("Installing from list " + installQuery[i]);
+		}
+		core.install(installQuery);
+		core.commit();
+		delete_tmp_files();
+		unlockDatabase();
+		return 0;
 	}				
 
 	if (action == ACT_INSTALL)
 	{
+		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
@@ -384,6 +389,7 @@ int main (int argc, char **argv)
 
 	if (action == ACT_CONFIG)
 	{
+		if (argc!=optind) return print_usage(stderr,1);
 		say(_("Current configuration:\n"));
 		say(_("System root: %s\n"), SYS_ROOT.c_str());
 		say(_("Package cache: %s\n"), SYS_CACHE.c_str());
@@ -398,24 +404,38 @@ int main (int argc, char **argv)
 	if (action == ACT_EXPORT)
 	{
 		string dest_dir="/var/log/packages/";
-		if (argc==3) dest_dir=argv[2];
+		if (argc>optind) dest_dir=argv[optind];
 
 		core.exportBase(dest_dir);
 		return 0;
 	}
 	if (action == ACT_TEST)
 	{
+		PACKAGE_LIST tList, outList;
+		SQLRecord sqlSearch;
+		string search = argv[optind];
+		core.get_packagelist(&sqlSearch, &tList);
+		printf("looping\n");
+		
+		SQLRecord sr;
+		sr.addField("package_name", &search);
+		
+		for (int z=0; z<1000000; z++)
+		{
+			core.get_packagelist(&sr, &outList);
+			/*
+			for (unsigned int i=0; i<tList.size(); i++)
+			{
+				if (*tList.get_package(i)->get_name()==search) outList.add(tList.get_package(i));
+			}*/
+		}
 		return 0;
 	}
 
 	if (action == ACT_LISTGROUP)
 	{
-		if (argc!=3)
-		{
-			print_usage(stderr);
-			exit(0);
-		}
-		string group=argv[2];
+		if (argc<=optind) return print_usage(stderr,1);
+		string group=argv[optind];
 		PACKAGE_LIST pkgList1;
 		PACKAGE_LIST pkgList2;
 		SQLRecord sqlSearch;
@@ -430,14 +450,9 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALLGROUP)
 	{
-		if (argc!=3)
-		{
-			print_usage(stderr);
-			exit(0);
-		}
-
+		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
-		string group=argv[2];
+		string group=argv[optind];
 		PACKAGE_LIST pkgList1;
 		vector<string> queue;
 		SQLRecord sqlSearch;
@@ -459,13 +474,9 @@ int main (int argc, char **argv)
 
 	if (action == ACT_REMOVEGROUP)
 	{
-		if (argc!=3)
-		{
-			print_usage(stderr);
-			exit(0);
-		}
+		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
-		string group=argv[2];
+		string group=argv[optind];
 		PACKAGE_LIST pkgList1;
 		vector<string> queue;
 		SQLRecord sqlSearch;
@@ -485,16 +496,16 @@ int main (int argc, char **argv)
 
 	if (action == ACT_FILESEARCH)
 	{
-		if (argc!=3) { print_usage(stderr); exit(0); }
-		searchByFile(&core, argv[2]);
+		if (argc<=optind) return print_usage(stderr,1);
+		searchByFile(&core, argv[optind]);
 		return 0;
 	}
 
 
 	if (action == ACT_WHICH)
 	{
-		if (argc!=3) { print_usage(stderr); exit(0); }
-		searchByFile(&core, argv[2],true);
+		if (argc<=optind) return print_usage(stderr,1);
+		searchByFile(&core, argv[optind],true);
 		return 0;
 	}
 	
@@ -502,7 +513,8 @@ int main (int argc, char **argv)
 
 	if (action == ACT_GENDEPS)
 	{
-		generateDeps(argv[2]);
+		if (argc<=optind) return print_usage(stderr,1);
+		generateDeps(argv[optind]);
 		return 0;
 	}
 
@@ -560,6 +572,7 @@ int main (int argc, char **argv)
 	
 	if (action == ACT_REMOVE)
 	{
+		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
@@ -575,6 +588,8 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_SEARCH ) {
+		if (argc<=optind) return print_usage(stderr,1);
+
 		vector<string> list_search;
 		for (int i = optind; i < argc; i++)
 		{
@@ -585,6 +600,8 @@ int main (int argc, char **argv)
 		return 0;
 	}
 	if (action == ACT_UPGRADE ) {
+		if (argc<=optind) return print_usage(stderr,1);
+
 		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
@@ -609,10 +626,10 @@ int main (int argc, char **argv)
 	if ( action == ACT_TAG )
 	{
 		//mDebug("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
-		if (argc == 4)
+		if (argc > optind+1)
 		{
-			say(_("tagging...\n"));
-			tag_package(argv[3], argv[2]);
+			say(_("tagging %s as %s...\n"), argv[optind+1], argv[optind]);
+			tag_package(argv[optind+1], argv[optind]);
 		}
 		delete_tmp_files();
 		return 0;
@@ -634,6 +651,8 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_LIST ) {
+		if (argc!=optind) return print_usage(stderr,1);
+
 		vector<string> list_empty;
 		list(&core, list_empty);
 		delete_tmp_files();
@@ -641,6 +660,8 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_UPDATE ) {
+		if (argc!=optind) return print_usage(stderr,1);
+
 		lockDatabase();
 		core.update_repository_data();
 		delete_tmp_files();
@@ -650,13 +671,15 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_CLEAN ) {
+		if (argc!=optind) return print_usage(stderr,1);
 		core.clean_cache();	
 		return 0;
 	
 	}
 
 	if ( action == ACT_INDEX ) {
-		
+		if (argc!=optind) return print_usage(stderr,1);
+
 		core.rep.build_index("","");
 		delete_tmp_files();
 	
@@ -664,6 +687,8 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_PURGE ) {
+		if (argc<=optind) return print_usage(stderr,1);
+
 		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
@@ -678,6 +703,8 @@ int main (int argc, char **argv)
 	}
 
 	if ( action == ACT_LIST_REP ) {
+		if (argc!=optind) return print_usage(stderr,1);
+
 		list_rep(&core);
 		delete_tmp_files();
 		return 0;
@@ -728,21 +755,24 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-d    --force-dep         interpret dependency errors as warnings\n"));
 	fprintf(stream,_("\t-z    --no-dep            totally ignore dependencies existance\n"));
 	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
-	fprintf(stream,_("\t-m    --skip-md5check     do not check package integrity on install\n"));
+	fprintf(stream,_("\t-m    --no-md5            do not check package integrity on install\n"));
 	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));
 	fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
-	fprintf(stream,_("\t-D    --download-only     only download packages, do not install\n"));
-	fprintf(stream,_("\t-R    --repair            repair damaged packages (use with \"check\" keyword\n"));
+	//fprintf(stream,_("\t-D    --download-only     just download packages, do not install\n"));
+	fprintf(stream,_("\t-r    --repair            repair damaged packages (use with \"check\" keyword)\n"));
 	fprintf(stream,_("\t-i    --installed         show only installed packages (use with \"list\" keyword)\n"));
 	fprintf(stream,_("\t-a    --available         show only available packages (use with \"list\" keyword)\n"));
+	fprintf(stream,_("\t-l    --filelist          show file list for package (with \"show\" keyword)\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall                   install packages\n"));
-	fprintf(stream,_("\tupgrade                   upgrade selected package or full system if no package selected\n"));
+	fprintf(stream,_("\tupgrade                   upgrade selected package\n"));
 	fprintf(stream,_("\tremove                    remove selected package\n"));
 	fprintf(stream,_("\tpurge                     purge selected package\n"));
 	fprintf(stream,_("\tinstallgroup              install all the packages from group\n"));
+	fprintf(stream,_("\tremovegroup               remove all the packages from group\n"));
+
 	fprintf(stream,_("\tshow                      show info about package\n"));
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
@@ -758,7 +788,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tcommit                    commit queued actions\n"));
 	fprintf(stream,_("\tsearch                    search package by name\n"));
 	fprintf(stream,_("\tclean                     remove all packages from cache\n"));
-	fprintf(stream,_("\tcheck                     checks installed package(s) for damaged files. Use -R flag to to repair\n"));
+	fprintf(stream,_("\tcheck                     checks installed package(s) for damaged files. Use -r flag to to repair\n"));
 
 	fprintf(stream,_("\nInteractive options:\n"));
 	fprintf(stream,_("\tmenu                      shows the package selection menu\n"));
@@ -959,6 +989,7 @@ void list_pkglist(PACKAGE_LIST *pkglist)
 
 int list(mpkg *core, vector<string> search, bool onlyQueue)
 {
+	printf("list start\n");
 	PACKAGE_LIST pkglist;
 	SQLRecord sqlSearch;
 	if (!search.empty())

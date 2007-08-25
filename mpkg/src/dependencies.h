@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.13 2007/05/23 18:02:18 i27249 Exp $
+$Id: dependencies.h,v 1.14 2007/08/25 18:54:49 i27249 Exp $
 */
 
 
@@ -34,6 +34,13 @@ class DependencyTracker
 
 		PACKAGE_LIST installedPackages;
 
+		PACKAGE_LIST packageCache;
+
+		void createPackageCache();
+		void fillInstalledPackages();
+		void fillByName(string *name, PACKAGE_LIST *p);
+		void fillByAction(int ACTION, PACKAGE_LIST *p);
+		bool cacheCreated;
 		mpkgDatabase *db;
 
 	public:

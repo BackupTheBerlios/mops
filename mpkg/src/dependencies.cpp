@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.42 2007/08/24 13:08:28 i27249 Exp $
+$Id: dependencies.cpp,v 1.43 2007/08/25 18:54:49 i27249 Exp $
 */
 
 
@@ -73,14 +73,35 @@ void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
 	*pkgList=output;
 }
 
+void DependencyTracker::createPackageCache()
+{
+
+	SQLRecord sqlSearch;
+	db->get_packagelist(&sqlSearch, &packageCache);
+	cacheCreated=true;
+}
+
+void DependencyTracker::fillInstalledPackages()
+{
+	if (!cacheCreated) createPackageCache();
+	installedPackages.clear();
+	for (int i=0; i<packageCache.size(); i++)
+	{
+		if (packageCache.get_package(i)->installed()) installedPackages.add(packageCache.get_package(i));
+	}
+}
 
 int DependencyTracker::renderData()
 {
+	createPackageCache();
+	fillInstalledPackages();
+	/*
 	printf("Retrieving data from SQL\n");
 	// Retrieving common package list from database - we will use C++ logic.
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_installed", 1);
-	db->get_packagelist(&sqlSearch, &installedPackages);
+	db->get__packagelist(&sqlSearch, &installedPackages);
+	*/
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
@@ -158,12 +179,14 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 	for (int i=0; i<outStream.size(); i++)
 	{
 		currentStatus = _("Checking dependencies: rendering requirements") + (string) " (" + IntToStr(i) + "/"+IntToStr(outStream.size()) + ")";
-		//printf("cycle %d\n",i);
+		//printf("%s: cycle %d\n",__func__, i);
 		req=get_required_packages(outStream.get_package(i));
+		//printf("Package was get\n");
 		// Check if this package is already in stream
 		for (int t=0; t<req.size(); t++)
 		{
 			skipThis=false;
+			//printf("Cheking cycle\n");
 			// Will check and add by one
 			for (int c=0; c<outStream.size(); c++)
 			{
@@ -173,6 +196,7 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 					break;
 				}
 			}
+			//printf("cycle complter\n");
 			if (!skipThis) outStream.add(req.get_package(t));
 		}
 		//outStream.add(&req);
@@ -183,6 +207,7 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 
 PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 {
+	// TODO: Need a FASTUP!!
 	// Returns a list of required packages. Broken ones is marked internally
 	PACKAGE_LIST requiredPackages;
 	PACKAGE tmpPackage;
@@ -196,7 +221,15 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	return requiredPackages;
 }
 
-
+void DependencyTracker::fillByName(string *name, PACKAGE_LIST *p)
+{
+	if (!cacheCreated) createPackageCache();
+	p->clear();
+	for (int i=0; i<packageCache.size(); i++)
+	{
+		if (*packageCache.get_package(i)->get_name()==*name) p->add(packageCache.get_package(i));
+	}
+}
 int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 {
 	returnPackage->clear();
@@ -205,9 +238,12 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	returnPackage->set_broken(true);
 	returnPackage->set_requiredVersion(dep->get_version_data());
 	PACKAGE_LIST reachablePackages;
-	SQLRecord sqlSearch;
+	
+	fillByName(dep->get_package_name(), &reachablePackages);
+	
+	/*SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", dep->get_package_name());
-	db->get_packagelist(&sqlSearch, &reachablePackages);
+	db->get__packagelist(&sqlSearch, &reachablePackages);*/
 	
 	if (reachablePackages.IsEmpty())
 	{
@@ -289,6 +325,15 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 	return dependantPackages;
 }
 
+void DependencyTracker::fillByAction(int action, PACKAGE_LIST *p)
+{
+	if (!cacheCreated) createPackageCache();
+	for (int i=0; i<packageCache.size(); i++)
+	{
+		if (packageCache.get_package(i)->action()==action) p->add(packageCache.get_package(i));
+	}
+}
+
 void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream)
 {
 	PACKAGE_LIST install_list;
@@ -296,17 +341,21 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	PACKAGE_LIST conflict_list;
 	PACKAGE_LIST installQueuedList;
 	PACKAGE_LIST removeQueuedList;
-	SQLRecord sqlSearch;
-
-	sqlSearch.clear();
+	/*SQLRecord sqlSearch;
+	sqlSearch.clear();	
 	sqlSearch.addField("package_action", ST_INSTALL);
-	db->get_packagelist(&sqlSearch, &installQueuedList);
+	db->get__packagelist(&sqlSearch, &installQueuedList);*/
+
+	fillByAction(ST_INSTALL, &installQueuedList);
 #ifdef EXTRACHECK_REMOVE_QUEUE
-	sqlSearch.clear();
+	/*sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_IN);
 	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
 	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	db->get_packagelist(&sqlSearch, &removeQueuedList);
+	db->get__packagelist(&sqlSearch, &removeQueuedList);
+	*/
+	fillByAction(ST_REMOVE, &removeQueuedList);
+	fillByAction(ST_PURGE, &removeQueuedList);
 #endif
 	bool found;
 	// What we should do?
@@ -483,6 +532,7 @@ bool DependencyTracker::commitToDb()
 
 DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
 {
+	cacheCreated=false;
 	db=mpkgDB;
 }
 DependencyTracker::~DependencyTracker(){}
