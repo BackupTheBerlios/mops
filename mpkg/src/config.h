@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.47 2007/08/21 14:25:55 i27249 Exp $
+    $Id: config.h,v 1.48 2007/08/25 20:33:30 i27249 Exp $
 */
 
 
@@ -23,6 +23,7 @@ using namespace std;
 
 #ifndef HTTP_LIB
 // Global configuration and message bus
+extern bool interactive_mode;
 extern bool forceSkipLinkMD5Checks;
 extern bool simulate;
 extern bool force_dep;

@@ -2,7 +2,7 @@
 Comment=
 Comment[ru]=
 Encoding=UTF-8
-Exec=manager
+Exec=kdesu manager
 GenericName=
 GenericName[ru]=
 Icon=kpackage

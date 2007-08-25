@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.41 2007/08/21 14:25:55 i27249 Exp $
+ * $Id: config.cpp,v 1.42 2007/08/25 20:33:30 i27249 Exp $
  *
  * ***************************************************/
 
@@ -9,7 +9,7 @@
 #include "file_routines.h"
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
-
+bool interactive_mode=false;
 bool require_root = true;
 bool simulate=false;
 vector<string> removeBlacklist;

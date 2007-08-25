@@ -1,10 +1,10 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.50 2007/08/25 18:54:49 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.51 2007/08/25 20:33:30 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
-
+#include <iostream>
 mpkg::mpkg(bool _loadDatabase)
 {
 	if (!consoleMode && !dialogMode) initErrorManager(EMODE_QT);
@@ -277,7 +277,21 @@ int mpkg::commit()
 		if (!dialogMode) say(_("Building queue\n"));
 		else d.execInfoBox("Построение очереди действий",3,40);
 		mDebug("Tracking deps");
+		
 		DepTracker->commitToDb();
+		if (interactive_mode)
+		{
+			say(_("Continue? [Y/n]\n"));
+			string input;
+i_actInput:
+			cin>>input;
+			if (input=="n" || input=="N" || input == "no") { clean_queue(); return MPKGERROR_ABORTED; }
+			if (input!="y" && input!="Y" && input!="yes") {
+				say(_("Please answer Y (yes) or N (no)\n"));
+				goto i_actInput;
+			}
+		}
+
 		if (!dialogMode) say(_("Committing...\n"));
 		else d.execInfoBox("Выполнение...");
 		currentStatus = _("Committing changes...");

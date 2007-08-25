@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.43 2007/08/25 18:54:49 i27249 Exp $
+$Id: dependencies.cpp,v 1.44 2007/08/25 20:33:30 i27249 Exp $
 */
 
 
@@ -27,6 +27,7 @@ void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
 }
 void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 {
+
 	removeQueryList.add(pkg);
 }
 
@@ -309,6 +310,7 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 
 PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 {
+	if (!cacheCreated) { fillInstalledPackages(); }
 	PACKAGE_LIST dependantPackages;
 	for (int i=0; i<installedPackages.size(); i++)
 	{
@@ -505,6 +507,15 @@ bool DependencyTracker::commitToDb()
 	if (!dialogMode) say(_("Will be removed:\n"));
 	for (int i=0; i<removeList.size(); i++)
 	{
+
+		//TODO: check for essential packages
+	/*	if (!package->isUpdating && package->isRemoveBlacklisted())
+	{
+		mError(_("Cannot remove package ") + *package->get_name() + _(", because it is an important system component."));
+		set_action(package->get_id(), ST_NONE);
+		return MPKGERROR_IMPOSSIBLE;
+	}*/
+
 		if (removeList.get_package(i)->configexist())
 		{
 			alreadyThere=false;
@@ -524,7 +535,7 @@ bool DependencyTracker::commitToDb()
 	say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
 	int total_actions =  iC+rC;
 	if (total_actions == 0) say(_("No actions to proceed\n"));
-	else say(_("Total %d new actions to proceed, committing...\n\n"), total_actions);
+	else say(_("Total %d new actions to proceed\n\n"), total_actions);
 
 	mDebug("finished");
 	return true;

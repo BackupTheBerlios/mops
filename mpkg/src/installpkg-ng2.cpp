@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.52 2007/08/25 18:54:49 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.53 2007/08/25 20:33:30 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -171,7 +171,7 @@ int main (int argc, char **argv)
 	
 	}  while ( ich != -1 );
 
-
+	
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
 		{
@@ -180,7 +180,7 @@ int main (int argc, char **argv)
 		
 		action = setup_action( argv[optind-1] );
 	}
-	
+	if (!dialogMode) interactive_mode=true;
 	if (action==ACT_SHOW || \
 			action == ACT_SEARCH || \
 			action == ACT_SHOWQUEUE || \
@@ -209,9 +209,7 @@ int main (int argc, char **argv)
 	if ( action == ACT_SHOW)
 	{
 		if (argc<=optind) return print_usage(stderr,1);
-		//printf("optind = %d, argc=%d\n", optind,argc);
 		show_package_info(&core, argv[optind]);
-		// show info about package
 	}
 	vector<string> fname;
 	vector<string> pname;
@@ -411,24 +409,39 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		PACKAGE_LIST tList, outList;
+		/*
+		core.DepTracker->createPackageCache();
+		core.DepTracker->fillInstalledPackages();
+		*/
+		return 0;
+	}
+	if (action == ACT_LISTDEPENDANTS)
+	{
+		if (argc<=optind) return print_usage(stderr, 1);
+		say(_("Searching for packages which depends on %s\n"),argv[optind]);
+		PACKAGE_LIST tList, dependant;
+		PACKAGE *pkg = new PACKAGE;
 		SQLRecord sqlSearch;
 		string search = argv[optind];
 		core.get_packagelist(&sqlSearch, &tList);
-		printf("looping\n");
-		
-		SQLRecord sr;
-		sr.addField("package_name", &search);
-		
-		for (int z=0; z<1000000; z++)
+	
+		for (int i=0; i<tList.size(); i++)
 		{
-			core.get_packagelist(&sr, &outList);
-			/*
-			for (unsigned int i=0; i<tList.size(); i++)
-			{
-				if (*tList.get_package(i)->get_name()==search) outList.add(tList.get_package(i));
-			}*/
+			if (tList.get_package(i)->installed () && *tList.get_package(i)->get_name()==search) *pkg = *tList.get_package(i);
 		}
+		dependant = core.DepTracker->get_dependant_packages(pkg);
+		if (dependant.size()==0)
+		{
+			say(_("No installed packages depends on %s\n"), argv[optind]);
+			delete pkg;
+			return 0;
+		}
+		else say(_("Next packages depends on %s: \n"),argv[optind]);
+		for (int i=0; i<dependant.size(); i++)
+		{
+			say("%s\n", dependant.get_package(i)->get_name()->c_str());
+		}
+		delete pkg;
 		return 0;
 	}
 
@@ -625,7 +638,6 @@ int main (int argc, char **argv)
 
 	if ( action == ACT_TAG )
 	{
-		//mDebug("argc = %d\nargv[2] = %s\nargv[3] = %s\n", argc, argv[2], argv[3]);
 		if (argc > optind+1)
 		{
 			say(_("tagging %s as %s...\n"), argv[optind+1], argv[optind]);
@@ -638,7 +650,6 @@ int main (int argc, char **argv)
 	if ( action == ACT_CONVERT_DIR ) {
 		if (optind < argc )
 		{
-			//output_dir=(string) argv[optind];
 			core.convert_directory((string) argv[optind]);
 		}
 		else 
@@ -777,7 +788,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
 	fprintf(stream,_("\tlistgroup                 show the list of packages belonged to group\n"));
-	
+	fprintf(stream,_("\twhodepend                 show what packages depends on this one\n"));
 	
 	fprintf(stream,_("\tfilesearch                look for owner of the file in installed packages (LIKE mode).\n"));
 	fprintf(stream,_("\twhich                     look for owner of the file in installed packages (EQUAL mode).\n"));
@@ -1077,6 +1088,7 @@ int check_action(char* act)
 		&& _act != "listgroup"
 		&& _act != "installgroup"
 		&& _act != "removegroup"
+		&& _act != "whodepend"
 		) {
 		res = -1;
 	}
@@ -1090,6 +1102,8 @@ int setup_action(char* act)
 {
 	std::string _act(act);
 
+	if ( _act == "whodepend")
+			return ACT_LISTDEPENDANTS;
 	if ( _act == "check")
 			return ACT_CHECKDAMAGE;
 	if ( _act == "test" )
