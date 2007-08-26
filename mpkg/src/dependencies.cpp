@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.44 2007/08/25 20:33:30 i27249 Exp $
+$Id: dependencies.cpp,v 1.45 2007/08/26 00:20:40 i27249 Exp $
 */
 
 
@@ -106,26 +106,26 @@ int DependencyTracker::renderData()
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
-	printf("rendering required list\n");
+	//printf("rendering required list\n");
 	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
 
 	mDebug("Rendering removing");
-	printf("Rendering remove queue\n");
+	//printf("Rendering remove queue\n");
 	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
 	mDebug("Filtering dupes: install");
 	currentStatus=_("Checking dependencies: filtering (stage 1: installation queue dupes");
-	printf("Filtering dupes\n");
+	//printf("Filtering dupes\n");
 	filterDupes(&installStream);
 	currentStatus=_("Checking dependencies: filtering (stage 2: remove queue dupes");
 	mDebug("Filtering dupes: remove");
 	filterDupes(&removeStream);
-	printf("preparing rollback\n");
+	//printf("preparing rollback\n");
 	currentStatus=_("Checking dependencies: filtering (stage 3: rollback)");
 	mDebug("Rolling back the items who was dropped on update");
 	PACKAGE_LIST fullWillBeList = installedPackages;
 	fullWillBeList.add(&installStream);
 	bool requested=false;
-	printf("Starting a loop of rollbacking\n");
+	//printf("Starting a loop of rollbacking\n");
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		requested=false;
@@ -149,20 +149,20 @@ int DependencyTracker::renderData()
 			installStream.add(removeStream.get_package(i));
 		}
 	}
-	printf("rollback end\n");
+	//printf("rollback end\n");
 	// END OF ROLLBACK MECHANISM
 
 	mDebug("Muxing streams");
-	printf("muxing streams\n");
+	//printf("muxing streams\n");
 	currentStatus=_("Checking dependencies: muxing queues");
 	muxStreams(installStream, removeStream);
 	currentStatus=_("Checking dependencies: searching for broken packages");
 	mDebug("Searching for broken packages");
-	printf("Searching for broken packages\n");
+	//printf("Searching for broken packages\n");
 	failureCounter = findBrokenPackages(installList, &failure_list);
 	mDebug("done");
 	currentStatus=_("Dependency check completed, error count: ") + IntToStr(failureCounter);
-	printf("renderData complete\n");
+	//printf("renderData complete\n");
 	if (!force_dep) return failureCounter;
 	else return 0;
 }
@@ -208,7 +208,6 @@ PACKAGE_LIST DependencyTracker::renderRequiredList(PACKAGE_LIST *installationQue
 
 PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 {
-	// TODO: Need a FASTUP!!
 	// Returns a list of required packages. Broken ones is marked internally
 	PACKAGE_LIST requiredPackages;
 	PACKAGE tmpPackage;
@@ -478,7 +477,7 @@ bool DependencyTracker::commitToDb()
 	int iC=0;
 	vector<int> i_ids;
 	bool alreadyThere;
-	if (!dialogMode) say(_("Will be installed:\n"));
+	if (!dialogMode && installList.size()>0 ) say(_("Will be installed:\n"));
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
@@ -504,14 +503,36 @@ bool DependencyTracker::commitToDb()
 	//else say (_("No packages to remove\n"));
 	int rC=0;
 	vector<int> r_ids;
-	if (!dialogMode) say(_("Will be removed:\n"));
+	if (!dialogMode && removeList.size()>0) say(_("Will be removed:\n"));
+
+	bool essentialUpdating, essentialFound=false;
 	for (int i=0; i<removeList.size(); i++)
 	{
-
+		essentialUpdating=false;
+		if (removeList.get_package(i)->isRemoveBlacklisted())
+		{
+			// Check if it is updating
+			for (int c=0; c<installList.size(); c++)
+			{
+				if (*installList.get_package(c)->get_name() == *removeList.get_package(i)->get_name())
+				{
+					essentialUpdating = true;
+					break;
+				}
+			}
+			if (!essentialUpdating)
+			{
+				if (!force_essential_remove) mError(_("Cannot remove package ") + \
+						*removeList.get_package(i)->get_name() + \
+						_(", because it is an important system component."));
+				else mWarning(_("Removing essential package ") + \
+						*removeList.get_package(i)->get_name());
+				if (!force_essential_remove) essentialFound=true;
+			}
+		}
 		//TODO: check for essential packages
 	/*	if (!package->isUpdating && package->isRemoveBlacklisted())
 	{
-		mError(_("Cannot remove package ") + *package->get_name() + _(", because it is an important system component."));
 		set_action(package->get_id(), ST_NONE);
 		return MPKGERROR_IMPOSSIBLE;
 	}*/
@@ -531,6 +552,10 @@ bool DependencyTracker::commitToDb()
 				r_ids.push_back(removeList.get_package(i)->get_id());
 			}
 		}
+	}
+	if (essentialFound) {
+		mError(_("Found essential packages, cannot continue"));
+		return false;
 	}
 	say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
 	int total_actions =  iC+rC;

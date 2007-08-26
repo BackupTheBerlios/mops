@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.53 2007/08/25 20:33:30 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.54 2007/08/26 00:20:40 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -409,6 +409,18 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
+		PACKAGE_LIST t;
+		SQLRecord a;
+		core.get_packagelist(&a, &t);
+		printf("WTF looping\n");
+		for (unsigned int i=0; i<1000; i++)
+		{
+			for (int x=0; x<t.size(); x++)
+			{
+				t.get_package(x)->isRemoveBlacklisted();// printf("blacklisted\n");
+			}
+		}
+
 		/*
 		core.DepTracker->createPackageCache();
 		core.DepTracker->fillInstalledPackages();

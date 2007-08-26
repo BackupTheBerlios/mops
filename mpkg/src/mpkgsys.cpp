@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.44 2007/08/21 14:25:55 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.45 2007/08/26 00:20:40 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -218,17 +218,18 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 		}
 		else 
 		{
+
 			mDebug("trying local install");
-			tryLocalInstall=true;
+			if (FileExists(package_name)) tryLocalInstall=true;
 		}
 	}
-	else
+	
+	if (!tryLocalInstall || !FileExists(package_name))
 	{
 		mError(_("No such package: ") + package_name);
-		return ret;
+		return MPKGERROR_NOPACKAGE;
 	}
 
-	if (!tryLocalInstall || !FileExists(package_name)) return MPKGERROR_NOPACKAGE;
 	else
 	{
 		say(_("Installing local package %s\n"), package_name.c_str());

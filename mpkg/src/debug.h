@@ -1,5 +1,5 @@
 /* Debugging output function(s)
-$Id: debug.h,v 1.12 2007/08/15 14:10:23 i27249 Exp $
+$Id: debug.h,v 1.13 2007/08/26 00:20:40 i27249 Exp $
 */
 
 
@@ -14,14 +14,15 @@ typedef int DEBUG_LEVEL;
 #define TEMP_XML_DOC "/tmp/mpkg-temp-doc.xml"
 
 #define mDebug(m) DbgPrint(__FILE__, __LINE__, __func__, m)
-#define mError(m) _mError(__FILE__, __LINE__, __func__, m)
+#define mError(m) _mError(__FILE__, __LINE__, __func__, m, false)
+#define mWarning(m) _mError(__FILE__, __LINE__, __func__, m, true)
 #define say printf
 #ifdef DEBUG
 #define ASSERT(m) (assert(m))
 #else
 #define ASSERT(m)
 #endif
-void _mError(char* file, int line, const char *func, std::string message);
+void _mError(char* file, int line, const char *func, std::string message, bool warn);
 void DbgPrint(char* file, int line, const char *func, std::string message);
 
 //void debug(std::string str);

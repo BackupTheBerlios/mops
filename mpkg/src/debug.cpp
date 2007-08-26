@@ -1,15 +1,16 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.18 2007/08/23 23:28:17 i27249 Exp $
+ $Id: debug.cpp,v 1.19 2007/08/26 00:20:40 i27249 Exp $
  */
  
 
 #include "debug.h"
-void _mError(char* file, int line, const char *func, std::string message)
+void _mError(char* file, int line, const char *func, std::string message, bool warn)
 {
 #ifdef DEBUG
 	fprintf(stderr, "%s[ERROR]: %sin %s  (%s:%i):%s %s\n",CL_RED, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
 #else
-	fprintf(stderr, "%sError:%s %s\n",CL_RED, CL_WHITE, message.c_str());
+	if (!warn) fprintf(stderr, "%s%s:%s %s\n",CL_RED, _("Error"), CL_WHITE, message.c_str());
+	else fprintf(stderr, "%s%s:%s %s\n",CL_YELLOW, _("Warning"), CL_WHITE, message.c_str());
 #endif
 #ifdef ENABLE_LOGGING
 	string logfile = log_directory + "mpkg-errors.log";

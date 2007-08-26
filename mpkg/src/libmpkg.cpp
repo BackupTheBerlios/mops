@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.51 2007/08/25 20:33:30 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.52 2007/08/26 00:20:40 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -271,14 +271,14 @@ int mpkg::commit()
 	//currentStatus = _("Checking dependencies...");
 	int errorCount;
        errorCount = DepTracker->renderData();
-	printf("RenderData complete\n");
+	//printf("RenderData complete\n");
 	if (errorCount==0)
 	{
 		if (!dialogMode) say(_("Building queue\n"));
 		else d.execInfoBox("Построение очереди действий",3,40);
 		mDebug("Tracking deps");
 		
-		DepTracker->commitToDb();
+		if (!DepTracker->commitToDb()) return MPKGERROR_IMPOSSIBLE;
 		if (interactive_mode)
 		{
 			say(_("Continue? [Y/n]\n"));
