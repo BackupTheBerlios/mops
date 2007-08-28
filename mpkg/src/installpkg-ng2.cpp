@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.54 2007/08/26 00:20:40 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.55 2007/08/28 19:08:35 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -94,11 +94,13 @@ int main (int argc, char **argv)
 		{ "installed",0,NULL,'i'},
 		{ "filelist",0,NULL,'l'},
 		{ "dialog",0,NULL,'g'},
+		{ "noconfirm",0,NULL,'y'},
 		{ NULL, 0, NULL, 0}
 	};
 
 	program_name = argv[0];
 
+	if (!dialogMode) interactive_mode=true;
 	do {
 		ich = getopt_long(argc, argv, short_opt, long_options, NULL);
 		
@@ -157,13 +159,15 @@ int main (int argc, char **argv)
 			case 'z':
 					ignoreDeps=true;
 					break;
-
+			case 'y':
+					interactive_mode=false;
 					
 			case '?':
 					return print_usage(stderr, 1);
 
 			case -1:
 					break;
+					
 
 			default:
 					abort();
@@ -180,7 +184,6 @@ int main (int argc, char **argv)
 		
 		action = setup_action( argv[optind-1] );
 	}
-	if (!dialogMode) interactive_mode=true;
 	if (action==ACT_SHOW || \
 			action == ACT_SEARCH || \
 			action == ACT_SHOWQUEUE || \
@@ -786,6 +789,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-i    --installed         show only installed packages (use with \"list\" keyword)\n"));
 	fprintf(stream,_("\t-a    --available         show only available packages (use with \"list\" keyword)\n"));
 	fprintf(stream,_("\t-l    --filelist          show file list for package (with \"show\" keyword)\n"));
+	fprintf(stream,_("\t-y    --noconfirm         don't ask confirmation\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));

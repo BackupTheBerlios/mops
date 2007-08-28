@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.45 2007/08/26 00:20:40 i27249 Exp $
+$Id: dependencies.cpp,v 1.46 2007/08/28 19:08:35 i27249 Exp $
 */
 
 
@@ -342,19 +342,10 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	PACKAGE_LIST conflict_list;
 	PACKAGE_LIST installQueuedList;
 	PACKAGE_LIST removeQueuedList;
-	/*SQLRecord sqlSearch;
-	sqlSearch.clear();	
-	sqlSearch.addField("package_action", ST_INSTALL);
-	db->get__packagelist(&sqlSearch, &installQueuedList);*/
 
 	fillByAction(ST_INSTALL, &installQueuedList);
+
 #ifdef EXTRACHECK_REMOVE_QUEUE
-	/*sqlSearch.clear();
-	sqlSearch.setSearchMode(SEARCH_IN);
-	sqlSearch.addField("package_action", IntToStr(ST_REMOVE));
-	sqlSearch.addField("package_action", IntToStr(ST_PURGE));
-	db->get__packagelist(&sqlSearch, &removeQueuedList);
-	*/
 	fillByAction(ST_REMOVE, &removeQueuedList);
 	fillByAction(ST_PURGE, &removeQueuedList);
 #endif
@@ -362,13 +353,15 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	// What we should do?
 	// 1. Remove from removeStream all items who are in installStream.
 	// 2. Add to remove_list resulting removeStream;
+
 	mDebug("Stage 1: removing items from removeStream which is required by installStream");
+
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		found=false;
 		for (int t=0;t<installStream.size();t++)
 		{
-			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) //FIXME: Ооооочень странное место... глючное
+			if (installStream.get_package(t)->equalTo(removeStream.get_package(i))) 
 			{
 				mDebug("Rollback of " + *installStream.get_package(t)->get_name() + " is confirmed");
 				found=true;
@@ -377,10 +370,12 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 		}
 		if (!found) remove_list.add(removeStream.get_package(i));
 	}
+
 	mDebug("Add to remove_stream all conflicting packages");
+
 	// 3. Add to remove_list all installed packages who conflicts with installStream (means have the same name and other md5)
 	PACKAGE_LIST proxyinstalledList = installedPackages;
-       proxyinstalledList.add(&installQueuedList);
+       	proxyinstalledList.add(&installQueuedList);
 	for (int i=0; i<installStream.size(); i++)
 	{
 		found=false;
@@ -418,8 +413,10 @@ void DependencyTracker::muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST remo
 	remove_list += removeQueue2;
 #endif
 	mDebug("Putting install_list");
+	
 	// 4. Put in install_list all installStream
 	install_list = installStream;
+	
 	// 5. Return results.
 	installList = install_list;
 	removeList = remove_list;

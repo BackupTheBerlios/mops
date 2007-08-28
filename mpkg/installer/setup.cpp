@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.43 2007/08/24 11:41:06 i27249 Exp $
+ * $Id: setup.cpp,v 1.44 2007/08/28 19:08:35 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -592,7 +592,7 @@ int mountPartitions()
 		if (system(mkdir_cmd)!=0 || system(mount_cmd)!=0)
 		{
 			mDebug("error while mount");
-			dialogItem.execInfoBox("Произошла ошибка при монтировании файловой системы " + \
+			dialogItem.execMsgBox("Произошла ошибка при монтировании файловой системы " + \
 					systemConfig.otherMounts[mountOrder[i]].tag + "\n:"+getLastError());
 			return -1;
 		}
@@ -846,7 +846,7 @@ void writeFstab()
 #endif
 		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("fat")!=std::string::npos)
 		{
-			options="rw,codepage=866,iocharset=utf-8,umask=000,showexec,quiet";
+			options="rw,codepage=866,iocharset=utf8,umask=000,showexec,quiet";
 			fstype="vfat";
 		}
 		if (systemConfig.otherMountFSTypes[mountOrder[i]].find("ntfs")!=std::string::npos)
@@ -855,7 +855,7 @@ void writeFstab()
 			options="locale=ru_RU.utf8,umask=000";
 			fstype="ntfs-3g";
 #else
-			options="nls=utf-8,umask=000,rw";
+			options="nls=utf8,umask=000,rw";
 			fstype="ntfs";
 #endif
 		}
