@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.55 2007/08/28 19:08:35 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.56 2007/08/29 11:51:55 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -75,9 +75,9 @@ int main (int argc, char **argv)
 	euid = geteuid();
 
 		
-
+	bool do_reset=true;
 	int ich;
-	const char* short_opt = "hvpdfmksDRialg";
+	const char* short_opt = "hvpdfmksDrialgq";
 	const struct option long_options[] =  {
 		{ "help",	0,	NULL, 'h'},
 		{ "verbose", 0, NULL, 'v'},
@@ -95,6 +95,7 @@ int main (int argc, char **argv)
 		{ "filelist",0,NULL,'l'},
 		{ "dialog",0,NULL,'g'},
 		{ "noconfirm",0,NULL,'y'},
+		{ "noreset",0,NULL,'q'},
 		{ NULL, 0, NULL, 0}
 	};
 
@@ -106,6 +107,9 @@ int main (int argc, char **argv)
 		
 
 		switch (ich) {
+			case 'q':
+					do_reset=false;
+					break;
 			case 'h':
 					print_usage(stdout, 0);
 					return 0;
@@ -203,6 +207,16 @@ int main (int argc, char **argv)
 	{
 		mError(_("Error: database is locked. Please close all other programs that use this"));
 		exit(1);
+	}
+
+	if (action == ACT_INSTALL ||
+			action == ACT_PACKAGEMENU ||
+			action == ACT_PURGE ||
+			action == ACT_REMOVE ||
+			action == ACT_INSTALLGROUP ||
+			action == ACT_REMOVEGROUP)
+	{
+		if (do_reset) core.clean_queue();
 	}
 
 	if ( action == ACT_NONE )
@@ -790,6 +804,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-a    --available         show only available packages (use with \"list\" keyword)\n"));
 	fprintf(stream,_("\t-l    --filelist          show file list for package (with \"show\" keyword)\n"));
 	fprintf(stream,_("\t-y    --noconfirm         don't ask confirmation\n"));
+	fprintf(stream,_("\t-q    --noreset           don't reset queue at start\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));
