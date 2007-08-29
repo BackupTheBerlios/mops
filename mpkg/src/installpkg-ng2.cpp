@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.56 2007/08/29 11:51:55 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.57 2007/08/29 14:17:35 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -150,6 +150,7 @@ int main (int argc, char **argv)
 					break;
 
 			case 'r':
+					printf("preparing to repair\n");
 					repair_damaged=true;
 					break;
 
@@ -565,13 +566,17 @@ int main (int argc, char **argv)
 		lockDatabase();
 
 		PACKAGE_LIST repairList;
+		PACKAGE_LIST checkList;
+		SQLRecord sqlSearch;
+		sqlSearch.addField("package_installed",ST_INSTALLED);
+		core.get_packagelist(&sqlSearch, &checkList);
+
+		string pkgname;
+		printf("optind = %d, argc = %d\n", optind, argc);
 		if (optind>=argc)
 		{
+			printf("mode 1\n");
 			// Check entire system
-			SQLRecord sqlSearch;
-			sqlSearch.addField("package_installed",ST_INSTALLED);
-			PACKAGE_LIST checkList;
-			core.get_packagelist(&sqlSearch, &checkList);
 			for (int i=0; i<checkList.size(); i++)
 			{
 				say("[%d/%d] ",i+1,checkList.size());
@@ -582,6 +587,7 @@ int main (int argc, char **argv)
 					say(_("%s: %sDAMAGED%s\n"), checkList.get_package(i)->get_name()->c_str(), CL_RED, CL_WHITE);
 					if (repair_damaged) 
 					{
+						printf("Adding to repair queue\n");
 						repairList.add(checkList.get_package(i));
 					}
 				}
@@ -589,17 +595,35 @@ int main (int argc, char **argv)
 		}
 		else
 		{
+			int pkgIndex=-1;
 			for (int i = optind; i<argc; i++)
 			{
-				if (core.checkPackageIntegrity((string) argv[i])) say("%s: %sOK%s\n", argv[i], CL_GREEN, CL_WHITE);
+				pkgname = (string) argv[i];
+
+				for (int t = 0; t<checkList.size(); t++)
+				{
+					if (checkList.get_package(t)->get_name()->find(pkgname)==0) {
+						pkgIndex=t;
+						break;
+					}
+				}
+				
+				if (core.checkPackageIntegrity(pkgname)) say("%s: %sOK%s\n", argv[i], CL_GREEN, CL_WHITE);
 				else 
 				{
 					say(_("%s: %sDAMAGED%s\n"), argv[i], CL_RED, CL_WHITE);
+					if (repair_damaged) 
+					{
+						printf("Adding\n");
+						repairList.add(checkList.get_package(pkgIndex));
+					}
+
 				}
 			}
 		}
 		for (int i=0; i<repairList.size(); i++)
 		{
+			printf("repairing %d\n", i);
 			core.repair(repairList.get_package(i));
 		}
 		if (repairList.size()>0)

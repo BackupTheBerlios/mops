@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.109 2007/08/25 20:33:30 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.110 2007/08/29 14:17:35 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -110,6 +110,7 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_REMOVE);
 	sqlSearch.addField("package_action", ST_PURGE);
+	sqlSearch.addField("package_action", ST_REPAIR);
 	if (get_packagelist(&sqlSearch, &remove_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	remove_list.sortByPriority(true);
 	PACKAGE_LIST install_list;
@@ -620,7 +621,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	string sys_root=SYS_ROOT;
 	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
 	if (!simulate) system(create_root.c_str());
-	sys="(cd "+sys_root+"; tar zxf "+sys_cache + *package->get_filename()+" --exclude install";
+	sys="(cd "+sys_root+"; tar zxf "+sys_cache + *package->get_filename();
 	//If previous version isn't purged, do not overwrite config files
 	if (no_purge)
 	{
@@ -635,7 +636,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				if (*package->get_config_files()->at(i).get_name()==*old_config_files[k].get_name())
 				{
 					mDebug("excluding file "+*package->get_config_files()->at(i).get_name());
-					sys+=" --exclude "+*package->get_config_files()->at(i).get_name();
+					sys+=" --exclude '"+*package->get_config_files()->at(i).get_name()+"'"; // FIXME: exclude works NOT as needed in some cases. 
+														// For example, if we want to exclude /install, the /bin/install will be excluded too
 				}
 			}
 		}
@@ -664,7 +666,11 @@ int mpkgDatabase::install_package(PACKAGE* package)
 //#ifdef ACTUAL_EXTRACT
 	if (!simulate)
 	{
-		if (system(sys.c_str()) == 0) currentStatus = statusHeader + _("executing post-install scripts...");
+		if (system(sys.c_str()) == 0)
+		{
+			system("rm -rf " + SYS_ROOT+"/install");
+			currentStatus = statusHeader + _("executing post-install scripts...");
+		}
 		else {
 			currentStatus = _("Failed to extract!");
 			return -10;
