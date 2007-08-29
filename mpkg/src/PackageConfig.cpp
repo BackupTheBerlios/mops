@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.30 2007/08/23 23:28:17 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.31 2007/08/29 22:33:12 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -42,7 +42,7 @@ PackageConfig::PackageConfig(string _f)
 		doc=NULL;
 		return;
     } else {
-		mDebug("PIZDEC 00-5");
+		mDebug("CENSORED 00-5");
 	}
 
     // checking for valid root node
@@ -55,7 +55,7 @@ PackageConfig::PackageConfig(string _f)
 		return;
 
     } else {
-		mDebug("PIZDEC 00-6");
+		mDebug("CENSORED 00-6");
 	}
 
 	if (this->errors == 0) {
@@ -63,9 +63,9 @@ PackageConfig::PackageConfig(string _f)
 	}
 
 	if (this->doc == NULL) {
-		mDebug("PIZDEC 00-3");
+		mDebug("CENSORED 00-3");
 	} else {
-		mDebug("PIZDEC 00-4");
+		mDebug("CENSORED 00-4");
 	}
     
 
@@ -439,7 +439,7 @@ vector<string> PackageConfig::getDepConditions()
 		for (i = 0; i < nodeset->nodeNr; i++) {
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
-			std::string __r = (_result != NULL) ? ((std::string)_result) : "PIZZDECCC!!!!";
+			std::string __r = (_result != NULL) ? ((std::string)_result) : "OMGWTF!!!!";
 			mDebug("Found dep cond '" + strim(__r) + "'");
 			a.push_back(strim(__r));
 		}
@@ -636,9 +636,9 @@ xmlDocPtr PackageConfig::getXMLDoc()
 {
 	mDebug("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Returning xmlDocPtr");
 	if (this->doc == NULL) {
-		mDebug("PIZDEC 00-1");
+		mDebug("CENSORED 00-1");
 	} else {
-		mDebug("PIZDEC 00-2");
+		mDebug("CENSORED 00-2");
 	}
 	return this->doc;
 }

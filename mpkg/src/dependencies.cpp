@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.46 2007/08/28 19:08:35 i27249 Exp $
+$Id: dependencies.cpp,v 1.47 2007/08/29 22:33:13 i27249 Exp $
 */
 
 
@@ -474,7 +474,7 @@ bool DependencyTracker::commitToDb()
 	int iC=0;
 	vector<int> i_ids;
 	bool alreadyThere;
-	if (!dialogMode && installList.size()>0 ) say(_("Will be installed:\n"));
+	//if (!dialogMode && installList.size()>0 ) say(_("Will be installed:\n"));
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
@@ -489,7 +489,7 @@ bool DependencyTracker::commitToDb()
 			}
 			if (!alreadyThere)
 			{
-				if (!dialogMode) say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
+				//if (!dialogMode) say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 				iC++;
 				db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 				i_ids.push_back(installList.get_package(i)->get_id());
@@ -500,7 +500,7 @@ bool DependencyTracker::commitToDb()
 	//else say (_("No packages to remove\n"));
 	int rC=0;
 	vector<int> r_ids;
-	if (!dialogMode && removeList.size()>0) say(_("Will be removed:\n"));
+	//if (!dialogMode && removeList.size()>0) say(_("Will be removed:\n"));
 
 	bool essentialUpdating, essentialFound=false;
 	for (int i=0; i<removeList.size(); i++)
@@ -527,13 +527,6 @@ bool DependencyTracker::commitToDb()
 				if (!force_essential_remove) essentialFound=true;
 			}
 		}
-		//TODO: check for essential packages
-	/*	if (!package->isUpdating && package->isRemoveBlacklisted())
-	{
-		set_action(package->get_id(), ST_NONE);
-		return MPKGERROR_IMPOSSIBLE;
-	}*/
-
 		if (removeList.get_package(i)->configexist())
 		{
 			alreadyThere=false;
@@ -543,7 +536,7 @@ bool DependencyTracker::commitToDb()
 			}
 			if (!alreadyThere)
 			{
-				if (!dialogMode) say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+				//if (!dialogMode) say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 				rC++;
 				db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 				r_ids.push_back(removeList.get_package(i)->get_id());
@@ -554,10 +547,10 @@ bool DependencyTracker::commitToDb()
 		mError(_("Found essential packages, cannot continue"));
 		return false;
 	}
-	say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
+	//say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
 	int total_actions =  iC+rC;
-	if (total_actions == 0) say(_("No actions to proceed\n"));
-	else say(_("Total %d new actions to proceed\n\n"), total_actions);
+	/*if (total_actions == 0) say(_("No actions to proceed\n"));
+	else say(_("Total %d new actions to proceed\n\n"), total_actions);*/
 
 	mDebug("finished");
 	return true;

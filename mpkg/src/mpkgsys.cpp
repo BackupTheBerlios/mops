@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.45 2007/08/26 00:20:40 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.46 2007/08/29 22:33:13 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -29,7 +29,6 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	{
 		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);
 	}
-	if (!dialogMode) say(_("finished\n"));
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.67 2007/08/23 23:28:18 i27249 Exp $
+$Id: local_package.cpp,v 1.68 2007/08/29 22:33:13 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -201,7 +201,7 @@ int LocalPackage::get_xml()
 	_packageXMLNode = &_nd;
 	//_packageXMLNode = memcpy(_packageXMLNode,*p.getXMLNode(), sizeof(p.getXMLNode())); // To be indexing work
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("DDDDD");
 		const xmlChar * __n = _nd.name;
@@ -249,26 +249,26 @@ int LocalPackage::get_xml()
 	vec_tmp_names=p.getDepNames();
 	vec_tmp_conditions=p.getDepConditions();
 	vec_tmp_versions=p.getDepVersions();
-	mDebug("PIZDEC 1, names.size = "+IntToStr(vec_tmp_names.size()) + ", versions.size = "+IntToStr(vec_tmp_versions.size())+", cond.size = " + IntToStr(vec_tmp_conditions.size()) );
+	mDebug("CENSORED 1, names.size = "+IntToStr(vec_tmp_names.size()) + ", versions.size = "+IntToStr(vec_tmp_versions.size())+", cond.size = " + IntToStr(vec_tmp_conditions.size()) );
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
-		mDebug("PIZDEC 1-1: " + vec_tmp_names[i]);
+		mDebug("CENSORED 1-1: " + vec_tmp_names[i]);
 		dep_tmp.set_package_name(&vec_tmp_names[i]);
-		mDebug("PIZDEC 1-2: '" + vec_tmp_versions[i] + "'");
+		mDebug("CENSORED 1-2: '" + vec_tmp_versions[i] + "'");
 		dep_tmp.set_package_version(&vec_tmp_versions[i]);
-		mDebug("PIZDEC 1-3: '" + vec_tmp_conditions[i] + "'");
+		mDebug("CENSORED 1-3: '" + vec_tmp_conditions[i] + "'");
 		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
 		*dep_tmp.get_type()=(string) "DEPENDENCY";
 		data.get_dependencies()->push_back(dep_tmp);
-		mDebug("PIZDEC 1-4: EXIT");
+		mDebug("CENSORED 1-4: EXIT");
         dep_tmp.clear();
-		mDebug("PIZDEC 1-5: OK");
+		mDebug("CENSORED 1-5: OK");
 
 	}
 	vec_tmp_names=p.getSuggestNames();
 	vec_tmp_conditions=p.getSuggestConditions();
 	vec_tmp_versions=p.getSuggestVersions();
-	mDebug("PIZDEC 2");
+	mDebug("CENSORED 2");
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{ 
 		suggest_tmp.set_package_name(&vec_tmp_names[i]);
@@ -278,7 +278,7 @@ int LocalPackage::get_xml()
 		data.get_dependencies()->push_back(suggest_tmp);
 		suggest_tmp.clear();
 	}
-	mDebug("PIZDEC 3");
+	mDebug("CENSORED 3");
 	vec_tmp_names=p.getTags();
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
@@ -294,7 +294,7 @@ int LocalPackage::get_xml()
 
 	vec_tmp_names=p.getConfigFilelist();
 	FILES configfile_tmp;
-	mDebug("PIZDEC 4");
+	mDebug("CENSORED 4");
 	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
 	{
 		configfile_tmp.set_name(&vec_tmp_names[i]);
@@ -378,9 +378,9 @@ int LocalPackage::create_md5()
 	xmlNodePtr __node;
 	__node = xmlNewChild(_packageXMLNode, NULL, (const xmlChar *)"md5", (const xmlChar *)md5str.c_str());
 	if (__node != NULL) {
-		mDebug("PIZDEC-4-1");
+		mDebug("CENSORED-4-1");
 	} else {
-		mDebug("PIZDEC-4-2");
+		mDebug("CENSORED-4-2");
 	}
 	/*_packageXMLNode.addChild("md5");
 	_packageXMLNode.getChildNode("md5").addText(md5str.c_str());
@@ -434,7 +434,7 @@ int LocalPackage::get_size()
 	mDebug(" Sizes: C: " + csize + ", I: " + isize);
 
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
@@ -446,16 +446,16 @@ int LocalPackage::get_size()
 	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"compressed_size", (const xmlChar *)csize.c_str());
 
 	if (__node != NULL) {
-		mDebug("PIZDEC-5-1");
+		mDebug("CENSORED-5-1");
 
 		const xmlChar * __n = __node->name;
 		mDebug("'compressed_size' node name = "+(string) (const char *)__n);
 	} else {
-		mDebug("PIZDEC-5-2");
+		mDebug("CENSORED-5-2");
 	}
 
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
@@ -466,16 +466,16 @@ int LocalPackage::get_size()
 	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"installed_size", (const xmlChar *)isize.c_str());
 
 	if (__node != NULL) {
-		mDebug("PIZDEC-5-1");
+		mDebug("CENSORED-5-1");
 
 		const xmlChar * __n = __node->name;
 		mDebug("'installed_size' node name__n = " + (string) (const char *)__n);
 	} else {
-		mDebug("PIZDEC-5-2");
+		mDebug("CENSORED-5-2");
 	}
 
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
@@ -534,16 +534,16 @@ int LocalPackage::set_additional_data()
 	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"filename", (const xmlChar *)data.get_filename()->c_str());
 
 	if (__node != NULL) {
-		mDebug("PIZDEC-5-1");
+		mDebug("CENSORED-5-1");
 
 		const xmlChar * __n = __node->name;
 		mDebug("'filename' node name__n = " + (string) (const char *)__n);
 	} else {
-		mDebug("PIZDEC-5-2");
+		mDebug("CENSORED-5-2");
 	}
 
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;
@@ -553,16 +553,16 @@ int LocalPackage::set_additional_data()
 	__node = xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"location", (const xmlChar *)fpath.c_str());
 
 	if (__node != NULL) {
-		mDebug("PIZDEC-5-1");
+		mDebug("CENSORED-5-1");
 
 		const xmlChar * __n = __node->name;
 		mDebug("'location' node name__n = " + (string) (const char *)__n);
 	} else {
-		mDebug("PIZDEC-5-2");
+		mDebug("CENSORED-5-2");
 	}
 
 	if (_packageXMLNode == NULL) {
-		mDebug("FULL PIZDEC!!!!");
+		mDebug("FULL CENSORED!!!!");
 	} else {
 		mDebug("QQQQ");
 		const xmlChar * __n = _packageXMLNode->name;

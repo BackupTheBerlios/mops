@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.52 2007/08/26 00:20:40 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.53 2007/08/29 22:33:13 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -265,7 +265,7 @@ int mpkg::commit()
 {
 	Dialog d;
 	mDebug("committing");
-	if (!dialogMode) say(_("%s: Checking dependencies\n"),__func__);
+	if (!dialogMode) say(_("Building dependency tree\n"));
 	else d.execInfoBox("Построение дерева зависимостей",3,60); // LANG_GETTEXT
 
 	//currentStatus = _("Checking dependencies...");
@@ -279,18 +279,6 @@ int mpkg::commit()
 		mDebug("Tracking deps");
 		
 		if (!DepTracker->commitToDb()) return MPKGERROR_IMPOSSIBLE;
-		if (interactive_mode)
-		{
-			say(_("Continue? [Y/n]\n"));
-			string input;
-i_actInput:
-			cin>>input;
-			if (input=="n" || input=="N" || input == "no") { clean_queue(); return MPKGERROR_ABORTED; }
-			if (input!="y" && input!="Y" && input!="yes") {
-				say(_("Please answer Y (yes) or N (no)\n"));
-				goto i_actInput;
-			}
-		}
 
 		if (!dialogMode) say(_("Committing...\n"));
 		else d.execInfoBox("Выполнение...");
@@ -302,8 +290,14 @@ i_actInput:
 		}
 		else 
 		{
-			mError(_("Commit failed"));
-			if (dialogMode) d.execInfoBox("Запрошенные операции выполнить не удалось",3,60);
+			switch(ret)
+			{
+				case MPKGERROR_ABORTED: say (_("Aborted\n"));
+							break;
+				default:
+					mError(_("Commit failed, error code: ") + IntToStr(ret));
+					if (dialogMode) d.execInfoBox("Запрошенные операции выполнить не удалось",3,60);
+			}
 		}
 		currentStatus = _("Complete.");
 		return ret;

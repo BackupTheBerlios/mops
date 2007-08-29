@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.57 2007/08/29 14:17:35 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.58 2007/08/29 22:33:13 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -34,10 +34,26 @@ void ShowBanner()
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
+void cleanDebugFile()
+{
+	struct stat s;
+	string file = log_directory + "/mpkg-debug.log";
+	if (stat(file.c_str(), &s)==0)
+	{
+		if (s.st_size >= 400000) unlink(file.c_str());
+	}
+	file = log_directory + "/mpkg-errors.log";
+	if (stat(file.c_str(), &s)==0)
+	{
+		if (s.st_size >= 400000) unlink(file.c_str());
+	}
+
+}
 
 int verbose = 0;
 int main (int argc, char **argv)
 {
+	cleanDebugFile();
 	// Check database lock
 	mpkg core;
 	if (!core.init_ok)
@@ -77,26 +93,26 @@ int main (int argc, char **argv)
 		
 	bool do_reset=true;
 	int ich;
-	const char* short_opt = "hvpdfmksDrialgq";
+	const char* short_opt = "hvpdzfmksDrailgyq";
 	const struct option long_options[] =  {
-		{ "help",	0,	NULL, 'h'},
-		{ "verbose", 0, NULL, 'v'},
-		{ "purge", 0, NULL, 'p'},
-		{ "force-dep", 0, NULL, 'd'},
-		{ "no-dep",0,NULL,'z'},
-		{ "force-conflicts",0,NULL,'f'},
-		{ "no-md5",0,NULL,'m'},
-		{ "force-essential",0,NULL,'k'},
-		{ "simulate",0,NULL,'s'},
-		{ "download-only",0,NULL,'D'},
-		{ "repair",0,NULL,'r'},
-		{ "available",0,NULL,'a'},
-		{ "installed",0,NULL,'i'},
-		{ "filelist",0,NULL,'l'},
-		{ "dialog",0,NULL,'g'},
-		{ "noconfirm",0,NULL,'y'},
-		{ "noreset",0,NULL,'q'},
-		{ NULL, 0, NULL, 0}
+		{ "help",		0, NULL,	'h'},
+		{ "verbose", 		0, NULL,	'v'},
+		{ "purge", 		0, NULL,	'p'},
+		{ "force-dep", 		0, NULL,	'd'},
+		{ "no-dep",		0, NULL,	'z'},
+		{ "force-conflicts",	0, NULL,	'f'},
+		{ "no-md5",		0, NULL,	'm'},
+		{ "force-essential",	0, NULL,	'k'},
+		{ "simulate",		0, NULL,	's'},
+		{ "download-only",	0, NULL,	'D'},
+		{ "repair",		0, NULL,	'r'},
+		{ "available",		0, NULL,	'a'},
+		{ "installed",		0, NULL,	'i'},
+		{ "filelist",		0, NULL,	'l'},
+		{ "dialog",		0, NULL,	'g'},
+		{ "noconfirm",		0, NULL,	'y'},
+		{ "noreset",		0, NULL,	'q'},
+		{ NULL, 		0, NULL, 	0}
 	};
 
 	program_name = argv[0];
@@ -166,8 +182,10 @@ int main (int argc, char **argv)
 					break;
 			case 'y':
 					interactive_mode=false;
+					break;
 					
 			case '?':
+					printf("WTF OPTIONZ DETECTED!\n");
 					return print_usage(stderr, 1);
 
 			case -1:
@@ -180,7 +198,7 @@ int main (int argc, char **argv)
 	
 	}  while ( ich != -1 );
 
-	
+	printf("optind = %d, argc = %d\n", optind, argc);
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
 		{
@@ -1055,7 +1073,6 @@ void list_pkglist(PACKAGE_LIST *pkglist)
 
 int list(mpkg *core, vector<string> search, bool onlyQueue)
 {
-	printf("list start\n");
 	PACKAGE_LIST pkglist;
 	SQLRecord sqlSearch;
 	if (!search.empty())

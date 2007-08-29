@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.41 2007/08/24 06:20:52 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.42 2007/08/29 22:33:13 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -62,7 +62,6 @@ bool isDatabaseLocked()
 	{
 		// Check if the process created this id is alive
 		if (!isProcessRunning(ReadFile("/var/run/mpkg.lock"))) {
-			say("Database was locked by died process\n");
 			unlink("/var/run/mpkg.lock");
 			return false;
 		}

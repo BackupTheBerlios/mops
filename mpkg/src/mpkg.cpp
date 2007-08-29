@@ -1,11 +1,11 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.110 2007/08/29 14:17:35 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.111 2007/08/29 22:33:13 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
 #include "syscommands.h"
 #include "DownloadManager.h"
-
+#include <iostream>
 #include "dialog.h"
 /** Scans database and do actions. Actually, packages will install in SYS_ROOT folder.
  * In real (mean installed) systems, set SYS_ROOT to "/"
@@ -110,7 +110,6 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_REMOVE);
 	sqlSearch.addField("package_action", ST_PURGE);
-	sqlSearch.addField("package_action", ST_REPAIR);
 	if (get_packagelist(&sqlSearch, &remove_list)!=0) return MPKGERROR_SQLQUERYERROR;
 	remove_list.sortByPriority(true);
 	PACKAGE_LIST install_list;
@@ -152,6 +151,78 @@ int mpkgDatabase::commit_actions()
 		else mError(_("Seems that free space is not enough to install. Required: ") + humanizeSize(ins_size - rem_size) + _(", available: ") + humanizeSize(freespace));
 	}
 	else mDebug("Freespace OK, proceeding");
+
+	// Let's show the summary for console and dialog users and ask for confirmation
+	if (consoleMode && !dialogMode)
+	{
+		unsigned int installCount = 0, updateCount = 0, removeCount = 0, purgeCount = 0, repairCount = 0;
+		say("Action summary:\n");
+
+		// Install
+		for (int i=0; i<install_list.size(); i++) {
+			if (install_list.get_package(i)->action()==ST_INSTALL) {
+				if (installCount==0) say("Will be installed:\n");
+				installCount++;
+				say("  [%d] %s %s\n", installCount, \
+						install_list.get_package(i)->get_name()->c_str(), \
+						install_list.get_package(i)->get_fullversion().c_str());
+			}
+		}
+		// Remove
+		for (int i=0; i<remove_list.size(); i++) {
+			if (remove_list.get_package(i)->action()==ST_REMOVE) {
+				if (removeCount==0) say("Will be removed:\n");
+				removeCount++;
+				say("  [%d] %s %s\n", removeCount, \
+						remove_list.get_package(i)->get_name()->c_str(), \
+						remove_list.get_package(i)->get_fullversion().c_str());
+			}
+		}
+		// Purge
+		for (int i=0; i<remove_list.size(); i++) {
+			if (remove_list.get_package(i)->action()==ST_PURGE) {
+				if (purgeCount==0) say("Will be purged:\n");
+				purgeCount++;
+				say("  [%d] %s %s\n", purgeCount, \
+						remove_list.get_package(i)->get_name()->c_str(), \
+						remove_list.get_package(i)->get_fullversion().c_str());
+			}
+		}
+		/*     Disabled because no package has status ST_UPDATE at this moment. Will extract data from install & remove lists later. Maybe :)
+		// Update
+		for (int i=0; i<install_list.size(); i++) {
+			if (install_list.get_package(i)->action()==ST_UPDATE) {
+				if (updateCount==0) say("Will be updated:\n");
+				updateCount++;
+				say("  [%d] %s %s\n", updateCount, \
+						install_list.get_package(i)->get_name()->c_str(), \
+						install_list.get_package(i)->get_fullversion().c_str());
+			}
+		} */
+		// Repair
+		for (int i=0; i<install_list.size(); i++) {
+			if (install_list.get_package(i)->action()==ST_REPAIR) {
+				if (repairCount==0) say("Will be repaired:\n");
+				repairCount++;
+				say("  [%d] %s %s\n", repairCount, \
+						install_list.get_package(i)->get_name()->c_str(), \
+						install_list.get_package(i)->get_fullversion().c_str());
+			}
+		}
+		if (interactive_mode && install_list.size()>0 && remove_list.size()>0)
+		{
+			say(_("Continue? [Y/n]\n"));
+			string input;
+i_actInput:
+			cin>>input;
+			if (input=="n" || input=="N" || input == "no") { return MPKGERROR_ABORTED; }
+			if (input!="y" && input!="Y" && input!="yes") {
+				say(_("Please answer Y (yes) or N (no)\n"));
+				goto i_actInput;
+			}
+		}
+
+	}
 
 	// Building action list
 	mDebug("Building action list");
@@ -492,8 +563,11 @@ installProcess:
 	}
 	if (removeFailures!=0 && installFailures!=0) return MPKGERROR_COMMITERROR;
 	actionBus.clear();
-	say(_("Executing ldconfig\n"));
-	system("ldconfig");
+	if (install_list.size()>0) 
+	{
+		if (!dialogMode) say(_("Executing ldconfig\n"));
+		system("ldconfig 2> /dev/null");
+	}
 	return 0;
 }
 
@@ -509,7 +583,8 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	bool no_purge=true;
 	vector<FILES> old_config_files;
 	mDebug("purge check");
-	int purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
+	int purge_id=0;
+	if (package->action()!=ST_REPAIR) purge_id=get_purge(package->get_name()); // returns package id if this previous package config files are not removed, or 0 if purged.
 	mDebug("purge check complete");
 	mDebug("purge_id="+IntToStr(purge_id));
 	if (purge_id==0)
@@ -583,11 +658,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 // Filtering file list...
 	vector<FILES> package_files;
-	/*for (unsigned int i=0; i<package->get_files()->size(); i++)
-	{
-		if (package->get_files()->at(i).get_type()==FTYPE_CONFIG) printf("config file\n");
-		else printf("not a config file %s\n", package->get_files()->at(i).get_name()->c_str());
-	}*/
+
 	if (!no_purge) add_filelist_record(package->get_id(), package->get_files());
 	string sys;
 	mDebug("Preparing scripts");
@@ -636,8 +707,9 @@ int mpkgDatabase::install_package(PACKAGE* package)
 				if (*package->get_config_files()->at(i).get_name()==*old_config_files[k].get_name())
 				{
 					mDebug("excluding file "+*package->get_config_files()->at(i).get_name());
-					sys+=" --exclude '"+*package->get_config_files()->at(i).get_name()+"'"; // FIXME: exclude works NOT as needed in some cases. 
-														// For example, if we want to exclude /install, the /bin/install will be excluded too
+					sys+=" --exclude '"+*package->get_config_files()->at(i).get_name()+"'"; 
+					// FIXME: exclude works NOT as needed in some cases.
+					// For example, if we want to exclude /install, the /bin/install will be excluded too
 				}
 			}
 		}
@@ -668,7 +740,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	{
 		if (system(sys.c_str()) == 0)
 		{
-			system("rm -rf " + SYS_ROOT+"/install");
+			system("rm -rf " + SYS_ROOT+"/install"); // Cleanup. Be aware of placing anything important to this directory
 			currentStatus = statusHeader + _("executing post-install scripts...");
 		}
 		else {
@@ -709,12 +781,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
-	/*if (!package->isUpdating && package->isRemoveBlacklisted())
-	{
-		mError(_("Cannot remove package ") + *package->get_name() + _(", because it is an important system component."));
-		set_action(package->get_id(), ST_NONE);
-		return MPKGERROR_IMPOSSIBLE;
-	}*/
 	get_filelist(package->get_id(), package->get_files());
 	package->sync();
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);

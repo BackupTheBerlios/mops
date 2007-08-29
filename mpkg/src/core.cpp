@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.70 2007/08/24 09:57:51 i27249 Exp $
+ *	$Id: core.cpp,v 1.71 2007/08/29 22:33:12 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -478,15 +478,16 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		*packagelist=packageDBCache;
 		return 0;
 	}
-
+#define OPTIMIZE_SQL_QUERIES
 #ifdef OPTIMIZE_SQL_QUERIES
+	printf("SQL optimization enabled\n");
 	if (sqlSearch->size()==1 && sqlSearch->getEqMode()==EQ_EQUAL )
 	{
 		if (*sqlSearch->getFieldName(0)=="package_name")
 		{
-			mDebug("SQL optimization by package_name");
+			printf("SQL optimization by package_name\n");
 			string pattern=*sqlSearch->getValue("package_name");
-			createDBCache(GetExtraInfo);
+			createDBCache();
 			packagelist->clear();
 			for (unsigned int i=0; i<packageDBCache.size(); i++)
 			{
@@ -499,9 +500,9 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		}
 		if (*sqlSearch->getFieldName(0)=="package_id")
 		{
-			mDebug("SQL optimization by package_id");
+			printf("SQL optimization by package_id\n");
 			int id=atoi(sqlSearch->getValue("package_id")->c_str());
-			createDBCache(GetExtraInfo);
+			createDBCache();
 			packagelist->clear();
 			for (unsigned int i=0; i<packageDBCache.size(); i++)
 			{
