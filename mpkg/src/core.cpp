@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.73 2007/08/30 21:46:48 i27249 Exp $
+ *	$Id: core.cpp,v 1.74 2007/08/30 22:54:06 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -530,6 +530,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
+	//printf("retrieving main\n");
 	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", *sqlSearch);
 	if (sql_ret!=0)
 	{
@@ -583,9 +584,12 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	}
 	if (!ultraFast) 
 	{
+		//printf("retrieving tags\n");
 		get_full_taglist(packagelist);
+		//printf("retrieving deps\n");
 		get_full_dependencylist(packagelist);
 	}
+	//printf("retrieving locations\n");
 	get_full_locationlist(packagelist);
 	if (!ultraFast && sqlSearch->empty())
 	{
@@ -734,7 +738,7 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	SQLRecord fields;
 	SQLRecord search;
 	SQLTable deplist;
-	db.get_sql_vtable(&deplist, fields, "dependencies", search);
+	db.get_sql_vtable(&deplist, fields, "dependencies", search); // Emerging the list of all existing dependencies
 	string pid_str;
 	DEPENDENCY dep_tmp;
 
@@ -744,11 +748,15 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	int fDependency_package_name = deplist.getFieldIndex("dependency_package_name");
 	int fDependency_type = deplist.getFieldIndex("dependency_type");
 	int fDependency_package_version = deplist.getFieldIndex("dependency_package_version");
+	
+	// Processing
+	int currentDepID;
 	for (int i=0; i<deplist.size(); i++)
 	{
+		currentDepID = atoi(deplist.getValue(i, fPackages_package_id)->c_str());
 		for (int p=0; p<pkgList->size(); p++)
 		{
-			if (pkgList->get_package(p)->get_id()==atoi(deplist.getValue(i, fPackages_package_id)->c_str()))
+			if (pkgList->get_package(p)->get_id()==currentDepID)
 			{
 				dep_tmp.set_condition(deplist.getValue(i, fDependency_condition));
 				dep_tmp.set_type(deplist.getValue(i, fDependency_type));
@@ -783,12 +791,14 @@ void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
 
 	int fTagsTags_id = tags.getFieldIndex("tags_id");
 	int fTagsTags_name = tags.getFieldIndex("tags_name");
+	int currentLinkPackageID;
 	for (int i=0; i<links.size(); i++)
 	{
+		currentLinkPackageID = atoi(links.getValue(i, fLinksPackages_package_id)->c_str());
 		for (int p=0; p<pkgList->size(); p++)
 		{
 			counter++;
-			if (pkgList->get_package(p)->get_id()==atoi(links.getValue(i, fLinksPackages_package_id)->c_str()))
+			if (pkgList->get_package(p)->get_id()==currentLinkPackageID)
 			{
 				tag_id_str=*links.getValue(i, fLinksTags_tag_id);
 				for (int t=0; t<tags.size(); t++)
@@ -913,7 +923,7 @@ void mpkgDatabase::get_full_locationlist(PACKAGE_LIST *pkgList)
 	int fLocation_id = sqlTable->getFieldIndex("location_id");
 	int fServer_url = sqlTable->getFieldIndex("server_url");
 	int fLocation_path = sqlTable->getFieldIndex("location_path");
-	
+
 	for (int i=0; i<sqlTable->size(); i++)
 	{
 		package_id = atoi(sqlTable->getValue(i, fPackages_package_id)->c_str());
@@ -1119,11 +1129,12 @@ int mpkgDatabase::get_purge(string *package_name)
 	}
 	int id=0;
 	int fPackage_configexist = sqlTable.getFieldIndex("package_configexist");
+	int fPackage_id = sqlTable.getFieldIndex("package_id");
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
 		if (*sqlTable.getValue(i, fPackage_configexist)==IntToStr(ST_CONFIGEXIST))
 		{
-			id=atoi(sqlTable.getValue(i, "package_id")->c_str());
+			id=atoi(sqlTable.getValue(i, fPackage_id)->c_str());
 			break;
 		}
 	}

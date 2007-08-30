@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.48 2007/08/24 06:20:52 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.49 2007/08/30 22:54:06 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -42,12 +42,13 @@ int SQLiteDB::clear_table(string table_name)
 int get_sql_table_counter=0;
 int SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
+	//printf("get_sql_table start\n");
 	get_sql_table_counter++;
 	char *errmsg=0;
 	mpkgErrorReturn errRet;
 	int query_return;
-	const char *qqq = sql_query->c_str();
-	query_return=sqlite3_get_table(db, qqq, table, rows, cols, &errmsg);
+	//const char *qqq = sql_query->c_str();
+	query_return=sqlite3_get_table(db, sql_query->c_str(), table, rows, cols, &errmsg);
 	if (query_return!=SQLITE_OK) // Means error
 	{
 		perror("SQLite INTERNAL ERROR");
@@ -64,6 +65,7 @@ int SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *c
 	free(errmsg);
 	sqlError=0;
 	sqlErrMsg.clear();
+	//printf("get_sql_table end\n");
 	return 0;
 }	
 
@@ -203,7 +205,9 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 	if (table_name=="packages") sql_query += " order by package_name;";
 	else sql_query += ";";
 	//mDebug("built sql query");
+#ifdef DEBUG
 	lastSQLQuery=sql_query;
+#endif
 	//mDebug("performing sql request");
 	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
 	//mDebug("sql request complete");
@@ -216,6 +220,9 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
 			//mDebug("parsing "+IntToStr(current_row)+" row (total " + IntToStr(rows) + ")");
+			/*
+			 * OLD BEHAVIOUR
+			 *
 			field_num=0;
 			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
@@ -223,6 +230,17 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 				*row.getValue(*fields.getFieldName(field_num)) = (string) table[value_pos];
 				field_num++;
 			}
+			*/
+
+			// New behaviour
+			field_num=0;
+			row=fields;
+			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
+			{
+				*row.getValueI(field_num) = (string) table[value_pos];
+				field_num++;
+			}
+
 			output->addRecord(&row);
 		}
 		//mDebug("parse complete, cleanup");
