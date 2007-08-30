@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.58 2007/08/29 22:33:13 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.59 2007/08/30 09:08:03 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -166,7 +166,7 @@ int main (int argc, char **argv)
 					break;
 
 			case 'r':
-					printf("preparing to repair\n");
+					//printf("preparing to repair\n");
 					repair_damaged=true;
 					break;
 
@@ -185,7 +185,7 @@ int main (int argc, char **argv)
 					break;
 					
 			case '?':
-					printf("WTF OPTIONZ DETECTED!\n");
+					//printf("WTF OPTIONZ DETECTED!\n");
 					return print_usage(stderr, 1);
 
 			case -1:
@@ -198,7 +198,7 @@ int main (int argc, char **argv)
 	
 	}  while ( ich != -1 );
 
-	printf("optind = %d, argc = %d\n", optind, argc);
+	//printf("optind = %d, argc = %d\n", optind, argc);
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
 		{
@@ -320,7 +320,7 @@ int main (int argc, char **argv)
 					else removeList.push_back(pkgList[i].tag);
 				}
 			}
-			printf("Install list:\n");
+			/*printf("Install list:\n");
 			for (unsigned int i=0; i<installList.size(); i++)
 			{
 				printf("INSTALL: %s\n", installList[i].c_str());
@@ -328,7 +328,7 @@ int main (int argc, char **argv)
 			for (unsigned int i=0; i<removeList.size(); i++)
 			{
 				printf("REMOVE: %s\n", removeList[i].c_str());
-			}
+			}*/
 
 			core.uninstall(removeList);
 			core.install(installList);
@@ -445,7 +445,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		PACKAGE_LIST t;
+		/*PACKAGE_LIST t;
 		SQLRecord a;
 		core.get_packagelist(&a, &t);
 		printf("WTF looping\n");
@@ -457,7 +457,7 @@ int main (int argc, char **argv)
 			}
 		}
 
-		/*
+		
 		core.DepTracker->createPackageCache();
 		core.DepTracker->fillInstalledPackages();
 		*/
@@ -590,7 +590,7 @@ int main (int argc, char **argv)
 		core.get_packagelist(&sqlSearch, &checkList);
 
 		string pkgname;
-		printf("optind = %d, argc = %d\n", optind, argc);
+		//printf("optind = %d, argc = %d\n", optind, argc);
 		if (optind>=argc)
 		{
 			printf("mode 1\n");
@@ -605,7 +605,7 @@ int main (int argc, char **argv)
 					say(_("%s: %sDAMAGED%s\n"), checkList.get_package(i)->get_name()->c_str(), CL_RED, CL_WHITE);
 					if (repair_damaged) 
 					{
-						printf("Adding to repair queue\n");
+						//printf("Adding to repair queue\n");
 						repairList.add(checkList.get_package(i));
 					}
 				}
@@ -632,7 +632,7 @@ int main (int argc, char **argv)
 					say(_("%s: %sDAMAGED%s\n"), argv[i], CL_RED, CL_WHITE);
 					if (repair_damaged) 
 					{
-						printf("Adding\n");
+						//printf("Adding\n");
 						repairList.add(checkList.get_package(pkgIndex));
 					}
 
@@ -641,7 +641,7 @@ int main (int argc, char **argv)
 		}
 		for (int i=0; i<repairList.size(); i++)
 		{
-			printf("repairing %d\n", i);
+			//printf("repairing %d\n", i);
 			core.repair(repairList.get_package(i));
 		}
 		if (repairList.size()>0)
@@ -1013,7 +1013,7 @@ void searchByFile(mpkg *core, string filename, bool strict)
 		return;
 	}
 	if (filename[0]=='/') filename=filename.substr(1);
-	printf("searching for [%s]\n",filename.c_str());
+	//printf("searching for [%s]\n",filename.c_str());
 	SQLRecord sqlSearch, sqlFields, sqlPkgSearch;
 	
 	if (!strict) sqlSearch.setEqMode(EQ_LIKE);
@@ -1030,7 +1030,7 @@ void searchByFile(mpkg *core, string filename, bool strict)
 	sqlPkgSearch.setSearchMode(SEARCH_OR);
 	for (int i=0; i<results.size(); i++)
 	{
-		printf("%s: %s\n", results.getValue(i, "file_name")->c_str(), results.getValue(i,"packages_package_id")->c_str());
+		//printf("%s: %s\n", results.getValue(i, "file_name")->c_str(), results.getValue(i,"packages_package_id")->c_str());
 		sqlPkgSearch.addField("package_id", results.getValue(i,"packages_package_id"));
 	}
 	core->get_packagelist(&sqlPkgSearch, &pkgList);

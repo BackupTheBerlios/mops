@@ -3,14 +3,23 @@
 	<group tag="_all_" name = "All packages" icon="/usr/share/mpkg/icons/penguin.png"/>
 	<group tag="_updates_" name = "Latest updates" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/superkaramba.png"/>
 	<group tag="base" name = "Base system" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
-	<group tag="utilities" name = "Utilities" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/xconsole.png"/>
-	<group tag="development" name="Development" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/alevt.png"/>
+	<group tag="base-utils" name = "Base utilities" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="print" name = "Printing" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="audio" name = "Audio" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="docs" name = "Documentation" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="desktop" name = "Desktop applications" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="x11-fonts" name = "X11 fonts" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="virtual" name = "Virtual packages" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+	<group tag="multimedia" name = "Multimedia" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmprocessor.png"/>
+
+	<group tag="utils" name = "Utilities" icon = "/usr/share/mpkg/icons/icons/default.kde/32x32/apps/xconsole.png"/>
+	<group tag="devel" name="Development" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/alevt.png"/>
 	<group tag="emacs" name="Emacs" icon="/usr/share/icons/crystalsvg/32x32/apps/plan.png"/>
 	<group tag="kernel-source" name="Kernel source" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmpci.png"/>
 	<group tag="kde" name="KDE" icon="/usr/share/icons/MOPSIcons/128x128/apps/go.png"/>
 	<group tag="kde-i18n" name="KDE i18n" icon="/usr/share/icons/crystalsvg/128x128/apps/kmenu.png"/>
 	<group tag="koffice" name="KOffice" icon="/usr/share/icons/crystalsvg/128x128/apps/wp.png"/>
-	<group tag="libraries" name="Libraries" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmsystem.png"/>
+	<group tag="libs" name="Libraries" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/kcmsystem.png"/>
 	<group tag="network" name="Network tools" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/ktalkd.png"/>
 	<group tag="openoffice" name="OpenOffice.org" icon="/usr/share/icons/MOPSIcons/128x128/apps/ooo-base.png"/>
 	<group tag="server" name="Server software" icon="/usr/share/mpkg/icons/icons/default.kde/32x32/apps/gnomemeeting.png"/>

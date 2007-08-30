@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.71 2007/08/29 22:33:12 i27249 Exp $
+ *	$Id: core.cpp,v 1.72 2007/08/30 09:08:03 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -478,7 +478,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		*packagelist=packageDBCache;
 		return 0;
 	}
-#define OPTIMIZE_SQL_QUERIES
+//#define OPTIMIZE_SQL_QUERIES 		// Disabled because of unknown (forgotten) behaviour
 #ifdef OPTIMIZE_SQL_QUERIES
 	printf("SQL optimization enabled\n");
 	if (sqlSearch->size()==1 && sqlSearch->getEqMode()==EQ_EQUAL )
