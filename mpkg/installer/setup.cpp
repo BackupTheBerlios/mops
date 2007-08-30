@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.44 2007/08/28 19:08:35 i27249 Exp $
+ * $Id: setup.cpp,v 1.45 2007/08/30 21:46:48 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -22,7 +22,8 @@ SysConfig systemConfig;
 PACKAGE_LIST i_availablePackages;
 vector<string> i_tagList;
 mpkg *core=NULL;
-
+bool realtimeTrackingEnabled=true;
+bool onlineDeps=true;
 bool noEject=true; // TODO: Change before release to false
 
 void createCore()
@@ -973,6 +974,12 @@ int packageSelectionMenu()
 	for (int i=0; i<i_availablePackages.size(); i++)
 	{
 		p = i_availablePackages.get_package(i);
+		
+		if (i_ret!=0) 
+		{
+			p->set_action(ST_NONE);
+			//printf("set action to none on package %d\n",i);
+		}
 		mark=false;
 
 		if (p->isTaggedBy("base")) mark=true;
@@ -1002,7 +1009,12 @@ int packageSelectionMenu()
 			p->set_action(ST_INSTALL);
 		}
 	}
-
+	if (onlineDeps)
+	{
+		deleteCore();
+		createCore();
+		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
+	}
 	bool showThisItem;
 	goto group_adjust_menu;
 group_mark_menu:
@@ -1031,6 +1043,11 @@ group_mark_menu:
 			}
 			if (i_availablePackages.get_package(t)->get_tags()->size()==0) i_availablePackages.get_package(t)->set_action(ST_NONE);
 		}
+	}
+	if (realtimeTrackingEnabled) {
+		deleteCore();
+		createCore();
+		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
 	}
 	goto group_adjust_menu;
 	// Executing adjustment
@@ -1080,6 +1097,13 @@ group_adjust_menu:
 					}
 				}
 			}
+			if (realtimeTrackingEnabled)
+			{
+				deleteCore();
+				createCore();
+				core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
+			}
+
 
 		}
 		goto group_adjust_menu;
@@ -1087,6 +1111,12 @@ group_adjust_menu:
 pkgcounter_finalize:
 	// Render deps and calculate summary
 	systemConfig.totalQueuedPackages=0;
+	if (onlineDeps) 
+	{
+		deleteCore();
+		createCore();
+		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
+	}
 	for (int i=0; i<i_availablePackages.size(); i++)
 	{
 		if (i_availablePackages.get_package(i)->action()==ST_INSTALL) systemConfig.totalQueuedPackages++;
@@ -1170,6 +1200,7 @@ int commit()
 				if (i_availablePackages.get_package(i)->action()==ST_INSTALL) core->install(i_availablePackages.get_package(i));
 
 			}
+
 			if (core->commit()!=0) return -1;
 			if (performConfig()!=0) return -1;
 			if (dbConfig()!=0) return -1;
@@ -1472,6 +1503,15 @@ int main(int argc, char *argv[])
 				valid_opt=true;
 				noEject=true;
 			}
+			if (strcmp(argv[i], "--no-realtime")==0)
+			{
+				realtimeTrackingEnabled = false;
+			}
+			if (strcmp(argv[i], "--offline-deps")==0)
+			{
+				onlineDeps = false;
+				realtimeTrackingEnabled = false;
+			}
 		
 			if (strcmp(argv[i], "--help")==0 || !valid_opt) 
 			{
@@ -1481,6 +1521,8 @@ int main(int argc, char *argv[])
 	
 				printf("\t--сheck          Проверять контрольные суммы всех пакетов перед установкой\n");
 				printf("\t--no-eject       Не выдвигать CD-ROM (используйте при установке в виртуальной машине)\n");
+				printf("\t--no-realtime    Считать зависимости между пакетами только при выходе в главное меню\n");
+				printf("\t--offline-deps   Вообще не считать зависимости до выполнения установки\n");
 				printf("\t--help           Показать эту справку\n");
 				//printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
 				exit(0);
@@ -1498,8 +1540,8 @@ int main(int argc, char *argv[])
 	systemConfig.cdromList=getCdromList();
 	unlink("/var/log/mpkg-lasterror.log");
 	unlink("/var/log/mkfs.log");
-	system("touch /var/log/mkfs.log /var/log/mpkg-lasterror.log");
-	system("killall tail");
+	system("touch /var/log/mkfs.log && touch /var/log/mpkg-lasterror.log");
+	system("killall tail 2> /dev/null");
 	system("tail -f /var/log/mkfs.log >> /dev/tty4 &");
 	system("tail -f /var/log/mpkg-lasterror.log >> /dev/tty4 &");
 	Dialog d ("Главное меню");

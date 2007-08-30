@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.53 2007/08/29 22:33:13 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.54 2007/08/30 21:46:48 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -159,10 +159,10 @@ int mpkg::clean_cache(bool clean_symlinks)
 }
 
 // Package list retrieving
-int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist)
+int mpkg::get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool ultraFast)
 {
 	currentStatus = _("Retrieving package list...");
-	int ret = db->get_packagelist(sqlSearch, packagelist);
+	int ret = db->get_packagelist(sqlSearch, packagelist, ultraFast);
 	if (ret == 0) currentStatus = _("Retriveal complete");
 	else currentStatus = _("Failed retrieving package list!");
 	return ret;
@@ -361,6 +361,22 @@ bool mpkg::checkPackageIntegrity(PACKAGE *package)
 	return integrity_ok;
 }
 
+bool mpkg::repair(string fname)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.addField("package_name", &fname);
+	sqlSearch.addField("package_installed", 1);
+	PACKAGE_LIST p;
+	get_packagelist(&sqlSearch, &p);
+	if (p.size()==1)
+	{
+		return repair(p.get_package(0));
+	}
+	else {
+		say(_("Cannot repair or reinstall package %s: it is not installed\n"), fname.c_str());
+		return false;
+	}
+}
 bool mpkg::repair(PACKAGE *package)
 {
 	if (!package->available())

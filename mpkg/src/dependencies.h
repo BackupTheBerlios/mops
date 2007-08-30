@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.14 2007/08/25 18:54:49 i27249 Exp $
+$Id: dependencies.h,v 1.15 2007/08/30 21:46:48 i27249 Exp $
 */
 
 
@@ -44,6 +44,7 @@ class DependencyTracker
 		mpkgDatabase *db;
 
 	public:
+		int renderDependenciesInPackageList(PACKAGE_LIST *pkgList);
 		void addToInstallQuery(PACKAGE *pkg);
 		void addToRemoveQuery(PACKAGE *pkg);
 		PACKAGE_LIST* get_install_list();

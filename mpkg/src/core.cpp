@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.72 2007/08/30 09:08:03 i27249 Exp $
+ *	$Id: core.cpp,v 1.73 2007/08/30 21:46:48 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -114,18 +114,20 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 		}
 	}
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
+	int fPackages_package_id = sqlTable->getFieldIndex("packages_package_id");
+	int fFile_name = sqlTable->getFieldIndex("file_name");
 	if (!sqlTable->empty())
 	{
 		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
 		{
-			package_id=atoi(sqlTable->getValue(k, "packages_package_id")->c_str());
+			package_id=atoi(sqlTable->getValue(k, fPackages_package_id)->c_str());
 			if (package_id!=prev_package_id)
 			{
 				if (get_installed(package_id) || get_action(package_id)==ST_INSTALL)
 				{
 					get_package(package_id, &tmpP);
 					//say("File %s conflicts with package %s, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), tmpP.get_name()->c_str());
-					backupFile(sqlTable->getValue(k, "file_name"), package_id, package->get_id());
+					backupFile(sqlTable->getValue(k, fFile_name), package_id, package->get_id());
 				}
 			}
 		}
@@ -167,10 +169,13 @@ void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 	db.get_sql_vtable(&fTable, sqlFields, "conflicts", sqlSearch);
 	ret->clear();
 	ret->resize(fTable.getRecordCount());
+
+	int fConflict_file_name = fTable.getFieldIndex("conflict_file_name");
+	int fBackup_file = fTable.getFieldIndex("backup_file");
 	for (int i=0; i<fTable.getRecordCount(); i++)
 	{
-		ret->at(i).set_name(fTable.getValue(i, "conflict_file_name"));
-		ret->at(i).set_backup_file(fTable.getValue(i, "backup_file"));
+		ret->at(i).set_name(fTable.getValue(i, fConflict_file_name));
+		ret->at(i).set_backup_file(fTable.getValue(i, fBackup_file));
 	}
 }
 
@@ -345,6 +350,7 @@ int mpkgDatabase::add_taglist_record (int package_id, vector<string> *taglist)
 	SQLRecord sqlSearch;
 	SQLRecord sqlFields;
 	sqlFields.addField("tags_id");
+	int fTags_id = 0; //sqlTable->getFieldIndex("tags_id"); // WARNING: if you change the field numbering, change this too!!!
 	for (unsigned int i=0; i<taglist->size();i++)
 	{
 		sqlSearch.clear();
@@ -359,7 +365,7 @@ int mpkgDatabase::add_taglist_record (int package_id, vector<string> *taglist)
 			db.sql_insert("tags", sqlInsert);
 			db.get_sql_vtable(sqlTable, sqlFields, "tags", sqlSearch);
 		}
-		tag_id=atoi(sqlTable->getValue(0, "tags_id")->c_str());
+		tag_id=atoi(sqlTable->getValue(0, fTags_id)->c_str());
 		add_tag_link(package_id, tag_id);
 	}
 	delete sqlTable;
@@ -470,8 +476,10 @@ int mpkgDatabase::get_package(int package_id, PACKAGE *package, bool no_cache)//
 	return MPKGERROR_NOPACKAGE;
 }
 
-int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist)//, bool GetExtraInfo, bool ultraFast)
+int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool ultraFast)//, bool GetExtraInfo, bool ultraFast)
 {
+	// Ultrafast will request only basic info about package
+	
 	if (sqlSearch->empty() && !db.internalDataChanged)
 	{
 		mDebug("SQL optimization using full cache");
@@ -529,34 +537,57 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	}
 	packagelist->clear(sqlTable->getRecordCount());
 	
+	// Creating field index
+	int fPackage_id = sqlTable->getFieldIndex("package_id");
+	int fPackage_name = sqlTable->getFieldIndex("package_name");
+	int fPackage_version = sqlTable->getFieldIndex("package_version");
+	int fPackage_arch = sqlTable->getFieldIndex("package_arch");
+	int fPackage_build = sqlTable->getFieldIndex("package_build");
+	int fPackage_compressed_size = sqlTable->getFieldIndex("package_compressed_size");
+	int fPackage_installed_size = sqlTable->getFieldIndex("package_installed_size");
+	int fPackage_short_description = sqlTable->getFieldIndex("package_short_description");
+	int fPackage_description = sqlTable->getFieldIndex("package_description");
+	int fPackage_changelog = sqlTable->getFieldIndex("package_changelog");
+	int fPackage_packager = sqlTable->getFieldIndex("package_packager");
+	int fPackage_packager_email = sqlTable->getFieldIndex("package_packager_email");
+	int fPackage_installed = sqlTable->getFieldIndex("package_installed");
+	int fPackage_configexist = sqlTable->getFieldIndex("package_configexist");
+	int fPackage_action = sqlTable->getFieldIndex("package_action");
+	int fPackage_md5 = sqlTable->getFieldIndex("package_md5");
+	int fPackage_filename = sqlTable->getFieldIndex("package_filename");
+
+
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
 	{
-		packagelist->get_package(i)->set_id(atoi(sqlTable->getValue(i, "package_id")->c_str()));
-		packagelist->get_package(i)->set_name(sqlTable->getValue(i, "package_name"));
-		packagelist->get_package(i)->set_version(sqlTable->getValue(i, "package_version"));
-		packagelist->get_package(i)->set_arch(sqlTable->getValue(i, "package_arch"));
-		packagelist->get_package(i)->set_build(sqlTable->getValue(i, "package_build"));
-		packagelist->get_package(i)->set_compressed_size(sqlTable->getValue(i, "package_compressed_size"));
-		packagelist->get_package(i)->set_installed_size(sqlTable->getValue(i, "package_installed_size"));
-		packagelist->get_package(i)->set_short_description(sqlTable->getValue(i, "package_short_description"));
-		packagelist->get_package(i)->set_description(sqlTable->getValue(i, "package_description"));
-		packagelist->get_package(i)->set_changelog(sqlTable->getValue(i, "package_changelog"));
-		packagelist->get_package(i)->set_packager(sqlTable->getValue(i, "package_packager"));
-		packagelist->get_package(i)->set_packager_email(sqlTable->getValue(i, "package_packager_email"));
-		packagelist->get_package(i)->set_installed(atoi(sqlTable->getValue(i,"package_installed")->c_str()));
-		packagelist->get_package(i)->set_configexist(atoi(sqlTable->getValue(i,"package_configexist")->c_str()));
-		packagelist->get_package(i)->set_action(atoi(sqlTable->getValue(i,"package_action")->c_str()));
+		packagelist->get_package(i)->set_id(atoi(sqlTable->getValue(i, fPackage_id)->c_str()));
+		packagelist->get_package(i)->set_name(sqlTable->getValue(i, fPackage_name));
+		packagelist->get_package(i)->set_version(sqlTable->getValue(i, fPackage_version));
+		packagelist->get_package(i)->set_arch(sqlTable->getValue(i, fPackage_arch));
+		packagelist->get_package(i)->set_build(sqlTable->getValue(i, fPackage_build));
+		packagelist->get_package(i)->set_compressed_size(sqlTable->getValue(i, fPackage_compressed_size));
+		packagelist->get_package(i)->set_installed_size(sqlTable->getValue(i, fPackage_installed_size));
+		packagelist->get_package(i)->set_short_description(sqlTable->getValue(i, fPackage_short_description));
+		packagelist->get_package(i)->set_description(sqlTable->getValue(i, fPackage_description));
+		packagelist->get_package(i)->set_changelog(sqlTable->getValue(i, fPackage_changelog));
+		packagelist->get_package(i)->set_packager(sqlTable->getValue(i, fPackage_packager));
+		packagelist->get_package(i)->set_packager_email(sqlTable->getValue(i, fPackage_packager_email));
+		packagelist->get_package(i)->set_installed(atoi(sqlTable->getValue(i,fPackage_installed)->c_str()));
+		packagelist->get_package(i)->set_configexist(atoi(sqlTable->getValue(i, fPackage_configexist)->c_str()));
+		packagelist->get_package(i)->set_action(atoi(sqlTable->getValue(i, fPackage_action)->c_str()));
 
-		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, "package_md5"));
-		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, "package_filename"));
+		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, fPackage_md5));
+		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, fPackage_filename));
 #ifdef ENABLE_INTERNATIONAL
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
 	}
-	get_full_taglist(packagelist);
-	get_full_dependencylist(packagelist);
+	if (!ultraFast) 
+	{
+		get_full_taglist(packagelist);
+		get_full_dependencylist(packagelist);
+	}
 	get_full_locationlist(packagelist);
-	if (sqlSearch->empty())
+	if (!ultraFast && sqlSearch->empty())
 	{
 		packageDBCache=*packagelist;
 		db.internalDataChanged=false;
@@ -706,16 +737,23 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	db.get_sql_vtable(&deplist, fields, "dependencies", search);
 	string pid_str;
 	DEPENDENCY dep_tmp;
+
+	// Creating index
+	int fPackages_package_id = deplist.getFieldIndex("packages_package_id");
+	int fDependency_condition = deplist.getFieldIndex("dependency_condition");
+	int fDependency_package_name = deplist.getFieldIndex("dependency_package_name");
+	int fDependency_type = deplist.getFieldIndex("dependency_type");
+	int fDependency_package_version = deplist.getFieldIndex("dependency_package_version");
 	for (int i=0; i<deplist.size(); i++)
 	{
 		for (int p=0; p<pkgList->size(); p++)
 		{
-			if (pkgList->get_package(p)->get_id()==atoi(deplist.getValue(i, "packages_package_id")->c_str()))
+			if (pkgList->get_package(p)->get_id()==atoi(deplist.getValue(i, fPackages_package_id)->c_str()))
 			{
-				dep_tmp.set_condition(deplist.getValue(i, "dependency_condition"));
-				dep_tmp.set_type(deplist.getValue(i, "dependency_type"));
-				dep_tmp.set_package_name(deplist.getValue(i, "dependency_package_name"));
-				dep_tmp.set_package_version(deplist.getValue(i, "dependency_package_version"));
+				dep_tmp.set_condition(deplist.getValue(i, fDependency_condition));
+				dep_tmp.set_type(deplist.getValue(i, fDependency_type));
+				dep_tmp.set_package_name(deplist.getValue(i, fDependency_package_name));
+				dep_tmp.set_package_version(deplist.getValue(i, fDependency_package_version));
 				pkgList->get_package(p)->get_dependencies()->push_back(dep_tmp);
 			}
 		}
@@ -737,20 +775,28 @@ void mpkgDatabase::get_full_taglist(PACKAGE_LIST *pkgList)
 	fields.addField("tags_tag_id");
 	db.get_sql_vtable(&links, fields, "tags_links", search);
 	string tag_id_str;
+	
+	// Index
+	
+	int fLinksPackages_package_id = links.getFieldIndex("packages_package_id");
+	int fLinksTags_tag_id = links.getFieldIndex("tags_tag_id");
+
+	int fTagsTags_id = tags.getFieldIndex("tags_id");
+	int fTagsTags_name = tags.getFieldIndex("tags_name");
 	for (int i=0; i<links.size(); i++)
 	{
 		for (int p=0; p<pkgList->size(); p++)
 		{
 			counter++;
-			if (pkgList->get_package(p)->get_id()==atoi(links.getValue(i, "packages_package_id")->c_str()))
+			if (pkgList->get_package(p)->get_id()==atoi(links.getValue(i, fLinksPackages_package_id)->c_str()))
 			{
-				tag_id_str=*links.getValue(i, "tags_tag_id");
+				tag_id_str=*links.getValue(i, fLinksTags_tag_id);
 				for (int t=0; t<tags.size(); t++)
 				{
-					if (*tags.getValue(t, "tags_id")==tag_id_str)
+					if (*tags.getValue(t, fTagsTags_id)==tag_id_str)
 					{
 						success++;
-						pkgList->get_package(p)->get_tags()->push_back(*tags.getValue(t, "tags_name"));
+						pkgList->get_package(p)->get_tags()->push_back(*tags.getValue(t, fTagsTags_name));
 						break;
 					}
 				}
@@ -818,9 +864,10 @@ void mpkgDatabase::get_available_tags(vector<string> *output)
 	db.get_sql_vtable(&sqlTable, sqlFields, "tags", sqlSearch);
 	output->clear();
 	output->resize(sqlTable.size());
+	int fTags_name = sqlTable.getFieldIndex("tags_name");
 	for (int i=0; i<sqlTable.size(); i++)
 	{
-		output->at(i)=*sqlTable.getValue(i,"tags_name");
+		output->at(i)=*sqlTable.getValue(i,fTags_name);
 	}
 }
 
@@ -860,16 +907,23 @@ void mpkgDatabase::get_full_locationlist(PACKAGE_LIST *pkgList)
 
 	int package_id;
 	LOCATION tmp;
+
+	// Index
+	int fPackages_package_id = sqlTable->getFieldIndex("packages_package_id");
+	int fLocation_id = sqlTable->getFieldIndex("location_id");
+	int fServer_url = sqlTable->getFieldIndex("server_url");
+	int fLocation_path = sqlTable->getFieldIndex("location_path");
+	
 	for (int i=0; i<sqlTable->size(); i++)
 	{
-		package_id = atoi(sqlTable->getValue(i, "packages_package_id")->c_str());
+		package_id = atoi(sqlTable->getValue(i, fPackages_package_id)->c_str());
 		for (int t=0; t<pkgList->size(); t++)
 		{
 			if (pkgList->get_package(t)->get_id()==package_id)
 			{
-				tmp.set_id(atoi(sqlTable->getValue(i, "location_id")->c_str()));
-				tmp.set_server_url(sqlTable->getValue(i, "server_url"));
-				tmp.set_path(sqlTable->getValue(i, "location_path"));
+				tmp.set_id(atoi(sqlTable->getValue(i, fLocation_id)->c_str()));
+				tmp.set_server_url(sqlTable->getValue(i, fServer_url));
+				tmp.set_path(sqlTable->getValue(i, fLocation_path));
 				pkgList->get_package(t)->get_locations()->push_back(tmp);
 			}
 		}
@@ -891,9 +945,10 @@ int mpkgDatabase::get_package_id(PACKAGE *package)
 		delete sqlTable;
 		return 0;
 	}
+
 	if (sqlTable->getRecordCount()==1)
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_id")->c_str());
+		int ret = atoi(sqlTable->getValue(0, sqlTable->getFieldIndex("package_id"))->c_str());
 		delete sqlTable;
 		return ret;
 	}
@@ -950,7 +1005,7 @@ int mpkgDatabase::get_installed(int package_id)
 	}
 	if (sqlTable->getRecordCount()==1)
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_installed")->c_str());
+		int ret = atoi(sqlTable->getValue(0, sqlTable->getFieldIndex("package_installed"))->c_str());
 		delete sqlTable;
 		return ret;
 	}
@@ -980,7 +1035,7 @@ int mpkgDatabase::get_action(int package_id)
 	}
 	if (sqlTable->getRecordCount()==1)
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_action")->c_str());
+		int ret = atoi(sqlTable->getValue(0, sqlTable->getFieldIndex("package_action"))->c_str());
 		delete sqlTable;
 		return ret;
 	}
@@ -1009,7 +1064,7 @@ int mpkgDatabase::get_configexist(int package_id)
 	}
 	if (sqlTable->getRecordCount()==1)
 	{
-		int ret = atoi(sqlTable->getValue(0, "package_configexist")->c_str());
+		int ret = atoi(sqlTable->getValue(0, sqlTable->getFieldIndex("package_configexist"))->c_str());
 		delete sqlTable;
 		return ret;
 	}
@@ -1063,9 +1118,10 @@ int mpkgDatabase::get_purge(string *package_name)
 		return 0;
 	}
 	int id=0;
+	int fPackage_configexist = sqlTable.getFieldIndex("package_configexist");
 	for (int i=0; i<sqlTable.getRecordCount(); i++)
 	{
-		if (*sqlTable.getValue(i, "package_configexist")==IntToStr(ST_CONFIGEXIST))
+		if (*sqlTable.getValue(i, fPackage_configexist)==IntToStr(ST_CONFIGEXIST))
 		{
 			id=atoi(sqlTable.getValue(i, "package_id")->c_str());
 			break;
@@ -1145,6 +1201,11 @@ bool SQLRecord::setValue(string fieldname, string *value)
 	return false;
 }
 
+void SQLRecord::setValue(unsigned int field_index, string *value)
+{
+	field[field_index].value = *value;
+}
+
 void SQLRecord::addField(string fieldname, string *value)
 {
 	SQLField tmp;
@@ -1169,6 +1230,19 @@ string* SQLRecord::getValueI(unsigned int num)
 		PrepareSql(&field[num].value);
 		return &field[num].value;
 }
+
+int SQLRecord::getFieldIndex(string fieldname)
+{
+	for (unsigned int i=0;i<field.size();i++)
+	{
+		if (field[i].fieldname==fieldname)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 
 void SQLRecord::clear()
 {
@@ -1235,6 +1309,16 @@ string* SQLTable::getValue(unsigned int num, string fieldname)
 	}
 }
 
+string* SQLTable::getValue(unsigned int num, unsigned int field_index)
+{
+	return table[num].getValueI(field_index);
+}
+
+int SQLTable::getFieldIndex(string fieldname)
+{
+	if (table.size()==0) return -2;
+	else return table[0].getFieldIndex(fieldname);
+}
 SQLRecord* SQLTable::getRecord(unsigned int num)
 {
 	if (num<table.size()) return &table[num];

@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.38 2007/08/21 18:05:22 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.39 2007/08/30 21:46:48 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -19,7 +19,7 @@ class mpkgDatabase
 
 		// Functions to get data
 		int get_package(int package_id, PACKAGE *package, bool no_cache=false);
-		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist);
+		int get_packagelist(SQLRecord *sqlSearch, PACKAGE_LIST *packagelist, bool ultraFast=false);
 #ifdef ENABLE_INTERNATIONAL
 		int get_descriptionlist(int package_id, vector<DESCRIPTION> *desclist, string language="");
 #endif

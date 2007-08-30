@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.68 2007/08/16 14:39:10 i27249 Exp $
+	$Id: dataunits.cpp,v 1.69 2007/08/30 21:46:48 i27249 Exp $
 */
 
 
@@ -910,7 +910,15 @@ void PACKAGE::clearVersioning()
 }
 
 
-
+PACKAGE * PACKAGE_LIST::getPackageByID(int id)
+{
+	for (int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].get_id()==id) return &packages[i];
+	}
+	mError("No such id " + IntToStr(id) + " in package list");
+	return NULL;
+}
 void PACKAGE_LIST::sortByPriority(bool reverse_order)
 {
 //	printf("sorting priority\n");

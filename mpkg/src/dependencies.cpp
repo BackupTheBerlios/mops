@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.47 2007/08/29 22:33:13 i27249 Exp $
+$Id: dependencies.cpp,v 1.48 2007/08/30 21:46:48 i27249 Exp $
 */
 
 
@@ -90,6 +90,127 @@ void DependencyTracker::fillInstalledPackages()
 	{
 		if (packageCache.get_package(i)->installed()) installedPackages.add(packageCache.get_package(i));
 	}
+}
+
+int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
+{
+	// A *very* special case: need to compute dependencies within single package list, with no access to database
+	packageCache = *pkgList;
+	cacheCreated=true;
+	fillInstalledPackages();
+	int failureCounter = 0;
+	// Forming pseudo-queue
+	for (int i=0; i<packageCache.size(); i++)
+	{
+		if (packageCache.get_package(i)->action()==ST_INSTALL) installQueryList.add(packageCache.get_package(i));
+		if (packageCache.get_package(i)->action()==ST_REMOVE || \
+				packageCache.get_package(i)->action()==ST_PURGE) removeQueryList.add(packageCache.get_package(i));
+	}
+	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
+	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
+	filterDupes(&installStream);
+	filterDupes(&removeStream);
+	PACKAGE_LIST fullWillBeList = installedPackages;
+	fullWillBeList.add(&installStream);
+	bool requested = false;
+	for (int i=0; i<removeStream.size(); i++)
+	{
+		requested=false;
+		for (int t=0; t<removeQueryList.size(); t++)
+		{
+			if (removeStream.get_package(i)->equalTo(removeQueryList.get_package(t)))
+			{
+				requested=true;
+			}
+		}
+		if (!requested && checkBrokenDeps(removeStream.get_package(i), fullWillBeList))
+		{
+			mDebug("Rolling back " + *removeStream.get_package(i)->get_name());
+			installStream.add(removeStream.get_package(i));
+		}
+	}
+	muxStreams(installStream, removeStream);
+	failureCounter = findBrokenPackages(installList, &failure_list);
+
+	// Summarize and push back
+	
+	// Reset
+	for (int i=0; i<pkgList->size(); i++)
+	{
+		pkgList->get_package(i)->set_action(ST_NONE);
+	}
+	int iC=0;
+	vector<int> i_ids;
+	bool alreadyThere;
+	for (int i=0; i<installList.size(); i++)
+	{
+		if (!installList.get_package(i)->installed())
+		{
+			alreadyThere=false;
+			for (unsigned int v=0; v<i_ids.size(); v++)
+			{
+				if (i_ids[v]==installList.get_package(i)->get_id())
+				{
+					alreadyThere=true;
+				}
+			}
+			if (!alreadyThere)
+			{
+				iC++;
+				pkgList->getPackageByID(installList.get_package(i)->get_id())->set_action(ST_INSTALL);
+				//db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+
+				i_ids.push_back(installList.get_package(i)->get_id());
+			}
+		}
+	}
+	int rC=0;
+	vector<int> r_ids;
+	bool essentialUpdating, essentialFound=false;
+	for (int i=0; i<removeList.size(); i++)
+	{
+		essentialUpdating=false;
+		if (removeList.get_package(i)->isRemoveBlacklisted())
+		{
+			for (int c=0; c<installList.size(); c++)
+			{
+				if (*installList.get_package(c)->get_name() == *removeList.get_package(i)->get_name())
+				{
+					essentialUpdating = true;
+					break;
+				}
+			}
+			if (!essentialUpdating)
+			{
+				if (!force_essential_remove) mError(_("Cannot remove package ") + \
+						*removeList.get_package(i)->get_name() + \
+						_(", because it is an important system component."));
+				else mWarning(_("Removing essential package ") + \
+						*removeList.get_package(i)->get_name());
+				if (!force_essential_remove) essentialFound=true;
+			}
+		}
+		if (removeList.get_package(i)->configexist())
+		{
+			alreadyThere=false;
+			for (unsigned int v=0; v<r_ids.size(); v++)
+			{
+				if (r_ids[v]==removeList.get_package(i)->get_id()) alreadyThere=true;
+			}
+			if (!alreadyThere)
+			{
+				rC++;
+				pkgList->getPackageByID(removeList.get_package(i)->get_id())->set_action(ST_REMOVE);
+
+				//db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+				r_ids.push_back(removeList.get_package(i)->get_id());
+			}
+		}
+	}
+
+	if (!force_dep) return failureCounter;
+	else return 0;
+
 }
 
 int DependencyTracker::renderData()
@@ -548,7 +669,7 @@ bool DependencyTracker::commitToDb()
 		return false;
 	}
 	//say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
-	int total_actions =  iC+rC;
+	//int total_actions =  iC+rC;
 	/*if (total_actions == 0) say(_("No actions to proceed\n"));
 	else say(_("Total %d new actions to proceed\n\n"), total_actions);*/
 

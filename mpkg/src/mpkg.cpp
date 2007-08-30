@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.111 2007/08/29 22:33:13 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.112 2007/08/30 21:46:48 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -209,17 +209,26 @@ int mpkgDatabase::commit_actions()
 						install_list.get_package(i)->get_fullversion().c_str());
 			}
 		}
-		if (interactive_mode && install_list.size()>0 && remove_list.size()>0)
+
+		if (install_list.size()>0 || remove_list.size()>0)
 		{
-			say(_("Continue? [Y/n]\n"));
-			string input;
+			if (interactive_mode)
+			{
+				say(_("Continue? [Y/n]\n"));
+				string input;
 i_actInput:
-			cin>>input;
-			if (input=="n" || input=="N" || input == "no") { return MPKGERROR_ABORTED; }
-			if (input!="y" && input!="Y" && input!="yes") {
-				say(_("Please answer Y (yes) or N (no)\n"));
-				goto i_actInput;
+				cin>>input;
+				if (input=="n" || input=="N" || input == "no") { return MPKGERROR_ABORTED; }
+				if (input!="y" && input!="Y" && input!="yes") {
+					say(_("Please answer Y (yes) or N (no)\n"));
+					goto i_actInput;
+				}
 			}
+		}
+		else 
+		{
+			say (_("Nothing to do\n"));
+			return 0;
 		}
 
 	}
@@ -958,6 +967,11 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 	db.get_sql_vtable(&used_tags, sqlSearch, "tags_links", fields);
 	vector<string> toDelete;
 	bool used;
+
+	// Index
+	int fAvailTags_name = available_tags.getFieldIndex("tags_name");
+	int fAvailTags_id = available_tags.getFieldIndex("tags_id");
+	int fUsedTags_tag_id = used_tags.getFieldIndex("tags_tag_id");
 	if (available_tags.size()>0)
 	{
 		for (int i=0; i<available_tags.size(); i++)
@@ -965,7 +979,7 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 			used=false;
 			for (int u=0; u<used_tags.size(); u++)
 			{
-				if (*used_tags.getValue(u, "tags_tag_id")==*available_tags.getValue(i, "tags_id"))
+				if (*used_tags.getValue(u, fUsedTags_tag_id)==*available_tags.getValue(i, fAvailTags_id))
 				{
 					used=true;
 				}
@@ -973,7 +987,7 @@ int mpkgDatabase::delete_packages(PACKAGE_LIST *pkgList)
 			
 			if (!used)
 			{
-				say(_("Deleting tag %s as unused\n"), available_tags.getValue(i, "tags_name")->c_str());
+				say(_("Deleting tag %s as unused\n"), available_tags.getValue(i, fAvailTags_name)->c_str());
 				toDelete.push_back(*available_tags.getValue(i,"tags_id"));
 			}
 		}

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.59 2007/08/30 09:08:03 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.60 2007/08/30 21:46:48 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -372,8 +372,22 @@ int main (int argc, char **argv)
 		unlockDatabase();
 		return 0;
 	}				
+	
+	/*if (action == ACT_UPGRADE ) {
+		if (argc<=optind) return print_usage(stderr,1);
 
-	if (action == ACT_INSTALL)
+		lockDatabase();
+		for (int i = optind; i < argc; i++)
+		{
+			pname.push_back((string) argv[i]);
+		}
+		core.install(pname);
+		delete_tmp_files();
+		unlockDatabase();
+		return 0;
+	}*/
+
+	if (action == ACT_INSTALL || action == ACT_UPGRADE || action == ACT_REINSTALL)
 	{
 		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
@@ -413,7 +427,14 @@ int main (int argc, char **argv)
 			}
 		}
 
-		core.install(fname);
+		if (action != ACT_REINSTALL) core.install(fname);
+		else {
+			for (unsigned int i=0; i<fname.size(); i++)
+			{
+				//printf("TODO: repair package %s\n", fname[i].c_str());
+				core.repair(fname[i]);
+			}
+		}
 		core.commit();
 		core.clean_queue();
 		delete_tmp_files();
@@ -683,20 +704,7 @@ int main (int argc, char **argv)
 		delete_tmp_files();
 		return 0;
 	}
-	if (action == ACT_UPGRADE ) {
-		if (argc<=optind) return print_usage(stderr,1);
-
-		lockDatabase();
-		for (int i = optind; i < argc; i++)
-		{
-			pname.push_back((string) argv[i]);
-		}
-		core.install(pname);
-		delete_tmp_files();
-		unlockDatabase();
-		return 0;
-	}
-
+	
 	if ( action == ACT_CONVERT  ) {
 		for (int i = optind; i < argc; i++)
 		{
@@ -850,10 +858,11 @@ int print_usage(FILE* stream, int exit_code)
 
 	
 	fprintf(stream,_("\nActions:\n"));
-	fprintf(stream,_("\tinstall                   install packages\n"));
+	fprintf(stream,_("\tinstall                   install package(s)\n"));
 	fprintf(stream,_("\tupgrade                   upgrade selected package\n"));
-	fprintf(stream,_("\tremove                    remove selected package\n"));
-	fprintf(stream,_("\tpurge                     purge selected package\n"));
+	fprintf(stream,_("\treinstall                 reinstall package(s)\n"));
+	fprintf(stream,_("\tremove                    remove selected package(s)\n"));
+	fprintf(stream,_("\tpurge                     purge selected package(s)\n"));
 	fprintf(stream,_("\tinstallgroup              install all the packages from group\n"));
 	fprintf(stream,_("\tremovegroup               remove all the packages from group\n"));
 
@@ -1091,10 +1100,10 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		sqlSearch.addField("package_action", ST_PURGE);
 	}
 	say(_("Querying database...\n"));
-	core->get_packagelist(&sqlSearch, &pkglist);
+	core->get_packagelist(&sqlSearch, &pkglist, false);
 	if (pkglist.IsEmpty())
 	{
-		if (!search.empty()) say(_("Package database is empty\n"));
+		if (search.empty()) say(_("Package database is empty\n"));
 		else say(_("Search attempt has no results\n"));
 		return 0;
 	}
@@ -1161,6 +1170,7 @@ int check_action(char* act)
 		&& _act != "installgroup"
 		&& _act != "removegroup"
 		&& _act != "whodepend"
+		&& _act != "reinstall"
 		) {
 		res = -1;
 	}
@@ -1174,6 +1184,8 @@ int setup_action(char* act)
 {
 	std::string _act(act);
 
+	if ( _act == "reinstall")
+			return ACT_REINSTALL;
 	if ( _act == "whodepend")
 			return ACT_LISTDEPENDANTS;
 	if ( _act == "check")

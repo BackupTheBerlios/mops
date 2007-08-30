@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.45 2007/08/16 14:39:10 i27249 Exp $
+	$Id: dataunits.h,v 1.46 2007/08/30 21:46:48 i27249 Exp $
 */
 
 
@@ -326,6 +326,7 @@ class PACKAGE_LIST
 	void sortByPriority(bool reverse_order=false);
 	void buildDependencyOrder();
 	int getPackageNumberByName(string *name);
+	PACKAGE * getPackageByID(int id);
 	double totalCompressedSize();
 	double totalInstalledSize();
 	double totalInstalledSizeByAction(int select_action);
