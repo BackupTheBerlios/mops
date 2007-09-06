@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.69 2007/08/30 21:46:48 i27249 Exp $
+	$Id: dataunits.cpp,v 1.70 2007/09/06 09:07:47 i27249 Exp $
 */
 
 
@@ -416,7 +416,7 @@ bool PACKAGE::depsEqualTo(PACKAGE *pkg)
 }
 
 // Data retriveal
-bool PACKAGE::isItRequired(PACKAGE *testPackage)
+bool PACKAGE::isItRequired(PACKAGE *testPackage)	// Tests if a testPackage is required by this and meets the dependency requirements
 {
 	for (unsigned int i=0; i<package_dependencies.size(); i++)
 	{

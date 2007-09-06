@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.61 2007/08/30 22:54:06 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.62 2007/09/06 09:07:47 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -386,6 +386,68 @@ int main (int argc, char **argv)
 		unlockDatabase();
 		return 0;
 	}*/
+
+	if (action == ACT_UPDATEALL)
+	{
+		lockDatabase();
+		PACKAGE_LIST pkgList;
+		vector<string> updates;
+		SQLRecord sqlSearch;
+		core.get_packagelist(&sqlSearch, &pkgList);
+		bool thisIsUpdate, already;
+		// Searching which has updates
+		for (int i=0; i<pkgList.size(); i++)
+		{
+			for (int t=0; t<pkgList.size(); t++)
+			{
+				thisIsUpdate=false;
+				if (i!=t && \
+						pkgList.get_package(i)->installed() && \
+						pkgList.get_package(t)->available() && \
+						*pkgList.get_package(i)->get_name() == *pkgList.get_package(t)->get_name())
+				{
+					if (strverscmp(pkgList.get_package(i)->get_version()->c_str(),pkgList.get_package(t)->get_version()->c_str())<0)
+					{
+						// Update (version)
+						thisIsUpdate=true;
+					}
+					else {
+						if (strverscmp(pkgList.get_package(i)->get_version()->c_str(),pkgList.get_package(t)->get_version()->c_str())==0 && \
+								strverscmp(pkgList.get_package(i)->get_build()->c_str(),pkgList.get_package(t)->get_build()->c_str())<0)
+						{
+							// Update (build)
+							thisIsUpdate=true;
+						}
+					}
+				}
+				if (thisIsUpdate) {
+					already=false;
+					for (unsigned int k=0; k<updates.size(); k++)
+					{
+						if (updates[k]==*pkgList.get_package(t)->get_name())
+						{
+							already = true;
+							break;
+						}
+					}
+					if (!already) updates.push_back(*pkgList.get_package(t)->get_name());
+				}
+			}
+		}
+		if (updates.size()!=0)
+		{
+			core.install(updates);
+			core.commit();
+			core.clean_queue();
+			delete_tmp_files();
+			unlockDatabase();
+		}
+		else say(_("No updates available\n"));
+		return 0;
+	}
+
+
+
 
 	if (action == ACT_INSTALL || action == ACT_UPGRADE || action == ACT_REINSTALL)
 	{
@@ -861,6 +923,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\nActions:\n"));
 	fprintf(stream,_("\tinstall                   install package(s)\n"));
 	fprintf(stream,_("\tupgrade                   upgrade selected package\n"));
+	fprintf(stream,_("\tupgradeall                upgrade all installed packages\n"));
 	fprintf(stream,_("\treinstall                 reinstall package(s)\n"));
 	fprintf(stream,_("\tremove                    remove selected package(s)\n"));
 	fprintf(stream,_("\tpurge                     purge selected package(s)\n"));
@@ -1172,6 +1235,7 @@ int check_action(char* act)
 		&& _act != "removegroup"
 		&& _act != "whodepend"
 		&& _act != "reinstall"
+		&& _act != "upgradeall"
 		) {
 		res = -1;
 	}
@@ -1184,7 +1248,8 @@ int check_action(char* act)
 int setup_action(char* act)
 {
 	std::string _act(act);
-
+	if ( _act == "upgradeall")
+		return ACT_UPDATEALL;
 	if ( _act == "reinstall")
 			return ACT_REINSTALL;
 	if ( _act == "whodepend")

@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.48 2007/08/30 21:46:48 i27249 Exp $
+$Id: dependencies.cpp,v 1.49 2007/09/06 09:07:47 i27249 Exp $
 */
 
 
@@ -27,7 +27,6 @@ void DependencyTracker::addToInstallQuery(PACKAGE *pkg)
 }
 void DependencyTracker::addToRemoveQuery(PACKAGE *pkg)
 {
-
 	removeQueryList.add(pkg);
 }
 
@@ -42,6 +41,7 @@ int findBrokenPackages(PACKAGE_LIST pkgList, PACKAGE_LIST *output)
 			output->add(pkgList.get_package(i));
 		}
 	}
+	//printf("found %d broken packages\n", counter);
 	return counter;
 }
 void filterDupes(PACKAGE_LIST *pkgList, bool removeEmpty)
@@ -106,8 +106,12 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 		if (packageCache.get_package(i)->action()==ST_REMOVE || \
 				packageCache.get_package(i)->action()==ST_PURGE) removeQueryList.add(packageCache.get_package(i));
 	}
-	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
-	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
+	PACKAGE_LIST installStream;
+        _tmpInstallStream = &installStream;
+	installStream = renderRequiredList(&installQueryList);
+	PACKAGE_LIST removeStream;
+        _tmpRemoveStream = &removeStream;
+	removeStream = renderRemoveQueue(&removeQueryList);
 	filterDupes(&installStream);
 	filterDupes(&removeStream);
 	PACKAGE_LIST fullWillBeList = installedPackages;
@@ -228,11 +232,17 @@ int DependencyTracker::renderData()
 	mDebug("Rendering installations");
 	int failureCounter = 0;
 	//printf("rendering required list\n");
-	PACKAGE_LIST installStream = renderRequiredList(&installQueryList);
+	PACKAGE_LIST installStream;
+       _tmpInstallStream = &installStream;
+	installStream = renderRequiredList(&installQueryList);
+	
 
 	mDebug("Rendering removing");
 	//printf("Rendering remove queue\n");
-	PACKAGE_LIST removeStream = renderRemoveQueue(&removeQueryList);
+	PACKAGE_LIST removeStream;
+       _tmpRemoveStream = &removeStream;
+	removeStream = renderRemoveQueue(&removeQueryList);
+
 	mDebug("Filtering dupes: install");
 	currentStatus=_("Checking dependencies: filtering (stage 1: installation queue dupes");
 	//printf("Filtering dupes\n");
@@ -432,11 +442,22 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 {
 	if (!cacheCreated) { fillInstalledPackages(); }
 	PACKAGE_LIST dependantPackages;
+	bool updating;
 	for (int i=0; i<installedPackages.size(); i++)
 	{
 		if (installedPackages.get_package(i)->isItRequired(package))
 		{
-			dependantPackages.add(installedPackages.get_package(i));
+			updating=false;
+			// Check if it can be replaced by any from install queue
+			for (unsigned int t=0; t<_tmpInstallStream->size(); t++)
+			{
+				if (*package->get_name() == *_tmpInstallStream->get_package(t)->get_name() && installedPackages.get_package(i)->isItRequired(_tmpInstallStream->get_package(t)))
+				{
+					updating = true;
+					break;
+				}
+			}
+			if (!updating) dependantPackages.add(installedPackages.get_package(i));
 		}
 	}
 	// Setting appropriary actions

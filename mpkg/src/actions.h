@@ -33,5 +33,6 @@
 #define ACT_REMOVEGROUP 0x1f
 #define ACT_LISTDEPENDANTS 0x20
 #define ACT_REINSTALL	0x21
+#define ACT_UPDATEALL	0x22
 #endif
 

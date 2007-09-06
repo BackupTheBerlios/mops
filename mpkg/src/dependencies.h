@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.15 2007/08/30 21:46:48 i27249 Exp $
+$Id: dependencies.h,v 1.16 2007/09/06 09:07:47 i27249 Exp $
 */
 
 
@@ -43,6 +43,8 @@ class DependencyTracker
 		bool cacheCreated;
 		mpkgDatabase *db;
 
+		PACKAGE_LIST *_tmpInstallStream;
+		PACKAGE_LIST *_tmpRemoveStream;
 	public:
 		int renderDependenciesInPackageList(PACKAGE_LIST *pkgList);
 		void addToInstallQuery(PACKAGE *pkg);
