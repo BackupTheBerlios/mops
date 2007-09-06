@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.42 2007/08/25 20:33:30 i27249 Exp $
+ * $Id: config.cpp,v 1.43 2007/09/06 08:17:07 i27249 Exp $
  *
  * ***************************************************/
 
@@ -108,9 +108,12 @@ int loadGlobalConfig(string config_file)
 				db_url=(string) config.getChildNode("database_url").getText();
 			if (config.nChildNode("repository_list")!=0)
 			{
+				string tmp_r;
 				for (int i=0;i<config.getChildNode("repository_list").nChildNode("repository");i++)
 				{
-					repository_list.push_back((string) config.getChildNode("repository_list").getChildNode("repository",i).getText());
+					tmp_r = (string) config.getChildNode("repository_list").getChildNode("repository",i).getText();
+					if (tmp_r[tmp_r.length()-1]!='/') tmp_r += "/";
+					repository_list.push_back(tmp_r);
 				}
 				for (int i=0; i<config.getChildNode("repository_list").nChildNode("disabled_repository"); i++)
 				{

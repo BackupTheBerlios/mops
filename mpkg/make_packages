@@ -14,7 +14,7 @@ mkdir -p out_packages/lib/usr/local/include
 mkdir -p out_packages/lib/etc
 mkdir -p out_packages/lib/usr/share/locale/ru/LC_MESSAGES
 cp -R /usr/local/include/mpkg out_packages/lib/usr/local/include/
-cp src/mpkg.xml out_packages/lib/etc/
+#cp src/mpkg.xml out_packages/lib/etc/
 cp manager/groups.xml out_packages/lib/etc/mpkg-groups.xml
 cp src/mpkg-remove-blacklist out_packages/lib/etc/
 cp /usr/local/lib/libmpkg* out_packages/lib/usr/local/lib/

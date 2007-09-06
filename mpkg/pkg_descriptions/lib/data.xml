@@ -10,7 +10,7 @@
 		i486
 	</arch>
 	<build>
-		4
+		5
 	</build>
 	<description lang="en">
 		This is a core of MOPSLinux package system. It contains the main library, download library, default configuration file, and group descriptions. Considering that you are already have a directory structure (should be done on install)

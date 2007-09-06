@@ -30,7 +30,7 @@ struct SysConfig
 	string cdromDevice;
 	string sourceName;
 	vector<string> cdromList;
-	unsigned int totalQueuedPackages;
+	unsigned int totalQueuedPackages, totalDependantPackages;
 	string setupMode;
 	string totalRequiredSpace;
 };

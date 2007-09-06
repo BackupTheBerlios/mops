@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.54 2007/08/30 21:46:48 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.55 2007/09/06 08:17:07 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -134,10 +134,16 @@ int mpkg::purge(vector<string> pkg_name)
 	return ret;
 }
 // Repository data updating
+
+void mpkg::cleanCdromCache()
+{
+	system("rm -rf " + SYS_ROOT + "/var/mpkg/index_cache/*");
+}
 int mpkg::update_repository_data()
 {
-	if (mpkgSys::update_repository_data(db) == 0 && db->sqlFlush() == 0)
+	if (mpkgSys::update_repository_data(db) == 0 && db->sqlFlush())
 	{
+		cleanCdromCache();
 		currentStatus = _("Repository data updated");
 		return 0;
 	}

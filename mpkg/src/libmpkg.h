@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.29 2007/08/30 21:46:48 i27249 Exp $
+ * $Id: libmpkg.h,v 1.30 2007/09/06 08:17:07 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -114,6 +114,7 @@ class mpkg
 		
 		// Repository data updating
 		int update_repository_data();
+		void cleanCdromCache();
 		/* update_repository_data():
 		 * Updates a list of available packages from the repositories defined in configuration file.
 		 * Returns 0 of OK, <0 if something fails.

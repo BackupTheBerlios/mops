@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.45 2007/08/30 21:46:48 i27249 Exp $
+ * $Id: setup.cpp,v 1.46 2007/09/06 08:17:07 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -1009,12 +1009,12 @@ int packageSelectionMenu()
 			p->set_action(ST_INSTALL);
 		}
 	}
-	if (onlineDeps)
+	/*if (onlineDeps)
 	{
 		deleteCore();
 		createCore();
 		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
-	}
+	}*/
 	bool showThisItem;
 	goto group_adjust_menu;
 group_mark_menu:
@@ -1044,11 +1044,12 @@ group_mark_menu:
 			if (i_availablePackages.get_package(t)->get_tags()->size()==0) i_availablePackages.get_package(t)->set_action(ST_NONE);
 		}
 	}
+	/*
 	if (realtimeTrackingEnabled) {
 		deleteCore();
 		createCore();
 		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
-	}
+	}*/
 	goto group_adjust_menu;
 	// Executing adjustment
 group_adjust_menu:
@@ -1097,12 +1098,13 @@ group_adjust_menu:
 					}
 				}
 			}
+			/*
 			if (realtimeTrackingEnabled)
 			{
 				deleteCore();
 				createCore();
 				core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
-			}
+			}*/
 
 
 		}
@@ -1111,15 +1113,22 @@ group_adjust_menu:
 pkgcounter_finalize:
 	// Render deps and calculate summary
 	systemConfig.totalQueuedPackages=0;
+	systemConfig.totalDependantPackages=0;
+	
+	PACKAGE_LIST i_dependantPackages = i_availablePackages;
 	if (onlineDeps) 
 	{
 		deleteCore();
 		createCore();
-		core->DepTracker->renderDependenciesInPackageList(&i_availablePackages);
+		core->DepTracker->renderDependenciesInPackageList(&i_dependantPackages);
 	}
 	for (int i=0; i<i_availablePackages.size(); i++)
 	{
 		if (i_availablePackages.get_package(i)->action()==ST_INSTALL) systemConfig.totalQueuedPackages++;
+	}
+	for (int i=0; i<i_dependantPackages.size(); i++)
+	{
+		if (i_dependantPackages.get_package(i)->action()==ST_INSTALL) systemConfig.totalDependantPackages++;
 	}
 	return 0;
 
@@ -1182,7 +1191,8 @@ int commit()
 	}
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
 		    "Режим установки: " + systemConfig.setupMode + "\n" + \
-		    "Выбрано пакетов: " + IntToStr(systemConfig.totalQueuedPackages) + ", не включая зависимости\n" + \
+		    "Будет установлено пакетов: " + IntToStr(systemConfig.totalDependantPackages) + \
+		    	", из них  " + IntToStr(systemConfig.totalDependantPackages - systemConfig.totalQueuedPackages) + " по зависимостям\n" + \
 		    "\nМожно выполнять установку?";
 	if (d.execYesNo(summary))
 	{
