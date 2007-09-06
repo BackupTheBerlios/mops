@@ -15,7 +15,7 @@
 #define DOWNLOAD_TIMEOUT 10 // 10 seconds, and failing
 int downloadTimeout=0;
 double prevDlValue;
-
+bool usedCdromMount=false;
 HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
@@ -183,10 +183,12 @@ try_mount:
 #ifndef INTERNAL_MOUNT
 		mDebug("Mount using system");
 		string mnt_cmd = "mount "+CDROM_DEVICE + " " + CDROM_MOUNTPOINT;
+		usedCdromMount = true;
 		int mret = system(mnt_cmd);
 #else
 		mDebug("Mount using kernel");
 		int mret = mount(CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
+		usedCdromMount = true;
 #endif
 		if (mret!=0)
 		{
@@ -292,7 +294,6 @@ DownloadResults HttpDownload::getFile(std::string url, std::string file, std::st
 	dlList.push_back(dlItem);
 	unlink(file.c_str()); // Let's download from scratch
 	return this->getFile(dlList, &name, cdromDevice, cdromMountPoint, &actionBus, &z);
-	
 }
 
 DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname, std::string cdromDevice, std::string cdromMountPoint,  ActionBus *aaBus, ProgressData *prData)
@@ -544,6 +545,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		if (ppActionBus->currentProcessingID()==ACTIONID_DOWNLOAD) ppActionBus->setActionProgress(ACTIONID_DOWNLOAD, i);
 
     	}
+	if (usedCdromMount) system("umount " + CDROM_MOUNTPOINT);
 	if (!is_have_error) 
 	{
 #ifdef DL_CLEANUP

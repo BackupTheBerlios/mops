@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.19 2007/08/26 00:20:40 i27249 Exp $
+ $Id: debug.cpp,v 1.20 2007/09/06 09:49:58 i27249 Exp $
  */
  
 
@@ -29,7 +29,8 @@ void DbgPrint(char* file, int line, const char *func, std::string message) {
 #ifdef DEBUG
 	fprintf(stdout, "%s[DEBUG] %sin %s  (%s:%i):%s %s\n",CL_GREEN, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
 #endif
-#ifdef ENABLE_LOGGING
+#ifndef RELEASE
+  #ifdef ENABLE_LOGGING
 	string logfile = log_directory + "mpkg-debug.log";
 	FILE *log = fopen(logfile.c_str(), "a");
 	if (log)
@@ -37,6 +38,7 @@ void DbgPrint(char* file, int line, const char *func, std::string message) {
 		fprintf(log, "%s  (%s:%i): %s\n",func, file, line, message.c_str());
 		fclose(log);
 	}
+  #endif
 #endif
 
 }

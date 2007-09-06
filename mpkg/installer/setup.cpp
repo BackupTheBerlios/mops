@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.46 2007/09/06 08:17:07 i27249 Exp $
+ * $Id: setup.cpp,v 1.47 2007/09/06 09:49:58 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -24,7 +24,7 @@ vector<string> i_tagList;
 mpkg *core=NULL;
 bool realtimeTrackingEnabled=true;
 bool onlineDeps=true;
-bool noEject=true; // TODO: Change before release to false
+bool noEject=false;
 
 void createCore()
 {

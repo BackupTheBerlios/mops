@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.62 2007/09/06 09:07:47 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.63 2007/09/06 09:49:58 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -528,11 +528,15 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
+#ifdef RELEASE
+		return print_usage(stderr,1);
+#else
+		/*
 		PACKAGE_LIST t;
 		SQLRecord a;
 		core.get_packagelist(&a, &t);
 		
-		/*printf("WTF looping\n");
+		printf("WTF looping\n");
 		for (unsigned int i=0; i<1000; i++)
 		{
 			for (int x=0; x<t.size(); x++)
@@ -545,7 +549,9 @@ int main (int argc, char **argv)
 		core.DepTracker->createPackageCache();
 		core.DepTracker->fillInstalledPackages();
 		*/
+
 		return 0;
+#endif
 	}
 	if (action == ACT_LISTDEPENDANTS)
 	{
@@ -956,9 +962,10 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tconvert_dir <outp_dir>    convert whole directory (including sub-dirs) to MPKG format\n"));
 	fprintf(stream,_("\texport [dir]              export database in slackware format to dir (by default, /var/log/packages/)\n"));
 	fprintf(stream,_("\tgendeps <package>         generate dependencies and import it into package\n"));
-
+#ifndef RELEASE
 	fprintf(stream,_("\nDebug options:\n"));
 	fprintf(stream,_("\ttest                      Executes unit test\n"));
+#endif
 	fprintf(stream, "\n");
 
 
