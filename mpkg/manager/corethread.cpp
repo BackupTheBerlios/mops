@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.75 2007/09/06 13:26:47 i27249 Exp $
+ * $Id: corethread.cpp,v 1.76 2007/09/06 14:31:11 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -166,8 +166,10 @@ void coreThread::_loadPackageData()
 		newStatus.push_back(packageList->get_package(i)->action());
 	}
 	sync();
+#ifdef REALTIME_DEPTRACKER_OLD
 	currentStatus = tr("Preparing dependency engine").toStdString();
 	database->DepTracker->renderData();
+#endif
 }
 
 void coreThread::_loadPackageDatabase()
@@ -414,7 +416,14 @@ void coreThread::cleanCache()
 }
 
 // Realtime dependency tracking
+void coreThread::renderDepTree(PACKAGE_LIST *pkgList)
+{
+	database->DepTracker->renderDependenciesInPackageList(pkgList);
+}
 
+/*void coreThread::_renderDepTree(PACKAGE_LIST inPkgList)
+{
+}*/
 void coreThread::getRequiredPackages(unsigned int package_num)
 {
 	packageProcessingNumber = package_num;

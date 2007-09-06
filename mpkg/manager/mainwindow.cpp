@@ -1,10 +1,10 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.121 2007/08/24 06:20:52 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.122 2007/09/06 14:31:11 i27249 Exp $
  *
  ****************************************************************/
-
+#define REALTIME_DEPTRACKER
 #include <QTextCodec>
 #include <QtGui>
 #include "mainwindow.h"
@@ -178,10 +178,12 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(prefBox, SIGNAL(getCdromName()), thread, SLOT(getCdromName()));
 	QObject::connect(thread, SIGNAL(sendCdromName(string)), prefBox, SLOT(recvCdromVolname(string))); 
 
+#ifdef REALTIME_DEPTRACKER_OLD
 	QObject::connect(this, SIGNAL(getRequiredPackages(unsigned int)), thread, SLOT(getRequiredPackages(unsigned int)));
 	QObject::connect(this, SIGNAL(getDependantPackages(unsigned int)), thread, SLOT(getDependantPackages(unsigned int)));
 	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
 	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
+#endif
 	
 	lockDatabase();
 	mDebug("init ok, let's show the UI");
@@ -327,8 +329,9 @@ void MainWindow::setProgressBarValue2(unsigned int value)
 	ui.progressBar2->setValue(value);
 }
 
-void MainWindow::generateStat()
+void MainWindow::generateStat(vector<int> newStatusData)
 {
+	// TODO: use deptracker data too
 	totalInstalledSize=0;
 	totalAvailableSize=0;
 	totalAvailableCount = 0;
@@ -343,7 +346,7 @@ void MainWindow::generateStat()
 		return;
 	}
 	waitUnlock();
-	if (packagelist->size()!=newStatus.size())
+	if (packagelist->size()!=newStatusData.size())
 	{
 		mError("Structure not ready");
 		return;
@@ -360,23 +363,23 @@ void MainWindow::generateStat()
 			totalAvailableCount++;
 			totalAvailableSize=totalAvailableSize + atoi(packagelist->get_package(i)->get_compressed_size()->c_str());
 		}
-		if (newStatus[i]==ST_INSTALL)
+		if (newStatusData[i]==ST_INSTALL)
 		{
 			installQueueCount++;
 			willBeOccupied = willBeOccupied + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
-		if (newStatus[i]==ST_REMOVE)
+		if (newStatusData[i]==ST_REMOVE)
 		{
 			removeQueueCount++;
 			willBeFreed = willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
-		if (newStatus[i] == ST_UPDATE)
+		if (newStatusData[i] == ST_UPDATE)
 		{
 			updateQueueCount++;
 			willBeFreed = willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
 		}
 
-		if (newStatus[i]==ST_PURGE)
+		if (newStatusData[i]==ST_PURGE)
 		{
 			removeQueueCount++;
 			if (packagelist->get_package(i)->installed()) willBeFreed=willBeFreed + atoi(packagelist->get_package(i)->get_installed_size()->c_str());
@@ -404,7 +407,7 @@ void MainWindow::applyPackageFilter ()
 
 	mDebug("init ok");
 	string pkgBoxLabel = tr("Packages").toStdString();
-	generateStat();
+	generateStat(newStatus);
 	bool nameOk = false;
 	bool statusOk = false;
 	bool categoryOk = false;
@@ -575,6 +578,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 	pkgName->row = row;
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
 	string depData;
+	if (packagelist->get_package(packageNum)->installed() && packagelist->get_package(packageNum)->isRemoveBlacklisted()) stat->setEnabled(false);
 	if (packagelist->get_package(packageNum)->get_dependencies()->size()>0)
 	{
 		depData = "<b> "+tr("Depends on:").toStdString()+" </b>";
@@ -1106,14 +1110,34 @@ void MainWindow::commitChanges()
 		mDebug("uninitialized");
 		return;
 	}
-	for (unsigned int i=0; i<newStatus.size(); i++)
+	vector<int> newStatusCopy = newStatus;
+#ifdef REALTIME_DEPTRACKER
+	PACKAGE_LIST pkgListCopy = *packagelist;
+	for (int i=0; i<pkgListCopy.size(); i++)
 	{
-		if (newStatus[i]==ST_INSTALL)
+		if (i>=newStatus.size()) {
+			mError("desync in newStatus and pkgListCopy");
+			break;
+		}
+		pkgListCopy.get_package(i)->set_action(newStatus[i]);
+
+	}
+	thread->renderDepTree(&pkgListCopy);
+	for (int i=0; i<pkgListCopy.size(); i++)
+	{
+		newStatusCopy[i] = pkgListCopy.get_package(i)->action();
+	}
+	generateStat(newStatusCopy);
+#endif
+	
+	for (unsigned int i=0; i<newStatusCopy.size(); i++)
+	{
+		if (newStatusCopy[i]==ST_INSTALL)
 		{
 			installList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
 				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
 		}
-		if (newStatus[i]==ST_REMOVE || newStatus[i] == ST_PURGE || newStatus[i] == ST_UPDATE)
+		if (newStatusCopy[i]==ST_REMOVE || newStatusCopy[i] == ST_PURGE || newStatusCopy[i] == ST_UPDATE)
 		{
 			removeList+= "\n" + (QString) packagelist->get_package(i)->get_name()->c_str() + " " +\
 				      (QString) packagelist->get_package(i)->get_fullversion().c_str();
@@ -1178,7 +1202,7 @@ void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST 
 			}
 		}		
 	}
-	generateStat();
+	generateStat(newStatus);
 }
 
 void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
@@ -1202,7 +1226,7 @@ void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST
 			}
 		}		
 	}
-	generateStat();
+	generateStat(newStatus);
 
 }
 
@@ -1210,7 +1234,7 @@ void MainWindow::markChanges(int x, Qt::CheckState state, int force_state)
 {
 waitUnlock();
 
-	generateStat();
+	generateStat(newStatus);
 	if (state == Qt::Checked)
 	{
 		emit getRequiredPackages(x);

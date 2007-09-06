@@ -1,7 +1,7 @@
 /******************************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.h,v 1.29 2007/06/02 23:26:06 i27249 Exp $
+ * $Id: corethread.h,v 1.30 2007/09/06 14:31:11 i27249 Exp $
  *
  * This thread contains:
  * 1. Database object
@@ -143,12 +143,14 @@ class coreThread: public QThread
 		void getCdromName();
 		void recvReadyFlag();
 		void recvFillReady();
+		void renderDepTree(PACKAGE_LIST *pkgList);
 
 	private:
 		unsigned long idleTime;
 		unsigned long idleThreshold;
 		vector<bool>showMask;
 		unsigned int TIMER_RES;
+		//void _renderDepTree(PACKAGE_LIST *pkgList);
 		void _loadPackageData();
 		void _getRequiredPackages();
 		void _getDependantPackages();
@@ -161,6 +163,7 @@ class coreThread: public QThread
 
 
 	signals:
+		void sendDepTree(PACKAGE_LIST pkgList);
 		void sendRequiredPackages(unsigned int package_num, PACKAGE_LIST req);
 		void sendDependantPackages(unsigned int package_num, PACKAGE_LIST dep);
 		void showMessageBox(QString header, QString text);

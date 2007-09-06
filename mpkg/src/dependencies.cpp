@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.49 2007/09/06 09:07:47 i27249 Exp $
+$Id: dependencies.cpp,v 1.50 2007/09/06 14:31:11 i27249 Exp $
 */
 
 
@@ -211,7 +211,8 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 			}
 		}
 	}
-
+	_tmpRemoveStream = NULL;
+	_tmpInstallStream = NULL;
 	if (!force_dep) return failureCounter;
 	else return 0;
 
@@ -294,6 +295,8 @@ int DependencyTracker::renderData()
 	mDebug("done");
 	currentStatus=_("Dependency check completed, error count: ") + IntToStr(failureCounter);
 	//printf("renderData complete\n");
+	_tmpRemoveStream = NULL;
+	_tmpInstallStream = NULL;
 	if (!force_dep) return failureCounter;
 	else return 0;
 }
@@ -449,12 +452,15 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 		{
 			updating=false;
 			// Check if it can be replaced by any from install queue
-			for (unsigned int t=0; t<_tmpInstallStream->size(); t++)
+			if (_tmpInstallStream != NULL)
 			{
-				if (*package->get_name() == *_tmpInstallStream->get_package(t)->get_name() && installedPackages.get_package(i)->isItRequired(_tmpInstallStream->get_package(t)))
+				for (unsigned int t=0; t<_tmpInstallStream->size(); t++)
 				{
-					updating = true;
-					break;
+					if (*package->get_name() == *_tmpInstallStream->get_package(t)->get_name() && installedPackages.get_package(i)->isItRequired(_tmpInstallStream->get_package(t)))
+					{
+						updating = true;
+						break;
+					}
 				}
 			}
 			if (!updating) dependantPackages.add(installedPackages.get_package(i));
@@ -700,6 +706,8 @@ bool DependencyTracker::commitToDb()
 
 DependencyTracker::DependencyTracker(mpkgDatabase *mpkgDB)
 {
+	_tmpRemoveStream = NULL;
+	_tmpInstallStream = NULL;
 	cacheCreated=false;
 	db=mpkgDB;
 }
