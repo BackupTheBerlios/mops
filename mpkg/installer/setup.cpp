@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.47 2007/09/06 09:49:58 i27249 Exp $
+ * $Id: setup.cpp,v 1.48 2007/09/06 13:26:47 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -666,7 +666,11 @@ int moveDatabaseToHdd()
 int mountMedia()
 {
 	mDebug("start");
-	if (system("umount -l /var/log/mount")==0) mDebug("successfully unmounted old mount");
+	if (system("umount -l /var/log/mount")==0) 
+	{
+		mDebug("successfully unmounted old mount");
+		usedCdromMount = false;
+	}
 	else mDebug("cd wasn't mounted or unmount error. Processing to detection");
 	Dialog dialogItem ("Поиск и монтирование привода CD/DVD");
 	dialogItem.execInfoBox("Попытка автоматического определения привода...");
@@ -901,6 +905,7 @@ void syncFS()
 	system("sync");
 	if (noEject) system("umount " + systemConfig.cdromDevice);
 	else system("eject " + systemConfig.cdromDevice);
+	usedCdromMount = false;
 	mDebug("end");
 }
 
@@ -1226,6 +1231,7 @@ int setCDSource()
 {
 	mountMedia();
 	system("umount " + systemConfig.cdromDevice);
+	usedCdromMount = false;
 
 	string last_indexed_cd="<нет>";
 	int disc_number=0;
@@ -1263,6 +1269,7 @@ int setCDSource()
 		else d.execMsgBox("Данный диск не является диском с установочными пакетами.");
 		system("umount " + systemConfig.cdromDevice);
 		if (!noEject) system("eject " + systemConfig.cdromDevice);
+		usedCdromMount=false;
 
 	}
 	// Commit

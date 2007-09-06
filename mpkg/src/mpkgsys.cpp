@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.46 2007/08/29 22:33:13 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.47 2007/09/06 13:26:47 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -24,7 +24,9 @@ int mpkgSys::clean_queue(mpkgDatabase *db)
 	sqlSearch.addField("package_action", ST_INSTALL);
 	sqlSearch.addField("package_action", ST_REMOVE);
 	sqlSearch.addField("package_action", ST_PURGE);
-	db->get_packagelist(&sqlSearch, &toInstall);
+	sqlSearch.addField("package_action", ST_REPAIR);
+	sqlSearch.addField("package_action", ST_UPDATE);
+	db->get_packagelist(&sqlSearch, &toInstall, true);
 	for (int i=0; i<toInstall.size();i++)
 	{
 		db->set_action(toInstall.get_package(i)->get_id(), ST_NONE);

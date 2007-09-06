@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.70 2007/09/06 09:07:47 i27249 Exp $
+	$Id: dataunits.cpp,v 1.71 2007/09/06 13:26:47 i27249 Exp $
 */
 
 
@@ -588,6 +588,16 @@ string PACKAGE::get_vstatus(bool color)
 		case ST_PURGE:
 			if (color) stat+=CL_8;
 			stat+="p";
+			if (color) stat+=CL_WHITE;
+			break;
+		case ST_UPDATE:
+			if (color) stat+=CL_5;
+			stat+="u";
+			if (color) stat += CL_WHITE;
+			break;
+		case ST_REPAIR:
+			if (color) stat+=CL_7;
+			stat+="R";
 			if (color) stat+=CL_WHITE;
 			break;
 		case ST_NONE:

@@ -241,6 +241,7 @@ try_mount:
 		{
 			mDebug("Unmounting");
 			umount(CDROM_MOUNTPOINT.c_str());
+			usedCdromMount = false;
 			goto try_mount;
 		}
 		if (errRet == MPKG_RETURN_ABORT)
@@ -545,7 +546,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		if (ppActionBus->currentProcessingID()==ACTIONID_DOWNLOAD) ppActionBus->setActionProgress(ACTIONID_DOWNLOAD, i);
 
     	}
-	if (usedCdromMount) system("umount " + CDROM_MOUNTPOINT);
 	if (!is_have_error) 
 	{
 #ifdef DL_CLEANUP

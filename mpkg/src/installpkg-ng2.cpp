@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.63 2007/09/06 09:49:58 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.64 2007/09/06 13:26:47 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -273,19 +273,7 @@ int main (int argc, char **argv)
 		if (argc!=optind) return print_usage(stderr,1);
 
 		lockDatabase();
-		PACKAGE_LIST tmp;
-		SQLRecord sqlSearch;
-		sqlSearch.setSearchMode(SEARCH_OR);
-		sqlSearch.addField("package_action", ST_INSTALL);
-		sqlSearch.addField("package_action", ST_REMOVE);
-		sqlSearch.addField("package_action", ST_PURGE);
-
-		core.get_packagelist(&sqlSearch, &tmp);
-		for (int i=0; i<tmp.size(); i++)
-		{
-			core.unqueue(tmp.get_package(i)->get_id());
-		}
-		//core.commit();
+		core.clean_queue();
 		delete_tmp_files();
 		unlockDatabase();
 		return 0;
@@ -500,6 +488,8 @@ int main (int argc, char **argv)
 		core.commit();
 		core.clean_queue();
 		delete_tmp_files();
+
+		if (usedCdromMount) system("umount " + CDROM_MOUNTPOINT);
 		unlockDatabase();
 		return 0;
 	}
@@ -824,6 +814,8 @@ int main (int argc, char **argv)
 		lockDatabase();
 		core.update_repository_data();
 		delete_tmp_files();
+
+		if (usedCdromMount) system("umount " + CDROM_MOUNTPOINT);
 		unlockDatabase();
 		return 0;
 		
@@ -1169,6 +1161,8 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 		sqlSearch.addField("package_action", ST_INSTALL);
 		sqlSearch.addField("package_action", ST_REMOVE);
 		sqlSearch.addField("package_action", ST_PURGE);
+		sqlSearch.addField("package_action", ST_REPAIR);
+		sqlSearch.addField("package_action", ST_UPDATE);
 	}
 	say(_("Querying database...\n"));
 	core->get_packagelist(&sqlSearch, &pkglist, true);
