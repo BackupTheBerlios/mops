@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.64 2007/09/06 13:26:47 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.65 2007/09/09 13:23:55 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -93,7 +93,7 @@ int main (int argc, char **argv)
 		
 	bool do_reset=true;
 	int ich;
-	const char* short_opt = "hvpdzfmksDrailgyq";
+	const char* short_opt = "hvpdzfmkDrailgyq";
 	const struct option long_options[] =  {
 		{ "help",		0, NULL,	'h'},
 		{ "verbose", 		0, NULL,	'v'},
@@ -103,7 +103,7 @@ int main (int argc, char **argv)
 		{ "force-conflicts",	0, NULL,	'f'},
 		{ "no-md5",		0, NULL,	'm'},
 		{ "force-essential",	0, NULL,	'k'},
-		{ "simulate",		0, NULL,	's'},
+		//{ "simulate",		0, NULL,	's'},
 		{ "download-only",	0, NULL,	'D'},
 		{ "repair",		0, NULL,	'r'},
 		{ "available",		0, NULL,	'a'},
@@ -152,9 +152,9 @@ int main (int argc, char **argv)
 			case 'k':
 					force_essential_remove=true;
 					break;
-			case 's':
+			/*case 's':
 					simulate=true;
-					break;
+					break;*/
 			case 'i':
 					showOnlyInstalled=true;
 					break;
@@ -908,7 +908,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-f    --force-conflicts   do not perform file conflict checking\n"));
 	fprintf(stream,_("\t-m    --no-md5            do not check package integrity on install\n"));
 	fprintf(stream,_("\t-k    --force-essential   allow removing essential packages\n"));
-	fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
+	//fprintf(stream,_("\t-s    --simulate          just simulate all actions\n"));
 	//fprintf(stream,_("\t-D    --download-only     just download packages, do not install\n"));
 	fprintf(stream,_("\t-r    --repair            repair damaged packages (use with \"check\" keyword)\n"));
 	fprintf(stream,_("\t-i    --installed         show only installed packages (use with \"list\" keyword)\n"));

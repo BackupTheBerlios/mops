@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.122 2007/09/06 14:31:11 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.123 2007/09/09 13:23:55 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -211,6 +211,9 @@ MainWindow::~MainWindow()
 	thread->wait();
 	StatusThread->wait();
 	ErrorBus->wait();
+	//delete thread;
+	//delete StatusThread;
+	//delete ErrorBus;
 }
 
 
@@ -1077,6 +1080,12 @@ void MainWindow::quitApp()
 	}
 	else currentStatus = tr("Exiting...").toStdString();
 	thread->callQuit();
+	StatusThread->halt();
+	ErrorBus->Stop();
+	thread->wait();
+	StatusThread->wait();
+	ErrorBus->wait();
+
 	this->hide();
 	unlockDatabase();
 	qApp->quit();

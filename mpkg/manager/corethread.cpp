@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.76 2007/09/06 14:31:11 i27249 Exp $
+ * $Id: corethread.cpp,v 1.77 2007/09/09 13:23:55 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -19,9 +19,7 @@ coreThread::coreThread()
 
 coreThread::~coreThread()
 {
-	database->clean_queue();
-	delete database;
-	delete packageList;
+
 }
 
 void coreThread::callQuit()
@@ -95,7 +93,9 @@ void coreThread::run()
 				msleep(TIMER_RES);
 				break;
 			case CA_Quit:
+				database->clean_queue();
 				delete database;
+				delete packageList;
 				return; // Exiting!
 			default:
 				msleep(100);
