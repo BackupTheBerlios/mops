@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.123 2007/09/09 13:23:55 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.124 2007/09/09 23:24:08 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -184,6 +184,7 @@ MainWindow::MainWindow(QMainWindow *parent)
 	QObject::connect(thread, SIGNAL(sendRequiredPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveRequiredPackages(unsigned int, PACKAGE_LIST)));
 	QObject::connect(thread, SIGNAL(sendDependantPackages(unsigned int, PACKAGE_LIST)), this, SLOT(receiveDependantPackages(unsigned int, PACKAGE_LIST)));
 #endif
+	QObject::connect(thread, SIGNAL(loadDefaultData()), this, SLOT(loadDefaultData()));
 	
 	lockDatabase();
 	mDebug("init ok, let's show the UI");
@@ -195,10 +196,9 @@ MainWindow::MainWindow(QMainWindow *parent)
 		usleep(1);
 	}
 	mDebug("requesting data");
-
-	
 	emit getAvailableTags();
-	emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
+
+	//printf("constructor finished\n");
 	mDebug("constructor complete");
 }
 
@@ -262,7 +262,7 @@ void MainWindow::loadingStarted()
 	ui.statLabel->setText("");
 	ui.loadingLabel->setText("<html><img src=\"/usr/share/mpkg/splash.png\"></img></html>");
 	ui.packageListBox->setEnabled(false);
-	ui.packageInfoBox->hide();
+	//ui.packageInfoBox->hide();
 	ui.packageTable->hide();
 	ui.selectAllButton->hide();
 	ui.deselectAllButton->hide();
@@ -289,7 +289,6 @@ void MainWindow::loadingFinished()
 	ui.packageTable->show();
 	ui.selectAllButton->show();
 	ui.deselectAllButton->show();
-	
 	setTableSize();
 	emit imReady();
 	currentStatus = tr("Idle").toStdString();
@@ -349,7 +348,7 @@ void MainWindow::generateStat(vector<int> newStatusData)
 		return;
 	}
 	waitUnlock();
-	if (packagelist->size()!=newStatusData.size())
+	if ((unsigned int) packagelist->size()!=newStatusData.size())
 	{
 		mError("Structure not ready");
 		return;
@@ -561,7 +560,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 		mDebug("uninitialized");
 		return;
 	}
-	if (row >= ui.packageTable->rowCount())
+	if (row >= (unsigned int) ui.packageTable->rowCount())
 	{
 		mDebug("out of range (skipped): " + IntToStr(row));
 		return;
@@ -825,10 +824,21 @@ void MainWindow::initCategories(bool initial)
 	
 	if (initial)
 	{
-		QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
 		ui.listWidget->setCurrentRow(1);
 		ui.listWidget->scrollToItem(ui.listWidget->item(0));
+
+		QObject::connect(ui.listWidget, SIGNAL(currentRowChanged(int)), this, SLOT(filterCategory(int)));
+
+		emit loadPackageDatabase(); // Calling loadPackageDatabase from thread
 	}
+	subsysOk = true;
+	//printf("categories init ok\n");
+}
+
+void MainWindow::loadDefaultData()
+{
+	//printf("loading default data\n");
+	filterCategory(ui.listWidget->currentRow());
 }
 
 void MainWindow::hideEntireTable()
@@ -889,6 +899,7 @@ bool MainWindow::isCategoryComplain(int package_num, int category_id)
 
 void MainWindow::filterCategory(int category_id)
 {
+	//printf("filtering categories\n");
 
 	waitUnlock();
 	mDebug("filterCategory");
@@ -1002,6 +1013,13 @@ void MainWindow::showPackageInfo()
 			       + taglist.s_str() \
 			       + (string) "</html>";
 
+	// Dependencies data
+	
+	for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_dependencies()->size(); i++)
+	{
+		depData += "<br>"+packagelist->get_package(packageNum)->get_dependencies()->at(i).getDepInfo();
+	}
+
 	ui.detailedEdit->setHtml(extendedInfo.c_str());
 	ui.overviewEdit->setHtml(info.c_str());
 }
@@ -1114,7 +1132,7 @@ void MainWindow::commitChanges()
 	}
 	QString installList;
 	QString removeList;
-	if (newStatus.size()!=packagelist->size())
+	if (newStatus.size()!=(unsigned int) packagelist->size())
 	{
 		mDebug("uninitialized");
 		return;
@@ -1124,7 +1142,7 @@ void MainWindow::commitChanges()
 	PACKAGE_LIST pkgListCopy = *packagelist;
 	for (int i=0; i<pkgListCopy.size(); i++)
 	{
-		if (i>=newStatus.size()) {
+		if ((unsigned int) i>=newStatus.size()) {
 			mError("desync in newStatus and pkgListCopy");
 			break;
 		}
@@ -1194,7 +1212,7 @@ void MainWindow::showAddRemoveRepositories(){
 void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req)
 {
 	waitUnlock();
-	if (package_num>packagelist->size())
+	if (package_num>(unsigned int) packagelist->size())
 	{
 		mDebug("uninitialized");
 		return;
@@ -1217,7 +1235,7 @@ void MainWindow::receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST 
 void MainWindow::receiveDependantPackages(unsigned int package_num, PACKAGE_LIST dep)
 {
 	waitUnlock();
-	if (package_num>=packagelist->size())
+	if (package_num>=(unsigned int) packagelist->size())
 	{
 		mDebug("uninitialized");
 		return;

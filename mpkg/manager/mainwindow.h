@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package manager UI - header
- * $Id: mainwindow.h,v 1.56 2007/09/06 14:31:11 i27249 Exp $
+ * $Id: mainwindow.h,v 1.57 2007/09/09 23:24:08 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -38,6 +38,8 @@ class MainWindow: public QMainWindow
 		errorBus *ErrorBus;
 		PreferencesBox *prefBox;
 
+		bool subsysOk;
+
 	signals:
 		void fillReady();
 		void imReady();
@@ -58,6 +60,7 @@ class MainWindow: public QMainWindow
 		void getRequiredPackages(unsigned int package_num);
 		void getDependantPackages(unsigned int package_num);
 	public slots:
+		void loadDefaultData();
 		void highlightCategoryList();
 		void generateStat(vector<int> newStatusData);
 		void receiveRequiredPackages(unsigned int package_num, PACKAGE_LIST req);

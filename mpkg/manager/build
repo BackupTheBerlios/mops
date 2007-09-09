@@ -3,12 +3,12 @@
 #######################################################
 # Build script for manager
 # Just to simplify =)
-# $Id: build,v 1.6 2007/08/21 18:05:22 i27249 Exp $
+# $Id: build,v 1.7 2007/09/09 23:24:08 i27249 Exp $
 #######################################################
 qmake
 make -j2
 strip manager
-cp manager /usr/local/bin/
+cp manager /usr/bin/
 mkdir -p /usr/share/mpkg/
 cp -R icons /usr/share/mpkg/
 cp splash.png /usr/share/mpkg/

@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.77 2007/09/09 13:23:55 i27249 Exp $
+ * $Id: corethread.cpp,v 1.78 2007/09/09 23:24:08 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -215,6 +215,7 @@ void coreThread::_loadPackageDatabase()
 			}
 		}
 	}
+	//else printf("Empty showmask\n");
 
 	emit disableProgressBar();
 	emit loadingFinished();
@@ -224,8 +225,10 @@ void coreThread::_loadPackageDatabase()
 	currentAction=CA_Idle;
 	actionBus.clear();
 	pData.clear();
-	
+
+	//printf("loadPackageDatabase done\n");
 	actionBus._abortComplete = true;
+	if (showMask.empty()) emit loadDefaultData();
 }
 
 void coreThread::getCdromName()
