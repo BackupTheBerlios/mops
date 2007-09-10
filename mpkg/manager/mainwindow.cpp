@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.124 2007/09/09 23:24:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.125 2007/09/10 00:53:58 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -581,7 +581,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 	ui.packageTable->setCellWidget(row, PT_NAME, pkgName);
 	string depData;
 	if (packagelist->get_package(packageNum)->installed() && packagelist->get_package(packageNum)->isRemoveBlacklisted()) stat->setEnabled(false);
-	if (packagelist->get_package(packageNum)->get_dependencies()->size()>0)
+	/*if (packagelist->get_package(packageNum)->get_dependencies()->size()>0)
 	{
 		depData = "<b> "+tr("Depends on:").toStdString()+" </b>";
 		for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_dependencies()->size(); i++)
@@ -589,7 +589,7 @@ void MainWindow::setTableItem(unsigned int row, int packageNum, bool checkState,
 			depData += "<br>"+packagelist->get_package(packageNum)->get_dependencies()->at(i).getDepInfo();
 		}
 		depData+="<br>";
-	}
+	}*/
 
 	/*string tagList = "<br><b>" + tr("Tags:").toStdString() + "</b>";
 	for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_tags()->size(); i++)
@@ -1014,12 +1014,12 @@ void MainWindow::showPackageInfo()
 			       + (string) "</html>";
 
 	// Dependencies data
-	
-	for (unsigned int i=0; i<packagelist->get_package(packageNum)->get_dependencies()->size(); i++)
+	string depData;
+	for (unsigned int i=0; i<pkg->get_dependencies()->size(); i++)
 	{
-		depData += "<br>"+packagelist->get_package(packageNum)->get_dependencies()->at(i).getDepInfo();
+		depData += pkg->get_dependencies()->at(i).getDepInfo()+"<br>";
 	}
-
+	ui.depTextBrowser->setHtml(depData.c_str());
 	ui.detailedEdit->setHtml(extendedInfo.c_str());
 	ui.overviewEdit->setHtml(info.c_str());
 }

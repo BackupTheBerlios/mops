@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.48 2007/09/06 13:26:47 i27249 Exp $
+ * $Id: setup.cpp,v 1.49 2007/09/10 00:53:58 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -326,6 +326,7 @@ int setRootPartition()
 	formatOptions.push_back(TagPair("---", "Не форматировать - оставить как есть, cохранив данные"));
 	string formatOption;
 
+rootFormatMenu:
 	formatOption = dialogItem.execMenu("Вы выбрали " + rootPartition + " в качестве корневой файловой системы.\nКак вы хотите ее отформатировать?",\
 			0,0,0,formatOptions);
 	if (formatOption.empty())
@@ -335,6 +336,10 @@ int setRootPartition()
 	
 	systemConfig.rootPartition = rootPartition;
 
+	if (formatOption=="xfs")
+	{
+		if (!dialogItem.execYesNo("Вы выбрали XFS в качестве файловой системы для корневого раздела.\nИз-за особенностей данной файловой системы, установка grub приведет к зависанию.\nКроме того, установка какого-либо загрузчика вообще на данный раздел приведет к потере всех данных на нем.\n\nВы уверены что хотите продолжить?")) goto rootFormatMenu;
+	}
 	if (formatOption!="---")
 	{
 		systemConfig.rootPartitionFormat=true;
@@ -1520,15 +1525,16 @@ int main(int argc, char *argv[])
 				valid_opt=true;
 				noEject=true;
 			}
-			if (strcmp(argv[i], "--no-realtime")==0)
+			/*if (strcmp(argv[i], "--no-realtime")==0)
 			{
 				realtimeTrackingEnabled = false;
 			}
 			if (strcmp(argv[i], "--offline-deps")==0)
 			{
+				valid_opt = true;
 				onlineDeps = false;
 				realtimeTrackingEnabled = false;
-			}
+			}*/
 		
 			if (strcmp(argv[i], "--help")==0 || !valid_opt) 
 			{
@@ -1538,8 +1544,8 @@ int main(int argc, char *argv[])
 	
 				printf("\t--сheck          Проверять контрольные суммы всех пакетов перед установкой\n");
 				printf("\t--no-eject       Не выдвигать CD-ROM (используйте при установке в виртуальной машине)\n");
-				printf("\t--no-realtime    Считать зависимости между пакетами только при выходе в главное меню\n");
-				printf("\t--offline-deps   Вообще не считать зависимости до выполнения установки\n");
+				//printf("\t--no-realtime    Считать зависимости между пакетами только при выходе в главное меню\n");
+			//	printf("\t--offline-deps   Вообще не считать зависимости до выполнения установки\n");
 				printf("\t--help           Показать эту справку\n");
 				//printf("\t--simulate       Simulate only, do not install (not fully implemented yet)\n");
 				exit(0);
@@ -1557,10 +1563,9 @@ int main(int argc, char *argv[])
 	systemConfig.cdromList=getCdromList();
 	unlink("/var/log/mpkg-lasterror.log");
 	unlink("/var/log/mkfs.log");
-	system("touch /var/log/mkfs.log && touch /var/log/mpkg-lasterror.log");
 	system("killall tail 2> /dev/null");
-	system("tail -f /var/log/mkfs.log >> /dev/tty4 &");
-	system("tail -f /var/log/mpkg-lasterror.log >> /dev/tty4 &");
+	system("tail -f /var/log/mkfs.log --retry >> /dev/tty4 2>/dev/null &");
+	system("tail -f /var/log/mpkg-lasterror.log --retry >> /dev/tty4 2>/dev/null &");
 	Dialog d ("Главное меню");
 	showGreeting();
 	if (!showLicense())

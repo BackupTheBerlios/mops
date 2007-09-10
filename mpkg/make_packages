@@ -9,33 +9,37 @@ rm -rf out_packages/*.tgz
 echo "Creating library package"
 mkdir -p out_packages/lib/install
 cp pkg_descriptions/lib/*  out_packages/lib/install/
-mkdir -p out_packages/lib/usr/local/lib
-mkdir -p out_packages/lib/usr/local/include
+mkdir -p out_packages/lib/usr/lib
+mkdir -p out_packages/lib/usr/include
 mkdir -p out_packages/lib/etc
 mkdir -p out_packages/lib/usr/share/locale/ru/LC_MESSAGES
-cp -R /usr/local/include/mpkg out_packages/lib/usr/local/include/
+cp -R /usr/include/mpkg out_packages/lib/usr/include/
 #cp src/mpkg.xml out_packages/lib/etc/
 cp manager/groups.xml out_packages/lib/etc/mpkg-groups.xml
 cp src/mpkg-remove-blacklist out_packages/lib/etc/
-cp /usr/local/lib/libmpkg* out_packages/lib/usr/local/lib/
+cp /usr/lib/libmpkg* out_packages/lib/usr/lib/
 cp /usr/share/locale/ru/LC_MESSAGES/installpkg-ng.mo out_packages/lib/usr/share/locale/ru/LC_MESSAGES/
 cd out_packages/lib/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating console package"
 mkdir -p out_packages/console/install
 cp  pkg_descriptions/console/* out_packages/console/install
-mkdir -p out_packages/console/usr/local/bin
-cp /usr/local/bin/mpkg out_packages/console/usr/local/bin/
-(cd out_packages/console/usr/local/bin; ln -s mpkg buildpkg)
+mkdir -p out_packages/console/usr/bin
+cp /usr/bin/mpkg out_packages/console/usr/bin/
+(cd out_packages/console/usr/bin; ln -s mpkg buildpkg)
+mkdir -p out_packages/console/usr/man/ru/man1
+mkdir -p out_packages/console/usr/man/man1
+cp mpkg.1.en out_packages/console/usr/man/man1/mpkg.1
+cp mpkg.1.ru out_packages/console/usr/man/ru/man1/mpkg.1
 cd out_packages/console/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating GUI package"
 mkdir -p out_packages/gui/install
 cp  pkg_descriptions/gui/*  out_packages/gui/install/
-mkdir -p out_packages/gui/usr/local/bin
+mkdir -p out_packages/gui/usr/bin
 mkdir -p out_packages/gui/usr/share/applications
-cp /usr/local/bin/manager out_packages/gui/usr/local/bin/
-cp /usr/local/bin/updatechecker out_packages/gui/usr/local/bin/
+cp /usr/bin/manager out_packages/gui/usr/bin/
+cp /usr/bin/updatechecker out_packages/gui/usr/bin/
 cp -R /usr/share/mpkg out_packages/gui/usr/share/mpkg
 
 cp -R manager/applink/* out_packages/gui/usr/share/applications/
@@ -44,8 +48,8 @@ cd out_packages/gui/; buildpkg; mv *.tgz ..; cd ../..
 echo "Creating tools package"
 mkdir -p out_packages/tools/install
 cp  pkg_descriptions/tools/* out_packages/tools/install/
-mkdir -p out_packages/tools/usr/local/bin
-cp /usr/local/bin/packagebuilder out_packages/tools/usr/local/bin/
+mkdir -p out_packages/tools/usr/bin
+cp /usr/bin/packagebuilder out_packages/tools/usr/bin/
 cd out_packages/tools; buildpkg; mv *.tgz ..; cd ../..
 
 echo "All packages created successfully"

@@ -3,11 +3,12 @@
 ###########################################
 # Build script for package builder
 # Just for simplify! =)
-# $Id: build,v 1.2 2007/08/21 18:05:22 i27249 Exp $
+# $Id: build,v 1.3 2007/09/10 00:53:58 i27249 Exp $
 ###########################################
 qmake
 make -j2
 strip packagebuilder
-cp packagebuilder /usr/local/bin/
+cp packagebuilder /usr/bin/
+cp packagebuilder_ru.qm /usr/share/mpkg/
 echo "Package builder: build complete"
 
