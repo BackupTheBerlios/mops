@@ -34,5 +34,7 @@
 #define ACT_LISTDEPENDANTS 0x20
 #define ACT_REINSTALL	0x21
 #define ACT_UPDATEALL	0x22
+#define ACT_LISTGROUPS	0x23
+
 #endif
 

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.65 2007/09/09 13:23:55 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.66 2007/09/12 22:55:17 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -516,6 +516,16 @@ int main (int argc, char **argv)
 		core.exportBase(dest_dir);
 		return 0;
 	}
+	if (action == ACT_LISTGROUPS)
+	{
+		vector<string> availableTags;
+		core.get_available_tags(&availableTags);
+		for (unsigned int i=0; i<availableTags.size(); i++)
+		{
+			printf("%s\n", availableTags[i].c_str());
+		}
+		return 0;
+	}
 	if (action == ACT_TEST)
 	{
 #ifdef RELEASE
@@ -932,6 +942,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
 	fprintf(stream,_("\tlistgroup                 show the list of packages belonged to group\n"));
+	fprintf(stream,_("\tlistgroups                show the list of all existing groups\n"));
 	fprintf(stream,_("\twhodepend                 show what packages depends on this one\n"));
 	
 	fprintf(stream,_("\tfilesearch                look for owner of the file in installed packages (LIKE mode).\n"));
@@ -1168,8 +1179,7 @@ int list(mpkg *core, vector<string> search, bool onlyQueue)
 	core->get_packagelist(&sqlSearch, &pkglist, true);
 	if (pkglist.IsEmpty())
 	{
-		if (search.empty()) say(_("Package database is empty\n"));
-		else say(_("Search attempt has no results\n"));
+		say(_("Search attempt has no results\n"));
 		return 0;
 	}
 	bool showThis;
@@ -1237,6 +1247,7 @@ int check_action(char* act)
 		&& _act != "whodepend"
 		&& _act != "reinstall"
 		&& _act != "upgradeall"
+		&& _act != "listgroups"
 		) {
 		res = -1;
 	}
@@ -1249,6 +1260,8 @@ int check_action(char* act)
 int setup_action(char* act)
 {
 	std::string _act(act);
+	if ( _act == "listgroups")
+		return ACT_LISTGROUPS;
 	if ( _act == "upgradeall")
 		return ACT_UPDATEALL;
 	if ( _act == "reinstall")

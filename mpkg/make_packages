@@ -22,15 +22,16 @@ cp /usr/share/locale/ru/LC_MESSAGES/installpkg-ng.mo out_packages/lib/usr/share/
 cd out_packages/lib/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating console package"
+./generate_man
 mkdir -p out_packages/console/install
 cp  pkg_descriptions/console/* out_packages/console/install
 mkdir -p out_packages/console/usr/bin
 cp /usr/bin/mpkg out_packages/console/usr/bin/
 (cd out_packages/console/usr/bin; ln -s mpkg buildpkg)
-mkdir -p out_packages/console/usr/man/ru/man1
-mkdir -p out_packages/console/usr/man/man1
-cp mpkg.1.en out_packages/console/usr/man/man1/mpkg.1
-cp mpkg.1.ru out_packages/console/usr/man/ru/man1/mpkg.1
+mkdir -p out_packages/console/usr/man/ru/man8
+mkdir -p out_packages/console/usr/man/man8
+cp mpkg.8.en out_packages/console/usr/man/man8/mpkg.8
+cp mpkg.8.ru out_packages/console/usr/man/ru/man1/mpkg.8
 cd out_packages/console/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating GUI package"
