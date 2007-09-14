@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.112 2007/08/30 21:46:48 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.113 2007/09/14 00:59:43 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -83,7 +83,9 @@ int mpkgDatabase::emerge_to_db(PACKAGE *package)
 
 bool mpkgDatabase::check_cache(PACKAGE *package, bool clear_wrong)
 {
+
 	string fname = SYS_CACHE + "/" + *package->get_filename();
+	if (package->usedSource.find("cdrom://")!=std::string::npos && FileExists(fname)) return true;
 	string got_md5 = get_file_md5(SYS_CACHE + "/" + *package->get_filename());
 	if (FileExists(fname) && *package->get_md5() == got_md5)
 		return true;
@@ -118,12 +120,14 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.addField("package_action", ST_INSTALL);
 	sqlSearch.addField("package_action", ST_REPAIR);
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
-	install_list.sortByPriority();
+	//install_list.sortByPriority();
+	if (dialogMode) dialogItem.execInfoBox("Подготовка к установке пакетов");
+	install_list.sortByLocations();
 	// Checking available space
 	//printf("checking available space\n");
 	long double rem_size=0;
 	long double ins_size=0;
-
+	
 	for (int i=0; i<remove_list.size(); i++)
 	{
 		remove_list.get_package(i)->itemID = pData.addItem(*remove_list.get_package(i)->get_name(), 10);
@@ -155,7 +159,7 @@ int mpkgDatabase::commit_actions()
 	// Let's show the summary for console and dialog users and ask for confirmation
 	if (consoleMode && !dialogMode)
 	{
-		unsigned int installCount = 0, updateCount = 0, removeCount = 0, purgeCount = 0, repairCount = 0;
+		unsigned int installCount = 0, removeCount = 0, purgeCount = 0, repairCount = 0;
 		say("Action summary:\n");
 
 		// Install
@@ -346,7 +350,7 @@ i_actInput:
 		bool skip=false;
 		if (dialogMode)
 		{
-			dialogItem.execGauge(_("Checking package cache"), 10,80,0);
+			dialogItem.execGauge(_("Проверка пакетов"), 10,80,0);
 		}
 
 		for (int i=0; i<install_list.size(); i++)
@@ -390,6 +394,7 @@ i_actInput:
 				tmpDownloadItem.priority = 0;
 				tmpDownloadItem.status = DL_STATUS_WAIT;
 				tmpDownloadItem.itemID = install_list.get_package(i)->itemID;
+				tmpDownloadItem.usedSource = &install_list.get_package(i)->usedSource;
 	
 				install_list.get_package(i)->sortLocations();
 				for (unsigned int k = 0; k < install_list.get_package(i)->get_locations()->size(); k++)
@@ -582,11 +587,73 @@ installProcess:
 
 int mpkgDatabase::install_package(PACKAGE* package)
 {
+	string sys_cache=SYS_CACHE;
+	string sys_root=SYS_ROOT;
 
 	pData.setItemCurrentAction(package->itemID, _("installing"));
 	if (!dialogMode) say(_("Installing %s %s\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
 	string statusHeader = "["+IntToStr((int) actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum())+"] "+_("Installing package ") + *package->get_name()+": ";
 	currentStatus = statusHeader + _("initialization");
+	// Checking if it is a symlink. If it is broken, and package installs from CD, ask to insert and mount
+	bool broken_sym=false;
+	mpkgErrorReturn errRet;
+	//printf("Checking file existance\n");
+	if (!FileExists(sys_cache + *package->get_filename(), &broken_sym) || broken_sym)
+	{
+		//printf("Link is broken. Looking for the package source\n");
+		// Let's see what source is used
+		if (package->usedSource.find("cdrom://")!=std::string::npos)
+		{
+			//printf("Yes, we are installing package from CD. Ejecting, mounting and checking the volume\n");
+			system("eject " + CDROM_DEVICE);
+			// Yeah, we used CD and there are symlink. Let's ask for appropriate disc
+			// First, determine Volume ID
+			string source;
+		        source = package->usedSource.substr(strlen("cdrom://"));
+			//printf("source created\n");
+			string cdromVolName;
+		        cdromVolName = source.substr(0,source.find_first_of("/"));
+			//printf("cdromVolName created\n");
+			bool mountedOk=false, abortMount=false;
+			string recv_volname;
+			while (!mountedOk)
+			{
+				//printf("Trying to mount\n");
+				if (dialogMode) 
+				{
+					Dialog d("Установка пакета " + *package->get_name() + ": монтирование CD/DVD");
+					if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + CDROM_DEVICENAME))
+					{
+						system("umount " + CDROM_MOUNTPOINT);
+						system("mount " + CDROM_DEVICE + " " + CDROM_MOUNTPOINT);
+						recv_volname = getCdromVolname();
+						if (recv_volname == cdromVolName)
+						{
+							mountedOk = true;
+						}
+						else d.execMsgBox("Вы вставили не тот диск.\nТребуется: ["+cdromVolName+"]\nВ дисководе: [" + recv_volname + "]\n");
+					}
+					else abortMount = true;
+				}
+				else
+				{
+					errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+					if (errRet == MPKG_RETURN_ABORT)
+					{
+						abortMount=true;
+					}
+				}
+				if (abortMount) mountedOk=true;
+			}
+			if (abortMount) return MPKGERROR_ABORTED;
+		}
+		else {
+			mError(_("Installation error: file not found"));
+			sleep(2);
+			return MPKGERROR_FILEOPERATIONS;
+		}
+	}
+
 	// First of all: EXTRACT file list and scripts!!!
 	LocalPackage lp(SYS_CACHE + *package->get_filename());
 	bool no_purge=true;
@@ -697,8 +764,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 
 
 	mDebug("calling extract");
-	string sys_cache=SYS_CACHE;
-	string sys_root=SYS_ROOT;
 	string create_root="mkdir -p "+sys_root+" 2>/dev/null";
 	if (!simulate) system(create_root.c_str());
 	sys="(cd "+sys_root+"; tar zxf "+sys_cache + *package->get_filename();

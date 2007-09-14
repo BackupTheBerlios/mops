@@ -31,7 +31,7 @@ cp /usr/bin/mpkg out_packages/console/usr/bin/
 mkdir -p out_packages/console/usr/man/ru/man8
 mkdir -p out_packages/console/usr/man/man8
 cp mpkg.8.en out_packages/console/usr/man/man8/mpkg.8
-cp mpkg.8.ru out_packages/console/usr/man/ru/man1/mpkg.8
+cp mpkg.8.ru out_packages/console/usr/man/ru/man8/mpkg.8
 cd out_packages/console/; buildpkg; mv *.tgz ..; cd ../..
 
 echo "Creating GUI package"

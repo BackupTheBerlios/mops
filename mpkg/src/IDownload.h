@@ -31,6 +31,9 @@ public:
 	int status;
 	int itemID;
 	double expectedSize;
+	string *usedSource;
+	DownloadItem();
+	~DownloadItem();
 };
 
 typedef std::vector<DownloadItem> DownloadsList;

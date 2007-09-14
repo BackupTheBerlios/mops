@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.42 2007/08/29 22:33:13 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.43 2007/09/14 00:59:43 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -47,7 +47,7 @@ bool unlockDatabase()
 			return true;
 		}
 		else {
-			mError("Database is locked by another process, cannot unlock");
+			//mError("Database is locked by another process, cannot unlock");
 			return false;
 		}
 	}

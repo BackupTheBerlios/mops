@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.66 2007/09/12 22:55:17 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.67 2007/09/14 00:59:43 i27249 Exp $
  */
 
 #include "libmpkg.h"
@@ -30,7 +30,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12 beta";
+	char *version="0.12";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -40,12 +40,12 @@ void cleanDebugFile()
 	string file = log_directory + "/mpkg-debug.log";
 	if (stat(file.c_str(), &s)==0)
 	{
-		if (s.st_size >= 400000) unlink(file.c_str());
+		if (s.st_size >= 4000) unlink(file.c_str());
 	}
 	file = log_directory + "/mpkg-errors.log";
 	if (stat(file.c_str(), &s)==0)
 	{
-		if (s.st_size >= 400000) unlink(file.c_str());
+		if (s.st_size >= 4000) unlink(file.c_str());
 	}
 
 }
@@ -531,24 +531,19 @@ int main (int argc, char **argv)
 #ifdef RELEASE
 		return print_usage(stderr,1);
 #else
-		/*
+		
 		PACKAGE_LIST t;
 		SQLRecord a;
 		core.get_packagelist(&a, &t);
-		
-		printf("WTF looping\n");
-		for (unsigned int i=0; i<1000; i++)
+		t.sortByLocations();
+		for (int i=0; i<t.size(); i++)
 		{
-			for (int x=0; x<t.size(); x++)
-			{
-				t.get_package(x)->isRemoveBlacklisted();// printf("blacklisted\n");
-			}
+			if (t.get_package(i)->get_locations()->size()>0)
+			printf("%s\n",t.get_package(i)->get_name()->c_str());
 		}
 
 		
-		core.DepTracker->createPackageCache();
-		core.DepTracker->fillInstalledPackages();
-		*/
+		
 
 		return 0;
 #endif
@@ -565,12 +560,19 @@ int main (int argc, char **argv)
 	
 		for (int i=0; i<tList.size(); i++)
 		{
-			if (tList.get_package(i)->installed () && *tList.get_package(i)->get_name()==search) *pkg = *tList.get_package(i);
+			if (*tList.get_package(i)->get_name()==search)
+			{
+				if (!showOnlyInstalled || tList.get_package(i)->installed ())
+				{
+					*pkg = *tList.get_package(i);
+				}
+			}
 		}
 		dependant = core.DepTracker->get_dependant_packages(pkg);
 		if (dependant.size()==0)
 		{
-			say(_("No installed packages depends on %s\n"), argv[optind]);
+			if (showOnlyInstalled) say(_("No installed packages depends on %s\n"), argv[optind]);
+			else say(_("No package depends on %s\n"), argv[optind]);
 			delete pkg;
 			return 0;
 		}
@@ -683,7 +685,7 @@ int main (int argc, char **argv)
 		//printf("optind = %d, argc = %d\n", optind, argc);
 		if (optind>=argc)
 		{
-			printf("mode 1\n");
+			//printf("mode 1\n");
 			// Check entire system
 			for (int i=0; i<checkList.size(); i++)
 			{

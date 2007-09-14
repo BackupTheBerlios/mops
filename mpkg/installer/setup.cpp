@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.49 2007/09/10 00:53:58 i27249 Exp $
+ * $Id: setup.cpp,v 1.50 2007/09/14 00:59:43 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -399,7 +399,7 @@ int setOtherOptions(string devName)
 			if (systemConfig.otherMounts[i].value[0]== '/') mountpoint_ret = systemConfig.otherMounts[i].value; 
 			fstype_ret = systemConfig.otherMountFSTypes[i];
 select_mp:
-			mountpoint_ret = d.execInputBox("Выберите точку подключения для " + systemConfig.otherMounts[i].tag, mountpoint_ret);
+			mountpoint_ret = d.execInputBox("Укажите точку подключения для " + systemConfig.otherMounts[i].tag + ", например /mnt/win_c", mountpoint_ret);
 			if (mountpoint_ret.empty())
 			{
 				// clearing
@@ -611,8 +611,14 @@ int mountPartitions()
 
 string getTagDescription(string tag)
 {
+	if (tag=="print") return "Система печати";
+	if (tag=="utils") return "Различные утилиты";
+	if (tag=="audio") return "Аудио";
+	if (tag=="x11-fonts") return "Шрифты X11";
+	if (tag=="virtual") return "Виртуальные пакеты";
 	if (tag=="base-utils") return "Базовые утилиты";
 	if (tag=="kde") return "Рабочий стол KDE";
+	if (tag=="koffice") return "KOffice";
 	if (tag=="x11") return "Система X-Window";
 	if (tag=="apple") return "Поддержка Apple Macintosh";
 	if (tag=="openoffice") return "Офисный пакет OpenOffice.org";
@@ -620,21 +626,19 @@ string getTagDescription(string tag)
 	if (tag=="tcl") return "Поддержка Tk/TCL";
 	if (tag=="slackware") return "Сконвертированные пакеты";
 	if (tag=="network") return "Программы для работы в сети";
-	if (tag=="libraries") return "Различные иблиотеки";
+	if (tag=="libs") return "Различные иблиотеки";
 	if (tag=="console") return "Консольные приложения";
 	if (tag=="apps") return "Приложения";
 	if (tag=="xapps") return "Графические приложения";
-	if (tag=="development") return "Инструменты для разработки";
-	if (tag=="documentation") return "Дополнительная документация";
+	if (tag=="devel") return "Инструменты для разработки";
+	if (tag=="docs") return "Дополнительная документация";
 	if (tag=="codec") return "Кодеки для проигрывания мультимедиа-файлов";
-	if (tag=="kernel-sources") return "Исходные тексты ядра";
+	if (tag=="kernel-source") return "Исходные тексты ядра";
 	if (tag=="wine") return "Эмулятор Windows API";
 	if (tag=="tex") return "Система верстки TeX";
 	if (tag=="server") return "Серверные приложения";
 	if (tag=="beryl") return "Трехмерный рабочий стол";
 	if (tag=="themes") return "Различные темы";
-
-
 
 	return tag;
 }
@@ -939,13 +943,13 @@ int packageSelectionMenu()
 	bool mark;
 	PACKAGE *p;
 	string ins_type=systemConfig.setupMode;
-	menuItems.push_back(TagPair("0","Редактировать текущий список"));
+	if (!systemConfig.setupMode.empty()) menuItems.push_back(TagPair("0","Редактировать текущий список пакетов"));
 	menuItems.push_back(TagPair("1","Персональный компьютер (для домашнего и офисного применения)"));
 	menuItems.push_back(TagPair("2","Сервер (основные сервисы, без X11)"));
 	//menuItems.push_back(TagPair("3","Тонкий клиент (минимальная установка с X11, умещается на 512Мб)"));
 	menuItems.push_back(TagPair("3","Минимальная установка (только базовая система)"));
 	menuItems.push_back(TagPair("4","Полная установка (абсолютно все пакеты)"));
-	ret = d.execMenu("Выберите набор пакетов для установки.\nОни используются как отправная точка в выборе пакетов.\nВы сможете детально отредактировать список устанавливаемых компонентов",0,0,0,menuItems);
+	ret = d.execMenu("Выберите набор пакетов для установки.\nВ дальнейшем его можно будет отредактировать",0,0,0,menuItems);
 	if (ret.empty()) return 0;
 
 	i_ret = atoi(ret.c_str());
@@ -1039,7 +1043,7 @@ group_mark_menu:
 			menuItems.push_back(TagPair(i_tagList[i],getTagDescription(i_tagList[i])));
 		}
 	}
-	if (!d.execCheckList("Отредактируйте список устанавливаемых групп\nПомните, что все изменения из предыдущего меню будут утеряны", 0,0,0,&menuItems)) goto group_adjust_menu;
+	if (!d.execCheckList("Отредактируйте список групп устанавливаемых пакетов\nВнимание! Все изменения, выполненные в предыдущем меню, будут утеряны!", 0,0,0,&menuItems)) goto group_adjust_menu;
 	//printf("cycle\n");
 	//sleep(2);
 	for (unsigned int i=0; i<menuItems.size(); i++)
@@ -1065,10 +1069,10 @@ group_mark_menu:
 group_adjust_menu:
 	menuItems.clear();
 	menuItems.push_back(TagPair("Готово", "Все готово"));
-	menuItems.push_back(TagPair("Группы", "Выбор устанавливаемых групп пакетов целиком"));
+	menuItems.push_back(TagPair("Группы", "Редактирование списка групп устанавливаемых пакетов"));
 	for (unsigned int i=0; i<i_tagList.size(); i++)
 	{
-		if (i_tagList[i]!="desktop" && i_tagList[i]!="server" && i_tagList[i]!="thinclient" && i_tagList[i]!="base")
+		if (i_tagList[i]!="base")
 		{
 			menuItems.push_back(TagPair(i_tagList[i], getTagDescription(i_tagList[i])));
 		}
@@ -1076,7 +1080,7 @@ group_adjust_menu:
 	menuItems.push_back(TagPair("extras", "Пакеты, не вошедшие ни в одну из групп"));
 	menuItems.push_back(TagPair("everything", "Единый список всех пакетов"));
 	
-	ret = d.execMenu("Отредактируйте список пакетов и нажмите Готово",0,0,0,menuItems);
+	ret = d.execMenu("Выберите группу и при необходимости отредактируйте список пакетов. По завершении выберите [Готово]",0,0,0,menuItems);
 	if (ret == "Готово") goto pkgcounter_finalize;
 	if (ret == "Группы") goto group_mark_menu;
 	else
@@ -1202,8 +1206,8 @@ int commit()
 	summary += "Источник пакетов: " + systemConfig.sourceName + "\n" + \
 		    "Режим установки: " + systemConfig.setupMode + "\n" + \
 		    "Будет установлено пакетов: " + IntToStr(systemConfig.totalDependantPackages) + \
-		    	", из них  " + IntToStr(systemConfig.totalDependantPackages - systemConfig.totalQueuedPackages) + " по зависимостям\n" + \
-		    "\nМожно выполнять установку?";
+		    	" (выбрано: " + IntToStr(systemConfig.totalQueuedPackages) + ", подключено по зависимостям: " + IntToStr(systemConfig.totalDependantPackages - systemConfig.totalQueuedPackages) + ")\n" + \
+		    "\nВыполнить установку?";
 	if (d.execYesNo(summary))
 	{
 		d.setTitle("Подготовка к установке системы");
@@ -1213,7 +1217,7 @@ int commit()
 			if (formatPartitions()!=0) return -1;
 			if (mountPartitions()!=0) return -1;
 			createCore();
-			d.execInfoBox("Построение очереди пакетов и расчет зависимостей",3,60);
+			d.execInfoBox("Формирование списка устанавливаемых пакетов",3,60);
 
 			for (int i=0; i<i_availablePackages.size(); i++)
 			{
@@ -1242,7 +1246,7 @@ int setCDSource()
 	int disc_number=0;
 	vector<string> nullList,rList;
 	Dialog d("Установка с набора CD/DVD");
-	d.execMsgBox("Приготовьте все диски, с которых вы хотите ставить систему.\nНеобходимо произвести их индексацию.");
+	d.execMsgBox("Приготовьте все установочные диски.\nНеобходимо произвести их индексацию.");
 	createCore();
 	string volname;
 	string rep_location;
@@ -1267,11 +1271,11 @@ int setCDSource()
 					d.execInfoBox("Данные загружены успешно.\nМетка диска: " + volname + "\nПуть к пакетам: "+rep_location);
 					sleep(1);
 				}
-				else d.execMsgBox("Загрузка данных не удалась, смотрите логи");
+				else d.execMsgBox("Не удалось прочитать индекс репозитория с данного диска");
 			}
 			else d.execMsgBox("Данный диск уже проиндексирован");
 		}
-		else d.execMsgBox("Данный диск не является диском с установочными пакетами.");
+		else d.execMsgBox("Данный диск не опознан как установочный");
 		system("umount " + systemConfig.cdromDevice);
 		if (!noEject) system("eject " + systemConfig.cdromDevice);
 		usedCdromMount=false;
@@ -1295,7 +1299,7 @@ int setCDSource()
 
 int setDVDSource()
 {
-	Dialog dialogItem ("Поиск пакетов на DVD");
+	Dialog dialogItem ("Поиск пакетов на CD/DVD");
 	vector<string> nullList, rList;
 start:
 	createCore();
@@ -1460,7 +1464,7 @@ int packageSourceSelectionMenu()
 	
 int diskPartitioningMenu()
 {
-	Dialog d("Разбивка диска на разделы");
+	Dialog d("Разметка диска");
 	vector<TagPair> menuItems;
 	vector<TagPair> devList = getDevList();
 	string ret;
@@ -1468,12 +1472,12 @@ int diskPartitioningMenu()
 	int r = 0;
 part_menu:
 	menuItems.clear();
-	menuItems.push_back(TagPair("cfdisk", "Простое меню для разбивки"));
-	//menuItems.push_back(TagPair("fdisk", "Разбивка диска из командной строки (экспертный режим)"));
-	menuItems.push_back(TagPair("parted", "Разбивка диска из командной строки (экспертный режим)"));
-	menuItems.push_back(TagPair("Готово", "Все готово, вернуться в главное меню"));
+	menuItems.push_back(TagPair("cfdisk", "Простое меню"));
+	//menuItems.push_back(TagPair("fdisk", "Разметка диска из командной строки (экспертный режим)"));
+	menuItems.push_back(TagPair("parted", "Экспертный режим"));
+	menuItems.push_back(TagPair("Готово", "Возврат в главное меню"));
 
-	ret = d.execMenu("Выберите способ разбивки диска",0,0,0,menuItems);
+	ret = d.execMenu("Выберите способ:",0,0,0,menuItems);
 	if (ret == "Готово" || ret.empty()) return 0;
 //disk_menu:
 	disk_name = d.execMenu("Какой диск вы хотите разметить?",0,0,0, devList);
@@ -1583,7 +1587,7 @@ int main(int argc, char *argv[])
 	initDatabaseStructure();
 main_menu:
 	menuItems.clear();
-	menuItems.push_back(TagPair("0","Выполнить разбивку диска"));
+	menuItems.push_back(TagPair("0","Произвести разметку диска"));
 	
 	if (systemConfig.swapPartition.empty()) menuItems.push_back(TagPair("1", "Выбрать раздел подкачки"));
 	else menuItems.push_back(TagPair("1","Раздел подкачки: " + systemConfig.swapPartition));
@@ -1615,8 +1619,11 @@ main_menu:
 	if (ret == "6") if (commit()==0) next_item="7";
 	if (ret == "7" || ret.empty()) 
 	{
-		unlockDatabase();
-		return 0;
+		if (d.execYesNo("Вы действительно хотите выйти из программы установки?"))
+		{
+			unlockDatabase();
+			return 0;
+		}
 	}
 	goto main_menu;
 }

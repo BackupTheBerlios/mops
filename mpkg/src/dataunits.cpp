@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.71 2007/09/06 13:26:47 i27249 Exp $
+	$Id: dataunits.cpp,v 1.72 2007/09/14 00:59:43 i27249 Exp $
 */
 
 
@@ -12,6 +12,7 @@
 #include "debug.h"
 #include "constants.h"
 
+int loopCount=0;
 // LOCATION class functions
 
 // Comparsion
@@ -341,15 +342,38 @@ void _sortLocations(vector<LOCATION>* locations)
 	// 1: file://
 	// 2: <all network>
 	// 3: cdrom://
-	vector<LOCATION> sorted;
+	vector<LOCATION> sorted, tmp, tmp2;
+	vector<int> p;
 	for (int t=0; t<=3; t++)
 	{
+		tmp.clear();
+		tmp2.clear();
 		for (unsigned int i=0; i<locations->size(); i++)
 		{
 			if (locations->at(i).get_type()==t)
 			{
-				sorted.push_back(locations->at(i));
+				tmp.push_back(locations->at(i));
+				//sorted.push_back(locations->at(i));
 			}
+		}
+		// Sort by alpha
+		
+		for (unsigned int a=0; a<tmp.size(); a++)
+		{
+			p.push_back(0);
+			for (unsigned int b=0; b<tmp.size(); b++)
+			{
+				if (strverscmp(tmp[a].get_server_url()->c_str(), tmp[b].get_server_url()->c_str())>0) p[a]++;
+			}
+		}
+		tmp2.resize(tmp.size());
+		for (unsigned int pz=0; pz<p.size(); pz++)
+		{
+			tmp2[p[pz]]=tmp[pz];
+		}
+		for (unsigned int s=0; s<tmp2.size(); s++)
+		{
+			sorted.push_back(tmp2[s]);
 		}
 	}
 	*locations=sorted;
@@ -846,7 +870,7 @@ void PACKAGE::sync()
 		{
 			if (*config_files[i].get_name()=='/' + *package_files[t].get_name())
 			{
-				printf("set file %s as config\n", config_files[i].get_name()->c_str());
+				//printf("set file %s as config\n", config_files[i].get_name()->c_str());
 				package_files[t].set_type(FTYPE_CONFIG);
 				break;
 			}
@@ -922,7 +946,7 @@ void PACKAGE::clearVersioning()
 
 PACKAGE * PACKAGE_LIST::getPackageByID(int id)
 {
-	for (int i=0; i<packages.size(); i++)
+	for (unsigned int i=0; i<packages.size(); i++)
 	{
 		if (packages[i].get_id()==id) return &packages[i];
 	}
@@ -967,9 +991,211 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	//printf("sorting finished\n");
 	packages = sorted;
 }
+void PACKAGE_LIST::sortByLocations()
+{
+	vector<PACKAGE> sorted;
+	vector<LOCATION> locationList;
+	bool already;
+	
+	// Generating location list
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		for (unsigned int l=0; l<packages[i].get_locations()->size(); l++)
+		{
+			already=false;
+			for (unsigned int a=0; a<locationList.size(); a++)
+			{
+				if (*packages[i].get_locations()->at(l).get_server_url()==*locationList[a].get_server_url()) already=true;
+			}
+			if (!already) locationList.push_back(packages[i].get_locations()->at(l));
+		}
+	}
 
+	_sortLocations(&locationList);
+	// Test
+	/*printf("Input list:\n");
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		printf("%s\n",locationList[i].get_server_url()->c_str());
+	}
+	printf("output list:\n");
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		printf("%s\n",locationList[i].get_server_url()->c_str());
+	}*/
+	vector<PACKAGE_LIST> pQueue;
+	pQueue.resize(locationList.size()+1);
+	// Sorting package list
+	
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		for (unsigned int p=0; p<packages.size(); p++)
+		{
+			for (unsigned int l=0; l<packages[p].get_locations()->size(); l++)
+			{
+				if (*packages[p].get_locations()->at(l).get_server_url()==*locationList[i].get_server_url())
+				{
+					// Matching the location, check if it is already in previous lists
+					already=false;
+					for (unsigned int c=0; c<i; c++)
+					{
+						for (int pi=0; pi<pQueue[c].size(); pi++)
+						{
+							if (pQueue[c].get_package(pi)->get_id()==packages[p].get_id()) already=true;
+						}
+					}
+					if (!already) pQueue[i].add(&packages[p]);
+				}
+			}
+		}
+	}
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		if (packages[i].get_locations()->empty()) pQueue[locationList.size()].add(&packages[i]);
+	}
 
+/*
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		for (unsigned int p=0; p<packages.size(); p++)
+		{
+			already=false;
+			// Check if it is already in sorted list
+			for (int f=0; f<pQueue.size() && !already; f++)
+			{
+				for (int s=0; s<pQueue[f].size() && !already; s++)
+				{
+					if (pQueue[f].get_package(s)->get_id()==packages[p].get_id()) 
+					{
+						already=true;
+						break;
+					}
+				}
+			}
+		
+			if (already) continue;
+			for (unsigned int l=0; l<packages[p].get_locations()->size(); l++)
+			{
+				if (*packages[p].get_locations()->at(l).get_server_url()==*locationList[i].get_server_url())
+				{
+					if (!already)
+					{
+						pQueue[i].add(&packages[p]);
+						//sorted.push_back(packages[p]);
+						already=true;
+					}
+				}
+			}
+			if (!already) // Mean no locations
+			{
+				printf("no locations\n");
+				pQueue[locationList.size()].add(&packages[p]);
+				//sorted.push_back(packages[p]);
+			}
+		}
+	}
+	for (unsigned int i=0; i<pQueue.size(); i++)
+	{
+		for (unsigned int g=0; g<pQueue[i].size(); g++)
+		{
+			if (pQueue[i].get_package(g)->get_locations()->size()>0)
+			{
+				printf("%d/%d: %s\n",i,g,pQueue[i].get_package(g)->get_locations()->at(0).get_server_url()->c_str());
+			}
+		}
+	}*/
+	for (unsigned int i=0; i<pQueue.size(); i++)
+	{
+		pQueue[i].sortByPriority();
+		for (int q=0; q<pQueue[i].size(); q++)
+		{
+			sorted.push_back(*pQueue[i].get_package(q));
+		}
+	}
+	if (packages.size()==sorted.size()) packages=sorted;
+	else {
+		mError("sortByLocations: size mismatch! packages: " + IntToStr(packages.size()) + ", sorted: " + IntToStr(sorted.size()));
+		sleep(4);
+	}
+	//printf("Total loop dependencies: %d\n", loopCount);
 
+}
+
+// Old code
+/*void PACKAGE_LIST::sortByLocations()
+{
+	vector<PACKAGE> sorted;
+	vector<LOCATION> locationList;
+	bool already;
+	
+	// Generating location list
+	for (unsigned int i=0; i<packages.size(); i++)
+	{
+		for (unsigned int l=0; l<packages[i].get_locations()->size(); l++)
+		{
+			already=false;
+			for (unsigned int a=0; a<locationList.size(); a++)
+			{
+				if (*packages[i].get_locations()->at(l).get_server_url()==*locationList[a].get_server_url()) already=true;
+			}
+			if (!already) locationList.push_back(packages[i].get_locations()->at(l));
+		}
+	}
+	// Test
+	printf("Input list:\n");
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		printf("%s\n",locationList[i].get_server_url()->c_str());
+	}
+	_sortLocations(&locationList);
+	printf("output list:\n");
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		printf("%s\n",locationList[i].get_server_url()->c_str());
+	}
+
+	// Sorting package list
+	
+	for (unsigned int i=0; i<locationList.size(); i++)
+	{
+		for (unsigned int p=0; p<packages.size(); p++)
+		{
+			already=false;
+			// Check if it is already in sorted list
+			for (unsigned int s=0; s<sorted.size(); s++)
+			{
+				if (sorted[s].get_id()==packages[p].get_id()) 
+				{
+					already=true;
+					break;
+				}
+			}
+			if (already) continue;
+			for (unsigned int l=0; l<packages[p].get_locations()->size(); l++)
+			{
+				if (*packages[p].get_locations()->at(l).get_server_url()==*locationList[i].get_server_url())
+				{
+					if (!already)
+					{
+						sorted.push_back(packages[p]);
+						already=true;
+					}
+				}
+			}
+			if (!already) // Mean no locations
+			{
+				sorted.push_back(packages[p]);
+			}
+		}
+	}
+	if (packages.size()==sorted.size()) packages=sorted;
+	else {
+		mError("sortByLocations: size mismatch! packages: " + IntToStr(packages.size()) + ", sorted: " + IntToStr(sorted.size()));
+		sleep(4);
+	}
+
+}
+*/
 
 double PACKAGE_LIST::totalCompressedSize()
 {
@@ -1538,40 +1764,32 @@ void PACKAGE_LIST::buildDependencyOrder()
 //	printf("%s: build complete\n",__func__);
 	priorityInitialized=true;
 }
-
 int get_max_dtree_length(PACKAGE_LIST *pkgList, int package_id, vector<int> callList)
 {
-	// Check for looping
-//	printf("callList size=%d\n", callList.size());
 	bool loop=false;
 
+	
 	for (unsigned int i=0; i<callList.size(); i++)
 	{
-//		printf("callList[%d]==%d\n", i,callList[i]);
 		for (unsigned int t=0; t<callList.size(); t++)
 		{
-//			printf("Comparing with %d\n", callList[t]);
 			if (i!=t && callList[i]==callList[t])
 			{
-//				printf("Loop dependencies!\n");
+				//printf("loop!\n");
 				loop=true;
-				//return pkgList->get_package(package_id)->priority;
+				loopCount++;
 			}
 		}
 	}
-//	printf("%s start for package %d\n",__func__, package_id);
 	PACKAGE *_p = pkgList->get_package(package_id);
 	int ret=0;
 	int max_ret=-1;
 	int pkgNum;
-	//if (dependencies.size()>0) ret = 1;
 	for (unsigned int i=0; i<_p->get_dependencies()->size(); i++)
 	{
-		//printf("%s: cycle %d\n", __func__, i);
 		pkgNum = pkgList->getPackageNumberByName(_p->get_dependencies()->at(i).get_package_name());
 		if (pkgNum>=0)
 		{
-//			printf("callback\n");
 			callList.push_back(pkgNum);
 			if (!loop) ret = 1 + get_max_dtree_length(pkgList, pkgNum,callList);
 			if (max_ret < ret) max_ret = ret;

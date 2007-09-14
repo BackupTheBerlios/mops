@@ -20,7 +20,13 @@ HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
 }
-
+DownloadItem::DownloadItem()
+{
+	usedSource = NULL;
+}
+DownloadItem::~DownloadItem()
+{
+}
 double *extDlNow;
 double *extDlTotal;
 double *extItemTotal;
@@ -149,7 +155,7 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 			else mDebug("Failed to download the cached file");
 		}
 
-		else _link_ret = symlink(sourceFileName.c_str(), output.c_str());	
+		else _link_ret = symlink(sourceFileName.c_str(), output.c_str());
 		return 0;
 	}
 	else mDebug("Not cached");
@@ -169,34 +175,79 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	//int mount_ret;
 	//int umount_ret;
 	
-	Dialog d("Монтирование CD-ROM");
-	mounted = isMounted(CDROM_MOUNTPOINT);
-	if (mounted) mDebug("mounted already, proceeding to check the volume");
-	if (!mounted)
+	if (do_cache)
 	{
+		Dialog d("Монтирование CD-ROM");
+		mounted = isMounted(CDROM_MOUNTPOINT);
+		if (mounted) mDebug("mounted already, proceeding to check the volume");
+		if (!mounted)
+		{
+			mDebug("Trying to mount");
 
-		mkdir(CDROM_MOUNTPOINT.c_str(), 755);
+			mkdir(CDROM_MOUNTPOINT.c_str(), 755);
 try_mount:
-		if (dialogMode) d.execInfoBox("Подключение " + CDROM_DEVICE + " к точке монтирования " + CDROM_MOUNTPOINT);
-		else say(_("Mounting %s to %s\n"), CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str());
-		mDebug("Mounting");
-#ifndef INTERNAL_MOUNT
-		mDebug("Mount using system");
-		string mnt_cmd = "mount "+CDROM_DEVICE + " " + CDROM_MOUNTPOINT;
-		usedCdromMount = true;
-		int mret = system(mnt_cmd);
-#else
+			if (dialogMode) d.execInfoBox("Подключение " + CDROM_DEVICE + " к точке монтирования " + CDROM_MOUNTPOINT);
+			else say(_("Mounting %s to %s\n"), CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str());
+			mDebug("Mounting");
+//#ifndef INTERNAL_MOUNT
+			mDebug("Mount using system");
+			string mnt_cmd = "mount "+CDROM_DEVICE + " " + CDROM_MOUNTPOINT;
+			usedCdromMount = true;
+			system("umount " + CDROM_MOUNTPOINT);
+			int mret = system(mnt_cmd);
+//#else
+/*
 		mDebug("Mount using kernel");
 		int mret = mount(CDROM_DEVICE.c_str(), CDROM_MOUNTPOINT.c_str(), "iso9660", MS_RDONLY, NULL);
 		usedCdromMount = true;
-#endif
-		if (mret!=0)
+*/
+//#endif
+			if (mret!=0)
+			{
+				mDebug("Mount failed with return code "+ IntToStr(mret));
+				sleep(2);
+				CDROM_VOLUMELABEL = cdromVolName;
+				CDROM_DEVICENAME = CDROM_DEVICE;
+				if (dialogMode) 
+				{
+					if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + CDROM_DEVICE)) goto try_mount;
+					else return -1;
+				}
+				else
+				{
+					errRet = waitResponce(MPKG_CDROM_MOUNT_ERROR);
+					if (errRet == MPKG_RETURN_RETRY)
+					{
+						goto try_mount;
+					}
+					if (errRet == MPKG_RETURN_ABORT)
+					{
+						return -1;
+					}
+				}
+			}
+			else 
+			{
+				mDebug("Mount successful");
+				mounted=true;
+			}
+		}
+		else mDebug("Already mounted");
+
+		string Svolname = getCdromVolname();
+	
+		mDebug("CDROM mounted, checking volume ID");
+	
+
+		//Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
+		if (Svolname.empty())
 		{
-			mDebug("Mount failed");
-			perror("HttpDownload: Mount error:");
-			//sleep(10);
-			CDROM_VOLUMELABEL = cdromVolName;
-			CDROM_DEVICENAME = CDROM_DEVICE;
+			// Means no volname
+			mError("No volname");
+		}
+		if (Svolname != cdromVolName)
+		{
+			mError("Wrong volname");
 			if (dialogMode) 
 			{
 				if (d.execYesNo("Вставьте диск с меткой " + cdromVolName + " в привод " + CDROM_DEVICE)) goto try_mount;
@@ -214,42 +265,21 @@ try_mount:
 					return -1;
 				}
 			}
-		}
-		else 
-		{
-			mDebug("Mount success");
-			mounted=true;
-		}
-	}
-	else mDebug("Already mounted");
 
-	string Svolname;
-	
-	mDebug("CDROM mounted, checking volume ID");
-	Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
-	if (Svolname.empty())
-	{
-		// Means no volname
-		mError("No volname");
-	}
-	if (Svolname != cdromVolName)
-	{
-		mError("Wrong volname");
-		
-		errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
-		if (errRet == MPKG_RETURN_RETRY)
-		{
-			mDebug("Unmounting");
-			umount(CDROM_MOUNTPOINT.c_str());
-			usedCdromMount = false;
-			goto try_mount;
-		}
-		if (errRet == MPKG_RETURN_ABORT)
-		{
-			return -1;
+/*			errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
+			if (errRet == MPKG_RETURN_RETRY)
+			{
+				mDebug("Unmounting");
+				umount(CDROM_MOUNTPOINT.c_str());
+				usedCdromMount = false;
+				goto try_mount;
+			}	
+			if (errRet == MPKG_RETURN_ABORT)
+			{
+				return -1;
+			}*/
 		}
 	}
-
 copy_file:
 	mDebug("Copying file");
 	string cp_cmd;
@@ -424,6 +454,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					{
 						if (fileLinker(item->url_list.at(j).substr(strlen("local://")), item->file)==0)
 						{
+							if (item->usedSource!=NULL) *item->usedSource = item->url_list.at(j);
 							result=CURLE_OK;
 						}
 						else result=CURLE_READ_ERROR;
@@ -434,6 +465,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 						
 						if (fileLinker(item->url_list.at(j).substr(strlen("file://")), item->file)==0)
 						{
+							if (item->usedSource!=NULL) *item->usedSource = item->url_list.at(j);
 							result=CURLE_OK;
 						}
 						else result=CURLE_READ_ERROR;
@@ -443,6 +475,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					{
 						if (cdromFetch(item->url_list.at(j).substr(strlen("cdrom://")), item->file, false)==0)
 						{
+							if (item->usedSource!=NULL) *item->usedSource = item->url_list.at(j);
 							result=CURLE_OK;
 							prData->setItemProgress(item->itemID, prData->getItemProgressMaximum(item->itemID));
 							prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
@@ -511,6 +544,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 #ifdef DL_CLEANUP
 							curl_easy_cleanup(ch);
 #endif
+							if (item->usedSource!=NULL) *item->usedSource = item->url_list.at(j);
+
 							return DOWNLOAD_OK;
 						}
 						item->status = DL_STATUS_OK;
