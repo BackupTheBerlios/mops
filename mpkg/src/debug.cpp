@@ -1,16 +1,25 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.20 2007/09/06 09:49:58 i27249 Exp $
+ $Id: debug.cpp,v 1.21 2007/09/29 22:48:55 i27249 Exp $
  */
  
 
 #include "debug.h"
 void _mError(char* file, int line, const char *func, std::string message, bool warn)
 {
+	FILE *tty;
+	if (!setupMode) tty=stderr;
+	else tty=fopen("/dev/tty4","w");
+	if (!tty) 
+	{
+		printf("Failed to open tty4!\n");
+		sleep(2);
+		tty=stderr;
+	}
 #ifdef DEBUG
-	fprintf(stderr, "%s[ERROR]: %sin %s  (%s:%i):%s %s\n",CL_RED, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
+	fprintf(tty, "%s[ERROR]: %sin %s  (%s:%i):%s %s\n",CL_RED, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
 #else
-	if (!warn) fprintf(stderr, "%s%s:%s %s\n",CL_RED, _("Error"), CL_WHITE, message.c_str());
-	else fprintf(stderr, "%s%s:%s %s\n",CL_YELLOW, _("Warning"), CL_WHITE, message.c_str());
+	if (!warn) fprintf(tty, "%s%s:%s %s\n",CL_RED, _("Error"), CL_WHITE, message.c_str());
+	else fprintf(tty, "%s%s:%s %s\n",CL_YELLOW, _("Warning"), CL_WHITE, message.c_str());
 #endif
 #ifdef ENABLE_LOGGING
 	string logfile = log_directory + "mpkg-errors.log";

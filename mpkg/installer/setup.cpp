@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.50 2007/09/14 00:59:43 i27249 Exp $
+ * $Id: setup.cpp,v 1.51 2007/09/29 22:48:55 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -25,7 +25,7 @@ mpkg *core=NULL;
 bool realtimeTrackingEnabled=true;
 bool onlineDeps=true;
 bool noEject=false;
-
+bool list_initialized=false;
 void createCore()
 {
 	if (core==NULL) core=new mpkg;
@@ -487,7 +487,7 @@ bool formatPartition(string devname, string fstype)
 	if (fstype=="reiserfs") fs_options="-q";
 	if (!simulate)
 	{
-		string cmd = "umount -l" + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log 1>>/var/log/mkfs.log";
+		string cmd = "umount -l " + devname +  " 2>/var/log/mpkg-lasterror.log ; mkfs -t " + fstype + " " + fs_options + " " + devname + " 2>> /var/log/mpkg-lasterror.log 1>>/var/log/mkfs.log";
 		if (system(cmd)==0) return true;
 		else return false;
 	}
@@ -927,8 +927,8 @@ void cleanup()
 void showFinish()
 {
 	mDebug("start");
-	Dialog dialogItem("Завершение установки");
-	dialogItem.execMsgBox("Установка завершена успешно! Перезагрузитесь и наслаждайтесь!");
+	Dialog dialogItem("Установка и настройка завершены");
+	dialogItem.execMsgBox("Нажмите ENTER для завершения программы установки");
 	mDebug("finish");
 	unlockDatabase();
 	exit(0);
@@ -981,7 +981,11 @@ int packageSelectionMenu()
 	//printf("cleaning queue\n");
 	core->clean_queue();
 	//printf("clean complete\n");
-	core->get_packagelist(&sqlSearch, &i_availablePackages);
+	if (!list_initialized) 
+	{
+		core->get_packagelist(&sqlSearch, &i_availablePackages);
+		list_initialized=true;
+	}
 	core->get_available_tags(&i_tagList);
 	
 	// Predefined groups preselect
@@ -1500,6 +1504,7 @@ string doFormatString(bool input)
 }
 int main(int argc, char *argv[])
 {
+	setupMode=true;
 	setlocale(LC_ALL, "");
 	bindtextdomain( "installpkg-ng", "/usr/share/locale");
 	textdomain("installpkg-ng");
@@ -1570,7 +1575,7 @@ int main(int argc, char *argv[])
 	system("killall tail 2> /dev/null");
 	system("tail -f /var/log/mkfs.log --retry >> /dev/tty4 2>/dev/null &");
 	system("tail -f /var/log/mpkg-lasterror.log --retry >> /dev/tty4 2>/dev/null &");
-	Dialog d ("Главное меню");
+	Dialog d ("Установка MOPSLinux 6.0");
 	showGreeting();
 	if (!showLicense())
 	{
@@ -1609,7 +1614,7 @@ main_menu:
 	menuItems.push_back(TagPair("6","Установить систему"));
 	
 	menuItems.push_back(TagPair("7","Выход"));
-	ret = d.execMenu("Установка MOPSLinux 6.0", 0,0,0,menuItems, next_item);
+	ret = d.execMenu("Выберите требуемые действия\nНавигация: клавиши - ВВЕРХ/ВНИЗ, TAB\nВыбор: клавиша - Enter", 0,0,0,menuItems, next_item);
 	if (ret == "0") if (diskPartitioningMenu()==0) next_item="1";
 	if (ret == "1") if (setSwapSpace()==0) next_item="2";
 	if (ret == "2") if (setRootPartition()==0) next_item="3";

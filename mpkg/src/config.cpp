@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.43 2007/09/06 08:17:07 i27249 Exp $
+ * $Id: config.cpp,v 1.44 2007/09/29 22:48:55 i27249 Exp $
  *
  * ***************************************************/
 
@@ -9,6 +9,7 @@
 #include "file_routines.h"
 mpkgErrorCode errorCode;
 mpkgErrorReturn errorReturn;
+bool setupMode=false;
 bool interactive_mode=false;
 bool require_root = true;
 bool simulate=false;
