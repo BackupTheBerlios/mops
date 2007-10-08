@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.51 2007/09/29 22:48:55 i27249 Exp $
+ * $Id: setup.cpp,v 1.52 2007/10/08 23:38:49 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -24,7 +24,11 @@ vector<string> i_tagList;
 mpkg *core=NULL;
 bool realtimeTrackingEnabled=true;
 bool onlineDeps=true;
+#ifndef CD_VERSION
+bool noEject=true;
+#else
 bool noEject=false;
+#endif
 bool list_initialized=false;
 void createCore()
 {
@@ -1529,11 +1533,19 @@ int main(int argc, char *argv[])
 				valid_opt=true;
 				forceSkipLinkMD5Checks=false;
 			}
+#ifdef CD_VERSION
 			if (strcmp(argv[i], "--no-eject")==0)
 			{
 				valid_opt=true;
 				noEject=true;
 			}
+#else
+			if (strcmp(argv[i],"--autoeject")==0)
+			{
+				valid_opt=true;
+				noEject=false;
+			}
+#endif
 			/*if (strcmp(argv[i], "--no-realtime")==0)
 			{
 				realtimeTrackingEnabled = false;
@@ -1552,7 +1564,11 @@ int main(int argc, char *argv[])
 				printf("\tsetup [ ОПЦИИ ]\nОпции:\n");
 	
 				printf("\t--сheck          Проверять контрольные суммы всех пакетов перед установкой\n");
+#ifndef CD_VERSION
 				printf("\t--no-eject       Не выдвигать CD-ROM (используйте при установке в виртуальной машине)\n");
+#else
+				printf("\t--autoeject      Автоматически выбрасывать CD-ROM для замены\n");
+#endif
 				//printf("\t--no-realtime    Считать зависимости между пакетами только при выходе в главное меню\n");
 			//	printf("\t--offline-deps   Вообще не считать зависимости до выполнения установки\n");
 				printf("\t--help           Показать эту справку\n");
