@@ -175,9 +175,9 @@ int cdromFetch(std::string source, std::string output, bool do_cache) // Caching
 	//int mount_ret;
 	//int umount_ret;
 	
-	if (do_cache)
+	Dialog d("Монтирование CD-ROM");
+	if (true)
 	{
-		Dialog d("Монтирование CD-ROM");
 		mounted = isMounted(CDROM_MOUNTPOINT);
 		if (mounted) mDebug("mounted already, proceeding to check the volume");
 		if (!mounted)
@@ -287,11 +287,21 @@ copy_file:
 	unlink(output.c_str());
 	if (do_cache)
 	{
+		mDebug("Using cache for " + sourceFileName + ", copying to " + output);
 		cp_cmd = "cp -f ";
 		cp_cmd += sourceFileName + " " + output + " 2>/dev/null";
 		link_ret = system(cp_cmd.c_str());
 	}
-	else link_ret = symlink(sourceFileName.c_str(), output.c_str());
+	else 
+	{
+		/*if (!isMounted(CDROM_MOUNTPOINT)) {
+			mDebug("copy_file: not mounted");
+			goto try_mount;
+		}*/
+		mDebug("Creating symlink from " + sourceFileName + " to " + output);
+		link_ret = symlink(sourceFileName.c_str(), output.c_str());
+		mDebug("Link returned: " + IntToStr(link_ret));
+	}
 
 	if (link_ret!=0 && sourceFileName.find("packages")!=std::string::npos && sourceFileName.find("PACKAGES")!=std::string::npos)
 	{
