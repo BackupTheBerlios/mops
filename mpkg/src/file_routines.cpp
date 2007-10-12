@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.43 2007/09/14 00:59:43 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.44 2007/10/12 19:14:18 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -407,16 +407,70 @@ unsigned int CheckFileType(string fname)
 	mDebug("Unknown package type "+ext);
 	return PKGTYPE_UNKNOWN;
 }
+bool isMounted(string mountpoint)
+{
+	if (mountpoint.find_last_of("/")>=mountpoint.length()-1) mountpoint = mountpoint.substr(0,mountpoint.length()-1);
+//	mountpoint = mountpoint.substr(0,find_last_of("/")-1);
+	mDebug("Checking if [" + mountpoint + "] is mounted");
+#ifdef _MNTENTMCHECK
+	// First, check if device mounted in proper directory. 
+	bool mounted=false;
+	struct mntent *mountList;
+	FILE *mtab = fopen("/proc/mounts", "r");
+	//char volname[2000];
+	if (mtab)
+	{
+		mountList = getmntent(mtab);
+		while ( !mounted && mountList != NULL )
+		{
+			if (strcmp(mountList->mnt_dir, mountpoint.c_str())==0)
+			{
+				/*if (strcmp(mountList->mnt_dir, CDROM_DEVICE.c_str())!=0)
+				{
+					umount(mountpoint.c_str());
+				}
+				else*/ mounted = true;
+			}
+			mountList = getmntent(mtab);
+		}
+		fclose(mtab);
+	}
+	if (mounted) mDebug(mountpoint + " is mounted");
+	else mDebug(mountpoint + " isn't mounted");
+	return mounted;
+#else
+	string out = get_tmp_file();
+	system("cat /proc/mounts | grep " + mountpoint + " | wc -l >" + out );
+	string ret = ReadFile(out);
+	if (ret[0]=='0') {
+		mDebug(mountpoint + " isn't mounted");
+		return false;
+	}
+	else {
+		mDebug(mountpoint + " is already mounted");
+		return true;
+	}
+#endif
+
+}
+
 string getCdromVolname(string *rep_location)
 {
 	mDebug("checking in location " + CDROM_MOUNTPOINT);
+	bool hasMountedHere=false;
+	if (!isMounted(CDROM_MOUNTPOINT))
+	{
+		system("mount " + CDROM_DEVICE + " " + CDROM_MOUNTPOINT);
+		hasMountedHere=true;
+	}
 	string Svolname, repLoc;
 	// check_volname:
-	Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
+	if (FileExists(CDROM_MOUNTPOINT + "/.volume_id")) Svolname = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.volume_id"));
 	if (rep_location!=NULL)
 	{
-		repLoc = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.repository"));
+		if (FileExists(CDROM_MOUNTPOINT + "/.repository")) repLoc = cutSpaces(ReadFile(CDROM_MOUNTPOINT + "/.repository"));
 	}
+	if (hasMountedHere) system("umount " + CDROM_MOUNTPOINT + " 2>/dev/null");
 	// Validating
 	if (Svolname.find_first_of("\n\t/><| !@#$%%^&*()`\"\'")!=std::string::npos)
 	{

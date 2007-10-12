@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.126 2007/10/12 15:54:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.127 2007/10/12 19:14:18 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -211,6 +211,8 @@ MainWindow::~MainWindow()
 	thread->wait();
 	StatusThread->wait();
 	ErrorBus->wait();
+	
+	if (isMounted(CDROM_MOUNTPOINT)) system("umount " + CDROM_MOUNTPOINT + " 2> /dev/null");
 	//delete thread;
 	//delete StatusThread;
 	//delete ErrorBus;

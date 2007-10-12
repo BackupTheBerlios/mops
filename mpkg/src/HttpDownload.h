@@ -7,7 +7,6 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 #include "IDownload.h"
-bool isMounted(string mountpoint);
 extern bool usedCdromMount;
 int cdromFetch(string source, string output, bool do_cache);
 struct cdromItem

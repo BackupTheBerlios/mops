@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.20 2007/08/23 23:28:17 i27249 Exp $
+* $Id: file_routines.h,v 1.21 2007/10/12 19:14:18 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -27,6 +27,7 @@ using namespace std;
 #include <sys/types.h>
 #include <sys/param.h>
 
+bool isMounted(string mountpoint);
 bool lockDatabase();
 bool unlockDatabase();
 bool isDatabaseLocked();

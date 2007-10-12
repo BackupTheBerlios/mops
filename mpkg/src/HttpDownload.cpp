@@ -78,52 +78,6 @@ int fileLinker(std::string source, std::string output)
 
 #define CACHE_CDROM_CONTENTS true;
 
-bool isMounted(string mountpoint)
-{
-	if (mountpoint.find_last_of("/")>=mountpoint.length()-1) mountpoint = mountpoint.substr(0,mountpoint.length()-1);
-//	mountpoint = mountpoint.substr(0,find_last_of("/")-1);
-	mDebug("Checking if [" + mountpoint + "] is mounted");
-#ifdef _MNTENTMCHECK
-	// First, check if device mounted in proper directory. 
-	bool mounted=false;
-	struct mntent *mountList;
-	FILE *mtab = fopen("/proc/mounts", "r");
-	//char volname[2000];
-	if (mtab)
-	{
-		mountList = getmntent(mtab);
-		while ( !mounted && mountList != NULL )
-		{
-			if (strcmp(mountList->mnt_dir, mountpoint.c_str())==0)
-			{
-				/*if (strcmp(mountList->mnt_dir, CDROM_DEVICE.c_str())!=0)
-				{
-					umount(mountpoint.c_str());
-				}
-				else*/ mounted = true;
-			}
-			mountList = getmntent(mtab);
-		}
-		fclose(mtab);
-	}
-	if (mounted) mDebug(mountpoint + " is mounted");
-	else mDebug(mountpoint + " isn't mounted");
-	return mounted;
-#else
-	string out = get_tmp_file();
-	system("cat /proc/mounts | grep " + mountpoint + " | wc -l >" + out );
-	string ret = ReadFile(out);
-	if (ret[0]=='0') {
-		mDebug(mountpoint + " isn't mounted");
-		return false;
-	}
-	else {
-		mDebug(mountpoint + " is already mounted");
-		return true;
-	}
-#endif
-
-}
 
 int cdromFetch(std::string source, std::string output, bool do_cache) // Caching of files from CD-ROM devices. URL format: cdrom://CDROM_UUID/directory/filename.tgz
 {
