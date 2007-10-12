@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.125 2007/09/10 00:53:58 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.126 2007/10/12 15:54:37 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -1053,8 +1053,9 @@ void MainWindow::initPackageTable()
 
 void MainWindow::showPreferences()
 {
-	prefBox->loadData();
-	prefBox->openInterface();
+	showCoreSettings();
+//	prefBox->loadData();
+//	prefBox->openInterface();
 }
 
 void MainWindow::showAbout()

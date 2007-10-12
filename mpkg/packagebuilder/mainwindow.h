@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.8 2007/08/24 06:20:52 i27249 Exp $
+ * $Id: mainwindow.h,v 1.9 2007/10/12 15:54:37 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -38,6 +38,7 @@ class Form: public QWidget
 		void quitApp();
 	public:
 		Ui::Form ui;
+		bool xmlExists;
 	private:
 		TargetType _type;
 		string _arg;

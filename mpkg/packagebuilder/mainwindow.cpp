@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.28 2007/08/24 06:20:52 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.29 2007/10/12 15:54:37 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -28,6 +28,7 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 //	ui.DescriptionLanguageComboBox->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
+	xmlExists=true;
 	this->show();
 	loadData();
 }
@@ -79,14 +80,22 @@ void Form::loadData()
 				system("mkdir -p " + _tmpdir);
 				say("Extracting\n");
 				system("tar zxf " + _arg + " -C " + _tmpdir);
-				if (FileExists(_tmpdir+"/install/data.xml")) xmlFilename = _tmpdir.c_str() + (QString) "/install/data.xml";
+				if (FileExists(_tmpdir+"/install/data.xml")) 
+				{
+					xmlExists = true;
+				}
+				else {
+					ui.ChangelogEdit->setText("Description converted from " + (QString) _arg.c_str());
+					xmlExists = false;
+				}	
+				xmlFilename = _tmpdir.c_str() + (QString) "/install/data.xml";
 			}
 	}
 //	XMLResults xmlErr;
 
 //	xmlDocPtr doc; 
 	//XMLNode *tmp = new XMLNode;
-	if (!xmlFilename.isEmpty())
+	if (!xmlFilename.isEmpty() && xmlExists)
 	{
 		//*tmp = XMLNode::parseFile(xmlFilename.toStdString().c_str(), "package", &xmlErr);
 	//	doc = = xmlReadFile(xmlFilename.toStdString().c_str(),"UTF-8", NULL);
