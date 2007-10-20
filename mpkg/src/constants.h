@@ -1,5 +1,5 @@
 /* Miscellaneous constants
-    $Id: constants.h,v 1.9 2007/07/06 08:49:41 i27249 Exp $
+    $Id: constants.h,v 1.10 2007/10/20 10:34:50 i27249 Exp $
 */
 
 
@@ -49,6 +49,7 @@
 // File type definitions
 #define FTYPE_PLAIN	0
 #define FTYPE_CONFIG	1
+#define FTYPE_TEMP	5
 // Special file definitions: not used now, but maybe in future
 #define FTYPE_SYMLINK	2
 #define FTYPE_DIR	3

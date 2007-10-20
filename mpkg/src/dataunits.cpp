@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.72 2007/09/14 00:59:43 i27249 Exp $
+	$Id: dataunits.cpp,v 1.73 2007/10/20 10:34:50 i27249 Exp $
 */
 
 
@@ -887,6 +887,30 @@ void PACKAGE::sync()
 			}
 		}
 	}
+	for (unsigned int i=0; i< temp_files.size(); i++)
+	{
+		for (unsigned int t=0; t<package_files.size(); t++)
+		{
+			if (*temp_files[i].get_name()=='/' + *package_files[t].get_name())
+			{
+				//printf("set file %s as config\n", config_files[i].get_name()->c_str());
+				package_files[t].set_type(FTYPE_TEMP);
+				break;
+			}
+		}
+	}
+
+	if (temp_files.empty())
+	{
+		for (unsigned int i=0; i < package_files.size(); i++)
+		{
+			if (package_files[i].get_type()==FTYPE_TEMP)
+			{
+				temp_files.push_back(package_files[i]);
+			}
+		}
+	}
+
 }
 
 void PACKAGE::set_dependencies(vector<DEPENDENCY>* dependencies)

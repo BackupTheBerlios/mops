@@ -1,11 +1,11 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.cpp,v 1.5 2007/05/23 14:16:03 i27249 Exp $
+ * $Id: faststl.cpp,v 1.6 2007/10/20 10:34:50 i27249 Exp $
  * ******************************************************/
 
 
 #include "faststl.h"
-
+/*
 FastString::FastString()
 {
 	data = (char *) malloc(1);
@@ -180,4 +180,4 @@ const char * FastString::c_str()
 {
 	return data;
 }
-
+*/

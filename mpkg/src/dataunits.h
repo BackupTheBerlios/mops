@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.47 2007/09/14 00:59:43 i27249 Exp $
+	$Id: dataunits.h,v 1.48 2007/10/20 10:34:50 i27249 Exp $
 */
 
 
@@ -198,6 +198,7 @@ class PACKAGE
 	// EXTERNAL DATA //
 	vector<FILES> package_files;
 	vector<FILES> config_files;
+	vector<FILES> temp_files;
 	vector<LOCATION> package_locations;
 	vector<DEPENDENCY> package_dependencies;
 	vector<string> package_tags;

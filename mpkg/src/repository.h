@@ -7,7 +7,7 @@
  * 	Debian (planned)
  * 	RPM (planned)
  *
- * $Id: repository.h,v 1.13 2007/08/02 13:40:41 i27249 Exp $
+ * $Id: repository.h,v 1.14 2007/10/20 10:34:50 i27249 Exp $
  *****************************************************************/
 #ifndef REPOSITORY_H_
 #define REPOSITORY_H_
@@ -22,6 +22,7 @@
 #define TYPE_DEBIAN 3
 #define TYPE_RPM 4
 // Packages & repositories type: mpkg
+
 class Repository
 {
 	public:

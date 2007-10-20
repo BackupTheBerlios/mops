@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.113 2007/09/14 00:59:43 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.114 2007/10/20 10:34:50 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -7,10 +7,6 @@
 #include "DownloadManager.h"
 #include <iostream>
 #include "dialog.h"
-/** Scans database and do actions. Actually, packages will install in SYS_ROOT folder.
- * In real (mean installed) systems, set SYS_ROOT to "/"
- * @**/
-
 
 mpkgDatabase::mpkgDatabase()
 {
@@ -221,9 +217,9 @@ int mpkgDatabase::commit_actions()
 				say(_("Continue? [Y/n]\n"));
 				string input;
 i_actInput:
-				cin>>input;
+				input=cin.get();
 				if (input=="n" || input=="N" || input == "no") { return MPKGERROR_ABORTED; }
-				if (input!="y" && input!="Y" && input!="yes") {
+				if (input!="y" && input!="Y" && input!="yes" && input!="\n") {
 					say(_("Please answer Y (yes) or N (no)\n"));
 					goto i_actInput;
 				}

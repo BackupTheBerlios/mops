@@ -1,6 +1,6 @@
 /********************************************************
  * A try to reimplement slow STL string to make it faster
- * $Id: faststl.h,v 1.4 2007/05/13 21:41:12 i27249 Exp $
+ * $Id: faststl.h,v 1.5 2007/10/20 10:34:50 i27249 Exp $
  * ******************************************************/
 
 
@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string>
 using namespace std;
-class FastString
+/*class FastString
 {
 	private:
 		char *data;
@@ -41,7 +41,7 @@ class FastString
 		const char * c_str();
 };
 
-
+*/
 
 
 

@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.31 2007/08/29 22:33:12 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.32 2007/10/20 10:34:49 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -599,6 +599,29 @@ vector<string> PackageConfig::getConfigFilelist()
 	}
 
 
+	return a;
+}
+vector<string> PackageConfig::getTempFilelist()
+{
+	vector<string> a;
+
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_TEMP_FILE_LIST);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found temp file '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+		return a;
+	}
 	return a;
 }
 

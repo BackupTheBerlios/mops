@@ -4,9 +4,8 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.68 2007/10/12 15:54:37 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.69 2007/10/20 10:34:50 i27249 Exp $
  */
-
 #include "libmpkg.h"
 #include "converter.h"
 #include "dialog.h"
@@ -30,7 +29,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.1";
+	char *version="0.12.2";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -215,7 +214,8 @@ int main (int argc, char **argv)
 			action == ACT_TAG || \
 			action == ACT_LIST || \
 			action == ACT_INDEX || \
-			action == ACT_GENDEPS) 
+			action == ACT_GENDEPS || \
+			action == ACT_NONE) 
 		require_root=false;
 
 	if (require_root && uid != 0 ) {

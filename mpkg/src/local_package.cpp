@@ -1,14 +1,128 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.68 2007/08/29 22:33:13 i27249 Exp $
+$Id: local_package.cpp,v 1.69 2007/10/20 10:34:50 i27249 Exp $
 */
 
 #include "local_package.h"
 #include "mpkg.h"
 //#include "oldstyle.h"
-
  
+int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
+{
+	mDebug("reading package node");
+#ifdef XPTR_MODE // Init using xmlNodePtr
+	PackageConfig p(pkgNode);
+#else		// Init using string dump
+
+	FILE *__dump = fopen(TEMP_XML_DOC,"w");
+	xmlDocPtr doc = xmlNewDoc((const xmlChar *) "1.0");
+	xmlDocSetRootElement(doc,pkgNode);
+	xmlDocDump(__dump, doc);
+	fclose(__dump);
+	//xmlFreeDoc(doc);
+	PackageConfig p(TEMP_XML_DOC);
+#endif
+	if (!p.parseOk) 
+	{
+		mDebug("PackageConfig init FAILED, returning -100");
+		return -100;
+	}
+	else mDebug("PackageConfig init OK");
+	mDebug("retrieving name");
+	*data->get_name()=p.getName();
+	mDebug("retrieving version");
+	*data->get_version()=p.getVersion();
+	mDebug("retrieving arch");
+	*data->get_arch()=p.getArch();
+	mDebug("retrieving build");
+	*data->get_build()=p.getBuild();
+	mDebug("retrieving authorName");
+	*data->get_packager()=p.getAuthorName();
+	mDebug("Retrieving authorEmail");
+	*data->get_packager_email()=p.getAuthorEmail();
+	//*data->get_descriptions=(p.getDescriptions());
+	mDebug("Retrieving description");
+	*data->get_description()=p.getDescription();
+	mDebug("Retrieving shortDescription");
+	*data->get_short_description()=p.getShortDescription();
+	mDebug("Retrieving changelog");
+	*data->get_changelog()=p.getChangelog();
+	mDebug("Retrieving data, part 2");
+	DEPENDENCY dep_tmp;
+	DEPENDENCY suggest_tmp;
+
+	vector<string> vec_tmp_names;
+	vector<string> vec_tmp_conditions;
+	vector<string> vec_tmp_versions;
+
+	vec_tmp_names=p.getDepNames();
+	vec_tmp_conditions=p.getDepConditions();
+	vec_tmp_versions=p.getDepVersions();
+
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		dep_tmp.set_package_name(&vec_tmp_names[i]);
+		dep_tmp.set_package_version(&vec_tmp_versions[i]);
+		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*dep_tmp.get_type()="DEPENDENCY";
+		data->get_dependencies()->push_back(dep_tmp);
+		dep_tmp.clear();
+	}
+	vec_tmp_names=p.getSuggestNames();
+	vec_tmp_conditions=p.getSuggestConditions();
+	vec_tmp_versions=p.getSuggestVersions();
+
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		suggest_tmp.set_package_name(&vec_tmp_names[i]);
+		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
+		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
+		*suggest_tmp.get_type()="SUGGEST";
+		data->get_dependencies()->push_back(suggest_tmp);
+		suggest_tmp.clear();
+	}
+
+	*data->get_tags()=p.getTags();
+
+	vec_tmp_names.clear();
+	vec_tmp_conditions.clear();
+	vec_tmp_versions.clear();
+
+	LOCATION tmp_location;
+	*tmp_location.get_path()=p.getLocation();
+	data->get_locations()->push_back(tmp_location);
+	*data->get_filename()=p.getFilename();
+	*data->get_md5()=p.getMd5();
+	*data->get_compressed_size()=p.getCompressedSize();
+	*data->get_installed_size()=p.getInstalledSize();
+	
+	vec_tmp_names=p.getFilelist();
+	FILES file_tmp;
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		file_tmp.set_name(&vec_tmp_names[i]);
+		data->get_files()->push_back(file_tmp);
+	}
+	
+	vec_tmp_names = p.getConfigFilelist();
+	for (unsigned int i=0;i<vec_tmp_names.size();i++)
+	{
+		file_tmp.set_name(&vec_tmp_names[i]);
+		file_tmp.set_type(FTYPE_CONFIG);
+		data->get_files()->push_back(file_tmp);
+	}
+	
+	vec_tmp_names = p.getTempFilelist();
+	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
+	{
+		file_tmp.set_name(&vec_tmp_names[i]);
+		file_tmp.set_type(FTYPE_TEMP);
+		data->get_files()->push_back(file_tmp);
+	}
+	//xmlFreeDoc(doc);
+	return 0;
+}
 
 int slack2xml(string filename, string xml_output)
 {
@@ -193,25 +307,8 @@ int LocalPackage::get_xml()
 		delete_tmp_files();
 		return -100;
 	}
-/*
-	//_packageXMLNode = xmlNewNode(NULL,(const xmlChar *)"");
-	xmlNode __node_tmp = *p.getXMLNode();
 
-	_nd = *p.getXMLNode();
-	_packageXMLNode = &_nd;
-	//_packageXMLNode = memcpy(_packageXMLNode,*p.getXMLNode(), sizeof(p.getXMLNode())); // To be indexing work
-	if (_packageXMLNode == NULL) {
-		mDebug("FULL CENSORED!!!!");
-	} else {
-		mDebug("DDDDD");
-		const xmlChar * __n = _nd.name;
-		printf("SSSS __n = '%s'\n", (const char *)__n);
-	}
-	//__doc = p.getXMLDoc();
-	__doc = _nd.doc;
-*/
-    
-
+	// BEGIN: не до конца ясно зачем нужный кусок кода
 	std::string __tmp_doc = p.getXMLNodeEx();
 	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", 0);
 	_packageXMLNode = xmlDocGetRootElement(__doc);
@@ -221,7 +318,12 @@ int LocalPackage::get_xml()
 	} else {
 		mDebug("[get_xml] xml docuemtn != NULL");
 	}
+	xml2package(p.getXMLNode(), &data);
+	data.sync();
+	// END: не до конца ясно зачем нужный кусок кода
 
+	/*	Код закомментирован, поскольку идет дубляж кодовой базы с xml2package
+	 *
 	*data.get_name()=p.getName();
 	*data.get_version()=p.getVersion();
 	*data.get_arch()=p.getArch();
@@ -303,7 +405,7 @@ int LocalPackage::get_xml()
 	}
 	vec_tmp_names.clear();
 	vec_tmp_conditions.clear();
-	vec_tmp_versions.clear();
+	vec_tmp_versions.clear();*/
 	mDebug("get_xml end");
 	delete_tmp_files();
 	return 0;
@@ -340,7 +442,9 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		extractFromTgz(filename, "install/doinst.sh", dt);
 		sed_cmd += dt + " > " + lnfname;
 	}
+	printf("SED...\n");
 	system(sed_cmd);
+	printf("EOFSED\n");
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)
 	{
@@ -662,11 +766,11 @@ int LocalPackage::injectFile(bool index)
 	}
 	// NOT Building file list on server, build locally
 	*/
-	if (!index && fill_filelist(&data, index)!=0)
+	/*if (!index && fill_filelist(&data, index)!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
 		return -5;
-	}
+	}*/
 	
 	if (set_additional_data()!=0)
 	{

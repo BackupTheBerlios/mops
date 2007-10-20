@@ -1,6 +1,6 @@
 /*
 Local package installation functions
-$Id: local_package.h,v 1.20 2007/08/01 12:04:44 adiakin Exp $
+$Id: local_package.h,v 1.21 2007/10/20 10:34:50 i27249 Exp $
 */
 
 
@@ -16,6 +16,7 @@ $Id: local_package.h,v 1.20 2007/08/01 12:04:44 adiakin Exp $
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+int xml2package(xmlNodePtr pkgnode, PACKAGE *data);
 // Package type: mpkg
 class LocalPackage
 {

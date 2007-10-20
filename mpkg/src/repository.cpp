@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.69 2007/08/23 23:28:18 i27249 Exp $
+ * $Id: repository.cpp,v 1.70 2007/10/20 10:34:50 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -330,112 +330,6 @@ int slackpackages2list (string *packageslist, string *md5list, PACKAGE_LIST *pkg
 	return 0;
 }	// End slackpackages2list()
 
-int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
-{
-	mDebug("reading package node");
-#ifdef XPTR_MODE // Init using xmlNodePtr
-	PackageConfig p(pkgNode);
-#else		// Init using string dump
-
-	FILE *__dump = fopen(TEMP_XML_DOC,"w");
-	xmlDocPtr doc = xmlNewDoc((const xmlChar *) "1.0");
-	xmlDocSetRootElement(doc,pkgNode);
-	xmlDocDump(__dump, doc);
-	fclose(__dump);
-	//xmlFreeDoc(doc);
-	PackageConfig p(TEMP_XML_DOC);
-#endif
-	if (!p.parseOk) 
-	{
-		mDebug("PackageConfig init FAILED, returning -100");
-		return -100;
-	}
-	else mDebug("PackageConfig init OK");
-	mDebug("retrieving name");
-	*data->get_name()=p.getName();
-	mDebug("retrieving version");
-	*data->get_version()=p.getVersion();
-	mDebug("retrieving arch");
-	*data->get_arch()=p.getArch();
-	mDebug("retrieving build");
-	*data->get_build()=p.getBuild();
-	mDebug("retrieving authorName");
-	*data->get_packager()=p.getAuthorName();
-	mDebug("Retrieving authorEmail");
-	*data->get_packager_email()=p.getAuthorEmail();
-	//*data->get_descriptions=(p.getDescriptions());
-	mDebug("Retrieving description");
-	*data->get_description()=p.getDescription();
-	mDebug("Retrieving shortDescription");
-	*data->get_short_description()=p.getShortDescription();
-	mDebug("Retrieving changelog");
-	*data->get_changelog()=p.getChangelog();
-	mDebug("Retrieving data, part 2");
-	DEPENDENCY dep_tmp;
-	DEPENDENCY suggest_tmp;
-
-	vector<string> vec_tmp_names;
-	vector<string> vec_tmp_conditions;
-	vector<string> vec_tmp_versions;
-
-	vec_tmp_names=p.getDepNames();
-	vec_tmp_conditions=p.getDepConditions();
-	vec_tmp_versions=p.getDepVersions();
-
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		dep_tmp.set_package_name(&vec_tmp_names[i]);
-		dep_tmp.set_package_version(&vec_tmp_versions[i]);
-		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
-		*dep_tmp.get_type()="DEPENDENCY";
-		data->get_dependencies()->push_back(dep_tmp);
-		dep_tmp.clear();
-	}
-	vec_tmp_names=p.getSuggestNames();
-	vec_tmp_conditions=p.getSuggestConditions();
-	vec_tmp_versions=p.getSuggestVersions();
-
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		suggest_tmp.set_package_name(&vec_tmp_names[i]);
-		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
-		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
-		*suggest_tmp.get_type()="SUGGEST";
-		data->get_dependencies()->push_back(suggest_tmp);
-		suggest_tmp.clear();
-	}
-
-	*data->get_tags()=p.getTags();
-
-	vec_tmp_names.clear();
-	vec_tmp_conditions.clear();
-	vec_tmp_versions.clear();
-
-	LOCATION tmp_location;
-	*tmp_location.get_path()=p.getLocation();
-	data->get_locations()->push_back(tmp_location);
-	*data->get_filename()=p.getFilename();
-	*data->get_md5()=p.getMd5();
-	*data->get_compressed_size()=p.getCompressedSize();
-	*data->get_installed_size()=p.getInstalledSize();
-	
-	vec_tmp_names=p.getFilelist();
-	FILES file_tmp;
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		file_tmp.set_name(&vec_tmp_names[i]);
-		data->get_files()->push_back(file_tmp);
-	}
-	vec_tmp_names = p.getConfigFilelist();
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		file_tmp.set_name(&vec_tmp_names[i]);
-		file_tmp.set_type(FTYPE_CONFIG);
-		data->get_files()->push_back(file_tmp);
-	}
-	//xmlFreeDoc(doc);
-	return 0;
-}
 
 unsigned int pkgcounter;
 vector<string> pkgDupeNames;
