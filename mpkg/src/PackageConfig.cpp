@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.32 2007/10/20 10:34:49 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.33 2007/10/20 12:29:00 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -22,6 +22,65 @@ PackageConfig::PackageConfig(string _f)
     
     //doc = xmlParseFile(_f.c_str());
 	doc = xmlReadFile(_f.c_str(), "UTF-8", 0);
+	
+    if (doc == NULL) {
+        mDebug("XML Load failed");
+        this->errors++;
+		this->parseOk = false;
+        xmlFreeDoc(doc);
+		doc=NULL;
+		return;
+    }
+
+    curNode = xmlDocGetRootElement(doc);
+
+    if (curNode == NULL) {
+        mDebug("Failed to get root node");
+        this->errors++;
+		this->parseOk = false;
+        xmlFreeDoc(doc);
+		doc=NULL;
+		return;
+    } else {
+		mDebug("CENSORED 00-5");
+	}
+
+    // checking for valid root node
+    if (xmlStrcmp(curNode->name, (const xmlChar *) "package") ) {
+        mDebug("Invalid root node definition");
+        this->errors++;
+        this->parseOk = false;
+		xmlFreeDoc(doc);
+		doc=NULL;
+		return;
+
+    } else {
+		mDebug("CENSORED 00-6");
+	}
+
+	if (this->errors == 0) {
+		this->parseOk = true;
+	}
+
+	if (this->doc == NULL) {
+		mDebug("CENSORED 00-3");
+	} else {
+		mDebug("CENSORED 00-4");
+	}
+    
+
+}
+
+PackageConfig::PackageConfig(xmlChar * membuf, int bufsize)
+{
+    // new interface using libxml2
+    this->errors = 0;
+
+    
+    //doc = xmlParseFile(_f.c_str());
+	//doc = xmlReadFile(_f.c_str(), "UTF-8", 0);
+	doc = xmlParseMemory((const char *) membuf, bufsize);
+	xmlFree(membuf);
 	
     if (doc == NULL) {
         mDebug("XML Load failed");
@@ -641,7 +700,17 @@ xmlNodePtr PackageConfig::getXMLNode()
 	}
 	return this->curNode;
 }
+
+xmlChar * PackageConfig::getXMLNodeXPtr(int *bufsize)
+{
+	xmlChar *membuf;
+	xmlDocDumpMemory(this->doc, &membuf, bufsize);
+	return membuf;
+}
+	
+/*
 std::string PackageConfig::getXMLNodeEx() {
+	printf("FUCK!\n");
 	mDebug("Dumping the doc");
 	FILE* __dump = fopen(TEMP_XML_DOC, "w");
 	if (xmlDocDump(__dump, this->doc) == -1) {
@@ -654,10 +723,10 @@ std::string PackageConfig::getXMLNodeEx() {
 		return TEMP_XML_DOC;
 	}
 }
-
+*/
 xmlDocPtr PackageConfig::getXMLDoc() 
 {
-	mDebug("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA Returning xmlDocPtr");
+	mDebug("Returning xmlDocPtr");
 	if (this->doc == NULL) {
 		mDebug("CENSORED 00-1");
 	} else {

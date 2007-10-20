@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.69 2007/10/20 10:34:50 i27249 Exp $
+$Id: local_package.cpp,v 1.70 2007/10/20 12:29:00 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -15,13 +15,18 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 	PackageConfig p(pkgNode);
 #else		// Init using string dump
 
-	FILE *__dump = fopen(TEMP_XML_DOC,"w");
 	xmlDocPtr doc = xmlNewDoc((const xmlChar *) "1.0");
 	xmlDocSetRootElement(doc,pkgNode);
+/*	FILE *__dump = fopen(TEMP_XML_DOC,"w");
 	xmlDocDump(__dump, doc);
 	fclose(__dump);
+*/
+	xmlChar * membuff;
+	int bufsize;
+	xmlDocDumpMemory(doc, &membuff, &bufsize);
 	//xmlFreeDoc(doc);
-	PackageConfig p(TEMP_XML_DOC);
+	//PackageConfig p(TEMP_XML_DOC);
+	PackageConfig p(membuff, bufsize);
 #endif
 	if (!p.parseOk) 
 	{
@@ -309,9 +314,15 @@ int LocalPackage::get_xml()
 	}
 
 	// BEGIN: не до конца ясно зачем нужный кусок кода
+	/*
 	std::string __tmp_doc = p.getXMLNodeEx();
-	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", 0);
+	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", 0);*/
+	int bufsize;
+	xmlChar * membuff = p.getXMLNodeXPtr(&bufsize);
+	__doc = xmlParseMemory((const char *) membuff, bufsize);
+	xmlFree(membuff);
 	_packageXMLNode = xmlDocGetRootElement(__doc);
+
 
 	if (__doc == NULL) {
 		mDebug("[get_xml] xml document == NULL");
@@ -820,8 +831,16 @@ xmlNode LocalPackage::getPackageXMLNode()
 	return *_packageXMLNode;
 }
 
+xmlChar * LocalPackage::getPackageXMLNodeXPtr(int * bufsize)
+{
+	xmlChar *membuf;
+	xmlDocDumpMemory(this->__doc, &membuf, bufsize);
+	return membuf;
+}
+/*
 std::string LocalPackage::getPackageXMLNodeEx()
 {
+	printf("local FUCK!\n");
 	FILE *__dump = fopen(TEMP_XML_DOC, "w");
 	if (xmlDocDump(__dump, this->__doc) == -1) {
 		fclose(__dump);
@@ -830,5 +849,5 @@ std::string LocalPackage::getPackageXMLNodeEx()
 		fclose(__dump);
 		return TEMP_XML_DOC;
 	}
-}
+}*/
 

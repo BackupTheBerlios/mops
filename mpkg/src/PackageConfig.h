@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.16 2007/10/20 10:34:50 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.17 2007/10/20 12:29:00 i27249 Exp $
  *
  * **********************************************************/
 
@@ -58,6 +58,8 @@ class PackageConfig
 {
 public:
 	PackageConfig(string _f);
+	PackageConfig(xmlChar * membuf, int bufsize);
+
 	PackageConfig(xmlNodePtr __rootXmlNodePtr);
 	~PackageConfig();
 
@@ -109,7 +111,8 @@ public:
 	string getInstalledSize(void);
 	string getFilename(void);
 	string getLocation(void);
-	std::string getXMLNodeEx();
+	xmlChar * getXMLNodeXPtr(int * bufsize);
+	//std::string getXMLNodeEx();
 
 	bool parseOk;
 

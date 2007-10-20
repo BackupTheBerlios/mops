@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.70 2007/10/20 10:34:50 i27249 Exp $
+ * $Id: repository.cpp,v 1.71 2007/10/20 12:29:00 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -392,7 +392,10 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			mDebug("[2] _root != NULL");
 		}
 
-		xmlDocPtr __tmpXmlDoc = xmlReadFile(lp.getPackageXMLNodeEx().c_str(), "UTF-8", 0);
+		int bufsize;
+		xmlChar * membuf = lp.getPackageXMLNodeXPtr(&bufsize);
+		xmlDocPtr __tmpXmlDoc = xmlParseMemory((const char *) membuf, bufsize);//"UTF-8", 0);
+		xmlFree(membuf);
 		xmlNodePtr __packagesRootNode = xmlDocGetRootElement(__tmpXmlDoc);
 
 		if (__tmpXmlDoc == 0) {
@@ -426,7 +429,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 			mDebug("root package xml node name = " + (string) (const char *)__st);
 		}
 
-		mDebug("Saving temp repo xml dump ");
+		/*mDebug("Saving temp repo xml dump ");
 		FILE *__xmlDump = fopen("/tmp/xmldump-repo.xml", "w");
 		if (xmlDocDump(__xmlDump, __doc) != -1) {
 			fclose(__xmlDump);
@@ -434,7 +437,7 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 		} else {
 			fclose(__xmlDump);
 			mDebug("temp Xml dump failed");
-		}
+		}*/
 
 		mDebug("PP 0-3");
 		
@@ -512,6 +515,7 @@ int Repository::build_index(string server_url, string server_name, bool rebuild)
 	}
 
 #ifdef DEBUG
+	printf("OMFGDUMP\n");
 	mDebug("Saving repo xml dump");
 	FILE *__xmlDump = fopen("/tmp/xmldump-repo.xml", "w");
     if (xmlDocDump(__xmlDump, __doc) != -1) {
@@ -707,7 +711,6 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 
 			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, xNodeSet->nodeNr);
 			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
-				
 				actionBus.setActionProgress(ACTIONID_DBUPDATE, xi);
 				mDebug("Processing " + IntToStr(xi) + " node");
 				if (actionBus._abortActions) {
