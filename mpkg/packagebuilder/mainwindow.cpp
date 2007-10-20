@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.29 2007/10/12 15:54:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.30 2007/10/20 06:50:59 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -12,6 +12,8 @@
 #include <QFileDialog>
 #include <QtXml/QXmlSimpleReader>
 #include <QtXml/QXmlInputSource>
+
+
 
 Form::Form(QWidget *parent, TargetType type, string arg)
 {
@@ -28,6 +30,30 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 //	ui.DescriptionLanguageComboBox->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
+
+// Build options UI switches
+	connect(ui.configureCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchConfigureField(int)));
+	switchConfigureField(ui.configureCheckBox->checkState());
+	connect(ui.compilationCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchCompilationField(int)));
+	switchCompilationField(ui.compilationCheckBox->checkState());
+	connect(ui.installationCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchInstallField(int)));
+	switchInstallField(ui.installationCheckBox->checkState());
+	connect(ui.sourcesRootDirectoryAutodetectCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchSourceDirectoryField(int)));
+	switchSourceDirectoryField(ui.sourcesRootDirectoryAutodetectCheckBox->checkState());
+	connect(ui.buildingSystemComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(switchBuildSystem(int)));
+	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+	connect(ui.cpuArchCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchCpuArchField(int)));
+	switchCpuArchField(ui.cpuArchCheckBox->checkState());
+	connect(ui.cpuTuneCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchCpuTuneField(int)));
+	switchCpuTuneField(ui.cpuTuneCheckBox->checkState());
+	connect(ui.optimizationCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchOptimizationField(int)));
+	switchOptimizationField(ui.optimizationCheckBox->checkState());
+	connect(ui.customGccOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchGccOptionsField(int)));
+	switchGccOptionsField(ui.customGccOptionsCheckBox->checkState());
+
+
+	
+
 	xmlExists=true;
 	this->show();
 	loadData();
@@ -543,5 +569,81 @@ void Form::quitApp()
 		}
 	}
 	else qApp->quit();
+}
+
+
+void Form::switchConfigureField(int state)
+{
+	if (state==Qt::Checked) ui.configureEdit->setEnabled(true);
+	else ui.configureEdit->setEnabled(false);
+}
+void Form::switchCompilationField(int state)
+{
+	if (state==Qt::Checked) ui.compilationEdit->setEnabled(true);
+	else ui.compilationEdit->setEnabled(false);
+
+}
+void Form::switchInstallField(int state)
+{
+	if (state==Qt::Checked) ui.installEdit->setEnabled(true);
+	else ui.installEdit->setEnabled(false);
+
+}
+void Form::switchSourceDirectoryField(int state)
+{
+	if (state==Qt::Checked) ui.sourcesRootDirectoryEdit->setEnabled(false);
+	else ui.sourcesRootDirectoryEdit->setEnabled(true);
+
+}
+void Form::switchBuildSystem(int index)
+{
+	if (index<3) {
+		ui.optimizationGroupBox->setVisible(true);
+		ui.customScriptGroupBox->setVisible(false);
+		ui.customCommandsGroupBox->setVisible(false);
+		ui.compilationGroupBox->setVisible(true);
+
+	}
+	if (index==4)
+	{
+		ui.optimizationGroupBox->setVisible(false);
+		ui.customScriptGroupBox->setVisible(true);
+		ui.customCommandsGroupBox->setVisible(false);
+		ui.compilationGroupBox->setVisible(false);
+
+	}
+	if (index==3)
+	{
+		ui.optimizationGroupBox->setVisible(true);
+		ui.customScriptGroupBox->setVisible(false);
+		ui.customCommandsGroupBox->setVisible(true);
+		ui.compilationGroupBox->setVisible(true);
+	}
+
+
+}
+void Form::switchCpuArchField(int state)
+{
+	if (state==Qt::Checked) ui.cpuArchComboBox->setEnabled(true);
+	else ui.cpuArchComboBox->setEnabled(false);
+
+}
+void Form::switchCpuTuneField(int state)
+{
+	if (state==Qt::Checked) ui.cpuTuneComboBox->setEnabled(true);
+	else ui.cpuTuneComboBox->setEnabled(false);
+
+}
+void Form::switchOptimizationField(int state)
+{
+	if (state==Qt::Checked) ui.optimizationComboBox->setEnabled(true);
+	else ui.optimizationComboBox->setEnabled(false);
+
+}
+void Form::switchGccOptionsField(int state)
+{
+	if (state==Qt::Checked) ui.customGccOptionsEdit->setEnabled(true);
+	else ui.customGccOptionsEdit->setEnabled(false);
+
 }
 

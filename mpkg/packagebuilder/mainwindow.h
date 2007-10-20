@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.9 2007/10/12 15:54:37 i27249 Exp $
+ * $Id: mainwindow.h,v 1.10 2007/10/20 06:50:59 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -36,6 +36,16 @@ class Form: public QWidget
 		void storeCurrentDescription();
 		void addDepsFromFiles();
 		void quitApp();
+
+		void switchConfigureField(int state);
+		void switchCompilationField(int state);
+		void switchInstallField(int state);
+		void switchSourceDirectoryField(int state);
+		void switchBuildSystem(int index);
+		void switchCpuArchField(int state);
+		void switchCpuTuneField(int state);
+		void switchOptimizationField(int state);
+		void switchGccOptionsField(int state);
 	public:
 		Ui::Form ui;
 		bool xmlExists;

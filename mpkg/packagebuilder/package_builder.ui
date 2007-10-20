@@ -5,57 +5,898 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1065</width>
-    <height>745</height>
+    <width>1085</width>
+    <height>774</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>MOPSLinux package builder</string>
   </property>
   <layout class="QVBoxLayout" >
-   <property name="spacing" >
-    <number>6</number>
-   </property>
-   <property name="leftMargin" >
-    <number>9</number>
-   </property>
-   <property name="topMargin" >
-    <number>9</number>
-   </property>
-   <property name="rightMargin" >
-    <number>9</number>
-   </property>
-   <property name="bottomMargin" >
-    <number>9</number>
-   </property>
    <item>
-    <widget class="QSplitter" name="splitter_3" >
-     <property name="orientation" >
-      <enum>Qt::Horizontal</enum>
+    <widget class="QTabWidget" name="globalTabWidget" >
+     <property name="currentIndex" >
+      <number>0</number>
      </property>
-     <widget class="QWidget" name="layoutWidget" >
+     <widget class="QWidget" name="packageMetadataTab" >
+      <attribute name="title" >
+       <string>Package description and metadata</string>
+      </attribute>
+      <attribute name="icon" >
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
+      </attribute>
       <layout class="QVBoxLayout" >
-       <property name="spacing" >
-        <number>6</number>
-       </property>
-       <property name="leftMargin" >
-        <number>0</number>
-       </property>
-       <property name="topMargin" >
-        <number>0</number>
-       </property>
-       <property name="rightMargin" >
-        <number>0</number>
-       </property>
-       <property name="bottomMargin" >
-        <number>0</number>
-       </property>
        <item>
-        <widget class="QGroupBox" name="groupBox_7" >
-         <property name="title" >
-          <string>Basic data</string>
+        <widget class="QSplitter" name="splitter_4" >
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
          </property>
-         <layout class="QVBoxLayout" >
+         <widget class="QWidget" name="layoutWidget" >
+          <layout class="QVBoxLayout" >
+           <property name="spacing" >
+            <number>6</number>
+           </property>
+           <property name="leftMargin" >
+            <number>0</number>
+           </property>
+           <property name="topMargin" >
+            <number>0</number>
+           </property>
+           <property name="rightMargin" >
+            <number>0</number>
+           </property>
+           <property name="bottomMargin" >
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QGroupBox" name="groupBox_7" >
+             <property name="title" >
+              <string>Basic data</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <property name="leftMargin" >
+               <number>9</number>
+              </property>
+              <property name="topMargin" >
+               <number>9</number>
+              </property>
+              <property name="rightMargin" >
+               <number>9</number>
+              </property>
+              <property name="bottomMargin" >
+               <number>9</number>
+              </property>
+              <item>
+               <layout class="QGridLayout" >
+                <property name="leftMargin" >
+                 <number>0</number>
+                </property>
+                <property name="topMargin" >
+                 <number>0</number>
+                </property>
+                <property name="rightMargin" >
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin" >
+                 <number>0</number>
+                </property>
+                <property name="horizontalSpacing" >
+                 <number>6</number>
+                </property>
+                <property name="verticalSpacing" >
+                 <number>6</number>
+                </property>
+                <item row="0" column="1" >
+                 <widget class="QLineEdit" name="NameEdit" />
+                </item>
+                <item row="0" column="2" >
+                 <widget class="QLabel" name="label_2" >
+                  <property name="text" >
+                   <string>Version:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0" >
+                 <widget class="QLabel" name="label" >
+                  <property name="text" >
+                   <string>Package name:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3" >
+                 <widget class="QLineEdit" name="VersionEdit" />
+                </item>
+                <item row="1" column="3" >
+                 <widget class="QLineEdit" name="BuildEdit" />
+                </item>
+                <item row="1" column="2" >
+                 <widget class="QLabel" name="label_4" >
+                  <property name="text" >
+                   <string>Build:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" >
+                 <widget class="QLabel" name="label_3" >
+                  <property name="text" >
+                   <string>Architecture:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1" >
+                 <widget class="QComboBox" name="ArchComboBox" >
+                  <item>
+                   <property name="text" >
+                    <string>i486</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>i586</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>i686</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>i386</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>x86-64</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>ppc</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>noarch</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <property name="leftMargin" >
+                 <number>0</number>
+                </property>
+                <property name="topMargin" >
+                 <number>0</number>
+                </property>
+                <property name="rightMargin" >
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin" >
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_5" >
+                  <property name="text" >
+                   <string>Short description:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="ShortDescriptionEdit" />
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSplitter" name="splitter_2" >
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <widget class="QGroupBox" name="groupBox_6" >
+              <property name="title" >
+               <string>Description</string>
+              </property>
+              <layout class="QVBoxLayout" >
+               <property name="spacing" >
+                <number>6</number>
+               </property>
+               <property name="leftMargin" >
+                <number>9</number>
+               </property>
+               <property name="topMargin" >
+                <number>9</number>
+               </property>
+               <property name="rightMargin" >
+                <number>9</number>
+               </property>
+               <property name="bottomMargin" >
+                <number>9</number>
+               </property>
+               <item>
+                <widget class="QTextEdit" name="DescriptionEdit" />
+               </item>
+              </layout>
+             </widget>
+             <widget class="QGroupBox" name="groupBox_5" >
+              <property name="title" >
+               <string>Changelog</string>
+              </property>
+              <layout class="QVBoxLayout" >
+               <property name="spacing" >
+                <number>6</number>
+               </property>
+               <property name="leftMargin" >
+                <number>9</number>
+               </property>
+               <property name="topMargin" >
+                <number>9</number>
+               </property>
+               <property name="rightMargin" >
+                <number>9</number>
+               </property>
+               <property name="bottomMargin" >
+                <number>9</number>
+               </property>
+               <item>
+                <widget class="QTextEdit" name="ChangelogEdit" />
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSplitter" name="splitter" >
+             <property name="orientation" >
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <widget class="QGroupBox" name="groupBox" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="sizeIncrement" >
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="styleSheet" >
+               <string/>
+              </property>
+              <property name="title" >
+               <string>Dependencies/Suggestions:</string>
+              </property>
+              <layout class="QVBoxLayout" >
+               <property name="spacing" >
+                <number>6</number>
+               </property>
+               <property name="leftMargin" >
+                <number>9</number>
+               </property>
+               <property name="topMargin" >
+                <number>9</number>
+               </property>
+               <property name="rightMargin" >
+                <number>9</number>
+               </property>
+               <property name="bottomMargin" >
+                <number>9</number>
+               </property>
+               <item>
+                <layout class="QGridLayout" >
+                 <property name="leftMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="horizontalSpacing" >
+                  <number>6</number>
+                 </property>
+                 <property name="verticalSpacing" >
+                  <number>6</number>
+                 </property>
+                 <item row="1" column="0" >
+                  <widget class="QComboBox" name="DepConditionComboBox" >
+                   <property name="minimumSize" >
+                    <size>
+                     <width>50</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>any</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>>=</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>==</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>&lt;=</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>></string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>&lt;</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="0" colspan="2" >
+                  <widget class="QComboBox" name="DepSuggestComboBox" >
+                   <item>
+                    <property name="text" >
+                     <string>Dependency</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>Suggestion</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" colspan="2" >
+                  <widget class="QLineEdit" name="DepVersionEdit" />
+                 </item>
+                 <item row="0" column="2" >
+                  <widget class="QLineEdit" name="DepNameEdit" />
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QTableWidget" name="DepTableWidget" >
+                 <property name="sizePolicy" >
+                  <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                   <horstretch>0</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="sizeIncrement" >
+                  <size>
+                   <width>0</width>
+                   <height>1</height>
+                  </size>
+                 </property>
+                 <property name="alternatingRowColors" >
+                  <bool>true</bool>
+                 </property>
+                 <property name="selectionMode" >
+                  <enum>QAbstractItemView::SingleSelection</enum>
+                 </property>
+                 <property name="selectionBehavior" >
+                  <enum>QAbstractItemView::SelectRows</enum>
+                 </property>
+                 <property name="gridStyle" >
+                  <enum>Qt::SolidLine</enum>
+                 </property>
+                 <property name="sortingEnabled" >
+                  <bool>false</bool>
+                 </property>
+                 <column>
+                  <property name="text" >
+                   <string>1</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text" >
+                   <string>2</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text" >
+                   <string>3</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text" >
+                   <string>4</string>
+                  </property>
+                 </column>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" >
+                 <property name="spacing" >
+                  <number>6</number>
+                 </property>
+                 <property name="leftMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="topMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="rightMargin" >
+                  <number>0</number>
+                 </property>
+                 <property name="bottomMargin" >
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="generateDepsButton" >
+                   <property name="enabled" >
+                    <bool>false</bool>
+                   </property>
+                   <property name="text" >
+                    <string>Generate</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer>
+                   <property name="orientation" >
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" >
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QToolButton" name="addDepFromFilesBtn" >
+                   <property name="text" >
+                    <string>...</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="DepAddButton" >
+                   <property name="text" >
+                    <string>Add</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="DepDeleteButton" >
+                   <property name="text" >
+                    <string>Delete</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QGroupBox" name="groupBox_3" >
+              <property name="sizeIncrement" >
+               <size>
+                <width>0</width>
+                <height>1</height>
+               </size>
+              </property>
+              <property name="title" >
+               <string>Tags</string>
+              </property>
+              <layout class="QVBoxLayout" >
+               <item>
+                <layout class="QHBoxLayout" >
+                 <item>
+                  <widget class="QComboBox" name="tagBox" >
+                   <property name="sizePolicy" >
+                    <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                     <horstretch>1</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="editable" >
+                    <bool>true</bool>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>base</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>base-utils</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>print</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>desktop</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>utils</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>audio</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>xapps</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>libs</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>doc</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>multimedia</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>deprecated</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>devel</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>emacs</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>kde</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>koffice</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>network</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>openoffice</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>server</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>tex</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>tcl</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>virtual</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>x11</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>x11-fonts</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="TagAddButton" >
+                   <property name="text" >
+                    <string>Add</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QListWidget" name="TagListWidget" >
+                 <property name="sizePolicy" >
+                  <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                   <horstretch>0</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" >
+                 <item>
+                  <spacer>
+                   <property name="orientation" >
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" >
+                    <size>
+                     <width>231</width>
+                     <height>25</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="TagDeleteButton" >
+                   <property name="text" >
+                    <string>Delete</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QSplitter" name="splitter_3" >
+          <property name="orientation" >
+           <enum>Qt::Vertical</enum>
+          </property>
+          <widget class="QGroupBox" name="groupBox_2" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+             <horstretch>0</horstretch>
+             <verstretch>1</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="title" >
+            <string>Configuration files</string>
+           </property>
+           <layout class="QGridLayout" >
+            <property name="leftMargin" >
+             <number>9</number>
+            </property>
+            <property name="topMargin" >
+             <number>9</number>
+            </property>
+            <property name="rightMargin" >
+             <number>9</number>
+            </property>
+            <property name="bottomMargin" >
+             <number>9</number>
+            </property>
+            <property name="horizontalSpacing" >
+             <number>6</number>
+            </property>
+            <property name="verticalSpacing" >
+             <number>6</number>
+            </property>
+            <item row="0" column="0" >
+             <widget class="QLabel" name="label_6" >
+              <property name="text" >
+               <string>File to add:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1" >
+             <widget class="QLineEdit" name="confFileAddEdit" />
+            </item>
+            <item row="0" column="2" >
+             <widget class="QToolButton" name="conffileSearchButton" >
+              <property name="text" >
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="3" >
+             <layout class="QHBoxLayout" >
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <property name="leftMargin" >
+               <number>0</number>
+              </property>
+              <property name="topMargin" >
+               <number>0</number>
+              </property>
+              <property name="rightMargin" >
+               <number>0</number>
+              </property>
+              <property name="bottomMargin" >
+               <number>0</number>
+              </property>
+              <item>
+               <spacer>
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="addConfFileButton" >
+                <property name="text" >
+                 <string>Add file</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="delConfFileButton" >
+                <property name="text" >
+                 <string>Delete</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="2" column="0" colspan="3" >
+             <widget class="QListWidget" name="configFilesListWidget" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QGroupBox" name="tempFilesGroupBox" >
+           <property name="title" >
+            <string>Temporary files</string>
+           </property>
+           <layout class="QVBoxLayout" >
+            <item>
+             <layout class="QHBoxLayout" >
+              <item>
+               <widget class="QLabel" name="label_7" >
+                <property name="text" >
+                 <string>File to add:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="tempFileAddEdit" />
+              </item>
+              <item>
+               <widget class="QToolButton" name="tempfileSearchButton" >
+                <property name="text" >
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" >
+              <property name="spacing" >
+               <number>6</number>
+              </property>
+              <property name="leftMargin" >
+               <number>0</number>
+              </property>
+              <property name="topMargin" >
+               <number>0</number>
+              </property>
+              <property name="rightMargin" >
+               <number>0</number>
+              </property>
+              <property name="bottomMargin" >
+               <number>0</number>
+              </property>
+              <item>
+               <spacer>
+                <property name="orientation" >
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" >
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="addTempFileButton" >
+                <property name="text" >
+                 <string>Add file</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="delTempFileButton" >
+                <property name="text" >
+                 <string>Delete</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QListWidget" name="tempFilesListWidget" >
+              <property name="sizePolicy" >
+               <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
+           <horstretch>0</horstretch>
+           <verstretch>255</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize" >
+          <size>
+           <width>16777215</width>
+           <height>63</height>
+          </size>
+         </property>
+         <property name="title" >
+          <string>Maintainer</string>
+         </property>
+         <layout class="QHBoxLayout" >
           <property name="spacing" >
            <number>6</number>
           </property>
@@ -72,382 +913,654 @@
            <number>9</number>
           </property>
           <item>
-           <layout class="QGridLayout" >
-            <property name="leftMargin" >
-             <number>0</number>
+           <widget class="QLabel" name="label_10" >
+            <property name="text" >
+             <string>Name:</string>
             </property>
-            <property name="topMargin" >
-             <number>0</number>
-            </property>
-            <property name="rightMargin" >
-             <number>0</number>
-            </property>
-            <property name="bottomMargin" >
-             <number>0</number>
-            </property>
-            <property name="horizontalSpacing" >
-             <number>6</number>
-            </property>
-            <property name="verticalSpacing" >
-             <number>6</number>
-            </property>
-            <item row="0" column="1" >
-             <widget class="QLineEdit" name="NameEdit" />
-            </item>
-            <item row="0" column="2" >
-             <widget class="QLabel" name="label_2" >
-              <property name="text" >
-               <string>Version:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" >
-             <widget class="QLabel" name="label" >
-              <property name="text" >
-               <string>Package name:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="3" >
-             <widget class="QLineEdit" name="VersionEdit" />
-            </item>
-            <item row="1" column="3" >
-             <widget class="QLineEdit" name="BuildEdit" />
-            </item>
-            <item row="1" column="2" >
-             <widget class="QLabel" name="label_4" >
-              <property name="text" >
-               <string>Build:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0" >
-             <widget class="QLabel" name="label_3" >
-              <property name="text" >
-               <string>Architecture:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1" >
-             <widget class="QComboBox" name="ArchComboBox" >
-              <item>
-               <property name="text" >
-                <string>i486</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>i586</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>i686</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>i386</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>x86-64</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>ppc</string>
-               </property>
-              </item>
-              <item>
-               <property name="text" >
-                <string>noarch</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-           </layout>
+           </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" >
-            <property name="spacing" >
-             <number>6</number>
+           <widget class="QLineEdit" name="MaintainerNameEdit" />
+          </item>
+          <item>
+           <widget class="QLabel" name="label_11" >
+            <property name="text" >
+             <string>E-mail:</string>
             </property>
-            <property name="leftMargin" >
-             <number>0</number>
-            </property>
-            <property name="topMargin" >
-             <number>0</number>
-            </property>
-            <property name="rightMargin" >
-             <number>0</number>
-            </property>
-            <property name="bottomMargin" >
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="label_5" >
-              <property name="text" >
-               <string>Short description:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="ShortDescriptionEdit" />
-            </item>
-           </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="MaintainerMailEdit" />
           </item>
          </layout>
         </widget>
        </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2" >
+      <attribute name="title" >
+       <string>Building options</string>
+      </attribute>
+      <attribute name="icon" >
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
+      </attribute>
+      <layout class="QVBoxLayout" >
        <item>
-        <widget class="QSplitter" name="splitter_2" >
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <widget class="QGroupBox" name="groupBox_6" >
-          <property name="title" >
-           <string>Description</string>
-          </property>
+        <layout class="QHBoxLayout" >
+         <item>
           <layout class="QVBoxLayout" >
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <property name="leftMargin" >
-            <number>9</number>
-           </property>
-           <property name="topMargin" >
-            <number>9</number>
-           </property>
-           <property name="rightMargin" >
-            <number>9</number>
-           </property>
-           <property name="bottomMargin" >
-            <number>9</number>
-           </property>
            <item>
-            <widget class="QTextEdit" name="DescriptionEdit" />
-           </item>
-          </layout>
-         </widget>
-         <widget class="QGroupBox" name="groupBox_5" >
-          <property name="title" >
-           <string>Changelog</string>
-          </property>
-          <layout class="QVBoxLayout" >
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <property name="leftMargin" >
-            <number>9</number>
-           </property>
-           <property name="topMargin" >
-            <number>9</number>
-           </property>
-           <property name="rightMargin" >
-            <number>9</number>
-           </property>
-           <property name="bottomMargin" >
-            <number>9</number>
-           </property>
-           <item>
-            <widget class="QTextEdit" name="ChangelogEdit" />
-           </item>
-          </layout>
-         </widget>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSplitter" name="splitter" >
-         <property name="orientation" >
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <widget class="QGroupBox" name="groupBox" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
-            <horstretch>0</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="sizeIncrement" >
-           <size>
-            <width>0</width>
-            <height>1</height>
-           </size>
-          </property>
-          <property name="styleSheet" >
-           <string/>
-          </property>
-          <property name="title" >
-           <string>Dependencies/Suggestions:</string>
-          </property>
-          <layout class="QVBoxLayout" >
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <property name="leftMargin" >
-            <number>9</number>
-           </property>
-           <property name="topMargin" >
-            <number>9</number>
-           </property>
-           <property name="rightMargin" >
-            <number>9</number>
-           </property>
-           <property name="bottomMargin" >
-            <number>9</number>
-           </property>
-           <item>
-            <layout class="QGridLayout" >
-             <property name="leftMargin" >
-              <number>0</number>
+            <widget class="QGroupBox" name="sourceCodeGroupBox" >
+             <property name="title" >
+              <string>Source code</string>
              </property>
-             <property name="topMargin" >
-              <number>0</number>
-             </property>
-             <property name="rightMargin" >
-              <number>0</number>
-             </property>
-             <property name="bottomMargin" >
-              <number>0</number>
-             </property>
-             <property name="horizontalSpacing" >
-              <number>6</number>
-             </property>
-             <property name="verticalSpacing" >
-              <number>6</number>
-             </property>
-             <item row="1" column="0" >
-              <widget class="QComboBox" name="DepConditionComboBox" >
-               <property name="minimumSize" >
-                <size>
-                 <width>50</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <item>
-                <property name="text" >
-                 <string>any</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>>=</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>==</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>&lt;=</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>></string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>&lt;</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="0" column="0" colspan="2" >
-              <widget class="QComboBox" name="DepSuggestComboBox" >
-               <item>
-                <property name="text" >
-                 <string>Dependency</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>Suggestion</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item row="1" column="1" colspan="2" >
-              <widget class="QLineEdit" name="DepVersionEdit" />
-             </item>
-             <item row="0" column="2" >
-              <widget class="QLineEdit" name="DepNameEdit" />
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QTableWidget" name="DepTableWidget" >
-             <property name="sizePolicy" >
-              <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-               <horstretch>0</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="sizeIncrement" >
-              <size>
-               <width>0</width>
-               <height>1</height>
-              </size>
-             </property>
-             <property name="alternatingRowColors" >
-              <bool>true</bool>
-             </property>
-             <property name="selectionMode" >
-              <enum>QAbstractItemView::SingleSelection</enum>
-             </property>
-             <property name="selectionBehavior" >
-              <enum>QAbstractItemView::SelectRows</enum>
-             </property>
-             <property name="gridStyle" >
-              <enum>Qt::SolidLine</enum>
-             </property>
-             <property name="sortingEnabled" >
-              <bool>false</bool>
-             </property>
-             <column>
-              <property name="text" >
-               <string>1</string>
-              </property>
-             </column>
-             <column>
-              <property name="text" >
-               <string>2</string>
-              </property>
-             </column>
-             <column>
-              <property name="text" >
-               <string>3</string>
-              </property>
-             </column>
-             <column>
-              <property name="text" >
-               <string>4</string>
-              </property>
-             </column>
+             <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="label_9" >
+                  <property name="text" >
+                   <string>URL/Path:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="urlEdit" />
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QCheckBox" name="embedSourcesCheckBox" >
+                  <property name="text" >
+                   <string>Embed sources into ebuild</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="downloadAnalyzeButton" >
+                  <property name="text" >
+                   <string>Download and analyze</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="groupBox_8" >
+             <property name="title" >
+              <string>Patches</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="label_8" >
+                  <property name="text" >
+                   <string>Patch (file/URL):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEdit" />
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton" >
+                  <property name="text" >
+                   <string>Add</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QListWidget" name="listWidget" />
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="buildingSystemGroupBox" >
+             <property name="title" >
+              <string>Building system</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="sourcesRootDirectoryLabel" >
+                  <property name="text" >
+                   <string>Sources root directory:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="sourcesRootDirectoryEdit" >
+                  <property name="enabled" >
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="sourcesRootDirectoryAutodetectCheckBox" >
+                  <property name="text" >
+                   <string>Autodetect</string>
+                  </property>
+                  <property name="checked" >
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="buildingSystemLabel" >
+                  <property name="text" >
+                   <string>Building system:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="buildingSystemComboBox" >
+                  <item>
+                   <property name="text" >
+                    <string>autotools (configure/make/make install)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>scons (scons foo.out)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>cmake (mkdir build; cd build; cmake ..; make)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>custom set of commands</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text" >
+                    <string>custom script</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="customCommandsGroupBox" >
+                <property name="title" >
+                 <string>Custom commands</string>
+                </property>
+                <layout class="QGridLayout" >
+                 <item row="0" column="0" >
+                  <widget class="QCheckBox" name="configureCheckBox" >
+                   <property name="text" >
+                    <string>Configure:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1" >
+                  <widget class="QLineEdit" name="configureEdit" />
+                 </item>
+                 <item row="1" column="0" >
+                  <widget class="QCheckBox" name="compilationCheckBox" >
+                   <property name="text" >
+                    <string>Compilation:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" >
+                  <widget class="QLineEdit" name="compilationEdit" />
+                 </item>
+                 <item row="2" column="0" >
+                  <widget class="QCheckBox" name="installationCheckBox" >
+                   <property name="text" >
+                    <string>Can install in subdirectory:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1" >
+                  <widget class="QLineEdit" name="installEdit" />
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="QGroupBox" name="optimizationGroupBox" >
+                <property name="title" >
+                 <string>Optimization options</string>
+                </property>
+                <layout class="QGridLayout" >
+                 <item row="0" column="0" >
+                  <widget class="QCheckBox" name="cpuArchCheckBox" >
+                   <property name="text" >
+                    <string>CPU architecture:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1" >
+                  <widget class="QComboBox" name="cpuArchComboBox" >
+                   <property name="enabled" >
+                    <bool>false</bool>
+                   </property>
+                   <property name="currentIndex" >
+                    <number>1</number>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>i386</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i486</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i586</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium-mmx</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i686</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium3</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium-m</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>prescott</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>nocona</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>core</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>core2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>k6</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>athlon</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>athlon64</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="2" >
+                  <widget class="QCheckBox" name="cpuTuneCheckBox" >
+                   <property name="text" >
+                    <string>CPU optimization:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="3" >
+                  <widget class="QComboBox" name="cpuTuneComboBox" >
+                   <property name="enabled" >
+                    <bool>false</bool>
+                   </property>
+                   <property name="currentIndex" >
+                    <number>4</number>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>i386</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i486</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i586</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium-mmx</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>i686</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium3</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium-m</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>pentium4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>prescott</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>nocona</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>core</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>core2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>k6</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>athlon</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>athlon64</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="1" column="0" >
+                  <widget class="QCheckBox" name="optimizationCheckBox" >
+                   <property name="text" >
+                    <string>Optimization level:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1" >
+                  <widget class="QComboBox" name="optimizationComboBox" >
+                   <property name="enabled" >
+                    <bool>false</bool>
+                   </property>
+                   <property name="currentIndex" >
+                    <number>4</number>
+                   </property>
+                   <item>
+                    <property name="text" >
+                     <string>O</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>Os</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O0</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O1</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O2</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O3</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O4</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O5</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O6</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O7</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O8</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text" >
+                     <string>O9</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="2" column="0" >
+                  <widget class="QCheckBox" name="customGccOptionsCheckBox" >
+                   <property name="text" >
+                    <string>Custom gcc options</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1" colspan="3" >
+                  <widget class="QLineEdit" name="customGccOptionsEdit" />
+                 </item>
+                 <item row="3" column="0" colspan="2" >
+                  <widget class="QCheckBox" name="AllowUserToChangeCheckBox" >
+                   <property name="text" >
+                    <string>Allow user to change these settings</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <spacer>
+                <property name="orientation" >
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" >
+                 <size>
+                  <width>514</width>
+                  <height>31</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" >
+           <item>
+            <widget class="QGroupBox" name="customScriptGroupBox" >
+             <property name="title" >
+              <string>Custom build script</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <item>
+               <widget class="QLabel" name="customScriptHelpLabel" >
+                <property name="text" >
+                 <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:7pt; font-weight:400; font-style:normal;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Please write a full building script. &lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Assume that you are starting from&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">the sources root.&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Predefined variables:&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$SRC&lt;/span> - sources root&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$PKG&lt;/span> - directory which should contain full package tree&lt;/p>&lt;/body>&lt;/html></string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QTextEdit" name="customScriptTextEdit" />
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="compilationGroupBox" >
+             <property name="title" >
+              <string>Compilation options</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLineEdit" name="lineEdit_9" >
+                  <property name="font" >
+                   <font>
+                    <pointsize>7</pointsize>
+                    <italic>true</italic>
+                   </font>
+                  </property>
+                  <property name="text" >
+                   <string>key</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEdit_10" >
+                  <property name="font" >
+                   <font>
+                    <italic>true</italic>
+                   </font>
+                  </property>
+                  <property name="text" >
+                   <string>value</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButton_5" >
+                  <property name="text" >
+                   <string>Add</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QTableWidget" name="compilationOptionsTableWidget" />
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="scriptsTab" >
+      <attribute name="title" >
+       <string>Installation scripts</string>
+      </attribute>
+      <attribute name="icon" >
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
+      </attribute>
+      <layout class="QVBoxLayout" >
+       <item>
+        <widget class="QTabWidget" name="installScriptsTabWidget" >
+         <property name="currentIndex" >
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="preinstallTab" >
+          <attribute name="title" >
+           <string>Preinstall</string>
+          </attribute>
+          <layout class="QVBoxLayout" >
+           <item>
             <layout class="QHBoxLayout" >
-             <property name="spacing" >
-              <number>6</number>
-             </property>
-             <property name="leftMargin" >
-              <number>0</number>
-             </property>
-             <property name="topMargin" >
-              <number>0</number>
-             </property>
-             <property name="rightMargin" >
-              <number>0</number>
-             </property>
-             <property name="bottomMargin" >
-              <number>0</number>
-             </property>
+             <item>
+              <widget class="QCheckBox" name="preinstallEnabledCheckBox" >
+               <property name="text" >
+                <string>Enabled</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <spacer>
                <property name="orientation" >
@@ -462,137 +1575,33 @@
               </spacer>
              </item>
              <item>
-              <widget class="QToolButton" name="addDepFromFilesBtn" >
+              <widget class="QPushButton" name="preinstallScriptLoadFromFileButton" >
                <property name="text" >
-                <string>...</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="DepAddButton" >
-               <property name="text" >
-                <string>Add</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="DepDeleteButton" >
-               <property name="text" >
-                <string>Delete</string>
+                <string>Load from file...</string>
                </property>
               </widget>
              </item>
             </layout>
            </item>
+           <item>
+            <widget class="QTextEdit" name="preinstallScriptEdit" />
+           </item>
           </layout>
          </widget>
-         <widget class="QGroupBox" name="groupBox_3" >
-          <property name="sizeIncrement" >
-           <size>
-            <width>0</width>
-            <height>1</height>
-           </size>
-          </property>
-          <property name="title" >
-           <string>Tags</string>
-          </property>
+         <widget class="QWidget" name="postinstallTab" >
+          <attribute name="title" >
+           <string>Postinstall</string>
+          </attribute>
           <layout class="QVBoxLayout" >
            <item>
             <layout class="QHBoxLayout" >
              <item>
-              <widget class="QComboBox" name="tagBox" >
-               <property name="sizePolicy" >
-                <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-                 <horstretch>1</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="editable" >
-                <bool>true</bool>
-               </property>
-               <item>
-                <property name="text" >
-                 <string>base</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>lib</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>base-utils</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>utils</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>audio</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>doc</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>devel</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>emacs</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>kde</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>xapps</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>fonts</string>
-                </property>
-               </item>
-               <item>
-                <property name="text" >
-                 <string>multimedia</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="TagAddButton" >
+              <widget class="QCheckBox" name="postinstallEnabledCheckBox" >
                <property name="text" >
-                <string>Add</string>
+                <string>Enabled</string>
                </property>
               </widget>
              </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QListWidget" name="TagListWidget" >
-             <property name="sizePolicy" >
-              <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-               <horstretch>0</horstretch>
-               <verstretch>1</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" >
              <item>
               <spacer>
                <property name="orientation" >
@@ -600,20 +1609,105 @@
                </property>
                <property name="sizeHint" >
                 <size>
-                 <width>231</width>
-                 <height>25</height>
+                 <width>40</width>
+                 <height>20</height>
                 </size>
                </property>
               </spacer>
              </item>
              <item>
-              <widget class="QPushButton" name="TagDeleteButton" >
+              <widget class="QPushButton" name="postinstallScriptLoadFromFileButton" >
                <property name="text" >
-                <string>Delete</string>
+                <string>Load from file...</string>
                </property>
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <widget class="QTextEdit" name="postinstallScriptEdit" />
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="preremoveTab" >
+          <attribute name="title" >
+           <string>Preremove</string>
+          </attribute>
+          <layout class="QVBoxLayout" >
+           <item>
+            <layout class="QHBoxLayout" >
+             <item>
+              <widget class="QCheckBox" name="preremoveEnabledCheckBox" >
+               <property name="text" >
+                <string>Enabled</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="preremoveScriptLoadFromFileButton" >
+               <property name="text" >
+                <string>Load from file...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QTextEdit" name="preremoveScriptEdit" />
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="postremoveTab" >
+          <attribute name="title" >
+           <string>Postremove</string>
+          </attribute>
+          <layout class="QVBoxLayout" >
+           <item>
+            <layout class="QHBoxLayout" >
+             <item>
+              <widget class="QCheckBox" name="postremoveEnabledCheckBox" >
+               <property name="text" >
+                <string>Enabled</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="postremoveScriptLoadFromFileButton" >
+               <property name="text" >
+                <string>Load from file...</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QTextEdit" name="postremoveScriptEdit" />
            </item>
           </layout>
          </widget>
@@ -621,166 +1715,6 @@
        </item>
       </layout>
      </widget>
-     <widget class="QGroupBox" name="groupBox_2" >
-      <property name="sizePolicy" >
-       <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
-        <horstretch>0</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="title" >
-       <string>Configuration files</string>
-      </property>
-      <layout class="QGridLayout" >
-       <property name="leftMargin" >
-        <number>9</number>
-       </property>
-       <property name="topMargin" >
-        <number>9</number>
-       </property>
-       <property name="rightMargin" >
-        <number>9</number>
-       </property>
-       <property name="bottomMargin" >
-        <number>9</number>
-       </property>
-       <property name="horizontalSpacing" >
-        <number>6</number>
-       </property>
-       <property name="verticalSpacing" >
-        <number>6</number>
-       </property>
-       <item row="0" column="0" >
-        <widget class="QLabel" name="label_6" >
-         <property name="text" >
-          <string>File to add:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" >
-        <widget class="QLineEdit" name="confFileAddEdit" />
-       </item>
-       <item row="0" column="2" >
-        <widget class="QToolButton" name="conffileSearchButton" >
-         <property name="text" >
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3" >
-        <layout class="QHBoxLayout" >
-         <property name="spacing" >
-          <number>6</number>
-         </property>
-         <property name="leftMargin" >
-          <number>0</number>
-         </property>
-         <property name="topMargin" >
-          <number>0</number>
-         </property>
-         <property name="rightMargin" >
-          <number>0</number>
-         </property>
-         <property name="bottomMargin" >
-          <number>0</number>
-         </property>
-         <item>
-          <spacer>
-           <property name="orientation" >
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" >
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="addConfFileButton" >
-           <property name="text" >
-            <string>Add file</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="delConfFileButton" >
-           <property name="text" >
-            <string>Delete</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0" colspan="3" >
-        <widget class="QListWidget" name="configFilesListWidget" >
-         <property name="sizePolicy" >
-          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-           <horstretch>0</horstretch>
-           <verstretch>1</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="groupBox_4" >
-     <property name="sizePolicy" >
-      <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
-       <horstretch>0</horstretch>
-       <verstretch>255</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="maximumSize" >
-      <size>
-       <width>16777215</width>
-       <height>63</height>
-      </size>
-     </property>
-     <property name="title" >
-      <string>Maintainer</string>
-     </property>
-     <layout class="QHBoxLayout" >
-      <property name="spacing" >
-       <number>6</number>
-      </property>
-      <property name="leftMargin" >
-       <number>9</number>
-      </property>
-      <property name="topMargin" >
-       <number>9</number>
-      </property>
-      <property name="rightMargin" >
-       <number>9</number>
-      </property>
-      <property name="bottomMargin" >
-       <number>9</number>
-      </property>
-      <item>
-       <widget class="QLabel" name="label_10" >
-        <property name="text" >
-         <string>Name:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="MaintainerNameEdit" />
-      </item>
-      <item>
-       <widget class="QLabel" name="label_11" >
-        <property name="text" >
-         <string>E-mail:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="MaintainerMailEdit" />
-      </item>
-     </layout>
     </widget>
    </item>
    <item>
