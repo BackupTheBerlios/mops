@@ -494,7 +494,9 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 								d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+"] Скачивается файл " + \
 									item->url_list.at(j), 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
 							}
-							else say(_("[%d/%d] Downloading file %s\n"),i+1, list.size(), item->url_list.at(j).c_str());
+							else if (item->url_list.at(j).find("packages.xml.gz")==std::string::npos && 
+									item->url_list.at(j).find("PACKAGES.TXT")==std::string::npos &&
+							       		item->url_list.at(j).find("Packages.gz")==std::string::npos) say(_("[%d/%d] Downloading file %s\n"),i+1, list.size(), item->url_list.at(j).c_str());
 							result = curl_easy_perform(ch);
     							fclose(out);
 							if (dialogMode) d.closeGauge();

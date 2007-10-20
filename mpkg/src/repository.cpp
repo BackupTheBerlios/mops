@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.71 2007/10/20 12:29:00 i27249 Exp $
+ * $Id: repository.cpp,v 1.72 2007/10/20 14:03:42 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -568,7 +568,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 	// (and something else for RPM, in future)
 	string index_filename = get_tmp_file();
 	string md5sums_filename = get_tmp_file();
-	if (!dialogMode) say("\t[%s] ...\n",server_url.c_str());
+	if (!dialogMode) say("[%s] ...\r",server_url.c_str());
 	string cm = "gunzip -f "+index_filename+".gz 2>/dev/null";
 	if (type == TYPE_MPKG || type == TYPE_AUTO)
 	{
@@ -579,7 +579,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			actionBus.getActionState(0);
 			mDebug("download ok, validating contents...");
 			if (system(cm.c_str())==0 && \
-					ReadFile(index_filename).find("<?xml version=\"1.0\"")!=std::string::npos && ReadFile(index_filename).find("<repository>")!=std::string::npos)
+					ReadFile(index_filename).find("<?xml version=\"1.0\"")!=std::string::npos && ReadFile(index_filename).find("<repository")!=std::string::npos)
 			{
 				currentStatus = "Detected native MPKG repository";
 				type = TYPE_MPKG;
@@ -602,14 +602,14 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			mDebug("download ok, validating contents...");
 			if (ReadFile(index_filename).find("PACKAGE NAME:  ")!=std::string::npos)
 			{
-				currentStatus = "Detected legacy Slackware repository";
+				currentStatus = _("Detected legacy Slackware repository");
 				if (CommonGetFile(server_url + "CHECKSUMS.md5", md5sums_filename) == DOWNLOAD_OK)
 				{
 					type = TYPE_SLACK;
 				}
 				else 
 				{
-					mError("Error downloading checksums");
+					mError(_("Error downloading checksums"));
 					return -1; // Download failed: no checksums or checksums download error
 				}
 			}
@@ -632,8 +632,8 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 
 	if (type != TYPE_MPKG && type != TYPE_SLACK && type!=TYPE_DEBIAN)
 	{
-		currentStatus = "Error updating data from "+server_url+": download error or unsupported type";
-		mError("Error downloading package index: download error, or unsupported repository type");
+		currentStatus = _("Error updating data from ") +server_url+_(": download error or unsupported type");
+		mError(_("Error downloading package index: download error, or unsupported repository type"));
 		return -1;
 	}
 	mDebug("Starting to parse index");
@@ -671,13 +671,13 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			
 			indexRootNode = xmlDocGetRootElement(indexDoc);
 			if (indexRootNode == NULL) {
-				mError("Failed to get index");
+				mError(_("Failed to get index"));
 				xmlFreeDoc(indexDoc);
 			}
 			else mDebug("indexRootNode read successfully");
 			
 			if (xmlStrcmp(indexRootNode->name, (const xmlChar *) "repository") ) {
-				mError("Invalid index file");
+				mError(_("Invalid index file"));
 				xmlFreeDoc(indexDoc);
 			}
 			else mDebug("Found valid repository index");
@@ -697,7 +697,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			
 			if (xmlXPathNodeSetIsEmpty(xResult->nodesetval)) {
 				xmlXPathFreeObject(xResult);
-				mError("No packages found");
+
+				printf(_("[%s] ... Nothing found\n"), server_url.c_str());
+				//mError("No packages found");
 				return 0;
 			}
 			
@@ -710,7 +712,9 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 			xmlXPathFreeContext(xContext);
 
 			actionBus.setActionProgressMaximum(ACTIONID_DBUPDATE, xNodeSet->nodeNr);
+			if (xNodeSet->nodeNr==0) printf("[%s] ... Nothing found", server_url.c_str());
 			for (xi = 0; xi < xNodeSet->nodeNr; xi++) {
+				printf("[%s] ... Importing received data: %d/%d\r",server_url.c_str(), xi+1, xNodeSet->nodeNr);
 				actionBus.setActionProgress(ACTIONID_DBUPDATE, xi);
 				mDebug("Processing " + IntToStr(xi) + " node");
 				if (actionBus._abortActions) {
@@ -732,6 +736,7 @@ int Repository::get_index(string server_url, PACKAGE_LIST *packages, unsigned in
 				pkg->get_locations()->at(0).set_server_url(&server_url);
 				packages->add(pkg);
 			}
+			printf("\n");
 			xmlCleanupMemory();
 			xmlCleanupParser();
 			/*
