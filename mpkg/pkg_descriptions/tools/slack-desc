@@ -1,3 +1,5 @@
 mpkg-tools: MOPSLinux package system - mainenance tools
 mpkg-tools: 
-mpkg-tools: For now, this package contains only one tool - package builder.
+mpkg-tools: Утилита для редактирования
+mpkg-tools:  мета-данных пакетов packagebuilder, и
+mpkg-tools:  монитор обновлений updatechecker.

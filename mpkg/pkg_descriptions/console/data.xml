@@ -4,7 +4,7 @@
 		mpkg-console
 	</name>
 	<version>
-		0.12.1
+		0.12.2
 	</version>
 	<arch>
 		i486
@@ -13,7 +13,7 @@
 		1
 	</build>
 	<description lang="en">
-		Console interface for MPKG. I recommend to intall this, because many scripts may be relied on this.
+		Консольный интерфейс к mpkg
 	</description>
 	<description lang="ru">
 	</description>
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.1
+				0.12.2
 			</version>
 		</dep>
 	</dependencies>
@@ -42,7 +42,9 @@
 		</tag>
 	</tags>
 	<changelog>
-		This is a first public beta release. Please send bug reports to the maintainer.
+		0.12.1 - 0.12.2
+Исправлена проверка прав пользователя.
+При подтверждении выполнения действий, Y теперь по умолчанию.
 	</changelog>
 	<maintainer>
 		<name>

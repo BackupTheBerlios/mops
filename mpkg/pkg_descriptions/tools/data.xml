@@ -4,7 +4,7 @@
 		mpkg-tools
 	</name>
 	<version>
-		0.12.1
+		0.12.2
 	</version>
 	<arch>
 		i486
@@ -13,7 +13,7 @@
 		1
 	</build>
 	<description lang="en">
-		For now, this package contains only one tool - package builder.
+		Утилита для редактирования мета-данных пакетов packagebuilder, и монитор обновлений updatechecker.
 	</description>
 	<description lang="ru">
 	</description>
@@ -25,62 +25,117 @@
 	<dependencies>
 		<dep>
 			<name>
-				expat
+				mpkg-core
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				2.0.1
+				0.12.2
 			</version>
 		</dep>
 		<dep>
 			<name>
-				fontconfig
+				qt4
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				2.4.2
+				4.3.1
 			</version>
 		</dep>
 		<dep>
 			<name>
-				freetype
+				libxcb
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				2.3.4
+				1.0
 			</version>
 		</dep>
 		<dep>
 			<name>
-				glib2
+				libpng
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				2.12.12
+				1.2.18
 			</version>
 		</dep>
 		<dep>
 			<name>
-				glibc-solibs
+				libidn
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				2.5
+				0.6.10
 			</version>
 		</dep>
 		<dep>
 			<name>
-				libICE
+				libXrender
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.9.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXrandr
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.2.1
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXinerama
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXi
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.4
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXfixes
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				4.0.3
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXext
 			</name>
 			<condition>
 				atleast
@@ -91,7 +146,29 @@
 		</dep>
 		<dep>
 			<name>
-				libSM
+				libXdmcp
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.0.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXcursor
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				1.1.8
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libXau
 			</name>
 			<condition>
 				atleast
@@ -113,7 +190,7 @@
 		</dep>
 		<dep>
 			<name>
-				libXau
+				libSM
 			</name>
 			<condition>
 				atleast
@@ -124,29 +201,7 @@
 		</dep>
 		<dep>
 			<name>
-				libXcursor
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				1.1.8
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libXdmcp
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				1.0.2
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libXext
+				libICE
 			</name>
 			<condition>
 				atleast
@@ -157,112 +212,57 @@
 		</dep>
 		<dep>
 			<name>
-				libXfixes
+				glibc-solibs
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				4.0.3
+				2.5
 			</version>
 		</dep>
 		<dep>
 			<name>
-				libXi
+				glib2
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				1.0.4
+				2.12.12
 			</version>
 		</dep>
 		<dep>
 			<name>
-				libXinerama
+				freetype
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				1.0.2
+				2.3.4
 			</version>
 		</dep>
 		<dep>
 			<name>
-				libXrandr
+				fontconfig
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				1.2.1
+				2.4.2
 			</version>
 		</dep>
 		<dep>
 			<name>
-				libXrender
+				expat
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				0.9.2
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libidn
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.6.10
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libpng
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				1.2.18
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libxcb
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				1.0
-			</version>
-		</dep>
-		<dep>
-			<name>
-				qt4
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				4.3.1
-			</version>
-		</dep>
-		<dep>
-			<name>
-				mpkg-core
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.11
+				2.0.1
 			</version>
 		</dep>
 	</dependencies>
@@ -273,6 +273,7 @@
 		</tag>
 	</tags>
 	<changelog>
+		Концептуальная внешне, но рабочая внутри версия. Основана на коде 0.12.1 (изменен лишь интерфейс)
 	</changelog>
 	<maintainer>
 		<name>

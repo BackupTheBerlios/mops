@@ -1,4 +1,3 @@
 mpkg-console: MOPSLinux package system: console interface
 mpkg-console: 
-mpkg-console: Console interface for MPKG. I recommend to intall this, because many
-mpkg-console:  scripts may be relied on this.
+mpkg-console: Консольный интерфейс к mpkg

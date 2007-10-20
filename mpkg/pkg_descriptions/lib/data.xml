@@ -4,7 +4,7 @@
 		mpkg-core
 	</name>
 	<version>
-		0.12.1
+		0.12.2
 	</version>
 	<arch>
 		i486
@@ -13,7 +13,7 @@
 		1
 	</build>
 	<description lang="en">
-		This is a core of MOPSLinux package system. It contains the main library, download library, default configuration file, and group descriptions. Considering that you are already have a directory structure (should be done on install)
+		Сердце системы пакетов mpkg.
 	</description>
 	<description lang="ru">
 	</description>
@@ -25,68 +25,13 @@
 	<dependencies>
 		<dep>
 			<name>
-				sqlite3
+				curl
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				3.4.1
-			</version>
-		</dep>
-		<dep>
-			<name>
-				cxxlibs
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				6.0.8
-			</version>
-		</dep>
-		<dep>
-			<name>
-				glibc-solibs
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				2.5
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libidn
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.6.10
-			</version>
-		</dep>
-		<dep>
-			<name>
-				libxml2
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				2.6.28
-			</version>
-		</dep>
-		<dep>
-			<name>
-				openssl
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				0.9.8e
+				7.16
 			</version>
 		</dep>
 		<dep>
@@ -102,13 +47,68 @@
 		</dep>
 		<dep>
 			<name>
-				curl
+				openssl
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				7.16
+				0.9.8e
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libxml2
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.6.28
+			</version>
+		</dep>
+		<dep>
+			<name>
+				libidn
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.6.10
+			</version>
+		</dep>
+		<dep>
+			<name>
+				glibc-solibs
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.5
+			</version>
+		</dep>
+		<dep>
+			<name>
+				cxxlibs
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				6.0.8
+			</version>
+		</dep>
+		<dep>
+			<name>
+				sqlite3
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				3.4.1
 			</version>
 		</dep>
 	</dependencies>
@@ -119,7 +119,9 @@
 		</tag>
 	</tags>
 	<changelog>
-		This is a first public beta release. Please send bug reports and feature requests to the maintainer
+		0.12.1-0.12.2
+Ускорена работа с XML. В частности, обновление данных с репозиториев ускорено в 20 раз
+Множество мелких исправлений
 	</changelog>
 	<maintainer>
 		<name>

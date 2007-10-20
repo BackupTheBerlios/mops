@@ -10,7 +10,7 @@
 		i486
 	</arch>
 	<build>
-		1
+		2
 	</build>
 	<description lang="en">
 		Пакет содержит графический менеджер пакетов и монитор обновлений
@@ -25,24 +25,24 @@
 	<dependencies>
 		<dep>
 			<name>
-				qt4
-			</name>
-			<condition>
-				atleast
-			</condition>
-			<version>
-				4.3
-			</version>
-		</dep>
-		<dep>
-			<name>
 				mpkg-core
 			</name>
 			<condition>
 				atleast
 			</condition>
 			<version>
-				0.12.1
+				0.12.2
+			</version>
+		</dep>
+		<dep>
+			<name>
+				qt4
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				4.3.1
 			</version>
 		</dep>
 	</dependencies>
@@ -56,6 +56,7 @@
 		</tag>
 	</tags>
 	<changelog>
+		Пересобран с учетом изменений в mpkg-core
 	</changelog>
 	<maintainer>
 		<name>
