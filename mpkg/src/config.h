@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.49 2007/09/29 22:48:55 i27249 Exp $
+    $Id: config.h,v 1.50 2007/10/21 01:45:31 i27249 Exp $
 */
 
 
@@ -15,7 +15,10 @@ using namespace std;
 #define CHECKFILES_POSTINSTALL 2
 #define CHECKFILES_DISABLE 0
 
+//extern string SYS_BACKUP; //TODO
 #define SYS_BACKUP "/var/mpkg/backup/"
+//extern string PACKAGE_OUTPUT; //TODO
+#define PACKAGE_OUTPUT "/var/mpkg/packages/"
 // Database type definitions
 #define DB_SQLITE_LOCAL 0x01
 #define DB_REMOTE 0x02

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.30 2007/10/20 06:50:59 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.31 2007/10/21 01:45:31 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -130,11 +130,119 @@ void Form::loadData()
 		if (p.parseOk)
 		{
 			//*tmp = p.getXMLNode();
-			
+			ui.urlEdit->setText(p.getBuildUrl().c_str());
+			if (p.getBuildSourceRoot().empty()) {
+				ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Checked);
+				ui.sourcesRootDirectoryEdit->setText("");
+			}
+
+			patchList = p.getBuildPatchList();
+			// TODO: UI realization
+
+			// stub for script path
+			string script_file="/etc/rc.d/rc.local";
+			if (p.getBuildSystem()=="autotools") ui.buildingSystemComboBox->setCurrentIndex(0);
+			if (p.getBuildSystem()=="scons") ui.buildingSystemComboBox->setCurrentIndex(1);
+			if (p.getBuildSystem()=="cmake") ui.buildingSystemComboBox->setCurrentIndex(2);
+			if (p.getBuildSystem()=="custom") ui.buildingSystemComboBox->setCurrentIndex(3);
+			if (p.getBuildSystem()=="script") {
+				ui.buildingSystemComboBox->setCurrentIndex(4);
+				ui.customScriptTextEdit->setText(ReadFile(script_file).c_str());
+			}
+			switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+
+
+			if (p.getBuildOptimizationMarch().empty())
+			{
+				ui.cpuArchCheckBox->setCheckState(Qt::Unchecked);
+			}
+			else 
+			{
+				ui.cpuArchCheckBox->setCheckState(Qt::Checked);
+				if (ui.cpuArchComboBox->findText(p.getBuildOptimizationMarch().c_str())<0) ui.cpuArchComboBox->addItem(p.getBuildOptimizationMarch().c_str());
+				ui.cpuArchComboBox->setCurrentIndex(ui.cpuArchComboBox->findText(p.getBuildOptimizationMarch().c_str()));
+			}
+			if (p.getBuildOptimizationMtune().empty())
+			{
+				ui.cpuTuneCheckBox->setCheckState(Qt::Unchecked);
+			}
+			else 
+			{
+				ui.cpuTuneCheckBox->setCheckState(Qt::Checked);
+				if (ui.cpuTuneComboBox->findText(p.getBuildOptimizationMtune().c_str())<0) ui.cpuTuneComboBox->addItem(p.getBuildOptimizationMtune().c_str());
+				ui.cpuTuneComboBox->setCurrentIndex(ui.cpuTuneComboBox->findText(p.getBuildOptimizationMtune().c_str()));
+			}
+			if (p.getBuildOptimizationLevel().empty())
+			{
+				ui.optimizationCheckBox->setCheckState(Qt::Unchecked);
+			}
+			else 
+			{
+				ui.optimizationCheckBox->setCheckState(Qt::Checked);
+				if (ui.optimizationComboBox->findText(p.getBuildOptimizationLevel().c_str())<0) ui.optimizationComboBox->addItem(p.getBuildOptimizationLevel().c_str());
+				ui.optimizationComboBox->setCurrentIndex(ui.optimizationComboBox->findText(p.getBuildOptimizationLevel().c_str()));
+			}
+			if (p.getBuildOptimizationCustomGccOptions().empty()) 
+			{
+				ui.customGccOptionsCheckBox->setCheckState(Qt::Unchecked);
+				ui.customGccOptionsEdit->setText("");
+			}
+			else {
+				ui.customGccOptionsCheckBox->setCheckState(Qt::Checked);
+				ui.customGccOptionsEdit->setText(p.getBuildOptimizationCustomGccOptions().c_str());
+			}
+
+			if (p.getBuildCmdConfigure().empty()) {
+				ui.configureCheckBox->setCheckState(Qt::Unchecked);
+				ui.configureEdit->setText("");
+			}
+			else {
+				ui.configureCheckBox->setCheckState(Qt::Checked);
+				ui.configureEdit->setText(p.getBuildCmdConfigure().c_str());
+			}
+			if (p.getBuildCmdMake().empty()) {
+				ui.compilationCheckBox->setCheckState(Qt::Unchecked);
+				ui.compilationEdit->setText("");
+			}
+			else {
+				ui.compilationCheckBox->setCheckState(Qt::Checked);
+				ui.compilationEdit->setText(p.getBuildCmdMake().c_str());
+			}
+			if (p.getBuildCmdMakeInstall().empty()) {
+				ui.installationCheckBox->setCheckState(Qt::Unchecked);
+				ui.installEdit->setText("");
+			}
+			else {
+				ui.installationCheckBox->setCheckState(Qt::Checked);
+				ui.installEdit->setText(p.getBuildCmdMakeInstall().c_str());
+			}
+
+			if (p.getBuildOptimizationCustomizable()) ui.AllowUserToChangeCheckBox->setCheckState(Qt::Checked);
+			else ui.AllowUserToChangeCheckBox->setCheckState(Qt::Unchecked);
+
+			// TODO: UI realization for keys
+			keyList.clear();
+			keys key_tmp;
+			vector<string> key_names = p.getBuildKeyNames();
+			vector<string> key_values = p.getBuildKeyValues();
+			for (unsigned int i=0; i<key_names.size(); i++)
+			{
+				key_tmp.name=key_names[i];
+				key_tmp.value=key_values[i];
+				keyList.push_back(key_tmp);
+			}
+				
+
+
+		
+			// The main part
+		
 			xml2package(p.getXMLNode(), &pkg);
 			//delete tmp;
 			pkg.sync();
-	
+			// mbuild-related stuff
+			
+
 			// Filling data 
 			ui.NameEdit->setText(pkg.get_name()->c_str());
 			ui.VersionEdit->setText(pkg.get_version()->c_str());
@@ -173,6 +281,7 @@ void Form::loadData()
 				QListWidgetItem *__item = new QListWidgetItem(ui.configFilesListWidget);
 				__item->setText(pkg.get_config_files()->at(i).get_name()->c_str());
 			}
+
 		}
 		else
 		{
@@ -184,7 +293,7 @@ void Form::loadData()
 	ui.DepTableWidget->resizeRowsToContents();
 	ui.DepTableWidget->resizeColumnsToContents();
 	modified=false;
-	if (!xmlFilename.isEmpty() && xmlFilename.length()>strlen("install/data.xml"))
+	if (!xmlFilename.isEmpty() && (unsigned int) xmlFilename.length()>strlen("install/data.xml"))
 	{
 		pkgRoot = xmlFilename.toStdString().substr(0, xmlFilename.length()-strlen("install/data.xml")).c_str();
 	}
@@ -337,6 +446,92 @@ void Form::saveData()
 		node.getChildNode("configfiles").addChild("conffile");
 		node.getChildNode("configfiles").getChildNode("conffile",i).addText(ui.configFilesListWidget->item(i)->text().toStdString().c_str());
 	}
+
+	// Mbuild-related
+	if (!ui.urlEdit->text().isEmpty())
+	{
+		node.addChild("mbuild");
+		node.getChildNode("mbuild").addChild("url");
+		node.getChildNode("mbuild").getChildNode("url").addText(ui.urlEdit->text().toStdString().c_str());
+		node.getChildNode("mbuild").addChild("patches");
+		for (unsigned int i=0; i<patchList.size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("patches").addChild("patch");
+			node.getChildNode("mbuild").getChildNode("patches").getChildNode("patch",i).addText(patchList[i].c_str());
+		}
+		node.getChildNode("mbuild").addChild("sources_root_directory");
+		if (ui.sourcesRootDirectoryAutodetectCheckBox->checkState()==Qt::Unchecked) 
+			node.getChildNode("mbuild").getChildNode("sources_root_directory").addText(ui.sourcesRootDirectoryEdit->text().toStdString().c_str());
+		node.getChildNode("mbuild").addChild("build_system");
+		switch(ui.buildingSystemComboBox->currentIndex())
+		{
+			case 0: node.getChildNode("mbuild").getChildNode("build_system").addText("autotools");
+				break;
+			case 1: node.getChildNode("mbuild").getChildNode("build_system").addText("scons");
+				break;
+			case 2: node.getChildNode("mbuild").getChildNode("build_system").addText("cmake");
+				break;
+			case 3: node.getChildNode("mbuild").getChildNode("build_system").addText("custom");
+				break;
+			case 4: node.getChildNode("mbuild").getChildNode("build_system").addText("script");
+				break;
+		}
+
+		//<max_numjobs>0</max_numjobs> : TODO in UI
+		node.getChildNode("mbuild").addChild("optimization");
+		if (ui.cpuArchCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("march");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("march").addText(ui.cpuArchComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.cpuTuneCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("mtune");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("mtune").addText(ui.cpuTuneComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.optimizationCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("olevel");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("olevel").addText(ui.optimizationComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.customGccOptionsCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("custom_gcc_options");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("custom_gcc_options").addText(ui.customGccOptionsEdit->text().toStdString().c_str());
+		}
+
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("allow_change");
+		if (ui.AllowUserToChangeCheckBox->checkState()==Qt::Checked)
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("true");
+		else   	
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("false");
+		
+		node.getChildNode("mbuild").addChild("configuration");
+		for (unsigned int i=0; i<keyList.size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("configuration").addChild("key");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("name");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("name").addText(keyList[i].name.c_str());
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("value");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("value").addText(keyList[i].value.c_str());
+		}
+		if (ui.buildingSystemComboBox->currentIndex()==3)
+		{
+			node.getChildNode("mbuild").addChild("custom_commands");
+			if (ui.configureCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("configure");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("configure").addText(ui.configureEdit->text().toStdString().c_str());
+			}
+			if (ui.compilationCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make").addText(ui.compilationEdit->text().toStdString().c_str());
+			}
+			if (ui.installationCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make_install");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make_install").addText(ui.installEdit->text().toStdString().c_str());
+			}
+		}
+	}
+
 	//(new QDir())->mkdir("install");
 	node.writeToFile(xmlFilename.toStdString().c_str());
 	setWindowTitle(currentWindowTitle+tr(" (saved)"));
@@ -381,7 +576,7 @@ void Form::addDepsFromFiles()
 	if (dialog->exec()) files = dialog->selectedFiles();
 	PackageConfig *p;
 	string tmp_xml = get_tmp_file();
-	for (unsigned int i=0; i<files.size(); i++)
+	for (int i=0; i<files.size(); i++)
 	{
 		if (extractFromTgz(files.at(i).toStdString(), "install/data.xml", tmp_xml)==0)
 		{
@@ -474,7 +669,7 @@ void Form::changeHeader()
 	setWindowTitle(FLabel);
 }
 
-void Form::changeHeader(const QString & text)
+void Form::changeHeader(const QString &)
 {
 	/*if (!text.isEmpty())
 	{

@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.69 2007/10/20 10:34:50 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.70 2007/10/21 01:45:31 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -1048,6 +1048,7 @@ void show_package_info(mpkg *core, string name)
 			}
 		}
 
+		say(_("%sChangelog:%s          \n%s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_changelog()->c_str());
 		say(_("%sDescription:%s        \n%s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_description()->c_str());
 
 		if (showFilelist)

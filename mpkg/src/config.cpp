@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.44 2007/09/29 22:48:55 i27249 Exp $
+ * $Id: config.cpp,v 1.45 2007/10/21 01:45:31 i27249 Exp $
  *
  * ***************************************************/
 
@@ -29,6 +29,7 @@ unsigned int fileConflictChecking = CHECKFILES_PREINSTALL;
 string SYS_ROOT;
 string SYS_CACHE;
 string SCRIPTS_DIR;
+//string SYS_BACKUP; // TODO
 unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;

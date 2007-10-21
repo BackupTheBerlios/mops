@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.50 2007/09/06 14:31:11 i27249 Exp $
+$Id: dependencies.cpp,v 1.51 2007/10/21 01:45:31 i27249 Exp $
 */
 
 
@@ -454,7 +454,7 @@ PACKAGE_LIST DependencyTracker::get_dependant_packages(PACKAGE *package)
 			// Check if it can be replaced by any from install queue
 			if (_tmpInstallStream != NULL)
 			{
-				for (unsigned int t=0; t<_tmpInstallStream->size(); t++)
+				for (int t=0; t<_tmpInstallStream->size(); t++)
 				{
 					if (*package->get_name() == *_tmpInstallStream->get_package(t)->get_name() && installedPackages.get_package(i)->isItRequired(_tmpInstallStream->get_package(t)))
 					{

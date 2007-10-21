@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.70 2007/10/20 12:29:00 i27249 Exp $
+$Id: local_package.cpp,v 1.71 2007/10/21 01:45:31 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -96,19 +96,22 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 
 	LOCATION tmp_location;
 	*tmp_location.get_path()=p.getLocation();
-	data->get_locations()->push_back(tmp_location);
+	
+	//printf("xml2package: got [%s]\n", tmp_location.get_path()->c_str());
+	if (!tmp_location.get_path()->empty())	data->get_locations()->push_back(tmp_location);
+
 	*data->get_filename()=p.getFilename();
 	*data->get_md5()=p.getMd5();
 	*data->get_compressed_size()=p.getCompressedSize();
 	*data->get_installed_size()=p.getInstalledSize();
 	
-	vec_tmp_names=p.getFilelist();
 	FILES file_tmp;
+	/*vec_tmp_names=p.getFilelist();
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
 		file_tmp.set_name(&vec_tmp_names[i]);
 		data->get_files()->push_back(file_tmp);
-	}
+	}*/
 	
 	vec_tmp_names = p.getConfigFilelist();
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
@@ -453,9 +456,7 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 		extractFromTgz(filename, "install/doinst.sh", dt);
 		sed_cmd += dt + " > " + lnfname;
 	}
-	printf("SED...\n");
 	system(sed_cmd);
-	printf("EOFSED\n");
 	vector<string>link_names=ReadFileStrings(lnfname);
 	for (unsigned int i=0; i<link_names.size();i++)
 	{

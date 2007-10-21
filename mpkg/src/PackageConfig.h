@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.17 2007/10/20 12:29:00 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.18 2007/10/21 01:45:31 i27249 Exp $
  *
  * **********************************************************/
 
@@ -29,6 +29,8 @@ using namespace std;
 #define EMPTY ""
 #define EMPTYVECTOR ( new std::vector<std::string>() )
 
+
+// Binary package XML paths
 #define GET_PKG_NAME  ((const xmlChar *)"//package/name")
 #define GET_PKG_VERSION ((const xmlChar *)"//package/version")
 #define GET_PKG_ARCH ((const xmlChar *)"//package/arch")
@@ -40,7 +42,7 @@ using namespace std;
 #define GET_PKG_LOCATION ((const xmlChar *)"//package/location")
 #define GET_PKG_FILENAME ((const xmlChar *)"//package/filename")
 #define GET_PKG_MD5 ((const xmlChar *)"//package/md5")
-#define GET_PKG_CHANGELOG ((const xmlChar *)"/package/changelog")
+#define GET_PKG_CHANGELOG ((const xmlChar *)"//package/changelog")
 #define GET_PKG_COMP_SIZE ((const xmlChar *)"//package/compressed_size")
 #define GET_PKG_INST_SIZE ((const xmlChar *)"//package/installed_size")
 #define GET_PKG_TAGS ((const xmlChar *)"//package/tags/tag")
@@ -53,6 +55,25 @@ using namespace std;
 #define GET_PKG_DEP_NAME ((const xmlChar *)"//dependencies/dep/name")
 #define GET_PKG_DEP_COND ((const xmlChar *)"//dependencies/dep/condition")
 #define GET_PKG_DEP_VERSION ((const xmlChar *)"//dependencies/dep/version")
+
+// MPKG-SRC extensions
+#define GET_PKG_MBUILD_URL ((const xmlChar *)"//mbuild/url")
+#define GET_PKG_MBUILD_PATCH_LIST ((const xmlChar *)"//mbuild/patches/patch")
+#define GET_PKG_MBUILD_SOURCEROOT ((const xmlChar *)"//mbuild/sources_root_directory")
+#define GET_PKG_MBUILD_BUILDSYSTEM ((const xmlChar *)"//mbuild/build_system")
+#define GET_PKG_MBUILD_MAX_NUMJOBS ((const xmlChar *)"//mbuild/max_numjobs")
+#define GET_PKG_MBUILD_OPTIMIZATION_ALLOW_CHANGE ((const xmlChar *)"//mbuild/optimization/allow_change")
+#define GET_PKG_MBUILD_OPTIMIZATION_MARCH ((const xmlChar *)"//mbuild/optimization/march")
+#define GET_PKG_MBUILD_OPTIMIZATION_MTUNE ((const xmlChar *)"//mbuild/optimization/mtune")
+#define GET_PKG_MBUILD_OPTIMIZATION_LEVEL ((const xmlChar *)"//mbuild/optimization/olevel")
+#define GET_PKG_MBUILD_OPTIMIZATION_CUSTOM_GCC_OPTIONS ((const xmlChar *)"//mbuild/optimization/custom_gcc_options")
+#define GET_PKG_MBUILD_CONFIGURATION_KEY_NAME ((const xmlChar *)"//mbuild/configuration/key/name")
+#define GET_PKG_MBUILD_CONFIGURATION_KEY_VALUE ((const xmlChar *)"//mbuild/configuration/key/value")
+
+#define GET_PKG_MBUILD_CMD_CONFIGURE ((const xmlChar *)"//mbuild/custom_commands/configure")
+#define GET_PKG_MBUILD_CMD_MAKE ((const xmlChar *)"//mbuild/custom_commands/make")
+#define GET_PKG_MBUILD_CMD_MAKEINSTALL ((const xmlChar *)"//mbuild/custom_commands/make_install")
+
 
 class PackageConfig
 {
@@ -101,6 +122,22 @@ public:
 	vector <string> getFilelist(void);
 	vector <string> getConfigFilelist(void);
 	vector <string> getTempFilelist(void);
+	
+	string getBuildUrl(void);
+	string getBuildSourceRoot(void);
+	string getBuildSystem(void);
+	string getBuildMaxNumjobs(void);
+	bool getBuildOptimizationCustomizable(void);
+	string getBuildOptimizationMarch(void);
+	string getBuildOptimizationMtune(void);
+	string getBuildOptimizationLevel(void);
+	string getBuildOptimizationCustomGccOptions(void);
+	string getBuildCmdConfigure(void);
+	string getBuildCmdMake(void);
+	string getBuildCmdMakeInstall(void);
+	vector<string> getBuildKeyNames(void);
+	vector<string> getBuildKeyValues(void);
+	vector<string> getBuildPatchList(void);
 
 	xmlNodePtr getXMLNode(void);
 	xmlDocPtr getXMLDoc(void);

@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+	<name>
+		sshfs
+	</name>
+	<version>
+		1.8
+	</version>
+	<arch>
+		i686
+	</arch>
+	<build>
+		2
+	</build>
+	<description lang="en">
+		ssh filesystem for FUSE.
+	</description>
+	<description lang="ru">
+	</description>
+	<short_description lang="en">
+		SSH filesystem
+	</short_description>
+	<short_description lang="ru">
+	</short_description>
+	<dependencies>
+		<dep>
+			<name>
+				fuse
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				2.7
+			</version>
+		</dep>
+	</dependencies>
+	<suggests/>
+	<tags>
+		<tag>
+			utils
+		</tag>
+	</tags>
+	<changelog>
+	</changelog>
+	<maintainer>
+		<name>
+			AiX
+		</name>
+		<email>
+			i27249@gmail.com
+		</email>
+	</maintainer>
+	<configfiles/>
+	<mbuild>
+		<url>http://kent.dl.sourceforge.net/sourceforge/fuse/sshfs-fuse-1.8.tar.gz</url>
+		<patches>
+			<patch>http://mopspackages.ru/sources/sshfs-fuse/1.8/sshfs_mopsconfig.diff.gz</patch>
+		</patches>
+		<sources_root_directory/>
+		<build_system>autotools</build_system>
+		<max_numjobs>0</max_numjobs>
+		<optimization>
+			<march>i486</march>
+			<mtune>i686</mtune>
+			<olevel>O2</olevel>
+			<custom_gcc_options/>
+			<allow_change>true</allow_change>
+		</optimization>
+		<configuration>
+			<key>
+				<name>--prefix</name>
+				<value>/usr</value>
+			</key>
+		</configuration>
+		<custom_commands>
+			<configure>./configure</configure>
+			<make>make</make>
+			<make_install>make install DESTDIR=$DESTDIR</make_install>
+		</custom_commands>
+	</mbuild>
+</package>

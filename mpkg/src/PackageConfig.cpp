@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.33 2007/10/20 12:29:00 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.34 2007/10/21 01:45:31 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -285,6 +285,289 @@ string PackageConfig::getVersion()
         return EMPTY;
     }
 }
+
+string PackageConfig::getBuildUrl()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_URL);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD URL = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+string PackageConfig::getBuildSourceRoot()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_SOURCEROOT);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD SOURCEROOT = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+string PackageConfig::getBuildSystem()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_BUILDSYSTEM);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD BUILDSYSTEM = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+string PackageConfig::getBuildMaxNumjobs()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_MAX_NUMJOBS);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD MAX_NUMJOBS = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+bool PackageConfig::getBuildOptimizationCustomizable()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_OPTIMIZATION_ALLOW_CHANGE);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD CAN_CUSTOMIZE = '" +strim( __r) + "'");
+	        if (strim(__r)=="true") return true;
+		else return false;
+	    } else {
+        	return false;
+    	}
+}
+string PackageConfig::getBuildOptimizationMarch()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_OPTIMIZATION_MARCH);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD MARCH = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
+string PackageConfig::getBuildOptimizationMtune()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_OPTIMIZATION_MTUNE);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD MTUNE = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
+string PackageConfig::getBuildOptimizationLevel()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_OPTIMIZATION_LEVEL);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD LEVEL = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
+string PackageConfig::getBuildOptimizationCustomGccOptions()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_OPTIMIZATION_CUSTOM_GCC_OPTIONS);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD CUSTOM GCC OPTIONS = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
+string PackageConfig::getBuildCmdConfigure()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_CMD_CONFIGURE);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD CMD CONFIGURE = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+string PackageConfig::getBuildCmdMake()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_CMD_MAKE);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD CMD MAKE = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
+string PackageConfig::getBuildCmdMakeInstall()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_CMD_MAKEINSTALL);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD CMD MAKE_INSTALL = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+vector<string> PackageConfig::getBuildPatchList()
+{
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_MBUILD_PATCH_LIST);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found patch name '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+		return a;
+	} 
+	return a;
+}
+
+
+vector<string> PackageConfig::getBuildKeyNames()
+{
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_MBUILD_CONFIGURATION_KEY_NAME);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found key name '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+		return a;
+	} 
+	return a;
+}
+
+vector<string> PackageConfig::getBuildKeyValues()
+{
+	vector<string> a;
+	xmlNodeSetPtr nodeset;
+	xmlXPathObjectPtr res;
+	int i;
+
+	res = getNodeSet(GET_PKG_MBUILD_CONFIGURATION_KEY_VALUE);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		for (i = 0; i < nodeset->nodeNr; i++) {
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
+			const char * _result = (const char * )key;
+			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+			mDebug("Found key value '" + strim(__r) + "'");
+			a.push_back(strim(__r));
+		}
+		return a;
+	} 
+	return a;
+}
+
+
 
 /**
  * return /package/arch

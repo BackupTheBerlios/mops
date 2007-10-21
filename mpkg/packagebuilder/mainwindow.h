@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.10 2007/10/20 06:50:59 i27249 Exp $
+ * $Id: mainwindow.h,v 1.11 2007/10/21 01:45:31 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -14,6 +14,11 @@ typedef enum {
 	TYPE_XML
 } TargetType;
 using namespace std;
+typedef struct keys
+{
+	string name;
+	string value;
+};
 class Form: public QWidget
 {
 	Q_OBJECT
@@ -29,7 +34,7 @@ class Form: public QWidget
 		void addDependency();
 		void deleteTag();
 		void deleteDependency();
-		void changeHeader(const QString & text);
+		void changeHeader(const QString &);
 		void saveAndExit();
 		void changeHeader();
 		void swapLanguage();
@@ -58,5 +63,7 @@ class Form: public QWidget
 		QString pkgRoot;
 		std::string _tmpdir;
 		bool modified;
+		vector<string> patchList;
+		vector<keys> keyList;
 };
 #endif

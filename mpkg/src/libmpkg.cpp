@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.57 2007/10/12 19:14:18 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.58 2007/10/21 01:45:31 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -55,7 +55,6 @@ int mpkg::build_package()
 {
 	return mpkgSys::build_package();
 }
-
 int mpkg::convert_directory(string output_dir)
 {
 	return mpkgSys::convert_directory(output_dir);
@@ -398,6 +397,8 @@ bool mpkg::repair(PACKAGE *package)
 void mpkg::exportBase(string output_dir)
 {
 	say("Exporting data to %s directory\n",output_dir.c_str());
+	// First of all, clear previous contents
+	system("rm -rf " + output_dir+"; mkdir -p " + output_dir);
 	PACKAGE_LIST allPackages;
 	SQLRecord sqlSearch;
 //	sqlSearch.addField("package_installed", 1);
