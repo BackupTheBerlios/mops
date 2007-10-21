@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.31 2007/10/21 01:45:31 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.32 2007/10/21 12:13:01 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -50,6 +50,12 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	switchOptimizationField(ui.optimizationCheckBox->checkState());
 	connect(ui.customGccOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchGccOptionsField(int)));
 	switchGccOptionsField(ui.customGccOptionsCheckBox->checkState());
+
+
+	connect(ui.patchAddButton, SIGNAL(clicked()), this, SLOT(addPatch()));
+	connect(ui.keyAddButton, SIGNAL(clicked()), this, SLOT(addKey()));
+	connect(ui.patchDeleteButton, SIGNAL(clicked()), this, SLOT(deletePatch()));
+	connect(ui.keyDeleteButton, SIGNAL(clicked()), this, SLOT(deleteKey()));
 
 
 	
@@ -842,3 +848,78 @@ void Form::switchGccOptionsField(int state)
 
 }
 
+void Form::displayKeys()
+{
+	ui.compilationOptionsTableWidget->clear();
+	ui.compilationOptionsTableWidget->setColumnCount(2);
+	ui.compilationOptionsTableWidget->setRowCount(keyList.size());
+	for (unsigned int i=0; i<keyList.size(); i++)
+	{
+		ui.compilationOptionsTableWidget->setItem(0,0, new QTableWidgetItem(keyList[i].name.c_str()));
+		ui.compilationOptionsTableWidget->setItem(0,1, new QTableWidgetItem(keyList[i].value.c_str()));
+	}
+
+}
+
+void Form::displayPatches()
+{
+	ui.patchListWidget->clear();
+	for (unsigned int i=0; i<patchList.size(); i++)
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.patchListWidget);
+		__item->setText(patchList[i].c_str());
+	}
+}
+
+void Form::addPatch()
+{
+	if (!ui.patchEdit->text().isEmpty()) {
+		patchList.push_back(ui.patchEdit->text().toStdString());
+		ui.patchEdit->setText("");
+		displayPatches();
+	}
+}
+
+void Form::addKey()
+{
+	if (!ui.keyNameEdit->text().isEmpty())
+	{
+		keys key_tmp;
+		key_tmp.name = ui.keyNameEdit->text().toStdString();
+		key_tmp.value = ui.keyValueEdit->text().toStdString();
+		keyList.push_back(key_tmp);
+		displayKeys();
+		ui.keyNameEdit->clear();
+		ui.keyValueEdit->clear();
+	}
+}
+
+void Form::deletePatch()
+{
+	int i = ui.patchListWidget->currentRow();
+	if (i>=0 && (unsigned int) i<patchList.size())
+	{
+		vector<string> copy;
+		for (unsigned int t=0; t<patchList.size(); t++)
+		{
+			if (t!=(unsigned int) i) copy.push_back(patchList[t]);
+		}
+		patchList=copy;
+		displayPatches();
+	}
+}
+
+void Form::deleteKey()
+{
+	int i = ui.compilationOptionsTableWidget->currentRow();
+	if (i>=0 && (unsigned int) i<keyList.size())
+	{
+		vector<keys> copy;
+		for (unsigned int t=0; t<keyList.size(); t++)
+		{
+			if (t!=(unsigned int) i) copy.push_back(keyList[t]);
+		}
+		keyList=copy;
+		displayKeys();
+	}
+}
