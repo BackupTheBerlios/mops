@@ -10,7 +10,7 @@
 		i486
 	</arch>
 	<build>
-		1
+		2
 	</build>
 	<description lang="en">
 		Консольный интерфейс к mpkg
