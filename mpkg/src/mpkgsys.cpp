@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.48 2007/10/21 01:45:31 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.49 2007/10/22 23:12:27 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -41,24 +41,40 @@ int mpkgSys::unqueue(int package_id, mpkgDatabase *db)
 }
 
 
-int mpkgSys::build_package()
+int mpkgSys::build_package(string out_directory, bool source)
 {
-    if (FileNotEmpty("install/data.xml"))
-    {
-	    PackageConfig p("install/data.xml");
-	    if (!p.parseOk) return -100;
-	    string pkgname;
-	    string sysline;
-	    pkgname=p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
-	    say(_("Creating package %s\n"), pkgname.c_str());
-#ifdef APPLE_DEFINED
-	    sysline = "tar czf "+pkgname+".tgz *";
-#else
-	    sysline="makepkg -l y -c n "+pkgname+".tgz";
-#endif
-	    system(sysline.c_str());
-    }
-    return 0;
+	string pkgname;
+	if (out_directory.empty()) out_directory = "./";
+	if (out_directory[out_directory.length()-1]!='/') out_directory+="/";
+
+	    	//sysline = "tar czf "+pkgname+".tgz *"; // For macos
+	if (FileNotEmpty("install/data.xml"))
+    	{
+	    	PackageConfig p("install/data.xml");
+	    	if (!p.parseOk) 
+		{
+			mError("Parse error");
+			return -100;
+		}
+		if (source)
+		{
+			
+			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getBuild();
+	    		say(_("Packing source package to %s%s.src\n"), out_directory.c_str(), pkgname.c_str());
+			system("tar -cf " + out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".src *");
+		}
+		else {
+
+			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
+			say(_("Packing source package to %s%s.src\n"), out_directory.c_str(), pkgname.c_str());
+			system("makepkg -l y -c n " + out_directory + pkgname+".tgz");
+		}
+	}
+	else {
+		mError("No XML data, cannot build package");
+		return -1;
+	}
+    	return 0;
 }
 
 int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepTracker)

@@ -1521,7 +1521,14 @@ p, li { white-space: pre-wrap; }
                </layout>
               </item>
               <item>
-               <widget class="QTableWidget" name="compilationOptionsTableWidget" />
+               <widget class="QTableWidget" name="compilationOptionsTableWidget" >
+                <property name="selectionMode" >
+                 <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionBehavior" >
+                 <enum>QAbstractItemView::SelectRows</enum>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>

@@ -1,17 +1,13 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.32 2007/10/21 12:13:01 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.33 2007/10/22 23:12:27 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
 #include <QtGui>
 #include "mainwindow.h"
 #include <QDir>
-#include <mpkg/libmpkg.h>
-#include <QFileDialog>
-#include <QtXml/QXmlSimpleReader>
-#include <QtXml/QXmlInputSource>
 
 
 
@@ -25,9 +21,9 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	description.resize(2);
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
+	
 	ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 	ui.DepTableWidget->horizontalHeader()->hide();
-//	ui.DescriptionLanguageComboBox->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 
@@ -56,9 +52,6 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 	connect(ui.keyAddButton, SIGNAL(clicked()), this, SLOT(addKey()));
 	connect(ui.patchDeleteButton, SIGNAL(clicked()), this, SLOT(deletePatch()));
 	connect(ui.keyDeleteButton, SIGNAL(clicked()), this, SLOT(deleteKey()));
-
-
-	
 
 	xmlExists=true;
 	this->show();
@@ -143,7 +136,7 @@ void Form::loadData()
 			}
 
 			patchList = p.getBuildPatchList();
-			// TODO: UI realization
+			displayPatches();
 
 			// stub for script path
 			string script_file="/etc/rc.d/rc.local";
@@ -226,7 +219,6 @@ void Form::loadData()
 			if (p.getBuildOptimizationCustomizable()) ui.AllowUserToChangeCheckBox->setCheckState(Qt::Checked);
 			else ui.AllowUserToChangeCheckBox->setCheckState(Qt::Unchecked);
 
-			// TODO: UI realization for keys
 			keyList.clear();
 			keys key_tmp;
 			vector<string> key_names = p.getBuildKeyNames();
@@ -237,6 +229,7 @@ void Form::loadData()
 				key_tmp.value=key_values[i];
 				keyList.push_back(key_tmp);
 			}
+			displayKeys();
 				
 
 
@@ -855,8 +848,8 @@ void Form::displayKeys()
 	ui.compilationOptionsTableWidget->setRowCount(keyList.size());
 	for (unsigned int i=0; i<keyList.size(); i++)
 	{
-		ui.compilationOptionsTableWidget->setItem(0,0, new QTableWidgetItem(keyList[i].name.c_str()));
-		ui.compilationOptionsTableWidget->setItem(0,1, new QTableWidgetItem(keyList[i].value.c_str()));
+		ui.compilationOptionsTableWidget->setItem(i,0, new QTableWidgetItem(keyList[i].name.c_str()));
+		ui.compilationOptionsTableWidget->setItem(i,1, new QTableWidgetItem(keyList[i].value.c_str()));
 	}
 
 }

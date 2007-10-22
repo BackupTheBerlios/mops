@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.32 2007/10/21 01:45:31 i27249 Exp $
+ * $Id: libmpkg.h,v 1.33 2007/10/22 23:12:27 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -51,7 +51,7 @@ class mpkg
 		 * @@*/
 
 		// Package building
-		int build_package();
+		int build_package(string out_directory="", bool source=false);
 		/* build_package:
 		 * Builds package in current directory
 		 * It gets data from install/data.xml, and runs makepkg based on package information.

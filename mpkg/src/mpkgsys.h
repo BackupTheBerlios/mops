@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.11 2007/10/21 01:45:31 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.12 2007/10/22 23:12:28 i27249 Exp $
  * ******************************************************/
 
 
@@ -45,7 +45,7 @@ namespace mpkgSys {
 	int requestUninstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker, bool purge=false);
 
 #endif
-	int build_package();
+	int build_package(string out_directory="", bool source=false);
 	int update_repository_data(mpkgDatabase *db);
 	int _clean(const char *filename, const struct stat *file_status, int filetype);
 	int _clean_symlinks(const char *filename, const struct stat *file_status, int filetype);

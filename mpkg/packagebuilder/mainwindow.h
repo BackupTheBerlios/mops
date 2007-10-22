@@ -1,13 +1,14 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.12 2007/10/21 12:13:01 i27249 Exp $
+ * $Id: mainwindow.h,v 1.13 2007/10/22 23:12:27 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
 #define MV_H
 #include "ui_package_builder.h"
-#include <string>
+#include <mpkg/libmpkg.h>
+#include "package.h"
 typedef enum {
        	TYPE_NONE=0,
 	TYPE_TGZ,
@@ -19,6 +20,8 @@ typedef struct keys
 	string name;
 	string value;
 };
+
+
 class Form: public QWidget
 {
 	Q_OBJECT

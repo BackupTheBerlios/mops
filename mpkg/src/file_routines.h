@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.21 2007/10/12 19:14:18 i27249 Exp $
+* $Id: file_routines.h,v 1.22 2007/10/22 23:12:27 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -48,4 +48,6 @@ bool cacheCdromIndex(string vol_id, string rep_location);
 // Package type definition (also defines repository type)
 vector<string>ReadFileStrings(string filename);
 unsigned int CheckFileType(string fname);
+bool copyFile(string source, string destination);
+
 #endif

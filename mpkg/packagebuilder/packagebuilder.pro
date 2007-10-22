@@ -9,9 +9,9 @@ DEPENDPATH += .
 INCLUDEPATH += .
 
 # Input
-LIBS += -lmpkg -lQtXml
-HEADERS += mainwindow.h
+LIBS += -lmpkg
+HEADERS += mainwindow.h package.h
 FORMS += package_builder.ui
-SOURCES += main.cpp mainwindow.cpp
+SOURCES += main.cpp mainwindow.cpp package.cpp
 INCPATH += /usr/include/libxml2
 

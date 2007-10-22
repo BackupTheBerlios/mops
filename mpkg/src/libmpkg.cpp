@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.58 2007/10/21 01:45:31 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.59 2007/10/22 23:12:27 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -51,9 +51,9 @@ int mpkg::unqueue(int package_id)
 }
 
 // Package building
-int mpkg::build_package()
+int mpkg::build_package(string out_directory, bool source)
 {
-	return mpkgSys::build_package();
+	return mpkgSys::build_package(out_directory, source);
 }
 int mpkg::convert_directory(string output_dir)
 {

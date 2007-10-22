@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.71 2007/10/21 02:07:06 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.72 2007/10/22 23:12:27 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -62,10 +62,27 @@ int main (int argc, char **argv)
 	}
 	if ((string) argv[0] == "buildpkg")
 	{
-	    core.build_package();
-	    return 0;
+		if (argc==2) core.build_package(argv[1],false);
+		if (argc==1) core.build_package(false);
+		if (argc>2) {
+			printf(_("Too many arguments\n"));
+			printf(_("Usage: buildpkg [output_directory]\n"));
+			return -1;
+		}
+	    	return 0;
 	}
-	
+	if ((string) argv[0] == "buildsrcpkg")
+	{
+		if (argc==2) core.build_package((string) argv[1],true);
+		if (argc==1) core.build_package((string) "", true);
+		if (argc>2) {
+			printf(_("Too many arguments\n"));
+			printf(_("Usage: buildsrcpkg [output_directory]\n"));
+			return -1;
+		}
+	    	return 0;
+	}
+
 	ShowBanner();
 	setlocale(LC_ALL, "");
 	bindtextdomain( "installpkg-ng", "/usr/share/locale");
