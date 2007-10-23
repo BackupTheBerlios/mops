@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.13 2007/10/21 01:45:31 i27249 Exp $
+ *     $Id: main.cpp,v 1.14 2007/10/23 22:43:55 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	QObject::connect(mw->ui.TagAddButton, SIGNAL(clicked()), mw, SLOT(addTag()));
 	QObject::connect(mw->ui.TagDeleteButton, SIGNAL(clicked()), mw, SLOT(deleteTag()));
 	QObject::connect(mw->ui.DepAddButton, SIGNAL(clicked()), mw, SLOT(addDependency()));
-	QObject::connect(mw->ui.BuildButton, SIGNAL(clicked()), mw, SLOT(saveData()));
+	QObject::connect(mw->ui.BuildButton, SIGNAL(clicked()), mw, SLOT(saveFile()));
 	QObject::connect(mw->ui.DepDeleteButton, SIGNAL(clicked()), mw, SLOT(deleteDependency()));
 	QObject::connect(mw->ui.NameEdit, SIGNAL(textChanged(const QString &)), mw, SLOT(changeHeader(const QString &)));
 	QObject::connect(mw->ui.VersionEdit, SIGNAL(textChanged(const QString &)), mw, SLOT(changeHeader(const QString &)));

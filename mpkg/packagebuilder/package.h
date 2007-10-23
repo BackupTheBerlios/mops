@@ -1,8 +1,15 @@
-// $Id: package.h,v 1.1 2007/10/22 23:12:27 i27249 Exp $
+// $Id: package.h,v 1.2 2007/10/23 22:43:55 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
 #include <mpkg/libmpkg.h>
+enum {
+	DATATYPE_UNKNOWN = 0,
+	DATATYPE_BINARYPACKAGE,
+	DATATYPE_SOURCEPACKAGE,
+	DATATYPE_XML,
+	DATATYPE_CURRENTDIR
+};
 class BinaryPackage
 {
 	public:

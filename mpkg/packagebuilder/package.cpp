@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.1 2007/10/22 23:12:27 i27249 Exp $
+// $Id: package.cpp,v 1.2 2007/10/23 22:43:55 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -95,15 +95,19 @@ bool BinaryPackage::unpackFile()
 
 bool BinaryPackage::packFile(string output_directory)
 {
+	string oldinput = input_file;
 	if (output_directory.empty())
 	{
 		if (input_file.empty()) {
 			mError("Don't know where to write");
 			return false;
 		}
-		else output_directory = input_file;
+		else output_directory = getDirectory(input_file);
 	}
-	if (system("(cd " + pkg_dir+"; buildpkg " + output_directory+")")==0) return true;
+	if (system("(cd " + pkg_dir+"; buildpkg " + output_directory+")")==0) {
+		if (!oldinput.empty()) unlink(oldinput.c_str());
+		return true;
+	}
 	else {
 		mError("Failed to build a package");
 		return false;
@@ -349,15 +353,19 @@ bool SourcePackage::unpackFile()
 }
 bool SourcePackage::packFile(string output_directory)
 {
+	string oldinput = input_file;
 	if (output_directory.empty())
 	{
 		if (input_file.empty()) {
 			mError("Don't know where to write");
 			return false;
 		}
-		else output_directory = input_file;
+		else output_directory = getDirectory(input_file);
 	}
-	if (system("(cd " + pkg_dir+"; buildsrcpkg " + output_directory+")")==0) return true;
+	if (system("(cd " + pkg_dir+"; buildsrcpkg " + output_directory+")")==0) {
+		if (!oldinput.empty()) unlink(oldinput.c_str());
+		return true;
+	}
 	else {
 		mError("Failed to build a package");
 		return false;

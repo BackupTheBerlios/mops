@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.33 2007/10/22 23:12:27 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.34 2007/10/23 22:43:55 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -55,7 +55,8 @@ Form::Form(QWidget *parent, TargetType type, string arg)
 
 	xmlExists=true;
 	this->show();
-	loadData();
+	//loadData();
+	loadFile(arg.c_str());
 }
 
 
@@ -76,8 +77,229 @@ string cleanDescr(string str)
 	ret+=str;
 	return ret;
 }
+
+void Form::loadFile(QString filename)
+{
+	dataType = DATATYPE_UNKNOWN;
+	if (getExtension(filename.toStdString())=="tgz") dataType = DATATYPE_BINARYPACKAGE;
+	if (getExtension(filename.toStdString())=="spkg") dataType = DATATYPE_SOURCEPACKAGE;
+	if (getExtension(filename.toStdString())=="xml") dataType = DATATYPE_XML;
+	if (filename=="./") dataType = DATATYPE_CURRENTDIR;
+	PackageConfig *p;
+	switch(dataType)
+	{
+		case DATATYPE_BINARYPACKAGE:
+			if (!binaryPackage.setInputFile(filename.toStdString())) {
+				mError("Cannot open file"); // TODO: Replace to GUI error message
+				return;
+			}
+			if (!binaryPackage.unpackFile()) {
+				mError("Error while opening file: cannot extract");
+				return;
+			}
+			p = new PackageConfig(binaryPackage.getDataFilename());
+			if (!p->parseOk) {
+				mError("Error parsing XML data");
+				return;
+			}
+			break;
+
+		case DATATYPE_SOURCEPACKAGE:
+			if (!sourcePackage.setInputFile(filename.toStdString())) {
+				mError("Cannot open file");
+				return;
+			}
+			if (!sourcePackage.unpackFile()) {
+				mError("Error while opening file: cannot extract");
+				return;
+			}
+			p = new PackageConfig(sourcePackage.getDataFilename());
+			if (!p->parseOk) {
+				mError("Error parsing XML data");
+				return;
+			}
+			break;
+		case DATATYPE_XML:
+			p = new PackageConfig(filename.toStdString());
+			if (!p->parseOk) {
+				mError("Error parsing XML data");
+				return;
+			}
+			break;
+		default:
+			mError("Unknown data type");
+			return;
+
+	}
+
+	// Loading sources info
+	ui.urlEdit->setText(p->getBuildUrl().c_str());
+	if (p->getBuildSourceRoot().empty()) {
+		ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Checked);
+		ui.sourcesRootDirectoryEdit->setText("");
+	}
+
+	patchList = p->getBuildPatchList();
+	displayPatches();
+
+			// stub for script path
+	string script_file="/etc/rc.d/rc.local";
+	if (p->getBuildSystem()=="autotools") ui.buildingSystemComboBox->setCurrentIndex(0);
+	if (p->getBuildSystem()=="scons") ui.buildingSystemComboBox->setCurrentIndex(1);
+	if (p->getBuildSystem()=="cmake") ui.buildingSystemComboBox->setCurrentIndex(2);
+	if (p->getBuildSystem()=="custom") ui.buildingSystemComboBox->setCurrentIndex(3);
+	if (p->getBuildSystem()=="script") {
+		ui.buildingSystemComboBox->setCurrentIndex(4);
+		ui.customScriptTextEdit->setText(ReadFile(script_file).c_str());
+	}
+	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+
+
+	if (p->getBuildOptimizationMarch().empty())
+	{
+		ui.cpuArchCheckBox->setCheckState(Qt::Unchecked);
+	}
+	else 
+	{
+		ui.cpuArchCheckBox->setCheckState(Qt::Checked);
+		if (ui.cpuArchComboBox->findText(p->getBuildOptimizationMarch().c_str())<0) ui.cpuArchComboBox->addItem(p->getBuildOptimizationMarch().c_str());
+		ui.cpuArchComboBox->setCurrentIndex(ui.cpuArchComboBox->findText(p->getBuildOptimizationMarch().c_str()));
+	}
+	if (p->getBuildOptimizationMtune().empty())
+	{
+		ui.cpuTuneCheckBox->setCheckState(Qt::Unchecked);
+	}
+	else 
+	{
+		ui.cpuTuneCheckBox->setCheckState(Qt::Checked);
+		if (ui.cpuTuneComboBox->findText(p->getBuildOptimizationMtune().c_str())<0) ui.cpuTuneComboBox->addItem(p->getBuildOptimizationMtune().c_str());
+		ui.cpuTuneComboBox->setCurrentIndex(ui.cpuTuneComboBox->findText(p->getBuildOptimizationMtune().c_str()));
+	}
+	if (p->getBuildOptimizationLevel().empty())
+	{
+		ui.optimizationCheckBox->setCheckState(Qt::Unchecked);
+	}
+	else 
+	{
+		ui.optimizationCheckBox->setCheckState(Qt::Checked);
+		if (ui.optimizationComboBox->findText(p->getBuildOptimizationLevel().c_str())<0) ui.optimizationComboBox->addItem(p->getBuildOptimizationLevel().c_str());
+		ui.optimizationComboBox->setCurrentIndex(ui.optimizationComboBox->findText(p->getBuildOptimizationLevel().c_str()));
+	}
+	if (p->getBuildOptimizationCustomGccOptions().empty()) 
+	{
+		ui.customGccOptionsCheckBox->setCheckState(Qt::Unchecked);
+		ui.customGccOptionsEdit->setText("");
+	}
+	else {
+		ui.customGccOptionsCheckBox->setCheckState(Qt::Checked);
+		ui.customGccOptionsEdit->setText(p->getBuildOptimizationCustomGccOptions().c_str());
+	}
+		if (p->getBuildCmdConfigure().empty()) {
+		ui.configureCheckBox->setCheckState(Qt::Unchecked);
+		ui.configureEdit->setText("");
+	}
+	else {
+		ui.configureCheckBox->setCheckState(Qt::Checked);
+		ui.configureEdit->setText(p->getBuildCmdConfigure().c_str());
+	}
+	if (p->getBuildCmdMake().empty()) {
+		ui.compilationCheckBox->setCheckState(Qt::Unchecked);
+		ui.compilationEdit->setText("");
+	}
+	else {
+		ui.compilationCheckBox->setCheckState(Qt::Checked);
+		ui.compilationEdit->setText(p->getBuildCmdMake().c_str());
+	}
+	if (p->getBuildCmdMakeInstall().empty()) {
+		ui.installationCheckBox->setCheckState(Qt::Unchecked);
+		ui.installEdit->setText("");
+	}
+	else {
+		ui.installationCheckBox->setCheckState(Qt::Checked);
+		ui.installEdit->setText(p->getBuildCmdMakeInstall().c_str());
+	}
+	if (p->getBuildOptimizationCustomizable()) ui.AllowUserToChangeCheckBox->setCheckState(Qt::Checked);
+	else ui.AllowUserToChangeCheckBox->setCheckState(Qt::Unchecked);
+	keyList.clear();
+	keys key_tmp;
+	vector<string> key_names = p->getBuildKeyNames();
+	vector<string> key_values = p->getBuildKeyValues();
+	for (unsigned int i=0; i<key_names.size(); i++)
+	{
+		key_tmp.name=key_names[i];
+		key_tmp.value=key_values[i];
+		keyList.push_back(key_tmp);
+	}
+	displayKeys();
+
+	// Loading scripts info
+	switch(dataType) {
+		case DATATYPE_BINARYPACKAGE:
+			ui.preinstallScriptEdit->setText(binaryPackage.readPreinstallScript().c_str());
+			ui.postinstallScriptEdit->setText(binaryPackage.readPostinstallScript().c_str());
+			ui.preremoveScriptEdit->setText(binaryPackage.readPreremoveScript().c_str());
+			ui.postremoveScriptEdit->setText(binaryPackage.readPostremoveScript().c_str());
+			break;
+		case DATATYPE_SOURCEPACKAGE:
+			ui.preinstallScriptEdit->setText(sourcePackage.readPostinstallScript().c_str());
+			ui.postinstallScriptEdit->setText(binaryPackage.readPostinstallScript().c_str());
+			ui.preremoveScriptEdit->setText(binaryPackage.readPreremoveScript().c_str());
+			ui.postremoveScriptEdit->setText(binaryPackage.readPostremoveScript().c_str());
+			break;
+		default:
+			mWarning("This data type doesn't support scripts");
+	}
+	
+	// Loading main package data
+	PACKAGE pkg;
+	xml2package(p->getXMLNode(), &pkg);
+	pkg.sync();
+
+	// Filling data 
+	ui.NameEdit->setText(pkg.get_name()->c_str());
+	ui.VersionEdit->setText(pkg.get_version()->c_str());
+	ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
+	ui.BuildEdit->setText(pkg.get_build()->c_str());
+	ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
+	short_description[0]=pkg.get_short_description()->c_str();
+	description[0]=cleanDescr(*pkg.get_description()).c_str();
+	ui.ShortDescriptionEdit->setText(short_description[0]);
+	ui.DescriptionEdit->setText(description[0]);
+	ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
+	ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
+	ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
+
+	for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
+	{
+		ui.DepTableWidget->insertRow(0);
+		ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_type()->c_str()));
+		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
+		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
+		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
+	}
+	string tag_tmp;
+	for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
+	{
+		tag_tmp=pkg.get_tags()->at(i);
+		ui.TagListWidget->addItem(tag_tmp.c_str());
+		tag_tmp.clear();
+	}
+	for (unsigned int i=0; i<pkg.get_config_files()->size(); i++)
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.configFilesListWidget);
+		__item->setText(pkg.get_config_files()->at(i).get_name()->c_str());
+	}
+	for (unsigned int i=0; i<pkg.get_temp_files()->size(); i++)
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.tempFilesListWidget);
+		__item->setText(pkg.get_temp_files()->at(i).get_name()->c_str());
+	}
+}
+
+
 void Form::loadData()
 {
+	
 	//XMLNode node;
 	PACKAGE pkg;
 	string tag_tmp;
@@ -116,14 +338,8 @@ void Form::loadData()
 				xmlFilename = _tmpdir.c_str() + (QString) "/install/data.xml";
 			}
 	}
-//	XMLResults xmlErr;
-
-//	xmlDocPtr doc; 
-	//XMLNode *tmp = new XMLNode;
 	if (!xmlFilename.isEmpty() && xmlExists)
 	{
-		//*tmp = XMLNode::parseFile(xmlFilename.toStdString().c_str(), "package", &xmlErr);
-	//	doc = = xmlReadFile(xmlFilename.toStdString().c_str(),"UTF-8", NULL);
 
 		PackageConfig p(xmlFilename.toStdString().c_str());
 		if (p.parseOk)
@@ -296,6 +512,264 @@ void Form::loadData()
 	{
 		pkgRoot = xmlFilename.toStdString().substr(0, xmlFilename.length()-strlen("install/data.xml")).c_str();
 	}
+}
+void Form::saveFile()
+{
+	string xmlDir, xmlFilename;
+	switch(dataType)
+	{
+		case DATATYPE_BINARYPACKAGE:
+			xmlFilename = binaryPackage.getDataFilename();
+			xmlDir = getDirectory(binaryPackage.getDataFilename());
+			break;
+		case DATATYPE_SOURCEPACKAGE:
+			xmlFilename = sourcePackage.getDataFilename();
+			xmlDir = getDirectory(binaryPackage.getDataFilename());
+			break;
+		default:
+			mError("This type of file isn't supported");
+			return;
+	}
+	QString currentWindowTitle = windowTitle();
+	setWindowTitle(windowTitle()+tr(": saving, please wait..."));
+	modified=false;
+
+	string slack_desc;
+	string slack_required;
+	string slack_suggests;
+	string desc_chunk;
+
+
+	XMLNode node;
+	node = XMLNode::createXMLTopNode("package");
+	node.addChild("name");
+	node.getChildNode("name").addText(ui.NameEdit->text().toStdString().c_str());
+	node.addChild("version");
+	node.getChildNode("version").addText(ui.VersionEdit->text().toStdString().c_str());
+	node.addChild("arch");
+	node.getChildNode("arch").addText(ui.ArchComboBox->currentText().toStdString().c_str());
+	node.addChild("build");
+	node.getChildNode("build").addText(ui.BuildEdit->text().toStdString().c_str());
+
+	storeCurrentDescription();
+
+	node.addChild("description");
+	node.getChildNode("description",0).addAttribute("lang", "en");
+	node.getChildNode("description",0).addText(description[0].toStdString().c_str());
+	unsigned int spacePosition=0;
+	slack_desc = ui.NameEdit->text().toStdString() + ": " + short_description[0].toStdString() + "\n" + ui.NameEdit->text().toStdString() + ": \n";
+	for (unsigned int i=0; i<description[0].toStdString().length(); i++)
+	{
+		if (description[0].toStdString()[i]==' ') spacePosition = i;
+		if (i >=70 || i == description[0].toStdString().length()-1)
+		{
+			desc_chunk = ui.NameEdit->text().toStdString() + ": " + description[0].toStdString().substr(0, spacePosition);
+			if (i < description[0].toStdString().length()-1) i=0;
+			if (spacePosition < description[0].toStdString().length()) description[0] = description[0].toStdString().substr(spacePosition).c_str();
+			slack_desc+=desc_chunk + "\n";
+		}
+	}
+	slack_desc = slack_desc.substr(0, slack_desc.length()-1) + description[0].toStdString();
+
+	node.addChild("description");
+	node.getChildNode("description",1).addAttribute("lang", "ru");
+	node.getChildNode("description",1).addText(description[1].toStdString().c_str());
+
+	node.addChild("short_description");
+	node.getChildNode("short_description",0).addAttribute("lang", "en");
+	node.getChildNode("short_description",0).addText(short_description[0].toStdString().c_str());
+	node.addChild("short_description");
+	node.getChildNode("short_description",1).addAttribute("lang", "ru");
+	node.getChildNode("short_description",1).addText(short_description[1].toStdString().c_str());
+
+	node.addChild("dependencies");
+
+	node.addChild("suggests");
+	int dcurr=0;
+	int scurr=0;
+	for (int i=0; i<ui.DepTableWidget->rowCount(); i++)
+	{
+		if (ui.DepTableWidget->item(i,3)->text().toUpper()== "DEPENDENCY")
+		{
+			node.getChildNode("dependencies").addChild("dep");
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("name");
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("name").addText(ui.DepTableWidget->item(i,0)->text().toStdString().c_str());
+			slack_required+=ui.DepTableWidget->item(i,0)->text().toStdString();
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("condition");
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("condition").addText(hcondition2xml(ui.DepTableWidget->item(i,1)->text().toStdString()).c_str());
+			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
+			{
+				if (ui.DepTableWidget->item(i,1)->text().toStdString() == "==")
+				{
+					slack_required += "=";
+				}
+				else
+				{
+					slack_required+=ui.DepTableWidget->item(i,1)->text().toStdString();
+				}
+			}
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("version");
+			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
+			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
+			{
+				slack_required += ui.DepTableWidget->item(i,2)->text().toStdString() + "\n";
+			}
+			dcurr++;
+		}
+		if (ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGESTION" ||
+				ui.DepTableWidget->item(i,3)->text().toUpper()=="SUGGEST")
+		{
+			node.getChildNode("suggests").addChild("suggest");
+			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("name");
+			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("name").addText(ui.DepTableWidget->item(i,0)->text().toStdString().c_str());
+			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("condition");
+			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("condition").addText(hcondition2xml(ui.DepTableWidget->item(i,1)->text().toStdString()).c_str());
+			node.getChildNode("suggests").getChildNode("suggest", scurr).addChild("version");
+			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
+			scurr++;
+		}
+
+	}
+	node.addChild("tags");
+	node.addChild("changelog");
+
+	for (int i=0; i<ui.TagListWidget->count(); i++)
+	{
+		node.getChildNode("tags").addChild("tag");
+		node.getChildNode("tags").getChildNode("tag",i).addText(ui.TagListWidget->item(i)->text().toStdString().c_str());
+	}
+
+	node.getChildNode("changelog").addText(ui.ChangelogEdit->toPlainText().toStdString().c_str());
+	if (!ui.MaintainerNameEdit->text().isEmpty())
+	{
+		node.addChild("maintainer");
+		node.getChildNode("maintainer").addChild("name");
+		node.getChildNode("maintainer").getChildNode("name").addText(ui.MaintainerNameEdit->text().toStdString().c_str());
+		if (!ui.MaintainerMailEdit->text().isEmpty())
+		{
+			node.getChildNode("maintainer").addChild("email");
+			node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
+		}
+	}
+	node.addChild("configfiles");
+	for (int i=0; i<ui.configFilesListWidget->count(); i++)
+	{
+		node.getChildNode("configfiles").addChild("conffile");
+		node.getChildNode("configfiles").getChildNode("conffile",i).addText(ui.configFilesListWidget->item(i)->text().toStdString().c_str());
+	}
+
+	node.addChild("tempfiles");
+	for (int i=0; i<ui.tempFilesListWidget->count(); i++)
+	{
+		node.getChildNode("tempfiles").addChild("tempfile");
+		node.getChildNode("tempfiles").getChildNode("tempfile").addText(ui.tempFilesListWidget->item(i)->text().toStdString().c_str());
+	}
+
+	// Mbuild-related
+	if (!ui.urlEdit->text().isEmpty())
+	{
+		node.addChild("mbuild");
+		node.getChildNode("mbuild").addChild("url");
+		node.getChildNode("mbuild").getChildNode("url").addText(ui.urlEdit->text().toStdString().c_str());
+		node.getChildNode("mbuild").addChild("patches");
+		for (unsigned int i=0; i<patchList.size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("patches").addChild("patch");
+			node.getChildNode("mbuild").getChildNode("patches").getChildNode("patch",i).addText(patchList[i].c_str());
+		}
+		node.getChildNode("mbuild").addChild("sources_root_directory");
+		if (ui.sourcesRootDirectoryAutodetectCheckBox->checkState()==Qt::Unchecked) 
+			node.getChildNode("mbuild").getChildNode("sources_root_directory").addText(ui.sourcesRootDirectoryEdit->text().toStdString().c_str());
+		node.getChildNode("mbuild").addChild("build_system");
+		switch(ui.buildingSystemComboBox->currentIndex())
+		{
+			case 0: node.getChildNode("mbuild").getChildNode("build_system").addText("autotools");
+				break;
+			case 1: node.getChildNode("mbuild").getChildNode("build_system").addText("scons");
+				break;
+			case 2: node.getChildNode("mbuild").getChildNode("build_system").addText("cmake");
+				break;
+			case 3: node.getChildNode("mbuild").getChildNode("build_system").addText("custom");
+				break;
+			case 4: node.getChildNode("mbuild").getChildNode("build_system").addText("script");
+				break;
+		}
+
+		node.getChildNode("mbuild").addChild("max_numjobs");
+		node.getChildNode("mbuild").getChildNode("max_numjobs").addText(ui.maxNumjobsSpinBox->cleanText().toStdString().c_str());
+		
+		node.getChildNode("mbuild").addChild("optimization");
+		if (ui.cpuArchCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("march");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("march").addText(ui.cpuArchComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.cpuTuneCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("mtune");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("mtune").addText(ui.cpuTuneComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.optimizationCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("olevel");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("olevel").addText(ui.optimizationComboBox->currentText().toStdString().c_str());
+		}
+		if (ui.customGccOptionsCheckBox->checkState()==Qt::Checked) {
+			node.getChildNode("mbuild").getChildNode("optimization").addChild("custom_gcc_options");
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("custom_gcc_options").addText(ui.customGccOptionsEdit->text().toStdString().c_str());
+		}
+
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("allow_change");
+		if (ui.AllowUserToChangeCheckBox->checkState()==Qt::Checked)
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("true");
+		else   	
+			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("false");
+		
+		node.getChildNode("mbuild").addChild("configuration");
+		for (unsigned int i=0; i<keyList.size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("configuration").addChild("key");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("name");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("name").addText(keyList[i].name.c_str());
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("value");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("value").addText(keyList[i].value.c_str());
+		}
+		if (ui.buildingSystemComboBox->currentIndex()==3)
+		{
+			node.getChildNode("mbuild").addChild("custom_commands");
+			if (ui.configureCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("configure");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("configure").addText(ui.configureEdit->text().toStdString().c_str());
+			}
+			if (ui.compilationCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make").addText(ui.compilationEdit->text().toStdString().c_str());
+			}
+			if (ui.installationCheckBox->checkState()==Qt::Checked)
+			{
+				node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make_install");
+				node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make_install").addText(ui.installEdit->text().toStdString().c_str());
+			}
+		}
+	}
+
+	node.writeToFile(xmlFilename.c_str());
+
+	WriteFile(xmlDir+"/slack-desc", slack_desc);
+	if (!slack_required.empty()) WriteFile(xmlDir+"/slack-required", slack_required);
+	setWindowTitle(currentWindowTitle+tr(" (saved)"));
+	modified=false;
+	switch(dataType)
+	{
+		case DATATYPE_BINARYPACKAGE:
+			printf("packing...\n");
+			binaryPackage.packFile();
+			printf("Pack complete\n");
+			break;
+		case DATATYPE_SOURCEPACKAGE:
+			sourcePackage.packFile();
+			break;
+	}
+
 }
 
 void Form::saveData()
@@ -564,7 +1038,8 @@ void Form::addTag(){
 
 void Form::saveAndExit()
 {
-	saveData();
+	//saveData();
+	saveFile();
 	quitApp();
 }
 void Form::addDepsFromFiles()
@@ -750,12 +1225,12 @@ void Form::quitApp()
 		switch(ret)
 		{
 			case QMessageBox::Save: 
-				saveData();
-				if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
+				saveFile();
+				//if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
 				qApp->quit();
 				break;
 			case QMessageBox::Discard:
-				if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
+				//if (_type==TYPE_TGZ) system("rm -rf " + _tmpdir);
 				qApp->quit();
 				break;
 			case QMessageBox::Cancel:

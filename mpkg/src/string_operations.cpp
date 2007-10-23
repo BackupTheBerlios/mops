@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.14 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.15 2007/10/23 22:43:55 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -25,6 +25,27 @@ void PrepareSql(string *str)
 		offset = offset + last_pos + 2;
 	}
 	
+}
+
+string getExtension(string filename)
+{
+	filename = getFilename(filename);
+	if (filename.find(".")==std::string::npos || filename.find_last_of(".")==filename.length()-1) return ""; // No extension
+	return filename.substr(filename.find_last_of(".")+1);
+}
+
+string getFilename(string fullpath)
+{
+	if (fullpath.find("/")==std::string::npos) return fullpath;
+	if (fullpath.find_last_of("/")==fullpath.length()-1) return "";
+	return fullpath.substr(fullpath.find_last_of("/")+1);
+}
+
+string getDirectory(string fullpath)
+{
+	if (fullpath.find("/")==std::string::npos) return "";
+	return fullpath.substr(0, fullpath.find_last_of("/"));
+
 }
 
 // Helpful function ))

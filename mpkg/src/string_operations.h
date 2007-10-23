@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.13 2007/08/02 10:39:13 i27249 Exp $
+ * $Id: string_operations.h,v 1.14 2007/10/23 22:43:55 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -17,6 +17,10 @@ string humanizeSize(string size);
 string humanizeSize(double size);
 unsigned int fl2ul(float input);
 string adjustStringWide(string input, unsigned int char_width, string prefix="");
+
+string getExtension(string filename);
+string getFilename(string fullpath);
+string getDirectory(string fullpath);
 
 class mstring
 {

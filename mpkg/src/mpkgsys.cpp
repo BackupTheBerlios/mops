@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.49 2007/10/22 23:12:27 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.50 2007/10/23 22:43:55 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -60,13 +60,15 @@ int mpkgSys::build_package(string out_directory, bool source)
 		{
 			
 			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getBuild();
-	    		say(_("Packing source package to %s%s.src\n"), out_directory.c_str(), pkgname.c_str());
-			system("tar -cf " + out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".src *");
+	    		say(_("Packing source package to %s%s.spkg\n"), out_directory.c_str(), pkgname.c_str());
+			sleep(2);
+			system("tar -cf " + out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".spkg *");
 		}
 		else {
 
 			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
-			say(_("Packing source package to %s%s.src\n"), out_directory.c_str(), pkgname.c_str());
+			say(_("Packing binary package to %s%s.tgz\n"), out_directory.c_str(), pkgname.c_str());
+			sleep(2);
 			system("makepkg -l y -c n " + out_directory + pkgname+".tgz");
 		}
 	}

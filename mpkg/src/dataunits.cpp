@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.74 2007/10/21 01:45:31 i27249 Exp $
+	$Id: dataunits.cpp,v 1.75 2007/10/23 22:43:55 i27249 Exp $
 */
 
 
@@ -817,6 +817,11 @@ vector<FILES>* PACKAGE::get_files()
 vector<FILES>* PACKAGE::get_config_files()
 {
 	return &config_files;
+}
+
+vector<FILES>* PACKAGE::get_temp_files()
+{
+	return &temp_files;
 }
 
 
