@@ -1,10 +1,11 @@
-// $Id: package.h,v 1.2 2007/10/23 22:43:55 i27249 Exp $
+// $Id: package.h,v 1.1 2007/10/24 22:00:12 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
-#include <mpkg/libmpkg.h>
+#include "libmpkg.h"
 enum {
 	DATATYPE_UNKNOWN = 0,
+	DATATYPE_NEW,
 	DATATYPE_BINARYPACKAGE,
 	DATATYPE_SOURCEPACKAGE,
 	DATATYPE_XML,

@@ -10,8 +10,8 @@ INCLUDEPATH += .
 
 # Input
 LIBS += -lmpkg
-HEADERS += mainwindow.h package.h
+HEADERS += mainwindow.h
 FORMS += package_builder.ui
-SOURCES += main.cpp mainwindow.cpp package.cpp
+SOURCES += main.cpp mainwindow.cpp
 INCPATH += /usr/include/libxml2
 

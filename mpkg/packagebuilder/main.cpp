@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.14 2007/10/23 22:43:55 i27249 Exp $
+ *     $Id: main.cpp,v 1.15 2007/10/24 22:00:12 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -23,25 +23,10 @@ int main(int argc, char *argv[])
 	translator.load("/usr/share/mpkg/packagebuilder_ru");
 	app.installTranslator(&translator);
 
-     	Form *mw=NULL;
-	if (argc == 2)
-	{
-		// Mean that we have such argument
-		string arg = argv[1];
-		if (arg.find("data.xml")==arg.length()-strlen("data.xml"))
-		{
-			mw = new Form (0, TYPE_XML, arg);
-			printf("data.xml found\n");
-			// We have data.xml as argument
-		}
-		if (arg.find(".tgz")==arg.length()-strlen(".tgz"))
-		{
-			mw = new Form(0,TYPE_TGZ, arg);
-			printf(".tgz found\n");
-			// We have an archive as argument
-		}
-	}
-	else mw = new Form;
+	string arg;
+	if (argc == 2) arg=argv[1];
+	
+     	Form *mw=new Form(0,arg);
 
 
 	//mw->show();

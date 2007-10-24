@@ -1,14 +1,13 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.14 2007/10/23 22:43:55 i27249 Exp $
+ * $Id: mainwindow.h,v 1.15 2007/10/24 22:00:12 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
 #define MV_H
 #include "ui_package_builder.h"
 #include <mpkg/libmpkg.h>
-#include "package.h"
 typedef enum {
        	TYPE_NONE=0,
 	TYPE_TGZ,
@@ -26,16 +25,17 @@ class Form: public QWidget
 {
 	Q_OBJECT
 	public:
-		Form (QWidget *parent = 0, TargetType type=TYPE_NONE, string arg="");
+		Form (QWidget *parent = 0, string arg="");
 	public slots:
 		void loadData();
-		void saveData();
+		//void saveData();
 
 		void loadFile(QString filename);
 		void saveFile();
 		void addConfigFile();
 		void deleteConfigFile();
 		void searchConfigFile();
+		void searchTempFile();
 		void addTag();
 		void addDependency();
 		void deleteTag();
@@ -65,15 +65,10 @@ class Form: public QWidget
 		void deleteKey();
 	public:
 		Ui::Form ui;
-		bool xmlExists;
 	private:
-		TargetType _type;
 		string _arg;
 		std::vector<QString> short_description;
 		std::vector<QString> description;
-		QString xmlFilename;
-		QString pkgRoot;
-		std::string _tmpdir;
 		bool modified;
 		vector<string> patchList;
 		vector<keys> keyList;

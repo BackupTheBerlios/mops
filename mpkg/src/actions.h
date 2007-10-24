@@ -35,6 +35,6 @@
 #define ACT_REINSTALL	0x21
 #define ACT_UPDATEALL	0x22
 #define ACT_LISTGROUPS	0x23
-
+#define ACT_BUILD	0x24
 #endif
 

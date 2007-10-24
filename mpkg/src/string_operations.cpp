@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.15 2007/10/23 22:43:55 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.16 2007/10/24 22:00:12 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -25,6 +25,14 @@ void PrepareSql(string *str)
 		offset = offset + last_pos + 2;
 	}
 	
+}
+
+string getAbsolutePath(string directory)
+{
+	string cwd = get_current_dir_name();
+	// Костыль-mode
+	if (directory.find("/")==0) return directory; // Already absolute
+	return cwd + directory;
 }
 
 string getExtension(string filename)

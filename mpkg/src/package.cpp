@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.2 2007/10/23 22:43:55 i27249 Exp $
+// $Id: package.cpp,v 1.1 2007/10/24 22:00:12 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -29,7 +29,9 @@ bool BinaryPackage::fileOk()
 }
 bool BinaryPackage::createWorkingDirectory()
 {
+	printf("Creating working dir\n");
 	pkg_dir = get_tmp_file();
+	printf("dir created in %s\n", pkg_dir.c_str());
 	unlink(pkg_dir.c_str());
 	if (mkdir(pkg_dir.c_str(), 755)!=0) {
 		extracted=false;
@@ -104,8 +106,9 @@ bool BinaryPackage::packFile(string output_directory)
 		}
 		else output_directory = getDirectory(input_file);
 	}
-	if (system("(cd " + pkg_dir+"; buildpkg " + output_directory+")")==0) {
-		if (!oldinput.empty()) unlink(oldinput.c_str());
+	
+	if (system("(cd " + pkg_dir+"; buildpkg " + getAbsolutePath(output_directory)+")")==0) {
+		//if (!oldinput.empty()) unlink(oldinput.c_str());
 		return true;
 	}
 	else {
@@ -120,6 +123,7 @@ string BinaryPackage::getExtractedPath()
 }
 string BinaryPackage::getDataFilename()
 {
+	printf("pkg_dir=%s\n", pkg_dir.c_str());
 	return pkg_dir+"/install/data.xml";
 }
 
@@ -362,8 +366,8 @@ bool SourcePackage::packFile(string output_directory)
 		}
 		else output_directory = getDirectory(input_file);
 	}
-	if (system("(cd " + pkg_dir+"; buildsrcpkg " + output_directory+")")==0) {
-		if (!oldinput.empty()) unlink(oldinput.c_str());
+	if (system("(cd " + pkg_dir+"; buildsrcpkg " + getAbsolutePath(output_directory)+")")==0) {
+		//if (!oldinput.empty()) unlink(oldinput.c_str());
 		return true;
 	}
 	else {

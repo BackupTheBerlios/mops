@@ -1,10 +1,10 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.50 2007/10/23 22:43:55 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.51 2007/10/24 22:00:12 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
-
+#include "package.h"
 string output_dir;
 
 // Cleans system cache
@@ -43,6 +43,10 @@ int mpkgSys::unqueue(int package_id, mpkgDatabase *db)
 
 int mpkgSys::build_package(string out_directory, bool source)
 {
+
+	if (source) printf("Building in [%s], source package\n", out_directory.c_str());
+	if (!source) printf("Building in [%s], binary package\n", out_directory.c_str());
+
 	string pkgname;
 	if (out_directory.empty()) out_directory = "./";
 	if (out_directory[out_directory.length()-1]!='/') out_directory+="/";
@@ -58,17 +62,16 @@ int mpkgSys::build_package(string out_directory, bool source)
 		}
 		if (source)
 		{
-			
 			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getBuild();
 	    		say(_("Packing source package to %s%s.spkg\n"), out_directory.c_str(), pkgname.c_str());
-			sleep(2);
-			system("tar -cf " + out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".spkg *");
+			string n = out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".spkg";
+			unlink(n.c_str());
+			system("ls -la && tar -cf " + out_directory + p.getName()+"-"+p.getVersion()+"-"+p.getBuild()+".spkg *");
 		}
 		else {
 
 			pkgname =  p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild();
 			say(_("Packing binary package to %s%s.tgz\n"), out_directory.c_str(), pkgname.c_str());
-			sleep(2);
 			system("makepkg -l y -c n " + out_directory + pkgname+".tgz");
 		}
 	}
@@ -76,9 +79,9 @@ int mpkgSys::build_package(string out_directory, bool source)
 		mError("No XML data, cannot build package");
 		return -1;
 	}
+	say(_("Package was built to %s/%s\n"), out_directory.c_str(), pkgname.c_str());
     	return 0;
 }
-
 int mpkgSys::update_repository_data(mpkgDatabase *db)//, DependencyTracker *DepTracker)
 {
 	actionBus.clear();
@@ -217,10 +220,22 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 {
 
 	*package_name="";
-	PackageConfig p(file_url);
+	SourcePackage spkg;
+	if (!spkg.setInputFile(file_url))
+	{
+		mError("Source build: file not found");
+		return -1;
+	}
+	if (!spkg.unpackFile())
+	{
+		mError("Source build: error extracting package");
+		return -2;
+	}
+
+	PackageConfig p(spkg.getDataFilename());
 	if (!p.parseOk) {
-		printf("Invalid mbuild\n");
-		return -4;
+		printf("Source build: invalid XML data\n");
+		return -3;
 	}
 
 
@@ -240,7 +255,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	// Directories
 	string currentdir=get_current_dir_name();	
 	string pkgdir = "/tmp/package-"+p.getName();
-	string dldir="/tmp/build-"+p.getName();
+	string dldir=spkg.getExtractedPath();
 	// Setting source directory
 	string srcdir=p.getBuildSourceRoot();
 	if (srcdir.empty())	{
@@ -254,10 +269,19 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	string dl_command;
 	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
 	else {
-		if (FileExists(url)) dl_command="cp -v " + url + " .";
+		if (url.find("/")==0) {
+			if (FileExists(url)) dl_command="cp -v " + url + " .";
+			else {
+				mError(_("Source file doesn't exist, aborting"));
+				return -5;
+			}
+		}
 		else {
-			mError(_("Source file doesn't exist, aborting"));
-			return -5;
+			if (FileExists(dldir+"/"+url)) dl_command="";
+			else {
+				mError(_("Source file doesn't exist"));
+				return -5;
+			}
 		}
 	}
 	vector<string> key_names = p.getBuildKeyNames();
@@ -266,7 +290,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	string build_system = p.getBuildSystem();
 	int max_numjobs = atoi(p.getBuildMaxNumjobs().c_str());
 	string numjobs="6";
-	if (max_numjobs<6) numjobs = IntToStr(max_numjobs); // Temp solution
+	if (max_numjobs<6 && max_numjobs !=0) numjobs = IntToStr(max_numjobs); // Temp solution
 	string march=p.getBuildOptimizationMarch();
 	string mtune=p.getBuildOptimizationMtune();
 	string olevel=p.getBuildOptimizationLevel();
@@ -315,21 +339,21 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	}
 
 	// Preparing environment. Clearing old directories
-	system("rm -rf " + dldir);
-	if (system("mkdir " + dldir)!=0) {
-		mError(_("Cannot create build directory, aborting"));
-		return -1;
-	}
 	system("rm -rf " + pkgdir);	
-	system("mkdir -p " + pkgdir+"/install");
+	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
 
 	// Downloading/copying sources
-	system("(cd " + dldir+"; "+dl_command+")");
+	if (!dl_command.empty()) {
+		if (system("(cd " + dldir+"; "+dl_command+")")!=0) {
+			mError("Error retrieving sources, build failed");
+			return -6;
+		}
+	}
 	
 	// Extracting the sources
 	if (system("(cd " + dldir+"; tar " + tar_args + " " + filename+")")!=0) {
 		mError(_("Tar was failed to extract the received source package"));
-		return 3;
+		return -7;
 	}
 	string cflags="'";
        	if (!march.empty()) cflags += " -march="+march;
@@ -367,11 +391,13 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 		was_prev=true;
 	}
 	compile_cmd+=")";
-	system(compile_cmd);
+	if (system(compile_cmd)!=0) {
+		mError("Build failed. Check the build config");
+		return -7;
+	}
 	
-	system("cp " + file_url + " " + pkgdir+"/install/data.xml");
-	system("(cd " + pkgdir+"; buildpkg; mkdir -p " + (string) PACKAGE_OUTPUT + "; cp -f " + pkg_name + " " + (string) PACKAGE_OUTPUT +")");
-	*package_name=pkgdir+"/"+pkg_name;
+	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
+	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
 
 	return 0;
 }
@@ -413,7 +439,7 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 
 	else
 	{
-		if (package_name.find(".mbuild")==package_name.length()-strlen(".mbuild"))
+		if (getExtension(package_name)=="spkg")
 		{
 			if (emerge_package(package_name, &package_name)!=0 || !FileExists(package_name)) {
 				mError(_("Cannot build this mbuild"));

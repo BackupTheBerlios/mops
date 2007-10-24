@@ -4,11 +4,12 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.72 2007/10/22 23:12:27 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.73 2007/10/24 22:00:12 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
 #include "dialog.h"
+#include "mpkgsys.h"
 const char* program_name;
 extern char* optarg;
 extern int optind, opterr, optopt;
@@ -29,7 +30,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.3";
+	char *version="0.12.4";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -62,8 +63,8 @@ int main (int argc, char **argv)
 	}
 	if ((string) argv[0] == "buildpkg")
 	{
-		if (argc==2) core.build_package(argv[1],false);
-		if (argc==1) core.build_package(false);
+		if (argc==2) core.build_package((string) argv[1],false);
+		if (argc==1) core.build_package((string) "", false);
 		if (argc>2) {
 			printf(_("Too many arguments\n"));
 			printf(_("Usage: buildpkg [output_directory]\n"));
@@ -452,7 +453,22 @@ int main (int argc, char **argv)
 	}
 
 
-
+	if (action == ACT_BUILD)
+	{
+		if (argc<=optind) return print_usage(stderr,1);
+		string s_pkg;
+		for (int i=optind; i < argc; i++)
+		{
+			s_pkg = argv[i];
+			if (mpkgSys::emerge_package(s_pkg, &s_pkg)!=0) {
+				mError("One of the packages failed to build, stopping");
+				delete_tmp_files();
+				return 0;
+			}
+		}
+		delete_tmp_files();
+		return 0;
+	}
 
 	if (action == ACT_INSTALL || action == ACT_UPGRADE || action == ACT_REINSTALL)
 	{
@@ -1268,6 +1284,7 @@ int check_action(char* act)
 		&& _act != "reinstall"
 		&& _act != "upgradeall"
 		&& _act != "listgroups"
+		&& _act != "build"
 		) {
 		res = -1;
 	}
@@ -1363,6 +1380,8 @@ int setup_action(char* act)
 		return ACT_INSTALLGROUP;
 	if (_act == "removegroup")
 		return ACT_REMOVEGROUP;
+	if (_act == "build")
+		return ACT_BUILD;
 
 	return ACT_NONE;
 }

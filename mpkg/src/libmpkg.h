@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.33 2007/10/22 23:12:27 i27249 Exp $
+ * $Id: libmpkg.h,v 1.34 2007/10/24 22:00:12 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -23,9 +23,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <getopt.h>
-
+#include "package.h"
 // Package working tool =)
 void generateDeps(string tgz_filename);
+
 // Main class - use only this one while using the library
 class mpkg
 {
