@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.35 2007/10/24 22:00:12 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.36 2007/10/25 00:06:44 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -28,6 +28,9 @@ Form::Form(QWidget *parent, string arg)
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 
 // Build options UI switches
+
+	connect(ui.envOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchEnvField(int)));
+	switchEnvField(ui.envOptionsCheckBox->checkState());
 	connect(ui.configureCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchConfigureField(int)));
 	switchConfigureField(ui.configureCheckBox->checkState());
 	connect(ui.compilationCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchCompilationField(int)));
@@ -175,6 +178,17 @@ void Form::loadFile(QString filename)
 		ui.customScriptTextEdit->setText(ReadFile(script_file).c_str());
 	}
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+
+	if (p->getBuildConfigureEnvOptions().empty())
+	{
+		ui.envOptionsEdit->clear();
+		ui.envOptionsCheckBox->setCheckState(Qt::Unchecked);
+	}
+	else
+	{
+		ui.envOptionsCheckBox->setCheckState(Qt::Checked);
+		ui.envOptionsEdit->setText(p->getBuildConfigureEnvOptions().c_str());
+	}
 
 
 	if (p->getBuildOptimizationMarch().empty())
@@ -553,7 +567,11 @@ void Form::saveFile()
 			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("true");
 		else   	
 			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("false");
-		
+		if (ui.envOptionsCheckBox->checkState()==Qt::Checked)
+		{
+			node.getChildNode("mbuild").addChild("env_options");
+			node.getChildNode("mbuild").getChildNode("env_options").addText(ui.envOptionsEdit->text().toStdString().c_str());
+		}
 		node.getChildNode("mbuild").addChild("configuration");
 		for (unsigned int i=0; i<keyList.size(); i++)
 		{
@@ -834,7 +852,11 @@ void Form::quitApp()
 	else qApp->quit();
 }
 
-
+void Form::switchEnvField(int state)
+{
+	if (state==Qt::Checked) ui.envOptionsEdit->setEnabled(true);
+	else ui.envOptionsEdit->setEnabled(false);
+}
 void Form::switchConfigureField(int state)
 {
 	if (state==Qt::Checked) ui.configureEdit->setEnabled(true);

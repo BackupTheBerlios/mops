@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1085</width>
-    <height>778</height>
+    <width>1001</width>
+    <height>689</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -923,7 +923,7 @@
       <attribute name="icon" >
        <iconset>../../../usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
       </attribute>
-      <layout class="QVBoxLayout" >
+      <layout class="QHBoxLayout" >
        <item>
         <layout class="QHBoxLayout" >
          <item>
@@ -965,46 +965,6 @@
                  </widget>
                 </item>
                </layout>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
-            <widget class="QGroupBox" name="patchGroupBox" >
-             <property name="title" >
-              <string>Patches</string>
-             </property>
-             <layout class="QVBoxLayout" >
-              <item>
-               <layout class="QHBoxLayout" >
-                <item>
-                 <widget class="QLabel" name="patchLabel" >
-                  <property name="text" >
-                   <string>Patch (file/URL):</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLineEdit" name="patchEdit" />
-                </item>
-                <item>
-                 <widget class="QPushButton" name="patchAddButton" >
-                  <property name="text" >
-                   <string>Add</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="patchDeleteButton" >
-                  <property name="text" >
-                   <string>Delete</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item>
-               <widget class="QListWidget" name="patchListWidget" />
               </item>
              </layout>
             </widget>
@@ -1080,6 +1040,20 @@
                    </property>
                   </item>
                  </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QCheckBox" name="envOptionsCheckBox" >
+                  <property name="text" >
+                   <string>Environment options</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="envOptionsEdit" />
                 </item>
                </layout>
               </item>
@@ -1437,7 +1411,7 @@
                 <property name="sizeHint" >
                  <size>
                   <width>514</width>
-                  <height>31</height>
+                  <height>16</height>
                  </size>
                 </property>
                </spacer>
@@ -1450,26 +1424,51 @@
          <item>
           <layout class="QVBoxLayout" >
            <item>
+            <widget class="QGroupBox" name="patchGroupBox" >
+             <property name="title" >
+              <string>Patches</string>
+             </property>
+             <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="patchLabel" >
+                  <property name="text" >
+                   <string>Patch (file/URL):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="patchEdit" />
+                </item>
+                <item>
+                 <widget class="QPushButton" name="patchAddButton" >
+                  <property name="text" >
+                   <string>Add</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="patchDeleteButton" >
+                  <property name="text" >
+                   <string>Delete</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QListWidget" name="patchListWidget" />
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="QGroupBox" name="customScriptGroupBox" >
              <property name="title" >
               <string>Custom build script</string>
              </property>
              <layout class="QVBoxLayout" >
-              <item>
-               <widget class="QLabel" name="customScriptHelpLabel" >
-                <property name="text" >
-                 <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
-p, li { white-space: pre-wrap; }
-&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:7pt; font-weight:400; font-style:normal;">
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Please write a full building script. &lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Assume that you are starting from&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">the sources root.&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Predefined variables:&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$SRC&lt;/span> - sources root&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$PKG&lt;/span> - directory which should contain full package tree&lt;/p>&lt;/body>&lt;/html></string>
-                </property>
-               </widget>
-              </item>
               <item>
                <widget class="QTextEdit" name="customScriptTextEdit" />
               </item>
@@ -1493,7 +1492,7 @@ p, li { white-space: pre-wrap; }
                    </font>
                   </property>
                   <property name="text" >
-                   <string>key</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -1505,7 +1504,7 @@ p, li { white-space: pre-wrap; }
                    </font>
                   </property>
                   <property name="text" >
-                   <string>value</string>
+                   <string/>
                   </property>
                  </widget>
                 </item>

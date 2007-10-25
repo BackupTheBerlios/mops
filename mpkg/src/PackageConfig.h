@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.18 2007/10/21 01:45:31 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.19 2007/10/25 00:06:44 i27249 Exp $
  *
  * **********************************************************/
 
@@ -74,6 +74,7 @@ using namespace std;
 #define GET_PKG_MBUILD_CMD_MAKE ((const xmlChar *)"//mbuild/custom_commands/make")
 #define GET_PKG_MBUILD_CMD_MAKEINSTALL ((const xmlChar *)"//mbuild/custom_commands/make_install")
 
+#define GET_PKG_MBUILD_ENVOPTIONS ((const xmlChar *)"//mbuild/env_options")
 
 class PackageConfig
 {
@@ -132,6 +133,7 @@ public:
 	string getBuildOptimizationMtune(void);
 	string getBuildOptimizationLevel(void);
 	string getBuildOptimizationCustomGccOptions(void);
+	string getBuildConfigureEnvOptions(void);
 	string getBuildCmdConfigure(void);
 	string getBuildCmdMake(void);
 	string getBuildCmdMakeInstall(void);

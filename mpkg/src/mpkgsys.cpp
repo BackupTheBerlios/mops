@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.51 2007/10/24 22:00:12 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.52 2007/10/25 00:06:44 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -330,7 +330,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	{
 		printf("Using script");
 		configure_cmd.clear();
-		make_cmd = dldir+"/build.sh";
+		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir;
 		make_install_cmd.clear();
 	}
 	if (make_install_cmd.find("$DESTDIR")!=std::string::npos)
@@ -363,6 +363,11 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
        	cflags +="'";
 	if (cflags.length()<4) cflags.clear();
 	else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
+
+	cflags = p.getBuildConfigureEnvOptions() + " " + cflags;
+
+	vector<string> patchList = p.getBuildPatchList();
+
 	string compile_cmd;
 
 	bool was_prev=false;
@@ -391,6 +396,13 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 		was_prev=true;
 	}
 	compile_cmd+=")";
+
+	// Patching if any
+	for (unsigned int i=0; i<patchList.size(); i++)
+	{
+		system("(cd " + srcdir + "; zcat ../patches/" + patchList[i] + " | patch -p1 --verbose)");
+	}
+	// Compiling
 	if (system(compile_cmd)!=0) {
 		mError("Build failed. Check the build config");
 		return -7;

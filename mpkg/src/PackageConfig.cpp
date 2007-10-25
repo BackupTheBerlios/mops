@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.34 2007/10/21 01:45:31 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.35 2007/10/25 00:06:44 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -284,6 +284,25 @@ string PackageConfig::getVersion()
     } else {
         return EMPTY;
     }
+}
+
+string PackageConfig::getBuildConfigureEnvOptions()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_ENVOPTIONS);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD ENVOPTIONS = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+
 }
 
 string PackageConfig::getBuildUrl()
