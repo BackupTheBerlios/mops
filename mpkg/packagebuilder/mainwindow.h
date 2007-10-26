@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.16 2007/10/25 00:06:44 i27249 Exp $
+ * $Id: mainwindow.h,v 1.17 2007/10/26 01:26:24 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -64,6 +64,9 @@ class Form: public QWidget
 		void addPatch();
 		void deletePatch();
 		void deleteKey();
+
+		void embedSources();
+		void analyzeSources();
 	public:
 		Ui::Form ui;
 	private:

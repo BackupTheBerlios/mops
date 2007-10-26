@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.1 2007/10/24 22:00:12 i27249 Exp $
+// $Id: package.cpp,v 1.2 2007/10/26 01:26:25 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -15,6 +15,9 @@ BinaryPackage::BinaryPackage(string in_file)
 BinaryPackage::~BinaryPackage()
 {
 	if (extracted) printf("Warning! destroyed an package object without packing back. Probably you're lost your package...\n");
+	{
+		system("rm -rf " + pkg_dir);
+	}
 }
 
 bool BinaryPackage::isExtracted()
@@ -267,6 +270,12 @@ bool SourcePackage::embedSource(string filename)
 {
 	if (extracted) {
 		if (!source_filename.empty()) removeSource();
+		if (filename.find("http://")==0 || filename.find("ftp://")==0)
+		{
+			if (system("(cd " + pkg_dir + "/; wget " + filename+")")==0) return true;
+			else return false;
+		}
+			
 		if (filename.find("/")==std::string::npos) source_filename = filename;
 		else {
 			if (filename.find_last_of("/")<filename.length()-1) source_filename = filename.substr(filename.find_last_of("/")+1);
@@ -375,4 +384,105 @@ bool SourcePackage::packFile(string output_directory)
 		return false;
 	}
 }
+
+SourceFile::SourceFile() {}
+SourceFile::~SourceFile() {}
+
+void SourceFile::setUrl(string _url)
+{
+	url = _url;
+}
+
+bool SourceFile::download()
+{
+	filepath = get_tmp_file();
+	unlink(filepath.c_str());
+	mkdir(filepath.c_str(), 755);
+	if (url.find("http://")==0 || url.find("ftp://")==0) system("(cd " + filepath + "; wget " + url + ")");
+	system("(cd " + filepath + "; cp " + url + " .)");
+	filepath += "/" + getFilename(url);
+	return true;
+}
+
+bool SourceFile::analyze()
+{
+	type = getExtension(filepath);
+	string tar_args;
+	if (type=="gz") tar_args = " zxf ";
+	if (type == "bz2") tar_args = " jxf ";
+
+	system("(cd " + getDirectory(filepath) + "; tar " + tar_args + filepath+")");
+	DIR *dir = opendir(getDirectory(filepath).c_str());
+	if (!dir) return false;
+	vector<string> dir_containers;
+	struct dirent *dentry = readdir(dir);
+	string d;
+	while (dentry != NULL)
+	{
+		d = (string) dentry->d_name;
+		if (d!="." && d!=".." && d!=getFilename(filepath)) {
+			dir_containers.push_back((string)dentry->d_name);
+		}
+		dentry = readdir(dir);
+	}
+	closedir(dir);
+	if (dir_containers.size()>1) {
+		printf("contains too much elements (%d), ambiguity\n", dir_containers.size());
+	}
+
+	if (dir_containers.size()==0) printf("no elements\n");
+	if (dir_containers.size()==1) sourceDirectory = dir_containers[0];
+
+	string sdir = getDirectory(filepath) +"/"+ sourceDirectory;
+	dir = opendir(sdir.c_str());
+	dir_containers.clear();
+	dentry = readdir(dir);
+	while (dentry!=NULL)
+	{
+		dir_containers.push_back((string)dentry->d_name);
+		dentry = readdir(dir);
+
+	}
+
+	buildType = BUILDTYPE_SCRIPT;
+	for (unsigned int i=0; i<dir_containers.size(); i++)
+	{
+		if (dir_containers[i].find("CMakeLists")!=std::string::npos)
+		{
+			buildType = BUILDTYPE_CMAKE;
+		}
+		if (dir_containers[i].find("configure")!=std::string::npos)
+		{
+			buildType = BUILDTYPE_AUTOTOOLS;
+		}
+	}
+	return true;
+}
+
+string SourceFile::getType()
+{
+	return type;
+}
+
+int SourceFile::getBuildType()
+{
+	return buildType;
+}
+string SourceFile::getBuildTypeS()
+{
+	switch(buildType)
+	{
+		case BUILDTYPE_SCRIPT: return "Script";
+		case BUILDTYPE_AUTOTOOLS: return "Autotools";
+		case BUILDTYPE_CMAKE: return "CMake";
+		case BUILDTYPE_SCONS: return "SCons";
+		case BUILDTYPE_CUSTOM: return "Custom";
+	};
+	return "Unknown";
+}
+string SourceFile::getSourceDirectory()
+{
+	return sourceDirectory;
+}
+
 

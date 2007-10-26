@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.59 2007/10/22 23:12:27 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.60 2007/10/26 01:26:24 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -478,6 +478,13 @@ void dumpPackage(PACKAGE *p, string filename)
 		node.getChildNode("configfiles").addChild("conffile");
 		node.getChildNode("configfiles").getChildNode("conffile",i).addText(p->get_config_files()->at(i).get_name()->c_str());
 	}
+	node.addChild("tempfiles");
+	for (unsigned int i=0; i<p->get_temp_files()->size(); i++)
+	{
+		node.getChildNode("tempfiles").addChild("tempfile");
+		node.getChildNode("tempfiles").getChildNode("tempfile",i).addText(p->get_config_files()->at(i).get_name()->c_str());
+	}
+
 	node.writeToFile(filename.c_str());
 }
 
@@ -488,19 +495,16 @@ void generateDeps(string tgz_filename)
 	// Create a temporary directory
 	string tmpdir = get_tmp_file();
 	string dep_out = get_tmp_file();
-	//say("Creating temp directory in %s\n", tmpdir.c_str());
 	unlink(tmpdir.c_str());
 	system("mkdir -p " + tmpdir);
 	say("Extracting\n");
 	system("tar zxf " + tgz_filename + " -C " + tmpdir);
-	//say("Importing data\n");
 	PackageConfig p(tmpdir+"/install/data.xml");
 	PACKAGE pkg;
 	if (p.parseOk) xml2package(p.getXMLNode(), &pkg);
 	say("Building dependencies\n");
 	
 	system("requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
-	//say("Parsing\n");
 	vector<string> data = ReadFileStrings(dep_out);
 	
 	string tmp;
@@ -510,21 +514,16 @@ void generateDeps(string tgz_filename)
 	string condptr;
 	for (unsigned int i=0; i<data.size(); i++)
 	{
-	//	printf("parse cycle %d start\n",i);
 		tmp = data[i].substr(0,data[i].find_first_of(" "));
 		tail = data[i].substr(tmp.length()+1);
-	//	printf("dep name = [%s]\n",tmp.c_str());
 		d.set_package_name(&tmp);
 
 		tmp = tail.substr(0, tail.find_first_of(" "));
-	//	printf("tmp = [%s]\n", tmp.c_str());
 		tail = tail.substr(tmp.length()+1);
-	//	printf("dep condition = [%s]\n", tmp.c_str());
 		condptr=IntToStr(condition2int(hcondition2xml(tmp)));
 		d.set_condition(&condptr);
 
 		tmp = tail.substr(0,tail.find_first_of("-"));
-	//	printf("dep version = [%s]\n", tmp.c_str());
 		d.set_package_version(&tmp);
 		pkg.get_dependencies()->push_back(d);
 	}

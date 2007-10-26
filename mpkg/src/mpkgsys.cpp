@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.52 2007/10/25 00:06:44 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.53 2007/10/26 01:26:25 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -243,12 +243,12 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	// Setting input filename
 	
 	string url=p.getBuildUrl();
-	string filename=url.substr(url.find_last_of("/")+1);
-	string ext = url.substr(url.length()-3);
+	string filename=getFilename(url);//url.substr(url.find_last_of("/")+1);
+	string ext = getExtension(url);//url.substr(url.length()-3);
 	string tar_args;
 	if (ext=="bz2") tar_args="jxvf";
-	if (ext==".gz") tar_args="zxvf";
-	if (ext!="bz2" && ext!=".gz") {
+	if (ext=="gz") tar_args="zxvf";
+	if (ext!="bz2" && ext!="gz") {
 		printf("Unknown file extension %s\n", ext.c_str());
 		return 2;
 	}
@@ -258,9 +258,9 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	string dldir=spkg.getExtractedPath();
 	// Setting source directory
 	string srcdir=p.getBuildSourceRoot();
-	if (srcdir.empty())	{
+	if (srcdir.empty()) {
 		if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
-		if (ext==".gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
+		if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
 	}
 	else srcdir = dldir+"/"+srcdir;
 
@@ -342,6 +342,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	system("rm -rf " + pkgdir);	
 	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
 
+	if (FileExists(dldir+"/"+getFilename(url))) dl_command.clear();
 	// Downloading/copying sources
 	if (!dl_command.empty()) {
 		if (system("(cd " + dldir+"; "+dl_command+")")!=0) {
@@ -381,7 +382,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 		}
 	}
 	else {
-		compile_cmd = "(cd " + srcdir + "/build; mkdir -p build; cd build; "+cflags + " cmake ..; ";
+		compile_cmd = "(cd " + srcdir + "; mkdir -p build; cd build; "+cflags + " cmake ..; ";
 	}
 	if (!make_cmd.empty())	{
 		if (was_prev) compile_cmd += " && ";

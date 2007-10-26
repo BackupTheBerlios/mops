@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.1 2007/10/24 22:00:12 i27249 Exp $
+// $Id: package.h,v 1.2 2007/10/26 01:26:25 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -67,6 +67,37 @@ class SourcePackage: public BinaryPackage
 		bool setBuildScript(string script_text);
 		string readBuildScript();
 
+};
+
+enum {
+	BUILDTYPE_AUTOTOOLS = 0,
+	BUILDTYPE_SCONS,
+	BUILDTYPE_CMAKE,
+	BUILDTYPE_CUSTOM,
+	BUILDTYPE_SCRIPT
+};
+
+class SourceFile
+{
+	public:
+		SourceFile();
+		~SourceFile();
+		void setUrl(string _url);
+		bool download();
+		bool analyze();
+		
+		string getType();
+		int getBuildType();
+		string getBuildTypeS();
+		string getSourceDirectory();
+
+	private:
+		string url;
+		string filepath;
+
+		string type;
+		int buildType;
+		string sourceDirectory;
 };
 
 #endif

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.36 2007/10/25 00:06:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.37 2007/10/26 01:26:24 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -56,11 +56,31 @@ Form::Form(QWidget *parent, string arg)
 	connect(ui.patchDeleteButton, SIGNAL(clicked()), this, SLOT(deletePatch()));
 	connect(ui.keyDeleteButton, SIGNAL(clicked()), this, SLOT(deleteKey()));
 
+	connect(ui.downloadAnalyzeButton, SIGNAL(clicked()), this, SLOT(analyzeSources()));
+
+
 	this->show();
 	loadFile(arg.c_str());
 }
 
+void Form::embedSources()
+{
+	sourcePackage.embedSource(ui.urlEdit->text().toStdString());
+	for (unsigned int i=0; i<patchList.size(); i++)
+	{
+		sourcePackage.embedPatch(patchList[i]);
+	}
+}
 
+void Form::analyzeSources()
+{
+	SourceFile sFile;
+	sFile.setUrl(ui.urlEdit->text().toStdString());
+	sFile.download();
+	sFile.analyze();
+	ui.buildingSystemComboBox->setCurrentIndex(sFile.getBuildType());
+	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+}
 
 string cleanDescr(string str)
 {
@@ -126,6 +146,9 @@ void Form::loadFile(QString filename)
 				mError("Error parsing XML data");
 				return;
 			}
+			ui.sourcePackageRadioButton->setChecked(false);
+			ui.binaryPackageRadioButton->setChecked(true);
+			ui.packageTypeGroupBox->setEnabled(false);
 			break;
 
 		case DATATYPE_SOURCEPACKAGE:
@@ -143,6 +166,10 @@ void Form::loadFile(QString filename)
 				mError("Error parsing XML data");
 				return;
 			}
+			ui.sourcePackageRadioButton->setChecked(true);
+			ui.binaryPackageRadioButton->setChecked(false);
+			ui.packageTypeGroupBox->setEnabled(false);
+
 			break;
 		case DATATYPE_XML:
 			p = new PackageConfig(filename.toStdString());
@@ -614,6 +641,7 @@ void Form::saveFile()
 			printf("BinPack complete\n");
 			break;
 		case DATATYPE_SOURCEPACKAGE:
+			if (ui.embedSourcesCheckBox->isChecked()) embedSources();
 			sourcePackage.packFile(out_dir.toStdString());
 			printf("SrcPack complete\n");
 			break;

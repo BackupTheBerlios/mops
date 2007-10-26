@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.73 2007/10/24 22:00:12 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.74 2007/10/26 01:26:24 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -30,7 +30,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.4";
+	char *version="0.12.5";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -561,6 +561,14 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
+		SourceFile sfile;
+		sfile.setUrl("/root/src/libelf-0.8.10.tar.gz");
+		sfile.download();
+		sfile.analyze();
+		printf("Type :%s\n", sfile.getType().c_str());
+		printf("Build type: %s\n", sfile.getBuildTypeS().c_str());
+		printf("Source directory: %s\n", sfile.getSourceDirectory().c_str());
+		return 0;
 #ifdef RELEASE
 		return print_usage(stderr,1);
 #else
