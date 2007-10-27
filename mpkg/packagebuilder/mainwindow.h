@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.17 2007/10/26 01:26:24 i27249 Exp $
+ * $Id: mainwindow.h,v 1.18 2007/10/27 15:09:46 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -67,9 +67,13 @@ class Form: public QWidget
 
 		void embedSources();
 		void analyzeSources();
+
+		void editBuildScriptWithGvim();
+		void loadBuildScriptFromFile();
 	public:
 		Ui::Form ui;
 	private:
+		string tempScriptEditFile;
 		string _arg;
 		std::vector<QString> short_description;
 		std::vector<QString> description;

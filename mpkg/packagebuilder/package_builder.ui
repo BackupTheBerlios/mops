@@ -23,7 +23,7 @@
        <string>Package description and metadata</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -921,7 +921,7 @@
        <string>Building options</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
       </attribute>
       <layout class="QHBoxLayout" >
        <item>
@@ -961,6 +961,9 @@
                  <widget class="QPushButton" name="downloadAnalyzeButton" >
                   <property name="text" >
                    <string>Download and analyze</string>
+                  </property>
+                  <property name="icon" >
+                   <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1446,6 +1449,9 @@
                   <property name="text" >
                    <string>Add</string>
                   </property>
+                  <property name="icon" >
+                   <iconset/>
+                  </property>
                  </widget>
                 </item>
                 <item>
@@ -1469,6 +1475,46 @@
               <string>Custom build script</string>
              </property>
              <layout class="QVBoxLayout" >
+              <item>
+               <layout class="QHBoxLayout" >
+                <item>
+                 <widget class="QLabel" name="label_8" >
+                  <property name="text" >
+                   <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:7pt; font-weight:400; font-style:normal;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Note: the script will receive two arguments:&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;">$1&lt;span style=" font-weight:400;"> - install destination&lt;/span>&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$2&lt;/span> - package source root&lt;/p>&lt;/body>&lt;/html></string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QVBoxLayout" >
+                  <item>
+                   <widget class="QPushButton" name="loadScriptFromFileButton" >
+                    <property name="text" >
+                     <string>Load from file...</string>
+                    </property>
+                    <property name="icon" >
+                     <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="editWithGvimButton" >
+                    <property name="text" >
+                     <string>Edit with gvim</string>
+                    </property>
+                    <property name="icon" >
+                     <iconset>/usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </item>
               <item>
                <widget class="QTextEdit" name="customScriptTextEdit" />
               </item>
@@ -1548,7 +1594,7 @@
        <string>Installation scripts</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -1748,6 +1794,9 @@
        <property name="text" >
         <string>Open...</string>
        </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
@@ -1766,7 +1815,10 @@
      <item>
       <widget class="QPushButton" name="BuildButton" >
        <property name="text" >
-        <string>Save XML</string>
+        <string>Save package</string>
+       </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -1775,12 +1827,18 @@
        <property name="text" >
         <string>Save and quit</string>
        </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="quitButton" >
        <property name="text" >
         <string>Quit</string>
+       </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
        </property>
       </widget>
      </item>

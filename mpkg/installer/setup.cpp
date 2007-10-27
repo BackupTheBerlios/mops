@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.52 2007/10/08 23:38:49 i27249 Exp $
+ * $Id: setup.cpp,v 1.53 2007/10/27 15:09:46 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -90,7 +90,6 @@ vector<TagPair> getDevList()
 							tmpDevice->model + (string) ", " + \
 							IntToStr((tmpDevice->length * tmpDevice->sector_size/1048576)/1024) + \
 							" Gb"));
-				//printf("Found device %s with type %d\n", tmpDevice->path, tmpDevice->type);
 			}
 
 		}

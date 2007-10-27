@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.53 2007/10/26 01:26:25 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.54 2007/10/27 15:09:46 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -267,8 +267,9 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	// Setting output package name
 	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
 	string dl_command;
+	if (url.find("cvs ")==0 || url.find("svn ")==0 || url.find("git-clone ")==0) dl_command = url;
 	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
-	else {
+	if (dl_command.empty()) {
 		if (url.find("/")==0) {
 			if (FileExists(url)) dl_command="cp -v " + url + " .";
 			else {

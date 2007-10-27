@@ -159,7 +159,6 @@ try_mount:
 			if (mret!=0)
 			{
 				mDebug("Mount failed with return code "+ IntToStr(mret));
-				sleep(2);
 				CDROM_VOLUMELABEL = cdromVolName;
 				CDROM_DEVICENAME = CDROM_DEVICE;
 				if (dialogMode) 
@@ -525,7 +524,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 					else 
 					{
 						printf("Download error: %s\n", curl_easy_strerror(result));
-						sleep(2);
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;

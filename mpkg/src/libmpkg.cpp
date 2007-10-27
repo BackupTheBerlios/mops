@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.60 2007/10/26 01:26:24 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.61 2007/10/27 15:09:46 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -393,7 +393,6 @@ bool mpkg::repair(PACKAGE *package)
 	db->set_action(package->get_id(), ST_REPAIR);
 	return true;
 }
-			
 void mpkg::exportBase(string output_dir)
 {
 	say("Exporting data to %s directory\n",output_dir.c_str());
@@ -401,33 +400,17 @@ void mpkg::exportBase(string output_dir)
 	system("rm -rf " + output_dir+"; mkdir -p " + output_dir);
 	PACKAGE_LIST allPackages;
 	SQLRecord sqlSearch;
-//	sqlSearch.addField("package_installed", 1);
+	sqlSearch.addField("package_installed", 1);
 	get_packagelist(&sqlSearch, &allPackages);
-	PACKAGE *p;
-	mstring data;
 	say("Received %d packages\n",allPackages.size());
 	for (int i=0; i<allPackages.size(); i++)
 	{
-		data.clear();
-		p = allPackages.get_package(i);
-		say("[%d/%d] Exporting package %s\n",i+1,allPackages.size(),p->get_name()->c_str());
-		data = "PACKAGE NAME:\t" + *p->get_name() +"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build() +\
-			"\nCOMPRESSED PACKAGE SIZE:\t"+*p->get_compressed_size()+ \
-			"\nUNCOMPRESSED PACKAGE SIZE:\t"+*p->get_installed_size()+\
-			"\nPACKAGE LOCATION:\t/var/log/mount/"+*p->get_filename()+\
-			"\nPACKAGE DESCRIPTION:\n" + *p->get_name() + ":  " + *p->get_short_description()+\
-			"\nFILE LIST:\n";
-		db->get_filelist(p->get_id(), p->get_files());
-		for (unsigned int f=0; f<p->get_files()->size(); f++)
-		{
-			data+=*p->get_files()->at(f).get_name()+"\n";
-		}
-		data+="\n";
-		WriteFile(output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build(), data.s_str());
+		say("[%d/%d] Exporting package %s\n",i+1,allPackages.size(),allPackages.get_package(i)->get_name()->c_str());
+		db->exportPackage(output_dir, allPackages.get_package(i));
 	}
 }
 
-void dumpPackage(PACKAGE *p, string filename)
+void dumpPackage(PACKAGE *p, PackageConfig *pc, string filename)
 {
 	XMLNode node = XMLNode::createXMLTopNode("package");
 	node.addChild("name");
@@ -484,6 +467,104 @@ void dumpPackage(PACKAGE *p, string filename)
 		node.getChildNode("tempfiles").addChild("tempfile");
 		node.getChildNode("tempfiles").getChildNode("tempfile",i).addText(p->get_config_files()->at(i).get_name()->c_str());
 	}
+	node.addChild("mbuild");
+	if (!pc->getBuildUrl().empty())
+	{
+		node.getChildNode("mbuild").addChild("url");
+		node.getChildNode("mbuild").getChildNode("url").addText(pc->getBuildUrl().c_str());
+	}
+	if (!pc->getBuildPatchList().empty())
+	{
+		node.getChildNode("mbuild").addChild("patches");
+		for (unsigned int i=0; i<pc->getBuildPatchList().size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("patches").addChild("patch");
+			node.getChildNode("mbuild").getChildNode("patches").getChildNode("patch",i).addText(pc->getBuildPatchList().at(i).c_str());
+		}
+	}
+	if (!pc->getBuildSourceRoot().empty())
+	{
+		node.getChildNode("mbuild").addChild("sources_root_directory");
+		node.getChildNode("mbuild").getChildNode("sources_root_directory").addText(pc->getBuildSourceRoot().c_str());
+	}
+	if (!pc->getBuildSystem().empty())
+	{
+		node.getChildNode("mbuild").addChild("build_system");
+		{
+			node.getChildNode("mbuild").getChildNode("build_system").addText(pc->getBuildSystem().c_str());
+		}
+	}
+	if (!pc->getBuildMaxNumjobs().empty())
+	{
+		node.getChildNode("mbuild").addChild("max_numjobs");
+		node.getChildNode("mbuild").getChildNode("max_numjobs").addText(pc->getBuildMaxNumjobs().c_str());
+	}
+		
+	node.getChildNode("mbuild").addChild("optimization");
+	if (!pc->getBuildOptimizationMarch().empty()) {
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("march");
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("march").addText(pc->getBuildOptimizationMarch().c_str());
+	}
+	if (!pc->getBuildOptimizationMtune().empty()) {
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("mtune");
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("mtune").addText(pc->getBuildOptimizationMtune().c_str());
+	}
+	if (!pc->getBuildOptimizationLevel().empty()) {
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("olevel");
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("olevel").addText(pc->getBuildOptimizationLevel().c_str());
+	}
+	if (!pc->getBuildOptimizationCustomGccOptions().empty()) {
+		node.getChildNode("mbuild").getChildNode("optimization").addChild("custom_gcc_options");
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("custom_gcc_options").addText(pc->getBuildOptimizationCustomGccOptions().c_str());
+	}
+
+	node.getChildNode("mbuild").getChildNode("optimization").addChild("allow_change");
+	if (!pc->getBuildOptimizationCustomizable()) {
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("true");
+	}
+	else {
+		node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("false");
+	}
+
+	if (!pc->getBuildConfigureEnvOptions().empty())
+	{
+		node.getChildNode("mbuild").addChild("env_options");
+		node.getChildNode("mbuild").getChildNode("env_options").addText(pc->getBuildConfigureEnvOptions().c_str());
+	}
+	if (!pc->getBuildKeyNames().empty())
+	{
+		node.getChildNode("mbuild").addChild("configuration");
+	
+		for (unsigned int i=0; i<pc->getBuildKeyNames().size(); i++)
+		{
+			node.getChildNode("mbuild").getChildNode("configuration").addChild("key");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("name");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("name").addText(pc->getBuildKeyNames().at(i).c_str());
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).addChild("value");
+			node.getChildNode("mbuild").getChildNode("configuration").getChildNode("key",i).getChildNode("value").addText(pc->getBuildKeyValues().at(i).c_str());
+		}
+	}
+
+	if (!pc->getBuildCmdConfigure().empty() || !pc->getBuildCmdMake().empty() || !pc->getBuildCmdMakeInstall().empty())
+	{
+		node.getChildNode("mbuild").addChild("custom_commands");
+		if (!pc->getBuildCmdConfigure().empty())
+		{
+			node.getChildNode("mbuild").getChildNode("custom_commands").addChild("configure");
+			node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("configure").addText(pc->getBuildCmdConfigure().c_str());
+		}
+		if (!pc->getBuildCmdMake().empty())
+		{
+			node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make");
+			node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make").addText(pc->getBuildCmdMake().c_str());
+		}
+		if (!pc->getBuildCmdMakeInstall().empty())
+		{
+			node.getChildNode("mbuild").getChildNode("custom_commands").addChild("make_install");
+			node.getChildNode("mbuild").getChildNode("custom_commands").getChildNode("make_install").addText(pc->getBuildCmdMakeInstall().c_str());
+		}
+	}
+
 
 	node.writeToFile(filename.c_str());
 }
@@ -499,12 +580,13 @@ void generateDeps(string tgz_filename)
 	system("mkdir -p " + tmpdir);
 	say("Extracting\n");
 	system("tar zxf " + tgz_filename + " -C " + tmpdir);
-	PackageConfig p(tmpdir+"/install/data.xml");
+	PackageConfig *p = new PackageConfig(tmpdir+"/install/data.xml");
 	PACKAGE pkg;
-	if (p.parseOk) xml2package(p.getXMLNode(), &pkg);
+	if (p->parseOk) xml2package(p->getXMLNode(), &pkg);
+	delete p;
 	say("Building dependencies\n");
 	
-	system("requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
+	system("env LC_ALL=C requiredbuilder -n -v " + tgz_filename + " > "+ dep_out);
 	vector<string> data = ReadFileStrings(dep_out);
 	
 	string tmp;
@@ -527,7 +609,9 @@ void generateDeps(string tgz_filename)
 		d.set_package_version(&tmp);
 		pkg.get_dependencies()->push_back(d);
 	}
-	dumpPackage(&pkg, tmpdir+"/install/data.xml");
+	p = new PackageConfig(tmpdir+"/install/data.xml");
+	dumpPackage(&pkg, p, tmpdir+"/install/data.xml");
+	delete p;
 	system ("cd " + tmpdir + "; buildpkg; mv *.tgz " + current_dir + "/" +tgz_filename );
 	system("rm -rf " + tmpdir);
 	delete_tmp_files();

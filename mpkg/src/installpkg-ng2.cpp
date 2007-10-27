@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.74 2007/10/26 01:26:24 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.75 2007/10/27 15:09:46 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -543,7 +543,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_EXPORT)
 	{
-		string dest_dir="/var/log/packages/";
+		string dest_dir=SYS_ROOT+"/"+legacyPkgDir;
 		if (argc>optind) dest_dir=argv[optind];
 
 		core.exportBase(dest_dir);

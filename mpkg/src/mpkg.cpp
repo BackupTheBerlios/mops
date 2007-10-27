@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.114 2007/10/20 10:34:50 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.115 2007/10/27 15:09:46 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -645,7 +645,6 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		}
 		else {
 			mError(_("Installation error: file not found"));
-			sleep(2);
 			return MPKGERROR_FILEOPERATIONS;
 		}
 	}
@@ -842,12 +841,33 @@ int mpkgDatabase::install_package(PACKAGE* package)
 	}
 	sqlFlush();
 	mDebug("*********************************************\n*        Package installed sussessfully     *\n*********************************************");
+	exportPackage(SYS_ROOT+"/"+legacyPkgDir, package);
+
 	pData.increaseItemProgress(package->itemID);
-
-
 	return 0;
 }	//End of install_package
-
+void mpkgDatabase::exportPackage(string output_dir, PACKAGE *p)
+{
+	mstring data;
+	data = "PACKAGE NAME:\t" + *p->get_name() +"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build() +\
+		"\nCOMPRESSED PACKAGE SIZE:\t"+*p->get_compressed_size()+ \
+		"\nUNCOMPRESSED PACKAGE SIZE:\t"+*p->get_installed_size()+\
+		"\nPACKAGE LOCATION:\t/var/log/mount/"+*p->get_filename()+\
+		"\nPACKAGE DESCRIPTION:\n" + *p->get_name() + ":  " + *p->get_short_description()+\
+		"\nFILE LIST:\n";
+	get_filelist(p->get_id(), p->get_files());
+	for (unsigned int f=0; f<p->get_files()->size(); f++)
+	{
+		data+=*p->get_files()->at(f).get_name()+"\n";
+	}
+	data+="\n";
+	WriteFile(output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build(), data.s_str());
+}	
+void mpkgDatabase::unexportPackage(string output_dir, PACKAGE *p)
+{
+	string victim = output_dir+"/"+*p->get_name()+"-"+*p->get_version()+"-"+*p->get_arch()+"-"+*p->get_build();
+	unlink(victim.c_str());
+}
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
@@ -983,6 +1003,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		currentStatus = statusHeader + _("remove complete");
 		mDebug("Package removed sussessfully");
 		package->get_files()->clear();
+		unexportPackage(SYS_ROOT+"/"+legacyPkgDir, package);
 		return 0;
 	}
 	else

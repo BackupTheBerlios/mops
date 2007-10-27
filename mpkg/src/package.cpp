@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.2 2007/10/26 01:26:25 i27249 Exp $
+// $Id: package.cpp,v 1.3 2007/10/27 15:09:46 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -50,8 +50,12 @@ bool BinaryPackage::createFolderStructure()
 	if (extracted)
 	{
 		string _dinstall = pkg_dir + "/install";
-		if (mkdir(_dinstall.c_str(), 755)==0) return true;
-		else return false;
+		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
+		_dinstall = pkg_dir + "/build_data";
+		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
+		_dinstall = pkg_dir + "/patches";
+		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
+		return true;
 	}
 	else {
 		mError("Mmmm... Where to create, yep?");

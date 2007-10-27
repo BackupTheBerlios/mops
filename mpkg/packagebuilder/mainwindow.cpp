@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.37 2007/10/26 01:26:24 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.38 2007/10/27 15:09:46 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -29,6 +29,8 @@ Form::Form(QWidget *parent, string arg)
 
 // Build options UI switches
 
+	connect(ui.editWithGvimButton, SIGNAL(clicked()), this, SLOT(editBuildScriptWithGvim()));
+	connect(ui.loadScriptFromFileButton, SIGNAL(clicked()), this, SLOT(loadBuildScriptFromFile()));
 	connect(ui.envOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchEnvField(int)));
 	switchEnvField(ui.envOptionsCheckBox->checkState());
 	connect(ui.configureCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchConfigureField(int)));
@@ -195,14 +197,13 @@ void Form::loadFile(QString filename)
 	displayPatches();
 
 			// stub for script path
-	string script_file="/etc/rc.d/rc.local";
 	if (p->getBuildSystem()=="autotools") ui.buildingSystemComboBox->setCurrentIndex(0);
 	if (p->getBuildSystem()=="scons") ui.buildingSystemComboBox->setCurrentIndex(1);
 	if (p->getBuildSystem()=="cmake") ui.buildingSystemComboBox->setCurrentIndex(2);
 	if (p->getBuildSystem()=="custom") ui.buildingSystemComboBox->setCurrentIndex(3);
 	if (p->getBuildSystem()=="script") {
 		ui.buildingSystemComboBox->setCurrentIndex(4);
-		ui.customScriptTextEdit->setText(ReadFile(script_file).c_str());
+		ui.customScriptTextEdit->setText(sourcePackage.readBuildScript().c_str());
 	}
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
 
@@ -642,6 +643,7 @@ void Form::saveFile()
 			break;
 		case DATATYPE_SOURCEPACKAGE:
 			if (ui.embedSourcesCheckBox->isChecked()) embedSources();
+			sourcePackage.setBuildScript(ui.customScriptTextEdit->toPlainText().toStdString());
 			sourcePackage.packFile(out_dir.toStdString());
 			printf("SrcPack complete\n");
 			break;
@@ -652,6 +654,34 @@ void Form::saveFile()
 	if (!slack_required.empty()) WriteFile(xmlDir+"/slack-required", slack_required);
 }
 
+void Form::loadBuildScriptFromFile()
+{
+	QString importFileName = QFileDialog::getOpenFileName(this, tr("Select a script file"));
+	if (importFileName.isEmpty()) return;
+	if (!FileExists(importFileName.toStdString())) {
+		QMessageBox::warning(this, "Error importing script", "The specified file doesn't exist");
+		return;
+	}
+	ui.customScriptTextEdit->setPlainText(ReadFile(importFileName.toStdString()).c_str());
+}
+	
+
+void Form::editBuildScriptWithGvim()
+{
+	if (tempScriptEditFile.empty())
+	{
+		tempScriptEditFile = get_tmp_file();
+		WriteFile(tempScriptEditFile, ui.customScriptTextEdit->toPlainText().toStdString());
+		system("gvim " + tempScriptEditFile);
+		ui.editWithGvimButton->setText(tr("Finish editing with gvim"));
+	}
+	else {
+		ui.customScriptTextEdit->setPlainText(ReadFile(tempScriptEditFile).c_str());
+		unlink(tempScriptEditFile.c_str());
+		tempScriptEditFile.clear();
+		ui.editWithGvimButton->setText(tr("Edit with gvim"));
+	}
+}
 
 void Form::addTag(){
 	if (!ui.tagBox->currentText().isEmpty())
