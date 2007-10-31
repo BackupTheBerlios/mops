@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.49 2007/10/23 22:43:55 i27249 Exp $
+	$Id: dataunits.h,v 1.50 2007/10/31 01:52:38 i27249 Exp $
 */
 
 
@@ -193,6 +193,7 @@ class PACKAGE
 	int package_action;	
 	string package_md5;
 	string package_filename;
+	string package_betarelease;
 	int package_err_type;
 
 	// EXTERNAL DATA //
@@ -250,6 +251,8 @@ class PACKAGE
 	bool reachable(bool includeConfigFiles=false);	// ==(package_available || package_installed)
 	string *get_md5();
 	string *get_filename();
+	string *get_betarelease();
+	bool isBeta();
 	int get_err_type();
 
 	vector<FILES>* get_config_files();
@@ -287,6 +290,7 @@ class PACKAGE
 	void set_action(int new_action);
 	void set_md5(string *md5);
 	void set_filename(string *filename);
+	void set_betarelease(string *betarelease);
 	void set_err_type(int err);
 
 	void set_config_files(vector<FILES> *conf_files);

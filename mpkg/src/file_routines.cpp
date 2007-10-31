@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.45 2007/10/22 23:12:27 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.46 2007/10/31 01:52:38 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -34,6 +34,13 @@ bool lockDatabase()
 	}
 	WriteFile("/var/run/mpkg.lock", IntToStr(getpid()));
 	return true;
+}
+bool isDirectory(string dir_name)
+{
+	struct stat fStat;
+	stat(dir_name.c_str(), &fStat);
+	if (S_ISDIR(fStat.st_mode)) return true;
+	else return false;
 }
 
 bool unlockDatabase()

@@ -3,11 +3,12 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.49 2007/08/30 22:54:06 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.50 2007/10/31 01:52:38 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
 #include "dbstruct.h"
+const string MPKGTableVersion="1.1";
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
 	if (\
@@ -15,7 +16,9 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("select file_id, file_name, file_type, packages_package_id from files limit 1;")!=0 || \
 			sql_exec("select conflict_id, conflict_file_name, backup_file, conflicted_package_id from conflicts limit 1;")!=0 || \
 			sql_exec("select location_id, packages_package_id, server_url, location_path from locations limit 1;")!=0 || \
-			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, package_short_description, package_description, package_changelog, package_packager, package_packager_email, package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
+			sql_exec("select package_id, package_name, package_version, package_arch, package_build, package_compressed_size, package_installed_size, \
+					package_short_description, package_description, package_changelog, package_packager, package_packager_email, \
+					package_installed, package_configexist, package_action, package_md5, package_filename from packages limit 1;")!=0 || \
 			sql_exec("select tags_id, tags_name from tags limit 1;")!=0 || \
 			sql_exec("select tags_link_id, packages_package_id, tags_tag_id from tags_links limit 1;")!=0)
 		/* || \
@@ -29,6 +32,23 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 
 	else 
 	{
+		if (sql_exec("select version from mpkg_tableversion;")!=0)
+		{
+			// Mean we have an old 1.0 table version. Have to update!
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version 1.1 (current version: 1.0).\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+			sql_exec("create table mpkg_tableversion (version TEXT NOT NULL);");
+			sql_exec("insert into mpkg_tableversion values ('"+MPKGTableVersion+"');");
+			say(_("Database format has been upgraded to version %s\n"), MPKGTableVersion.c_str());
+			
+		}
+		if (sql_exec("select package_betarelease from packages limit 1;")!=0)
+		{
+			sql_exec("alter table packages add package_betarelease TEXT NULL;");
+			say(_("Added field package_betarelease to table packages\n"));
+		}
 		return true;
 	}
 }
@@ -42,7 +62,6 @@ int SQLiteDB::clear_table(string table_name)
 int get_sql_table_counter=0;
 int SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *cols)
 {
-	//printf("get_sql_table start\n");
 	get_sql_table_counter++;
 	char *errmsg=0;
 	mpkgErrorReturn errRet;
@@ -65,7 +84,6 @@ int SQLiteDB::get_sql_table (string *sql_query, char ***table, int *rows, int *c
 	free(errmsg);
 	sqlError=0;
 	sqlErrMsg.clear();
-	//printf("get_sql_table end\n");
 	return 0;
 }	
 
@@ -204,48 +222,30 @@ int SQLiteDB::get_sql_vtable(SQLTable *output, SQLRecord &fields, string &table_
 	sql_query=sql_action+" "+sql_fields.s_str()+" "+sql_from+" "+sql_where.s_str();
 	if (table_name=="packages") sql_query += " order by package_name;";
 	else sql_query += ";";
-	//mDebug("built sql query");
 #ifdef DEBUG
 	lastSQLQuery=sql_query;
 #endif
-	//mDebug("performing sql request");
 	int sql_ret=get_sql_table(&sql_query, &table, &rows, &cols);
-	//mDebug("sql request complete");
 	if (sql_ret==0)
 	{
-		//mDebug("sql ok, parsing output");
 		output->clear(); // Ensure that output is clean and empty
 		SQLRecord row; 	// One row of data
 		int field_num=0;
 		for (int current_row=1; current_row<=rows; current_row++)
 		{
-			//mDebug("parsing "+IntToStr(current_row)+" row (total " + IntToStr(rows) + ")");
-			/*
-			 * OLD BEHAVIOUR
-			 *
 			field_num=0;
 			row=fields;
 			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
 			{
-				*row.getValue(*fields.getFieldName(field_num)) = (string) table[value_pos];
-				field_num++;
-			}
-			*/
-
-			// New behaviour
-			field_num=0;
-			row=fields;
-			for (int value_pos=cols*current_row; value_pos<cols*(current_row+1); value_pos++)
-			{
-				*row.getValueI(field_num) = (string) table[value_pos];
+				if (table[value_pos]!=NULL) *row.getValueI(field_num) = table[value_pos];
+				else row.getValueI(field_num)->clear();
+				
 				field_num++;
 			}
 
 			output->addRecord(&row);
 		}
-		//mDebug("parse complete, cleanup");
 		sqlite3_free_table(table);
-		//mDebug("cleanup complete");
 		return 0;
 	}
 	else return sql_ret;
@@ -283,7 +283,8 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("package_configexist");// INTEGER NOT NULL,
 		fieldNames.push_back("package_action");// INTEGER NOT NULL,
 		fieldNames.push_back("package_md5");// TEXT NOT NULL,
-		fieldNames.push_back("package_filename");// NOT NULL
+		fieldNames.push_back("package_filename");// TEXT NOT NULL
+		fieldNames.push_back("package_betarelease");//TEXT NULL
 	}
 	
 	if(table_name=="files")

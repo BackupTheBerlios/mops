@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.2 2007/10/26 01:26:25 i27249 Exp $
+// $Id: package.h,v 1.3 2007/10/31 01:52:38 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -9,17 +9,20 @@ enum {
 	DATATYPE_BINARYPACKAGE,
 	DATATYPE_SOURCEPACKAGE,
 	DATATYPE_XML,
-	DATATYPE_CURRENTDIR
+	DATATYPE_DIR
 };
 class BinaryPackage
 {
 	public:
+
 		BinaryPackage();
 		BinaryPackage(string in_file);
 		~BinaryPackage();
 		bool isExtracted();
 		bool extracted;
 
+		bool usingDirectory;
+		bool importDirectory(string dirname);
 		bool createNew();
 		bool createWorkingDirectory();
 		bool createFolderStructure();
@@ -65,6 +68,8 @@ class SourcePackage: public BinaryPackage
 		bool removePatch(string patch_name); // specify patch filename (without path) to remove from structure
 
 		bool setBuildScript(string script_text);
+		bool isSourceEmbedded(string url);
+		bool isPatchEmbedded(string patch_name);
 		string readBuildScript();
 
 };

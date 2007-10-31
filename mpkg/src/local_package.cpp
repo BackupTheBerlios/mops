@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.71 2007/10/21 01:45:31 i27249 Exp $
+$Id: local_package.cpp,v 1.72 2007/10/31 01:52:38 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -53,6 +53,8 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 	*data->get_short_description()=p.getShortDescription();
 	mDebug("Retrieving changelog");
 	*data->get_changelog()=p.getChangelog();
+	mDebug("Retrieving betarelease");
+	*data->get_betarelease()=p.getBetarelease();
 	mDebug("Retrieving data, part 2");
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;

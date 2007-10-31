@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.19 2007/10/25 00:06:44 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.20 2007/10/31 01:52:38 i27249 Exp $
  *
  * **********************************************************/
 
@@ -41,6 +41,7 @@ using namespace std;
 #define GET_PKG_MAINT_EMAIL ((const xmlChar *)"//package/maintainer/email")
 #define GET_PKG_LOCATION ((const xmlChar *)"//package/location")
 #define GET_PKG_FILENAME ((const xmlChar *)"//package/filename")
+#define GET_PKG_BETARELEASE ((const xmlChar *)"//package/betarelease")
 #define GET_PKG_MD5 ((const xmlChar *)"//package/md5")
 #define GET_PKG_CHANGELOG ((const xmlChar *)"//package/changelog")
 #define GET_PKG_COMP_SIZE ((const xmlChar *)"//package/compressed_size")
@@ -87,6 +88,7 @@ public:
 
 	string getName(void);
 	string getVersion(void);
+	string getBetarelease(void);
 	string getArch(void);
 	string getBuild(void);
 	string getAuthorName(void);

@@ -4,13 +4,13 @@
 		mpkg-gui
 	</name>
 	<version>
-		0.12.5
+		0.12.7
 	</version>
 	<arch>
 		i486
 	</arch>
 	<build>
-		3
+		1
 	</build>
 	<description lang="en">
 		Пакет содержит графический менеджер пакетов и монитор обновлений
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.5
+				0.12.7
 			</version>
 		</dep>
 		<dep>

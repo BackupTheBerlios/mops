@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.115 2007/10/27 15:09:46 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.116 2007/10/31 01:52:38 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -236,11 +236,6 @@ i_actInput:
 	// Building action list
 	mDebug("Building action list");
 	actionBus.clear();
-	if (remove_list.size()>0)
-	{
-		actionBus.addAction(ACTIONID_REMOVE);
-		actionBus.setActionProgressMaximum(ACTIONID_REMOVE, remove_list.size());
-	}
 	if (install_list.size()>0)
 	{
 		actionBus.addAction(ACTIONID_CACHECHECK);
@@ -251,84 +246,19 @@ i_actInput:
 		actionBus.addAction(ACTIONID_MD5CHECK);
 		actionBus.setSkippable(ACTIONID_MD5CHECK, true);
 		actionBus.setActionProgressMaximum(ACTIONID_MD5CHECK, install_list.size());
+	}
+	if (remove_list.size()>0)
+	{
+		actionBus.addAction(ACTIONID_REMOVE);
+		actionBus.setActionProgressMaximum(ACTIONID_REMOVE, remove_list.size());
+	}
+	if (install_list.size()>0)
+	{
 		actionBus.addAction(ACTIONID_INSTALL);
 		actionBus.setActionProgressMaximum(ACTIONID_INSTALL, install_list.size());
 
 	}
 	// Done
-
-	mDebug("Building remove queue");
-	if (remove_list.size()>0)
-	{
-		actionBus.setCurrentAction(ACTIONID_REMOVE);
-
-		currentStatus = _("Looking for remove queue");
-			mDebug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
-		currentStatus = _("Removing ") + IntToStr(remove_list.size()) + _(" packages");
-		pData.setCurrentAction("Removing packages");
-	
-		int removeItemID=0;
-		for (int i=0; i<remove_list.size(); i++)
-		{
-			removeItemID=remove_list.get_package(i)->itemID;
-			pData.setItemState(removeItemID, ITEMSTATE_WAIT);
-			pData.setItemCurrentAction(removeItemID, _("Waiting"));
-			pData.resetIdleTime(removeItemID);
-			pData.setItemProgress(removeItemID, 0);
-			pData.setItemProgressMaximum(removeItemID,8);
-		}
-	
-		for (int i=0;i<remove_list.size();i++)
-		{
-			if (dialogMode)
-			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + _("] Removing package ") + \
-						*remove_list.get_package(i)->get_name() + "-" + \
-						remove_list.get_package(i)->get_fullversion(), 10,80, \
-						(unsigned int) round((double)(i)/(double)((double)(remove_list.size())/(double) (100))));
-			}	
-			delete_tmp_files();
-			actionBus.setActionProgress(ACTIONID_REMOVE,i);
-			if (actionBus._abortActions)
-			{
-				sqlFlush();
-				actionBus._abortComplete=true;
-				actionBus.setActionState(ACTIONID_REMOVE, ITEMSTATE_ABORTED);
-				return MPKGERROR_ABORTED;
-			}
-			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			for (int t=0; t<install_list.size(); t++)
-			{
-				if (*install_list.get_package(t)->get_name() == *remove_list.get_package(i)->get_name())
-				{
-					say(_("Updating package %s\n"), remove_list.get_package(i)->get_name()->c_str()); 
-					remove_list.get_package(i)->isUpdating=true;
-					break;
-				}
-			}
-			currentStatus = _("Removing package ") + *remove_list.get_package(i)->get_name();
-			if (remove_package(remove_list.get_package(i))!=0)
-			{
-				removeFailures++;
-				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Remove failed"));
-				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
-			}
-			else
-			{
-				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Removed"));
-				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
-			}
-
-			if (dialogMode) 
-				dialogItem.closeGauge();
-		
-		}
-		sqlSearch.clear();
-
-		clean_backup_directory();
-		actionBus.setActionState(ACTIONID_REMOVE);
-	}
-
 
 	currentStatus = _("Looking for install queue");
 
@@ -521,7 +451,85 @@ installProcess:
 		}
 		if (dialogMode) dialogItem.closeGauge();
 		actionBus.setActionState(ACTIONID_MD5CHECK);
+	}
+
+	mDebug("Building remove queue");
+	if (remove_list.size()>0)
+	{
+		actionBus.setCurrentAction(ACTIONID_REMOVE);
+
+		currentStatus = _("Looking for remove queue");
+			mDebug ("Calling REMOVE for "+IntToStr(remove_list.size())+" packages");
+		currentStatus = _("Removing ") + IntToStr(remove_list.size()) + _(" packages");
+		pData.setCurrentAction("Removing packages");
 	
+		int removeItemID=0;
+		for (int i=0; i<remove_list.size(); i++)
+		{
+			removeItemID=remove_list.get_package(i)->itemID;
+			pData.setItemState(removeItemID, ITEMSTATE_WAIT);
+			pData.setItemCurrentAction(removeItemID, _("Waiting"));
+			pData.resetIdleTime(removeItemID);
+			pData.setItemProgress(removeItemID, 0);
+			pData.setItemProgressMaximum(removeItemID,8);
+		}
+	
+		for (int i=0;i<remove_list.size();i++)
+		{
+			if (dialogMode)
+			{
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + _("] Removing package ") + \
+						*remove_list.get_package(i)->get_name() + "-" + \
+						remove_list.get_package(i)->get_fullversion(), 10,80, \
+						(unsigned int) round((double)(i)/(double)((double)(remove_list.size())/(double) (100))));
+			}	
+			delete_tmp_files();
+			actionBus.setActionProgress(ACTIONID_REMOVE,i);
+			if (actionBus._abortActions)
+			{
+				sqlFlush();
+				actionBus._abortComplete=true;
+				actionBus.setActionState(ACTIONID_REMOVE, ITEMSTATE_ABORTED);
+				return MPKGERROR_ABORTED;
+			}
+			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
+			for (int t=0; t<install_list.size(); t++)
+			{
+				if (*install_list.get_package(t)->get_name() == *remove_list.get_package(i)->get_name())
+				{
+					say(_("Updating package %s\n"), remove_list.get_package(i)->get_name()->c_str()); 
+					remove_list.get_package(i)->isUpdating=true;
+					break;
+				}
+			}
+			currentStatus = _("Removing package ") + *remove_list.get_package(i)->get_name();
+			if (remove_package(remove_list.get_package(i))!=0)
+			{
+				removeFailures++;
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Remove failed"));
+				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+			}
+			else
+			{
+				pData.setItemCurrentAction(remove_list.get_package(i)->itemID, _("Removed"));
+				pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_FINISHED);
+			}
+
+			if (dialogMode) 
+				dialogItem.closeGauge();
+		
+		}
+		sqlSearch.clear();
+
+		clean_backup_directory();
+		actionBus.setActionState(ACTIONID_REMOVE);
+	} // Done removing packages
+
+
+	if (install_list.size()>0)
+	{	
+		// Actually installing
+
 		actionBus.setCurrentAction(ACTIONID_INSTALL);
 		pData.resetItems(_("waiting"), 0, 1, ITEMSTATE_WAIT);
 	

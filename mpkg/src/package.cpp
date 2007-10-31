@@ -1,15 +1,19 @@
-// $Id: package.cpp,v 1.3 2007/10/27 15:09:46 i27249 Exp $
+// $Id: package.cpp,v 1.4 2007/10/31 01:52:38 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
 {
 	extracted=false;
+
+	usingDirectory=false;
 }
 
 BinaryPackage::BinaryPackage(string in_file)
 {
 	extracted=false;
 	input_file = in_file;
+
+	usingDirectory=false;
 }
 
 BinaryPackage::~BinaryPackage()
@@ -27,6 +31,7 @@ bool BinaryPackage::isExtracted()
 
 bool BinaryPackage::fileOk()
 {
+	if (usingDirectory) return true;
 	if (access(input_file.c_str(), R_OK)==0) return true;
 	else return false;
 }
@@ -45,16 +50,25 @@ bool BinaryPackage::createWorkingDirectory()
 	       	return true;
 	}
 }
+bool BinaryPackage::importDirectory(string dirname)
+{
+	usingDirectory=true;
+	pkg_dir = dirname;
+	extracted=true;
+	return true;
+}
 bool BinaryPackage::createFolderStructure()
 {
+	string prefix;
 	if (extracted)
 	{
 		string _dinstall = pkg_dir + "/install";
 		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
-		_dinstall = pkg_dir + "/build_data";
+		//if (sourceBased) prefix="/install";
+	/*	_dinstall = pkg_dir + prefix+"/build_data";
 		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
-		_dinstall = pkg_dir + "/patches";
-		if (mkdir(_dinstall.c_str(), 755)!=0) return false;
+		_dinstall = pkg_dir + prefix+ "/patches";
+		if (mkdir(_dinstall.c_str(), 755)!=0) return false;*/
 		return true;
 	}
 	else {
@@ -83,6 +97,7 @@ bool BinaryPackage::setInputFile(string in_file)
 
 bool BinaryPackage::unpackFile()
 {
+	if (usingDirectory) return true;
 	if (extracted) {
 		mError("Unable to extract package, because it is already extracted\n");
 		return false;
@@ -104,6 +119,8 @@ bool BinaryPackage::unpackFile()
 
 bool BinaryPackage::packFile(string output_directory)
 {
+	if (usingDirectory) return true;
+	printf("Packing binary archive\n");
 	string oldinput = input_file;
 	if (output_directory.empty())
 	{
@@ -253,7 +270,7 @@ bool SourcePackage::createFolderStructure()
 		string _builddir = pkg_dir + "/build_data";
 		if (mkdir(_dinstall.c_str(), 755)==0 && \
 			mkdir(_patchdir.c_str(), 755)==0 && \
-			mkdir(_builddir.c_str(), 755)) return true;
+			mkdir(_builddir.c_str(), 755)==0) return true;
 		else return false;
 	}
 	else {
@@ -264,7 +281,7 @@ bool SourcePackage::createFolderStructure()
 
 bool SourcePackage::embedPatch(string filename)
 {
-	if (extracted) {
+	if (createFolderStructure()) {
 		return copyFile(filename, pkg_dir + "/patches/");
 	}
 	else return false;
@@ -272,7 +289,7 @@ bool SourcePackage::embedPatch(string filename)
 
 bool SourcePackage::embedSource(string filename)
 {
-	if (extracted) {
+	if (createFolderStructure()) {
 		if (!source_filename.empty()) removeSource();
 		if (filename.find("http://")==0 || filename.find("ftp://")==0)
 		{
@@ -293,6 +310,25 @@ bool SourcePackage::embedSource(string filename)
 	else return false;
 }
 
+bool SourcePackage::isSourceEmbedded(string url)
+{
+	if (!extracted) {
+		mError("Package isn't extracted, cannot determine source existance");
+		return false;
+	}
+	if (FileExists(pkg_dir+"/"+getFilename(url))) return true;
+	else return false;
+}
+bool SourcePackage::isPatchEmbedded(string patch_name)
+{
+	if (!extracted) {
+		mError("Package isn't extracted, cannot determine source existance");
+		return false;
+	}
+	if (FileExists(pkg_dir+"/patches/"+getFilename(patch_name))) return true;
+	else return false;
+
+}
 bool SourcePackage::removeSource()
 {
 	if (extracted)
@@ -328,9 +364,7 @@ bool SourcePackage::removePatch(string patch_name)
 
 bool SourcePackage::setBuildScript(string script_text)
 {
-	if (extracted)
-	{
-		createFolderStructure();
+	if (createFolderStructure()) {
 		if (script_text.empty()) {
 			string n = pkg_dir + "/build_data/build.sh";
 			unlink(n.c_str());
@@ -350,6 +384,7 @@ string SourcePackage::readBuildScript()
 
 bool SourcePackage::unpackFile()
 {
+	if (usingDirectory) return true;
 	if (extracted) {
 		mError("Unable to extract package, because it is already extracted\n");
 		return false;
@@ -370,6 +405,7 @@ bool SourcePackage::unpackFile()
 }
 bool SourcePackage::packFile(string output_directory)
 {
+	if (usingDirectory) return true;
 	string oldinput = input_file;
 	if (output_directory.empty())
 	{
@@ -462,7 +498,6 @@ bool SourceFile::analyze()
 	}
 	return true;
 }
-
 string SourceFile::getType()
 {
 	return type;

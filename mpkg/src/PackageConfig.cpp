@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.35 2007/10/25 00:06:44 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.36 2007/10/31 01:52:38 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -273,6 +273,23 @@ string PackageConfig::getVersion()
 	xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_VERSION);
+    if (res) {
+        
+        nodeset = res->nodesetval;
+        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        const char * _result = (const char * )key;
+        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        mDebug("VERSION = '" +strim( __r) + "'");
+        return strim(__r);
+    } else {
+        return EMPTY;
+    }
+}
+string PackageConfig::getBetarelease()
+{
+	xmlNodeSetPtr nodeset;
+    xmlXPathObjectPtr res;
+    res = getNodeSet(GET_PKG_BETARELEASE);
     if (res) {
         
         nodeset = res->nodesetval;

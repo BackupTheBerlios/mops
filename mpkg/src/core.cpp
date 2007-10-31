@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.74 2007/08/30 22:54:06 i27249 Exp $
+ *	$Id: core.cpp,v 1.75 2007/10/31 01:52:38 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -58,16 +58,29 @@ PACKAGE_LIST mpkgDatabase::get_other_versions(string *package_name)
 	get_packagelist(&sqlSearch, &pkgList);
 	return pkgList;
 }	// Seems to be deprecated
-
+int compareVersions(string *version1, string *beta1, string *version2, string *beta2) // 0 == equal, 1 == v1>v2, -1 == v1<v2
+{
+	int ret;
+	ret = strverscmp(version1->c_str(), version2->c_str());
+	if (ret==0)
+	{
+		if (*beta2=="0" || beta2->empty()) {
+			if (*beta1=="0" || beta1->empty()) return ret;
+		}
+		ret = strverscmp(beta1->c_str(), beta2->c_str());
+	}
+	return ret;
+}
 PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 {
 	// Maybe optimization possible
 	PACKAGE *candidate=NULL;
-	string ver;
+	string ver, beta;
 	for (int i=0; i<pkgList->size(); i++)
 	{
 		if (pkgList->get_package(i)->reachable() \
-				&& strverscmp(pkgList->get_package(i)->get_version()->c_str(), ver.c_str())>0 \
+				&& compareVersions(pkgList->get_package(i)->get_version(), pkgList->get_package(i)->get_betarelease(), &ver, &beta)>0 \
+				/*&& strverscmp(pkgList->get_package(i)->get_version()->c_str(), ver.c_str())>0 \*/
 				&& mpkgDatabase::checkVersion(pkgList->get_package(i)->get_version(), \
 					atoi(dep->get_condition()->c_str()), \
 					dep->get_package_version())
@@ -75,6 +88,7 @@ PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 		{
 			candidate = pkgList->get_package(i);
 			ver = *pkgList->get_package(i)->get_version();
+			beta = *pkgList->get_package(i)->get_betarelease();
 		}
 	}
 	if (candidate==NULL)
@@ -88,7 +102,6 @@ PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
-	//printf("checking conflicts\n");
 	mDebug("start");
 	int package_id;
 	int prev_package_id=package->get_id();
@@ -138,7 +151,6 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 
 int mpkgDatabase::add_conflict_record(int conflicted_id, int overwritten_id, string *file_name)
 {
-//	printf("adding conflict record: conflicted_id = %d, overwritten_id = %d, file = %s\n", conflicted_id, overwritten_id, file_name->c_str());
 	PACKAGE pkg;
 	get_package(overwritten_id, &pkg,true);
 
@@ -181,20 +193,16 @@ void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 
 int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int conflicted_package_id)
 {
-	//printf("backing up %s\n", filename->c_str());
 	if (FileExists(SYS_ROOT + *filename))
 	{
-		//printf("backupFile: file exists, get_package\n");
 		PACKAGE pkg;
 		get_package(overwritten_package_id, &pkg, true);
-		//printf("get_package OK\n");
 		string bkpDir = SYS_BACKUP + *pkg.get_name() + "_" + *pkg.get_md5();
 		string bkpDir2 = bkpDir + "/" + filename->substr(0, filename->find_last_of("/"));
 		string mkd = "mkdir -p " + bkpDir2;
 		
 		string mv = "mv ";
 	        mv += SYS_ROOT + *filename + " " + bkpDir2 + "/";
-		//printf("mkdir && mv\n");
 		if (!simulate)
 		{
 			if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)
@@ -203,18 +211,14 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 				return MPKGERROR_FILEOPERATIONS;
 			}
 		}
-		//printf("adding conflict record\n");
 		add_conflict_record(conflicted_package_id, overwritten_package_id, filename);
-		//printf("Adding some logging facility\n");
 		FILE *log = fopen("/var/log/mpkg-backups.log","a");
 		if (log)
 		{
-			//printf("adding log record\n");
 			string target_name = *pkg.get_name() + "-" + pkg.get_fullversion();
 			get_package(conflicted_package_id, &pkg, true);
 			string overwriter_name = *pkg.get_name() + "-" + pkg.get_fullversion();
 			fprintf(log, "FILE: [%s] TARGET: [%s] OVERWRITER: [%s]\n", filename->c_str(), target_name.c_str(), overwriter_name.c_str());
-			//printf("log recorded\n");
 			fclose(log);
 		}
 		else
@@ -222,11 +226,6 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 			mError("Unable to open log file /var/log/mpkg-backups.log");
 		}
 	}
-	else
-	{
-		//printf("backupFile: file %s%s doesn't exist\n", SYS_ROOT.c_str(), filename->c_str());
-	}
-	//printf("backup complete\n");
 	return 0;
 }
 
@@ -530,7 +529,6 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	SQLTable *sqlTable = new SQLTable;
 	SQLRecord sqlFields;
 	PACKAGE package;
-	//printf("retrieving main\n");
 	int sql_ret=db.get_sql_vtable(sqlTable, sqlFields, "packages", *sqlSearch);
 	if (sql_ret!=0)
 	{
@@ -556,6 +554,7 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	int fPackage_action = sqlTable->getFieldIndex("package_action");
 	int fPackage_md5 = sqlTable->getFieldIndex("package_md5");
 	int fPackage_filename = sqlTable->getFieldIndex("package_filename");
+	int fPackage_betarelease =sqlTable->getFieldIndex("package_betarelease");
 
 
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
@@ -578,18 +577,16 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 
 		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, fPackage_md5));
 		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, fPackage_filename));
+		packagelist->get_package(i)->set_betarelease(sqlTable->getValue(i, fPackage_betarelease));
 #ifdef ENABLE_INTERNATIONAL
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
 	}
 	if (!ultraFast) 
 	{
-		//printf("retrieving tags\n");
 		get_full_taglist(packagelist);
-		//printf("retrieving deps\n");
 		get_full_dependencylist(packagelist);
 	}
-	//printf("retrieving locations\n");
 	get_full_locationlist(packagelist);
 	if (!ultraFast && sqlSearch->empty())
 	{
@@ -677,9 +674,7 @@ void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
 	sqlFields.addField("file_name");
 	sqlFields.addField("file_type");
 	sqlFields.addField("packages_package_id");
-	//printf("query start\n");
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
-	//printf("query end\n");
 	FILES tmp;
 	int package_id;
 	unsigned int counter=0;
@@ -697,13 +692,11 @@ void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
 			}
 		}
 	}
-	//printf("linking end\n");
 	delete sqlTable;
 	for (int i=0; i<pkgList->size(); i++)
 	{
 		pkgList->get_package(i)->sync();
 	}
-	//printf("syncling end, total %d iterations\n", counter);
 }
 
 

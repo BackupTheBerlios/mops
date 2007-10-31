@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.75 2007/10/23 22:43:55 i27249 Exp $
+	$Id: dataunits.cpp,v 1.76 2007/10/31 01:52:38 i27249 Exp $
 */
 
 
@@ -633,7 +633,16 @@ string* PACKAGE::get_filename()
 {
 	return &package_filename;
 }
+string* PACKAGE::get_betarelease()
+{
+	return &package_betarelease;
+}
 
+bool PACKAGE::isBeta()
+{
+	if (package_betarelease=="0" || package_betarelease.empty()) return false;
+	else return true;
+}
 int PACKAGE::get_err_type()
 {
 	return package_err_type;
@@ -795,6 +804,11 @@ void PACKAGE::set_md5(string* md5)
 void PACKAGE::set_filename(string* filename)
 {
 	package_filename=*filename;
+}
+
+void PACKAGE::set_betarelease(string* betarelease)
+{
+	package_betarelease=*betarelease;
 }
 
 #ifdef ENABLE_INTERNATIONAL
@@ -1274,6 +1288,7 @@ vector<DEPENDENCY>* PACKAGE_LIST::getDepList(int i)
 
 PACKAGE* PACKAGE_LIST::findMaxVersion()
 {
+	// TODO: include beta fields in comparsion
 	string max_version;
 	int id=0;
 	string tmp_ver;
@@ -1439,6 +1454,7 @@ initialized = false;
 */
 void PACKAGE_LIST::initVersioning()
 {
+	// TODO: ввести beta fields
 	// Что надо определить:
 	// Для каждого пакета - список номеров того же пакета других версий (НЕ ВКЛЮЧАЯ этот же пакет)
 	// Максимально доступную версию

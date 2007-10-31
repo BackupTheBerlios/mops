@@ -53,114 +53,87 @@
              <property name="title" >
               <string>Basic data</string>
              </property>
-             <layout class="QVBoxLayout" >
-              <property name="spacing" >
-               <number>6</number>
-              </property>
-              <property name="leftMargin" >
-               <number>9</number>
-              </property>
-              <property name="topMargin" >
-               <number>9</number>
-              </property>
-              <property name="rightMargin" >
-               <number>9</number>
-              </property>
-              <property name="bottomMargin" >
-               <number>9</number>
-              </property>
-              <item>
-               <layout class="QGridLayout" >
-                <property name="leftMargin" >
-                 <number>0</number>
+             <layout class="QGridLayout" >
+              <item row="0" column="0" >
+               <widget class="QLabel" name="label" >
+                <property name="text" >
+                 <string>Package name:</string>
                 </property>
-                <property name="topMargin" >
-                 <number>0</number>
-                </property>
-                <property name="rightMargin" >
-                 <number>0</number>
-                </property>
-                <property name="bottomMargin" >
-                 <number>0</number>
-                </property>
-                <property name="horizontalSpacing" >
-                 <number>6</number>
-                </property>
-                <property name="verticalSpacing" >
-                 <number>6</number>
-                </property>
-                <item row="0" column="1" >
-                 <widget class="QLineEdit" name="NameEdit" />
-                </item>
-                <item row="0" column="2" >
-                 <widget class="QLabel" name="label_2" >
-                  <property name="text" >
-                   <string>Version:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0" >
-                 <widget class="QLabel" name="label" >
-                  <property name="text" >
-                   <string>Package name:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3" >
-                 <widget class="QLineEdit" name="VersionEdit" />
-                </item>
-                <item row="1" column="3" >
-                 <widget class="QLineEdit" name="BuildEdit" />
-                </item>
-                <item row="1" column="2" >
-                 <widget class="QLabel" name="label_4" >
-                  <property name="text" >
-                   <string>Build:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0" >
-                 <widget class="QLabel" name="label_3" >
-                  <property name="text" >
-                   <string>Architecture:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1" >
-                 <widget class="QComboBox" name="ArchComboBox" >
-                  <property name="currentIndex" >
-                   <number>3</number>
-                  </property>
-                  <item>
-                   <property name="text" >
-                    <string>i386</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text" >
-                    <string>i486</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text" >
-                    <string>i586</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text" >
-                    <string>i686</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text" >
-                    <string>noarch</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
+               </widget>
               </item>
-              <item>
+              <item row="0" column="1" colspan="3" >
+               <widget class="QLineEdit" name="NameEdit" />
+              </item>
+              <item row="0" column="4" >
+               <widget class="QLabel" name="label_3" >
+                <property name="text" >
+                 <string>Architecture:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="5" >
+               <widget class="QComboBox" name="ArchComboBox" >
+                <property name="currentIndex" >
+                 <number>3</number>
+                </property>
+                <item>
+                 <property name="text" >
+                  <string>i386</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>i486</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>i586</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>i686</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>noarch</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="1" column="0" >
+               <widget class="QLabel" name="label_2" >
+                <property name="text" >
+                 <string>Version:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1" >
+               <widget class="QLineEdit" name="VersionEdit" />
+              </item>
+              <item row="1" column="2" >
+               <widget class="QLabel" name="label_12" >
+                <property name="text" >
+                 <string>Beta release:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3" >
+               <widget class="QLineEdit" name="betaReleaseEdit" />
+              </item>
+              <item row="1" column="4" >
+               <widget class="QLabel" name="label_4" >
+                <property name="text" >
+                 <string>Build:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="5" >
+               <widget class="QLineEdit" name="BuildEdit" />
+              </item>
+              <item row="2" column="0" colspan="6" >
                <layout class="QHBoxLayout" >
                 <property name="spacing" >
                  <number>6</number>
@@ -1600,7 +1573,7 @@ p, li { white-space: pre-wrap; }
        <item>
         <widget class="QTabWidget" name="installScriptsTabWidget" >
          <property name="currentIndex" >
-          <number>0</number>
+          <number>3</number>
          </property>
          <widget class="QWidget" name="preinstallTab" >
           <attribute name="title" >
@@ -1790,12 +1763,35 @@ p, li { white-space: pre-wrap; }
       <number>0</number>
      </property>
      <item>
+      <widget class="QPushButton" name="aboutButton" >
+       <property name="text" >
+        <string>About...</string>
+       </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="LoadButton" >
        <property name="text" >
         <string>Open...</string>
        </property>
        <property name="icon" >
         <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openDirectoryButton" >
+       <property name="text" >
+        <string>Open directory...</string>
+       </property>
+       <property name="icon" >
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
+       </property>
+       <property name="flat" >
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -1849,6 +1845,7 @@ p, li { white-space: pre-wrap; }
  <tabstops>
   <tabstop>NameEdit</tabstop>
   <tabstop>VersionEdit</tabstop>
+  <tabstop>betaReleaseEdit</tabstop>
   <tabstop>ArchComboBox</tabstop>
   <tabstop>BuildEdit</tabstop>
   <tabstop>ShortDescriptionEdit</tabstop>
@@ -1858,17 +1855,86 @@ p, li { white-space: pre-wrap; }
   <tabstop>DepNameEdit</tabstop>
   <tabstop>DepConditionComboBox</tabstop>
   <tabstop>DepVersionEdit</tabstop>
+  <tabstop>buildDependencyCheckBox</tabstop>
+  <tabstop>addDepFromFilesBtn</tabstop>
   <tabstop>DepAddButton</tabstop>
-  <tabstop>TagAddButton</tabstop>
-  <tabstop>MaintainerNameEdit</tabstop>
-  <tabstop>MaintainerMailEdit</tabstop>
-  <tabstop>LoadButton</tabstop>
-  <tabstop>BuildButton</tabstop>
-  <tabstop>quitButton</tabstop>
-  <tabstop>DepTableWidget</tabstop>
   <tabstop>DepDeleteButton</tabstop>
+  <tabstop>tagBox</tabstop>
+  <tabstop>TagAddButton</tabstop>
   <tabstop>TagListWidget</tabstop>
   <tabstop>TagDeleteButton</tabstop>
+  <tabstop>confFileAddEdit</tabstop>
+  <tabstop>conffileSearchButton</tabstop>
+  <tabstop>addConfFileButton</tabstop>
+  <tabstop>delConfFileButton</tabstop>
+  <tabstop>configFilesListWidget</tabstop>
+  <tabstop>tempFileAddEdit</tabstop>
+  <tabstop>tempfileSearchButton</tabstop>
+  <tabstop>addTempFileButton</tabstop>
+  <tabstop>delTempFileButton</tabstop>
+  <tabstop>tempFilesListWidget</tabstop>
+  <tabstop>MaintainerNameEdit</tabstop>
+  <tabstop>MaintainerMailEdit</tabstop>
+  <tabstop>sourcePackageRadioButton</tabstop>
+  <tabstop>binaryPackageRadioButton</tabstop>
+  <tabstop>aboutButton</tabstop>
+  <tabstop>LoadButton</tabstop>
+  <tabstop>openDirectoryButton</tabstop>
+  <tabstop>BuildButton</tabstop>
+  <tabstop>saveAndQuitButton</tabstop>
+  <tabstop>quitButton</tabstop>
+  <tabstop>globalTabWidget</tabstop>
+  <tabstop>urlEdit</tabstop>
+  <tabstop>embedSourcesCheckBox</tabstop>
+  <tabstop>downloadAnalyzeButton</tabstop>
+  <tabstop>sourcesRootDirectoryEdit</tabstop>
+  <tabstop>sourcesRootDirectoryAutodetectCheckBox</tabstop>
+  <tabstop>buildingSystemComboBox</tabstop>
+  <tabstop>envOptionsCheckBox</tabstop>
+  <tabstop>envOptionsEdit</tabstop>
+  <tabstop>configureCheckBox</tabstop>
+  <tabstop>configureEdit</tabstop>
+  <tabstop>compilationCheckBox</tabstop>
+  <tabstop>compilationEdit</tabstop>
+  <tabstop>installationCheckBox</tabstop>
+  <tabstop>installEdit</tabstop>
+  <tabstop>cpuArchCheckBox</tabstop>
+  <tabstop>cpuArchComboBox</tabstop>
+  <tabstop>cpuTuneCheckBox</tabstop>
+  <tabstop>cpuTuneComboBox</tabstop>
+  <tabstop>optimizationCheckBox</tabstop>
+  <tabstop>optimizationComboBox</tabstop>
+  <tabstop>maxNumjobsSpinBox</tabstop>
+  <tabstop>customGccOptionsCheckBox</tabstop>
+  <tabstop>customGccOptionsEdit</tabstop>
+  <tabstop>AllowUserToChangeCheckBox</tabstop>
+  <tabstop>patchEdit</tabstop>
+  <tabstop>patchAddButton</tabstop>
+  <tabstop>patchDeleteButton</tabstop>
+  <tabstop>patchListWidget</tabstop>
+  <tabstop>loadScriptFromFileButton</tabstop>
+  <tabstop>editWithGvimButton</tabstop>
+  <tabstop>customScriptTextEdit</tabstop>
+  <tabstop>keyNameEdit</tabstop>
+  <tabstop>keyValueEdit</tabstop>
+  <tabstop>keyAddButton</tabstop>
+  <tabstop>keyDeleteButton</tabstop>
+  <tabstop>compilationOptionsTableWidget</tabstop>
+  <tabstop>installScriptsTabWidget</tabstop>
+  <tabstop>preinstallEnabledCheckBox</tabstop>
+  <tabstop>preinstallScriptLoadFromFileButton</tabstop>
+  <tabstop>preinstallScriptEdit</tabstop>
+  <tabstop>postinstallEnabledCheckBox</tabstop>
+  <tabstop>postinstallScriptLoadFromFileButton</tabstop>
+  <tabstop>postinstallScriptEdit</tabstop>
+  <tabstop>preremoveEnabledCheckBox</tabstop>
+  <tabstop>preremoveScriptLoadFromFileButton</tabstop>
+  <tabstop>preremoveScriptEdit</tabstop>
+  <tabstop>postremoveEnabledCheckBox</tabstop>
+  <tabstop>postremoveScriptLoadFromFileButton</tabstop>
+  <tabstop>postremoveScriptEdit</tabstop>
+  <tabstop>DepTableWidget</tabstop>
+  <tabstop>generateDepsButton</tabstop>
  </tabstops>
  <resources/>
  <connections/>

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.127 2007/10/12 19:14:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.128 2007/10/31 01:52:37 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -1002,6 +1002,7 @@ void MainWindow::showPackageInfo()
 	string extendedInfo = (string) "<html>" \
 			       + (string) "<h2>" + *pkg->get_name() + (string) "</h2>" \
 			       + (string) "<br><b>"+tr("Version:").toStdString()+" </b>" + *pkg->get_version() \
+			       + (string) "<br><b>"+tr("Beta release:").toStdString()+"</b>" + *pkg->get_betarelease() \
 			       + (string) "<br><b>"+tr("Arch:").toStdString()+" </b>"+*pkg->get_arch() \
 			       + (string) "<br><b>"+tr("Build:").toStdString()+" </b>"+*pkg->get_build() \
 			       + (string) "<br><b>"+tr("Package size:").toStdString()+" </b>" + humanizeSize(*pkg->get_compressed_size()) \

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.38 2007/10/27 15:09:46 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.39 2007/10/31 01:52:37 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -21,12 +21,14 @@ Form::Form(QWidget *parent, string arg)
 	description.resize(2);
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
-	
+
+	ui.openDirectoryButton->hide();	
 	ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
 	ui.DepTableWidget->horizontalHeader()->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 
+	connect(ui.aboutButton, SIGNAL(clicked()), this, SLOT(showAbout()));
 // Build options UI switches
 
 	connect(ui.editWithGvimButton, SIGNAL(clicked()), this, SLOT(editBuildScriptWithGvim()));
@@ -67,11 +69,15 @@ Form::Form(QWidget *parent, string arg)
 
 void Form::embedSources()
 {
-	sourcePackage.embedSource(ui.urlEdit->text().toStdString());
+	if (!sourcePackage.isSourceEmbedded(ui.urlEdit->text().toStdString()))
+	{
+		sourcePackage.embedSource(ui.urlEdit->text().toStdString());
+	}
 	for (unsigned int i=0; i<patchList.size(); i++)
 	{
 		sourcePackage.embedPatch(patchList[i]);
 	}
+	
 }
 
 void Form::analyzeSources()
@@ -125,16 +131,29 @@ void Form::loadFile(QString filename)
 		filename = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
 		if (filename.isEmpty()) return;
 	}
+
 	dataType = DATATYPE_UNKNOWN;
 	if (getExtension(filename.toStdString())=="tgz") dataType = DATATYPE_BINARYPACKAGE;
 	if (getExtension(filename.toStdString())=="spkg") dataType = DATATYPE_SOURCEPACKAGE;
 	if (getExtension(filename.toStdString())=="xml") dataType = DATATYPE_XML;
-	if (filename=="./") dataType = DATATYPE_CURRENTDIR;
+	if (isDirectory(filename.toStdString())) dataType = DATATYPE_DIR;
+	if (dataType == DATATYPE_DIR)
+	{
+		if (QMessageBox::question(this, tr("Cannot determine tree type"), tr("Is it a binary package tree?"), 
+					QMessageBox::Yes|QMessageBox::No, QMessageBox::Yes)==QMessageBox::Yes)
+		{
+			binaryPackage.importDirectory(filename.toStdString());
+			dataType = DATATYPE_BINARYPACKAGE;
+		}
+		else {
+			sourcePackage.importDirectory(filename.toStdString());
+			dataType = DATATYPE_SOURCEPACKAGE;
+		}
+	}
 	PackageConfig *p;
 	switch(dataType)
 	{
 		case DATATYPE_BINARYPACKAGE:
-			printf("Binary package\n");
 			if (!binaryPackage.setInputFile(filename.toStdString())) {
 				mError("Cannot open file"); // TODO: Replace to GUI error message
 				return;
@@ -154,7 +173,6 @@ void Form::loadFile(QString filename)
 			break;
 
 		case DATATYPE_SOURCEPACKAGE:
-			printf("Source package\n");
 			if (!sourcePackage.setInputFile(filename.toStdString())) {
 				mError("Cannot open file");
 				return;
@@ -163,6 +181,7 @@ void Form::loadFile(QString filename)
 				mError("Error while opening file: cannot extract");
 				return;
 			}
+
 			p = new PackageConfig(sourcePackage.getDataFilename());
 			if (!p->parseOk) {
 				mError("Error parsing XML data");
@@ -188,6 +207,11 @@ void Form::loadFile(QString filename)
 
 	// Loading sources info
 	ui.urlEdit->setText(p->getBuildUrl().c_str());
+	if (dataType==DATATYPE_SOURCEPACKAGE) {
+		if (sourcePackage.isSourceEmbedded(ui.urlEdit->text().toStdString())) ui.embedSourcesCheckBox->setCheckState(Qt::Checked);
+		else ui.embedSourcesCheckBox->setCheckState(Qt::Unchecked);
+	}
+
 	if (p->getBuildSourceRoot().empty()) {
 		ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Checked);
 		ui.sourcesRootDirectoryEdit->setText("");
@@ -322,6 +346,7 @@ void Form::loadFile(QString filename)
 	// Filling data 
 	ui.NameEdit->setText(pkg.get_name()->c_str());
 	ui.VersionEdit->setText(pkg.get_version()->c_str());
+	ui.betaReleaseEdit->setText(pkg.get_betarelease()->c_str());
 	ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
 	ui.BuildEdit->setText(pkg.get_build()->c_str());
 	ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
@@ -375,7 +400,7 @@ void Form::saveFile()
 
 		if (ui.binaryPackageRadioButton->isChecked()) {
 			dataType = DATATYPE_BINARYPACKAGE;
-			sourcePackage.createNew();
+			binaryPackage.createNew();
 		}
 		if (dataType == DATATYPE_NEW)
 		{
@@ -389,12 +414,10 @@ void Form::saveFile()
 	switch(dataType)
 	{
 		case DATATYPE_BINARYPACKAGE:
-			printf("Saving... type = binary\n");
 			xmlFilename = binaryPackage.getDataFilename();
 			xmlDir = getDirectory(binaryPackage.getDataFilename());
 			break;
 		case DATATYPE_SOURCEPACKAGE:
-			printf("Saving... type = source\n");
 			xmlFilename = sourcePackage.getDataFilename();
 			xmlDir = getDirectory(sourcePackage.getDataFilename());
 			break;
@@ -402,8 +425,6 @@ void Form::saveFile()
 			mError("This type of file isn't supported");
 			return;
 	}
-	printf("xmlDir = %s\n", xmlDir.c_str());
-	sleep(2);
 	QString currentWindowTitle = windowTitle();
 	setWindowTitle(windowTitle()+tr(": saving, please wait..."));
 	modified=false;
@@ -420,6 +441,10 @@ void Form::saveFile()
 	node.getChildNode("name").addText(ui.NameEdit->text().toStdString().c_str());
 	node.addChild("version");
 	node.getChildNode("version").addText(ui.VersionEdit->text().toStdString().c_str());
+	if (!ui.betaReleaseEdit->text().isEmpty()) {
+		node.addChild("betarelease");
+		node.getChildNode("betarelease").addText(ui.betaReleaseEdit->text().toStdString().c_str());
+	}
 	node.addChild("arch");
 	node.getChildNode("arch").addText(ui.ArchComboBox->currentText().toStdString().c_str());
 	node.addChild("build");
@@ -637,15 +662,12 @@ void Form::saveFile()
 	switch(dataType)
 	{
 		case DATATYPE_BINARYPACKAGE:
-			printf("packing...\n");
 			binaryPackage.packFile(out_dir.toStdString());
-			printf("BinPack complete\n");
 			break;
 		case DATATYPE_SOURCEPACKAGE:
 			if (ui.embedSourcesCheckBox->isChecked()) embedSources();
 			sourcePackage.setBuildScript(ui.customScriptTextEdit->toPlainText().toStdString());
 			sourcePackage.packFile(out_dir.toStdString());
-			printf("SrcPack complete\n");
 			break;
 	}
 
@@ -653,7 +675,10 @@ void Form::saveFile()
 
 	if (!slack_required.empty()) WriteFile(xmlDir+"/slack-required", slack_required);
 }
-
+void Form::showAbout()
+{
+	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.7\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
+}
 void Form::loadBuildScriptFromFile()
 {
 	QString importFileName = QFileDialog::getOpenFileName(this, tr("Select a script file"));
@@ -795,7 +820,6 @@ void Form::deleteDependency()
 }
 void Form::changeHeader()
 {
-	//printf("headerChange\n");
 	modified=true;
 
 	QString FLabel=tr("MOPSLinux package builder");
@@ -822,7 +846,6 @@ void Form::changeHeader(const QString &)
 		setWindowTitle(text);
 		return;
 	}*/
-	//printf("headerChange\n");
 	modified=true;
 	QString FLabel=tr("MOPSLinux package builder");
 
@@ -865,7 +888,6 @@ void Form::swapLanguage()
 
 void Form::storeCurrentDescription()
 {
-	//printf("stored\n");
 	int i;
 	/*if (ui.DescriptionLanguageComboBox->currentText()=="ru")
 	{
@@ -886,14 +908,12 @@ void Form::quitApp()
 	int ret;
 	if (modified)
 	{
-		//printf("modified\n");
 		ret = QMessageBox::warning(this, tr("MOPSLinux package builder"),
                    tr("The document has been modified.\n"
                       "Do you want to save your changes?"),
                    QMessageBox::Save | QMessageBox::Discard
                    | QMessageBox::Cancel,
                    QMessageBox::Save);
-		//printf("ret = %d\n", ret);
 		switch(ret)
 		{
 			case QMessageBox::Save: 
