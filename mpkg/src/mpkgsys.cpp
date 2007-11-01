@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.55 2007/11/01 01:33:21 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.56 2007/11/01 06:18:13 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -324,6 +324,12 @@ int mpkgSys::emerge_package(string file_url, string *package_name, string march,
 	if (build_system=="cmake")
 	{
 		configure_cmd = "cmake ..";
+		for (unsigned int i=0; i<key_names.size(); i++)
+		{
+			configure_cmd += " " + key_names[i];
+			if (!key_values[i].empty()) configure_cmd += "="+key_values[i];
+		}
+
 		make_cmd = "make";
 		make_install_cmd="make install DESTDIR=$DESTDIR";
 	}
