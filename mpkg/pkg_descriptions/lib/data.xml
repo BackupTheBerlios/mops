@@ -36,6 +36,17 @@
 		</dep>
 		<dep>
 			<name>
+				requiredbuilder
+			</name>
+			<condition>
+				atleast
+			</condition>
+			<version>
+				0.16.3
+			</version>
+		</dep>
+		<dep>
+			<name>
 				zlib
 			</name>
 			<condition>
