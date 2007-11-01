@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.51 2007/10/27 15:09:46 i27249 Exp $
+    $Id: config.h,v 1.52 2007/11/01 01:33:21 i27249 Exp $
 */
 
 
@@ -25,7 +25,16 @@ using namespace std;
 // Global error code definition
 
 #ifndef HTTP_LIB
+enum adModes {
+	ADMODE_MOZGMERTV=0,
+	ADMODE_OFF,
+	ADMODE_REPLACE,
+	ADMODE_UPDATE,
+	ADMODE_ADD
+};
 // Global configuration and message bus
+extern int autogenDepsMode;
+extern bool enableDownloadResume;
 extern bool dont_export;
 extern string legacyPkgDir;
 extern bool setupMode;

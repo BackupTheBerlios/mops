@@ -4,7 +4,7 @@
 		mpkg-tools
 	</name>
 	<version>
-		0.12.7
+		0.12.8
 	</version>
 	<arch>
 		i486
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.7
+				0.12.8
 			</version>
 		</dep>
 		<dep>

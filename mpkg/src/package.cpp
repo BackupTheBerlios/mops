@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.4 2007/10/31 01:52:38 i27249 Exp $
+// $Id: package.cpp,v 1.5 2007/11/01 01:33:21 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -268,10 +268,10 @@ bool SourcePackage::createFolderStructure()
 		string _dinstall = pkg_dir + "/install";
 		string _patchdir = pkg_dir + "/patches";
 		string _builddir = pkg_dir + "/build_data";
-		if (mkdir(_dinstall.c_str(), 755)==0 && \
-			mkdir(_patchdir.c_str(), 755)==0 && \
-			mkdir(_builddir.c_str(), 755)==0) return true;
-		else return false;
+		mkdir(_dinstall.c_str(), 755);
+		mkdir(_patchdir.c_str(), 755);
+		mkdir(_builddir.c_str(), 755);
+	       	return true;
 	}
 	else {
 		mError("Mmmm... Where to create, yep?");
@@ -281,6 +281,10 @@ bool SourcePackage::createFolderStructure()
 
 bool SourcePackage::embedPatch(string filename)
 {
+	if (getFilename(filename)==filename && FileExists(pkg_dir+"/patches/"+filename)) {
+		say("Patch %s is already there\n", filename.c_str());
+		return true;
+	}
 	if (createFolderStructure()) {
 		return copyFile(filename, pkg_dir + "/patches/");
 	}
@@ -307,7 +311,10 @@ bool SourcePackage::embedSource(string filename)
 		}
 		return copyFile(filename, pkg_dir + "/");
 	}
-	else return false;
+	else {
+		mError("No structure!\n");
+		return false;
+	}
 }
 
 bool SourcePackage::isSourceEmbedded(string url)
@@ -329,15 +336,27 @@ bool SourcePackage::isPatchEmbedded(string patch_name)
 	else return false;
 
 }
-bool SourcePackage::removeSource()
+bool SourcePackage::removeSource(string filename)
 {
+	printf("Removing source\n");
 	if (extracted)
 	{
-		if (source_filename.empty()) return false;
+
+		if (!filename.empty()) source_filename = filename;
+		if (source_filename.empty()) {
+			system("rm " + pkg_dir + "/*");
+			return true;
+		}
 		if (unlink(source_filename.c_str())==0) return true;
-		else return false;
+		else {
+			mError("Error unlinking");
+			return false;
+		}
 	}
-	else return false;
+	else {
+		mError("No structure");
+		return false;
+	}
 }
 
 bool SourcePackage::removeAllPatches()

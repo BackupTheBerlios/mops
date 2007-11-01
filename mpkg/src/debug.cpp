@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.21 2007/09/29 22:48:55 i27249 Exp $
+ $Id: debug.cpp,v 1.22 2007/11/01 01:33:21 i27249 Exp $
  */
  
 
@@ -15,7 +15,7 @@ void _mError(char* file, int line, const char *func, std::string message, bool w
 		sleep(2);
 		tty=stderr;
 	}
-#ifdef DEBUG
+#ifndef RELEASE
 	fprintf(tty, "%s[ERROR]: %sin %s  (%s:%i):%s %s\n",CL_RED, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
 #else
 	if (!warn) fprintf(tty, "%s%s:%s %s\n",CL_RED, _("Error"), CL_WHITE, message.c_str());

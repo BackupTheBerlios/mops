@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.39 2007/10/31 01:52:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.40 2007/11/01 01:33:21 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -73,11 +73,14 @@ void Form::embedSources()
 	{
 		sourcePackage.embedSource(ui.urlEdit->text().toStdString());
 	}
+	
+}
+void Form::embedPatches()
+{
 	for (unsigned int i=0; i<patchList.size(); i++)
 	{
 		sourcePackage.embedPatch(patchList[i]);
 	}
-	
 }
 
 void Form::analyzeSources()
@@ -216,7 +219,10 @@ void Form::loadFile(QString filename)
 		ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Checked);
 		ui.sourcesRootDirectoryEdit->setText("");
 	}
-
+	else {
+		ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Unchecked);
+		ui.sourcesRootDirectoryEdit->setText(p->getBuildSourceRoot().c_str());
+	}
 	patchList = p->getBuildPatchList();
 	displayPatches();
 
@@ -574,7 +580,7 @@ void Form::saveFile()
 		for (unsigned int i=0; i<patchList.size(); i++)
 		{
 			node.getChildNode("mbuild").getChildNode("patches").addChild("patch");
-			node.getChildNode("mbuild").getChildNode("patches").getChildNode("patch",i).addText(patchList[i].c_str());
+			node.getChildNode("mbuild").getChildNode("patches").getChildNode("patch",i).addText(getFilename(patchList[i]).c_str());
 		}
 		node.getChildNode("mbuild").addChild("sources_root_directory");
 		if (ui.sourcesRootDirectoryAutodetectCheckBox->checkState()==Qt::Unchecked) 
@@ -666,6 +672,9 @@ void Form::saveFile()
 			break;
 		case DATATYPE_SOURCEPACKAGE:
 			if (ui.embedSourcesCheckBox->isChecked()) embedSources();
+			else sourcePackage.removeSource();
+			if (patchList.empty()) sourcePackage.removeAllPatches();
+			embedPatches();
 			sourcePackage.setBuildScript(ui.customScriptTextEdit->toPlainText().toStdString());
 			sourcePackage.packFile(out_dir.toStdString());
 			break;
@@ -677,7 +686,7 @@ void Form::saveFile()
 }
 void Form::showAbout()
 {
-	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.7\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
+	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.8\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
 }
 void Form::loadBuildScriptFromFile()
 {

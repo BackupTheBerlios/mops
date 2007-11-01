@@ -4,7 +4,7 @@
  *	New generation of installpkg :-)
  *	This tool ONLY can install concrete local file, but in real it can do more :-) 
  *	
- *	$Id: installpkg-ng2.cpp,v 1.76 2007/10/31 01:52:38 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.77 2007/11/01 01:33:21 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -30,7 +30,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.7";
+	char *version="0.12.8";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -110,7 +110,7 @@ int main (int argc, char **argv)
 		
 	bool do_reset=true;
 	int ich;
-	const char* short_opt = "hvpdzfmkDrailgyq";
+	const char* short_opt = "hvpdzfmkDrailgyq!c";
 	const struct option long_options[] =  {
 		{ "help",		0, NULL,	'h'},
 		{ "verbose", 		0, NULL,	'v'},
@@ -129,6 +129,8 @@ int main (int argc, char **argv)
 		{ "dialog",		0, NULL,	'g'},
 		{ "noconfirm",		0, NULL,	'y'},
 		{ "noreset",		0, NULL,	'q'},
+		{ "nodepgen",		0, NULL,	'!'},
+		{ "resume",		0, NULL,	'c'},
 		{ NULL, 		0, NULL, 	0}
 	};
 
@@ -140,6 +142,9 @@ int main (int argc, char **argv)
 		
 
 		switch (ich) {
+			case 'c':
+					enableDownloadResume=true;
+					break;
 			case 'q':
 					do_reset=false;
 					break;
@@ -183,7 +188,6 @@ int main (int argc, char **argv)
 					break;
 
 			case 'r':
-					//printf("preparing to repair\n");
 					repair_damaged=true;
 					break;
 
@@ -200,9 +204,9 @@ int main (int argc, char **argv)
 			case 'y':
 					interactive_mode=false;
 					break;
-					
+			case '!':
+					autogenDepsMode=ADMODE_OFF;
 			case '?':
-					//printf("WTF OPTIONZ DETECTED!\n");
 					return print_usage(stderr, 1);
 
 			case -1:
@@ -457,10 +461,27 @@ int main (int argc, char **argv)
 	{
 		if (argc<=optind) return print_usage(stderr,1);
 		string s_pkg;
+		string march, mtune, olevel;
 		for (int i=optind; i < argc; i++)
 		{
 			s_pkg = argv[i];
-			if (mpkgSys::emerge_package(s_pkg, &s_pkg)!=0) {
+			if (s_pkg.find("march=")==0) {
+				march=s_pkg.substr(strlen("march="));
+				continue;
+			}
+			if (s_pkg.find("mtune=")==0) {
+				mtune=s_pkg.substr(strlen("mtune="));
+				continue;
+			}
+
+			if (s_pkg.find("olevel=")==0) {
+				olevel=s_pkg.substr(strlen("olevel="));
+				continue;
+			}
+
+
+			
+			if (mpkgSys::emerge_package(s_pkg, &s_pkg, march, mtune, olevel)!=0) {
 				mError("One of the packages failed to build, stopping");
 				delete_tmp_files();
 				return 0;
@@ -969,9 +990,12 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-l    --filelist          show file list for package (with \"show\" keyword)\n"));
 	fprintf(stream,_("\t-y    --noconfirm         don't ask confirmation\n"));
 	fprintf(stream,_("\t-q    --noreset           don't reset queue at start\n"));
+	fprintf(stream,_("\t-!    --nodepgen          don't generate dependencies on package building\n"));
+	fprintf(stream,_("\t-c    --resume            enable download resuming (be aware of different files with same names!)\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));
+	fprintf(stream,_("\tbuild                     build source package(s)\n"));
 	fprintf(stream,_("\tinstall                   install package(s)\n"));
 	fprintf(stream,_("\tupgrade                   upgrade selected package\n"));
 	fprintf(stream,_("\tupgradeall                upgrade all installed packages\n"));
@@ -1012,6 +1036,11 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\nDebug options:\n"));
 	fprintf(stream,_("\ttest                      Executes unit test\n"));
 #endif
+	fprintf(stream,_("\nExtra options for command \"build\" (should be specified _before_ package name):\n"));
+	fprintf(stream,_("\tmarch=                    CPU architecture\n"));
+	fprintf(stream,_("\tmtune=                    CPU tuning\n"));
+	fprintf(stream,_("\tolevel=                   Optimization level\n"));
+	fprintf(stream,_("Example: mpkg build march=i686 mtune=prescott olevel=O3\n"));
 	fprintf(stream, "\n");
 
 

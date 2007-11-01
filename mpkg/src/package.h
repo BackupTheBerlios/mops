@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.3 2007/10/31 01:52:38 i27249 Exp $
+// $Id: package.h,v 1.4 2007/11/01 01:33:21 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -63,7 +63,7 @@ class SourcePackage: public BinaryPackage
 		bool embedPatch(string filename); // Copy patch file to a package structure
 		bool embedSource(string filename); // Copy sources for a package structure
 		string source_filename;
-		bool removeSource();
+		bool removeSource(string filename="");
 		bool removeAllPatches();
 		bool removePatch(string patch_name); // specify patch filename (without path) to remove from structure
 

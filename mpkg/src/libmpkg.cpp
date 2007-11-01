@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.61 2007/10/27 15:09:46 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.62 2007/11/01 01:33:21 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -571,6 +571,10 @@ void dumpPackage(PACKAGE *p, PackageConfig *pc, string filename)
 
 void generateDeps(string tgz_filename)
 {
+	if (tgz_filename.empty()) {
+		mError("No filename specified");
+		return;
+	}
 	say("Generating dependencies for %s\n",tgz_filename.c_str());
 	string current_dir = (string) get_current_dir_name();
 	// Create a temporary directory
@@ -592,7 +596,7 @@ void generateDeps(string tgz_filename)
 	string tmp;
 	string tail;
 	DEPENDENCY d;
-	pkg.get_dependencies()->clear();
+	//pkg.get_dependencies()->clear();
 	string condptr;
 	for (unsigned int i=0; i<data.size(); i++)
 	{
@@ -607,12 +611,14 @@ void generateDeps(string tgz_filename)
 
 		tmp = tail.substr(0,tail.find_first_of("-"));
 		d.set_package_version(&tmp);
-		pkg.get_dependencies()->push_back(d);
+		if (*d.get_package_name()!=*pkg.get_name()) pkg.get_dependencies()->push_back(d);
 	}
+	printf("Got %d dependencies\n", pkg.get_dependencies()->size());
 	p = new PackageConfig(tmpdir+"/install/data.xml");
 	dumpPackage(&pkg, p, tmpdir+"/install/data.xml");
 	delete p;
-	system ("cd " + tmpdir + "; buildpkg; mv *.tgz " + current_dir + "/" +tgz_filename );
+	if (tgz_filename[0]!='/') tgz_filename = current_dir + "/"+getDirectory(tgz_filename);
+	system ("cd " + tmpdir + "; buildpkg " + tgz_filename );
 	system("rm -rf " + tmpdir);
 	delete_tmp_files();
 }

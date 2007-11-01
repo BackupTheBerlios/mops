@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.54 2007/10/27 15:09:46 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.55 2007/11/01 01:33:21 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -216,7 +216,7 @@ int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracke
 	if (!package->installedVersion.empty() && !package->installed()) requestUninstall(*package->get_name(), db, DepTracker); 
 	return requestInstall(package->get_id(), db, DepTracker);
 }
-int mpkgSys::emerge_package(string file_url, string *package_name)
+int mpkgSys::emerge_package(string file_url, string *package_name, string march, string mtune, string olevel)
 {
 
 	*package_name="";
@@ -248,10 +248,14 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	string tar_args;
 	if (ext=="bz2") tar_args="jxvf";
 	if (ext=="gz") tar_args="zxvf";
-	if (ext!="bz2" && ext!="gz") {
+	if (ext!="bz2" && ext!="gz" && ext!="zip" && ext!="rar") {
 		printf("Unknown file extension %s\n", ext.c_str());
 		return 2;
 	}
+	string extractCommand;
+       	if (ext=="zip") extractCommand = "unzip";
+	if (ext=="rar") extractCommand = "unrar e";
+	if (ext=="bz2" || ext=="gz") extractCommand = "tar " + tar_args;
 	// Directories
 	string currentdir=get_current_dir_name();	
 	string pkgdir = "/tmp/package-"+p.getName();
@@ -261,6 +265,8 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	if (srcdir.empty()) {
 		if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
 		if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
+		if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
+		if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
 	}
 	else srcdir = dldir+"/"+srcdir;
 
@@ -292,9 +298,12 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	int max_numjobs = atoi(p.getBuildMaxNumjobs().c_str());
 	string numjobs="6";
 	if (max_numjobs<6 && max_numjobs !=0) numjobs = IntToStr(max_numjobs); // Temp solution
-	string march=p.getBuildOptimizationMarch();
-	string mtune=p.getBuildOptimizationMtune();
-	string olevel=p.getBuildOptimizationLevel();
+	if (!canCustomize) {
+		if (!march.empty() || !mtune.empty() || !olevel.empty()) mWarning(_("Custom tuning options is not allowed for this package"));
+	}
+	if (!canCustomize || march.empty()) march=p.getBuildOptimizationMarch();
+	if (!canCustomize || mtune.empty()) mtune=p.getBuildOptimizationMtune();
+	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
 	string gcc_options = p.getBuildOptimizationCustomGccOptions();
 
 	string configure_cmd = p.getBuildCmdConfigure();
@@ -353,7 +362,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	}
 	
 	// Extracting the sources
-	if (system("(cd " + dldir+"; tar " + tar_args + " " + filename+")")!=0) {
+	if (system("(cd " + dldir+"; " + extractCommand + " " + filename+")")!=0) {
 		mError(_("Tar was failed to extract the received source package"));
 		return -7;
 	}
@@ -412,7 +421,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name)
 	
 	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
 	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
-
+	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name);
 	return 0;
 }
 
@@ -456,7 +465,7 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 		if (getExtension(package_name)=="spkg")
 		{
 			if (emerge_package(package_name, &package_name)!=0 || !FileExists(package_name)) {
-				mError(_("Cannot build this mbuild"));
+				mError(_("Cannot build this spkg"));
 				return MPKGERROR_NOPACKAGE;
 			}
 		}

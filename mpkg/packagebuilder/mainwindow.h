@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.19 2007/10/31 01:52:38 i27249 Exp $
+ * $Id: mainwindow.h,v 1.20 2007/11/01 01:33:21 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -65,6 +65,7 @@ class Form: public QWidget
 		void deleteKey();
 
 		void embedSources();
+		void embedPatches();
 		void analyzeSources();
 
 		void editBuildScriptWithGvim();

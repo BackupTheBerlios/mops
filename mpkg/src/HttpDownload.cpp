@@ -16,6 +16,7 @@
 int downloadTimeout=0;
 double prevDlValue;
 bool usedCdromMount=false;
+string currentDownloadingString;
 HttpDownload::HttpDownload()
 {
 	ch = curl_easy_init();
@@ -31,6 +32,7 @@ double *extDlNow;
 double *extDlTotal;
 double *extItemTotal;
 double *extItemNow;
+
 ProgressData *ppData;
 ActionBus *ppActionBus;
 int currentItemID;
@@ -48,6 +50,7 @@ static int downloadCallback(void *clientp,
 	t=ulnow;
 	void *t1;
 	t1= clientp;
+	
 	ppData->setItemProgress(currentItemID, dlnow);
 	if (prevDlValue==dlnow) downloadTimeout++;
 	else {
@@ -61,6 +64,12 @@ static int downloadCallback(void *clientp,
 	if (dialogMode)
 	{
 		d.setGaugeValue((unsigned int) round(dlnow/(dltotal/100)));
+	}
+	else
+	{
+	if (!currentDownloadingString.empty()) say(_("\r%s: %d%% (%d of %d kb)"),currentDownloadingString.c_str(), (unsigned int) round(dlnow/(dltotal/100)), (unsigned int) dlnow/1024, (unsigned int) dltotal/1024);
+		//zC++;
+		//printf("%d\n", zC);
 	}
 
 	if (downloadTimeout>DOWNLOAD_TIMEOUT) return -1;
@@ -218,19 +227,6 @@ try_mount:
 					return -1;
 				}
 			}
-
-/*			errRet = waitResponce(MPKG_CDROM_WRONG_VOLNAME);
-			if (errRet == MPKG_RETURN_RETRY)
-			{
-				mDebug("Unmounting");
-				umount(CDROM_MOUNTPOINT.c_str());
-				usedCdromMount = false;
-				goto try_mount;
-			}	
-			if (errRet == MPKG_RETURN_ABORT)
-			{
-				return -1;
-			}*/
 		}
 	}
 copy_file:
@@ -247,10 +243,6 @@ copy_file:
 	}
 	else 
 	{
-		/*if (!isMounted(CDROM_MOUNTPOINT)) {
-			mDebug("copy_file: not mounted");
-			goto try_mount;
-		}*/
 		mDebug("Creating symlink from " + sourceFileName + " to " + output);
 		link_ret = symlink(sourceFileName.c_str(), output.c_str());
 		mDebug("Link returned: " + IntToStr(link_ret));
@@ -406,7 +398,6 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
     				for ( unsigned int j = 0; j < item->url_list.size(); j++ ) 
 				{
-					//if (!dialogMode) say("Downloading %s\n", item->url_list.at(j).c_str());
 					mDebug("Downloading " + item->url_list.at(j));
 					if (prData->size()>0)
 					{
@@ -448,26 +439,26 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 
 					else if (item->url_list.at(j).find("file://")!=0 && item->url_list.at(j).find("cdrom://")!=0)
 					{
-
-#ifdef ENABLE_DOWNLOAD_RESUMING
-						long size=0;
-						struct stat fStat;
-						if (stat(item->file.c_str(), &fStat)==0) 
-						{
-							if (S_ISREG(fStat.st_mode))
+						long long size=0;
+						if (enableDownloadResume) {
+							struct stat fStat;
+							if (stat(item->file.c_str(), &fStat)==0) 
 							{
-								size = fStat.st_size;
+								if (S_ISREG(fStat.st_mode))
+								{
+									size = fStat.st_size;
+								}
+								else
+								{
+									unlink(item->file.c_str());
+								}
 							}
-							else
-						       	{
-								unlink(item->file.c_str());
-							}
+							prData->setItemProgress(item->itemID, (double) size);
 						}
-						prData->setItemProgress(item->itemID, (double) size);
-#else
-						prData->setItemProgress(item->itemID, 0);
-						unlink(item->file.c_str());
-#endif
+						else {
+							prData->setItemProgress(item->itemID, 0);
+							unlink(item->file.c_str());
+						}
 						out = fopen (item->file.c_str(), "ab");
 						if ( out == NULL )
 						{
@@ -479,10 +470,10 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 						{
 							mDebug("Trying to download via CURL");
 							fseek(out,0,SEEK_END);
-#ifdef ENABLE_DOWNLOAD_RESUMING
-							if (size!=0) say("Resuming download from %i\n", size);
-							curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
-#endif
+							if (enableDownloadResume) {
+								if (size!=0) say(_("Resuming download from %Li\n"), size);
+								curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
+							}
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
@@ -490,13 +481,20 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
     							curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
 	    						
 							if (dialogMode) {
-								d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+"] Скачивается файл " + \
+								d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+_("] Downloading file ") + \
 									item->url_list.at(j), 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
 							}
 							else if (item->url_list.at(j).find("packages.xml.gz")==std::string::npos && 
 									item->url_list.at(j).find("PACKAGES.TXT")==std::string::npos &&
-							       		item->url_list.at(j).find("Packages.gz")==std::string::npos) say(_("[%d/%d] Downloading file %s\n"),i+1, list.size(), item->url_list.at(j).c_str());
+							       		item->url_list.at(j).find("Packages.gz")==std::string::npos) {
+							       	//say(_("[%d/%d] Downloading file %s"),i+1, list.size(), item->url_list.at(j).c_str());
+								currentDownloadingString= "["+IntToStr(i+1) + "/" + IntToStr(list.size())+_("] Downloading file ") + item->url_list.at(j);
+							}
 							result = curl_easy_perform(ch);
+							if (!currentDownloadingString.empty()) { 
+								printf("\n");
+								currentDownloadingString.clear();
+							}
     							fclose(out);
 							if (dialogMode) d.closeGauge();
 						}
