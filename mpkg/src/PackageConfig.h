@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.20 2007/10/31 01:52:38 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.21 2007/11/02 17:45:45 i27249 Exp $
  *
  * **********************************************************/
 
@@ -23,6 +23,8 @@
 #include <libxml/parser.h>
 #include <libxml/xpath.h>
 using namespace std;
+
+typedef struct depTree { bool name, version, condition, build_only; } ;
 
 #define XPATH_CTX_ERR (mDebug("Failed to create XPath context"))
 #define XPATH_EVAL_ERR (mDebug("XPath eval error"))
@@ -48,14 +50,22 @@ using namespace std;
 #define GET_PKG_INST_SIZE ((const xmlChar *)"//package/installed_size")
 #define GET_PKG_TAGS ((const xmlChar *)"//package/tags/tag")
 #define GET_PKG_FILE_LIST ((const xmlChar *)"//package/files/file")
+#define GET_PKG_SUG ((const xmlChar *) "//suggests/suggest")
 #define GET_PKG_SUG_COND ((const xmlChar *) "//suggests/suggest/condition")
 #define GET_PKG_SUG_NAME ((const xmlChar *) "//suggests/suggest/name")
 #define GET_PKG_SUG_VERSION ((const xmlChar *) "//suggests/suggest/version")
 #define GET_PKG_CONFIG_FILE_LIST ((const xmlChar *)"//package/configfiles/conffile")
 #define GET_PKG_TEMP_FILE_LIST ((const xmlChar *)"//package/tempfiles/tempfile")
+#define GET_PKG_DEP ((const xmlChar *)"//package/dependencies/dep")
 #define GET_PKG_DEP_NAME ((const xmlChar *)"//dependencies/dep/name")
 #define GET_PKG_DEP_COND ((const xmlChar *)"//dependencies/dep/condition")
 #define GET_PKG_DEP_VERSION ((const xmlChar *)"//dependencies/dep/version")
+#define GET_PKG_DEP_BUILDONLY ((const xmlChar *)"//dependencies/dep/build_only")
+
+#define GET_PKG_ENUM_DEP_NAME ((const xmlChar *)"//dependencies/dep[name]")
+#define GET_PKG_ENUM_DEP_VERSION ((const xmlChar *)"//dependencies/dep[version]")
+#define GET_PKG_ENUM_DEP_COND ((const xmlChar *)"//dependencies/dep[condition]")
+#define GET_PKG_ENUM_DEP_BUILDONLY ((const xmlChar *)"//dependencies/dep[build_only]")
 
 // MPKG-SRC extensions
 #define GET_PKG_MBUILD_URL ((const xmlChar *)"//mbuild/url")
@@ -85,7 +95,8 @@ public:
 
 	PackageConfig(xmlNodePtr __rootXmlNodePtr);
 	~PackageConfig();
-
+	void buildDepDef(void);
+	void buildSugDef(void);
 	string getName(void);
 	string getVersion(void);
 	string getBetarelease(void);
@@ -105,19 +116,19 @@ public:
 	string getShortDescription(string lang="");
 	string getShortDescriptionI(int num=0);
 
-	string getDependencyName(int dep_num);
-	string getDependencyCondition(int dep_num);
-	string getDependencyVersion(int dep_num);
+//	string getDependencyName(int dep_num);
+//	string getDependencyCondition(int dep_num);
+//	string getDependencyVersion(int dep_num);
 	//string getTag(int tag_num);
 
 	string getChangelog(void);
 
 	//string getFile(int file_num);
 	//string getConfigFile(int file_num);
-
 	vector <string> getDepNames(void);
 	vector <string> getDepConditions(void);
 	vector <string> getDepVersions(void);
+	vector <bool> getDepBuildOnlyFlags(void);
 	vector <string> getSuggestNames(void);
 	vector <string> getSuggestConditions(void);
 	vector <string> getSuggestVersions(void);
@@ -157,13 +168,15 @@ public:
 
 	bool parseOk;
 
-    bool hasErrors();
+	bool hasErrors();
 
 private:
+	vector<depTree> dependencyTreeDef, suggestTreeDef;
 	string fileName;
 	XMLNode _node;
 	XMLNode tmp;
     int errors;
+    int depCount, suggestCount;
     xmlDocPtr doc;
     xmlNodePtr curNode;
 

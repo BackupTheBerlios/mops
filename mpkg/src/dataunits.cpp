@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.76 2007/10/31 01:52:38 i27249 Exp $
+	$Id: dataunits.cpp,v 1.77 2007/11/02 17:45:45 i27249 Exp $
 */
 
 
@@ -123,7 +123,14 @@ LOCATION::~LOCATION()
 
 
 // DEPENDENCY class functions
-
+void DEPENDENCY::setBuildOnly(bool flag)
+{
+	buildOnly = flag;
+}
+bool DEPENDENCY::isBuildOnly()
+{
+	return buildOnly;
+}
 // Comparsion
 bool DEPENDENCY::equalTo(DEPENDENCY *dependency)
 {
@@ -258,6 +265,7 @@ DEPENDENCY::DEPENDENCY()
 {
 	dependency_id=0;
 	dependency_broken=0;
+	buildOnly=false;
 }
 DEPENDENCY::~DEPENDENCY(){
 }

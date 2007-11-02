@@ -27,27 +27,12 @@
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
-        <widget class="QSplitter" name="splitter_4" >
+        <widget class="QSplitter" name="splitter_5" >
          <property name="orientation" >
           <enum>Qt::Horizontal</enum>
          </property>
          <widget class="QWidget" name="layoutWidget" >
           <layout class="QVBoxLayout" >
-           <property name="spacing" >
-            <number>6</number>
-           </property>
-           <property name="leftMargin" >
-            <number>0</number>
-           </property>
-           <property name="topMargin" >
-            <number>0</number>
-           </property>
-           <property name="rightMargin" >
-            <number>0</number>
-           </property>
-           <property name="bottomMargin" >
-            <number>0</number>
-           </property>
            <item>
             <widget class="QGroupBox" name="groupBox_7" >
              <property name="title" >
@@ -166,466 +151,462 @@
             </widget>
            </item>
            <item>
-            <widget class="QSplitter" name="splitter_2" >
+            <widget class="QSplitter" name="splitter_4" >
              <property name="orientation" >
               <enum>Qt::Horizontal</enum>
              </property>
-             <widget class="QGroupBox" name="groupBox_6" >
-              <property name="title" >
-               <string>Description</string>
+             <widget class="QSplitter" name="splitter_2" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
               </property>
-              <layout class="QVBoxLayout" >
-               <property name="spacing" >
-                <number>6</number>
+              <widget class="QGroupBox" name="groupBox_6" >
+               <property name="title" >
+                <string>Description</string>
                </property>
-               <property name="leftMargin" >
-                <number>9</number>
+               <layout class="QGridLayout" >
+                <item row="0" column="0" >
+                 <widget class="QTextEdit" name="DescriptionEdit" />
+                </item>
+               </layout>
+              </widget>
+              <widget class="QGroupBox" name="groupBox_5" >
+               <property name="title" >
+                <string>Changelog</string>
                </property>
-               <property name="topMargin" >
-                <number>9</number>
-               </property>
-               <property name="rightMargin" >
-                <number>9</number>
-               </property>
-               <property name="bottomMargin" >
-                <number>9</number>
-               </property>
-               <item>
-                <widget class="QTextEdit" name="DescriptionEdit" />
-               </item>
-              </layout>
+               <layout class="QVBoxLayout" >
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <property name="leftMargin" >
+                 <number>9</number>
+                </property>
+                <property name="topMargin" >
+                 <number>9</number>
+                </property>
+                <property name="rightMargin" >
+                 <number>9</number>
+                </property>
+                <property name="bottomMargin" >
+                 <number>9</number>
+                </property>
+                <item>
+                 <widget class="QTextEdit" name="ChangelogEdit" />
+                </item>
+               </layout>
+              </widget>
              </widget>
-             <widget class="QGroupBox" name="groupBox_5" >
-              <property name="title" >
-               <string>Changelog</string>
+             <widget class="QSplitter" name="splitter" >
+              <property name="orientation" >
+               <enum>Qt::Vertical</enum>
               </property>
-              <layout class="QVBoxLayout" >
-               <property name="spacing" >
-                <number>6</number>
+              <widget class="QGroupBox" name="groupBox" >
+               <property name="sizePolicy" >
+                <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
+                 <horstretch>0</horstretch>
+                 <verstretch>1</verstretch>
+                </sizepolicy>
                </property>
-               <property name="leftMargin" >
-                <number>9</number>
+               <property name="sizeIncrement" >
+                <size>
+                 <width>0</width>
+                 <height>1</height>
+                </size>
                </property>
-               <property name="topMargin" >
-                <number>9</number>
+               <property name="styleSheet" >
+                <string/>
                </property>
-               <property name="rightMargin" >
-                <number>9</number>
+               <property name="title" >
+                <string>Dependencies/Suggestions:</string>
                </property>
-               <property name="bottomMargin" >
-                <number>9</number>
-               </property>
-               <item>
-                <widget class="QTextEdit" name="ChangelogEdit" />
-               </item>
-              </layout>
-             </widget>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSplitter" name="splitter" >
-             <property name="orientation" >
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <widget class="QGroupBox" name="groupBox" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
-                <horstretch>0</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="sizeIncrement" >
-               <size>
-                <width>0</width>
-                <height>1</height>
-               </size>
-              </property>
-              <property name="styleSheet" >
-               <string/>
-              </property>
-              <property name="title" >
-               <string>Dependencies/Suggestions:</string>
-              </property>
-              <layout class="QVBoxLayout" >
-               <item>
-                <layout class="QHBoxLayout" >
-                 <item>
-                  <widget class="QComboBox" name="DepSuggestComboBox" >
-                   <item>
-                    <property name="text" >
-                     <string>Dependency</string>
+               <layout class="QVBoxLayout" >
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <item>
+                   <widget class="QComboBox" name="DepSuggestComboBox" >
+                    <item>
+                     <property name="text" >
+                      <string>Dependency</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>Suggestion</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="DepNameEdit" />
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <item>
+                   <widget class="QComboBox" name="DepConditionComboBox" >
+                    <property name="minimumSize" >
+                     <size>
+                      <width>50</width>
+                      <height>0</height>
+                     </size>
                     </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>Suggestion</string>
+                    <property name="currentIndex" >
+                     <number>1</number>
                     </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="DepNameEdit" />
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" >
-                 <item>
-                  <widget class="QComboBox" name="DepConditionComboBox" >
-                   <property name="minimumSize" >
-                    <size>
-                     <width>50</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="currentIndex" >
-                    <number>1</number>
-                   </property>
-                   <item>
+                    <item>
+                     <property name="text" >
+                      <string>any</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>>=</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>==</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>&lt;=</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>></string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>&lt;</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="DepVersionEdit" />
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="buildDependencyCheckBox" >
                     <property name="text" >
-                     <string>any</string>
+                     <string>For build only</string>
                     </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>>=</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>==</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>&lt;=</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>></string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>&lt;</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="DepVersionEdit" />
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="buildDependencyCheckBox" >
-                   <property name="text" >
-                    <string>For build only</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QTableWidget" name="DepTableWidget" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-                   <horstretch>0</horstretch>
-                   <verstretch>1</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="sizeIncrement" >
-                  <size>
-                   <width>0</width>
-                   <height>1</height>
-                  </size>
-                 </property>
-                 <property name="alternatingRowColors" >
-                  <bool>true</bool>
-                 </property>
-                 <property name="selectionMode" >
-                  <enum>QAbstractItemView::SingleSelection</enum>
-                 </property>
-                 <property name="selectionBehavior" >
-                  <enum>QAbstractItemView::SelectRows</enum>
-                 </property>
-                 <property name="gridStyle" >
-                  <enum>Qt::SolidLine</enum>
-                 </property>
-                 <property name="sortingEnabled" >
-                  <bool>false</bool>
-                 </property>
-                 <column>
-                  <property name="text" >
-                   <string>1</string>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QTableWidget" name="DepTableWidget" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                    <horstretch>0</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
                   </property>
-                 </column>
-                 <column>
-                  <property name="text" >
-                   <string>2</string>
+                  <property name="sizeIncrement" >
+                   <size>
+                    <width>0</width>
+                    <height>1</height>
+                   </size>
                   </property>
-                 </column>
-                 <column>
-                  <property name="text" >
-                   <string>3</string>
+                  <property name="alternatingRowColors" >
+                   <bool>true</bool>
                   </property>
-                 </column>
-                 <column>
-                  <property name="text" >
-                   <string>4</string>
+                  <property name="selectionMode" >
+                   <enum>QAbstractItemView::SingleSelection</enum>
                   </property>
-                 </column>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" >
-                 <property name="spacing" >
-                  <number>6</number>
-                 </property>
-                 <property name="leftMargin" >
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin" >
-                  <number>0</number>
-                 </property>
-                 <property name="rightMargin" >
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin" >
-                  <number>0</number>
-                 </property>
-                 <item>
-                  <widget class="QPushButton" name="generateDepsButton" >
-                   <property name="enabled" >
-                    <bool>false</bool>
-                   </property>
+                  <property name="selectionBehavior" >
+                   <enum>QAbstractItemView::SelectRows</enum>
+                  </property>
+                  <property name="gridStyle" >
+                   <enum>Qt::SolidLine</enum>
+                  </property>
+                  <property name="sortingEnabled" >
+                   <bool>false</bool>
+                  </property>
+                  <property name="columnCount" >
+                   <number>5</number>
+                  </property>
+                  <column>
                    <property name="text" >
-                    <string>Generate</string>
+                    <string>name</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer>
-                   <property name="orientation" >
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" >
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="addDepFromFilesBtn" >
+                  </column>
+                  <column>
                    <property name="text" >
-                    <string>...</string>
+                    <string>condition</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="DepAddButton" >
+                  </column>
+                  <column>
                    <property name="text" >
-                    <string>Add</string>
+                    <string>version</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="DepDeleteButton" >
+                  </column>
+                  <column>
                    <property name="text" >
-                    <string>Delete</string>
+                    <string>type</string>
                    </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QGroupBox" name="groupBox_3" >
-              <property name="sizeIncrement" >
-               <size>
-                <width>0</width>
-                <height>1</height>
-               </size>
-              </property>
-              <property name="title" >
-               <string>Tags</string>
-              </property>
-              <layout class="QVBoxLayout" >
-               <item>
-                <layout class="QHBoxLayout" >
-                 <item>
-                  <widget class="QComboBox" name="tagBox" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-                     <horstretch>1</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="editable" >
-                    <bool>true</bool>
-                   </property>
-                   <item>
-                    <property name="text" >
-                     <string>base</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>base-utils</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>print</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>desktop</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>utils</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>audio</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>xapps</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>libs</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>doc</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>multimedia</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>deprecated</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>devel</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>emacs</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>kde</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>koffice</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>network</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>openoffice</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>server</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>tex</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>tcl</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>virtual</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>x11</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text" >
-                     <string>x11-fonts</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="TagAddButton" >
+                  </column>
+                  <column>
                    <property name="text" >
-                    <string>Add</string>
+                    <string>flags</string>
                    </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QListWidget" name="TagListWidget" >
-                 <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
-                   <horstretch>0</horstretch>
-                   <verstretch>1</verstretch>
-                  </sizepolicy>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" >
-                 <item>
-                  <spacer>
-                   <property name="orientation" >
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" >
-                    <size>
-                     <width>231</width>
-                     <height>25</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="TagDeleteButton" >
-                   <property name="text" >
-                    <string>Delete</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
+                  </column>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <property name="spacing" >
+                   <number>6</number>
+                  </property>
+                  <property name="leftMargin" >
+                   <number>0</number>
+                  </property>
+                  <property name="topMargin" >
+                   <number>0</number>
+                  </property>
+                  <property name="rightMargin" >
+                   <number>0</number>
+                  </property>
+                  <property name="bottomMargin" >
+                   <number>0</number>
+                  </property>
+                  <item>
+                   <widget class="QPushButton" name="generateDepsButton" >
+                    <property name="enabled" >
+                     <bool>false</bool>
+                    </property>
+                    <property name="text" >
+                     <string>Generate</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="addDepFromFilesBtn" >
+                    <property name="text" >
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="DepAddButton" >
+                    <property name="text" >
+                     <string>Add</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="DepDeleteButton" >
+                    <property name="text" >
+                     <string>Delete</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QGroupBox" name="groupBox_3" >
+               <property name="sizeIncrement" >
+                <size>
+                 <width>0</width>
+                 <height>1</height>
+                </size>
+               </property>
+               <property name="title" >
+                <string>Tags</string>
+               </property>
+               <layout class="QVBoxLayout" >
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <item>
+                   <widget class="QComboBox" name="tagBox" >
+                    <property name="sizePolicy" >
+                     <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                      <horstretch>1</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="editable" >
+                     <bool>true</bool>
+                    </property>
+                    <item>
+                     <property name="text" >
+                      <string>base</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>base-utils</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>print</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>desktop</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>utils</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>audio</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>xapps</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>libs</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>doc</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>multimedia</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>deprecated</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>devel</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>emacs</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>kde</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>koffice</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>network</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>openoffice</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>server</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>tex</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>tcl</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>virtual</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>x11</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text" >
+                      <string>x11-fonts</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="TagAddButton" >
+                    <property name="text" >
+                     <string>Add</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="TagListWidget" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+                    <horstretch>0</horstretch>
+                    <verstretch>1</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>231</width>
+                      <height>25</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="TagDeleteButton" >
+                    <property name="text" >
+                     <string>Delete</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </widget>
            </item>
@@ -1457,8 +1438,8 @@
 p, li { white-space: pre-wrap; }
 &lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:7pt; font-weight:400; font-style:normal;">
 &lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Note: the script will receive two arguments:&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;">$1&lt;span style=" font-weight:400;"> - install destination&lt;/span>&lt;/p>
-&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$2&lt;/span> - package source root&lt;/p>&lt;/body>&lt;/html></string>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-weight:600;">$1&lt;span style=" font-weight:400;"> - source root&lt;/span>&lt;/p>
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">&lt;span style=" font-weight:600;">$2&lt;/span> - install destination&lt;/p>&lt;/body>&lt;/html></string>
                   </property>
                  </widget>
                 </item>
@@ -1770,6 +1751,9 @@ p, li { white-space: pre-wrap; }
        <property name="icon" >
         <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
        </property>
+       <property name="shortcut" >
+        <string>F1</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -1779,6 +1763,9 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="icon" >
         <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+       </property>
+       <property name="shortcut" >
+        <string>Ctrl+O</string>
        </property>
       </widget>
      </item>
@@ -1816,6 +1803,9 @@ p, li { white-space: pre-wrap; }
        <property name="icon" >
         <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
+       <property name="shortcut" >
+        <string>Ctrl+S</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -1835,6 +1825,9 @@ p, li { white-space: pre-wrap; }
        </property>
        <property name="icon" >
         <iconset>/usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
+       </property>
+       <property name="shortcut" >
+        <string>Ctrl+Q</string>
        </property>
       </widget>
      </item>

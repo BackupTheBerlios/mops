@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.23 2007/10/31 01:52:38 i27249 Exp $
+* $Id: file_routines.h,v 1.24 2007/11/02 17:45:45 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -19,13 +19,13 @@ using namespace std;
 
 
 
-//#include "local_package.h"
 #include <unistd.h>
 #include <errno.h>
-//#include <libtar.h>
 #include <sys/dir.h>
 #include <sys/types.h>
 #include <sys/param.h>
+vector<string> getDirectoryList(string directory_name);
+
 bool isDirectory(string dir_name);
 bool isMounted(string mountpoint);
 bool lockDatabase();
@@ -43,6 +43,9 @@ bool FileNotEmpty(string filename);
 string ReadFile(string filename);
 int WriteFile(string filename, string data);
 int extractFromTgz(string filename, string file_to_extract, string output);
+int extractFromTar(string filename, string file_to_extract, string output);
+int extractFromTbz2(string filename, string file_to_extract, string output);
+
 string getCdromVolname(string *rep_location=NULL);
 bool cacheCdromIndex(string vol_id, string rep_location);
 // Package type definition (also defines repository type)

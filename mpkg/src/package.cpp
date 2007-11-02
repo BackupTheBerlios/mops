@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.5 2007/11/01 01:33:21 i27249 Exp $
+// $Id: package.cpp,v 1.6 2007/11/02 17:45:45 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -261,6 +261,7 @@ string BinaryPackage::readPostremoveScript()
 	return ReadFile(pkg_dir+"/install/postremove.sh");
 }
 
+
 bool SourcePackage::createFolderStructure()
 {
 	if (extracted)
@@ -341,16 +342,21 @@ bool SourcePackage::removeSource(string filename)
 	printf("Removing source\n");
 	if (extracted)
 	{
+		vector<string> sList = getSourceFilenames();
+		if (sList.size()>1) mWarning("Multiple source filenames");
 
-		if (!filename.empty()) source_filename = filename;
-		if (source_filename.empty()) {
-			system("rm " + pkg_dir + "/*");
+		if (filename.empty()) {
+			string tmp;
+			for (unsigned int i=0; i<sList.size(); i++)
+			{
+				tmp = pkg_dir+"/"+sList[i];
+				unlink(tmp.c_str());
+			}
 			return true;
 		}
-		if (unlink(source_filename.c_str())==0) return true;
 		else {
-			mError("Error unlinking");
-			return false;
+			if (unlink(filename.c_str())==0) return true;
+			else return false;
 		}
 	}
 	else {
@@ -363,8 +369,14 @@ bool SourcePackage::removeAllPatches()
 {
 	if (extracted)
 	{
-		if (system("rm " + pkg_dir + "/patches/*")==0) return true;
-		else return false;
+		vector<string> pList = getEmbeddedPatchList();
+		string tmp;
+		for (unsigned int i=0; i<pList.size(); i++)
+		{
+			tmp = pkg_dir + "/patches/" + pList[i];
+			unlink(tmp.c_str());
+		}
+		return true;
 	}
 	else return false;
 }
@@ -461,6 +473,36 @@ bool SourceFile::download()
 	system("(cd " + filepath + "; cp " + url + " .)");
 	filepath += "/" + getFilename(url);
 	return true;
+}
+vector<string> SourcePackage::getEmbeddedPatchList()
+{
+	vector<string> dlist = getDirectoryList(pkg_dir+"/patches");
+	vector<string> ret;
+	for (unsigned int i=0; i<dlist.size(); i++)
+	{
+		if (dlist[i].find(".diff.gz")!=dlist[i].length()-strlen(".diff.gz")) {
+			mWarning("Unknown patch filetype: " + dlist[i]);
+		}
+		else ret.push_back(dlist[i]);
+	}
+	return ret;
+}
+vector<string> SourcePackage::getSourceFilenames()
+{
+	vector<string> dlist = getDirectoryList(pkg_dir);
+	vector<string> ret;
+	for (unsigned int i=0; i<dlist.size(); i++) {
+		if (getExtension(dlist[i])!="gz" && 
+				getExtension(dlist[i])!="bz2" &&
+				getExtension(dlist[i])!="zip" &&
+				getExtension(dlist[i])!="rar")
+		{
+			mWarning("Unknown source filetype: " + dlist[i]);
+		}
+		else ret.push_back(dlist[i]);
+	}
+
+	return ret;
 }
 
 bool SourceFile::analyze()

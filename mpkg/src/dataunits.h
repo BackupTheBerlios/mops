@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.50 2007/10/31 01:52:38 i27249 Exp $
+	$Id: dataunits.h,v 1.51 2007/11/02 17:45:45 i27249 Exp $
 */
 
 
@@ -75,6 +75,7 @@ class DEPENDENCY
 	string dependency_package_name;
 	int dependency_broken;
 	versionData version_data;
+	bool buildOnly;
 
     public:
 	// Comparsion
@@ -88,6 +89,7 @@ class DEPENDENCY
 	string *get_package_version();
 	int get_broken();
 	versionData *get_version_data();
+	bool isBuildOnly();
 
 	// Visual data retriveal (UI purposes)
 	string get_vbroken();
@@ -101,6 +103,7 @@ class DEPENDENCY
 	void set_package_name(string* package_name);
 	void set_package_version(string* package_version);
 	void set_broken(int broken);
+	void setBuildOnly(bool flag=true);
 
 	// Emptyness, empty, etc
 	bool IsEmpty();

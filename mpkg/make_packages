@@ -28,6 +28,7 @@ cp  pkg_descriptions/console/* out_packages/console/install
 mkdir -p out_packages/console/usr/bin
 cp /usr/bin/mpkg out_packages/console/usr/bin/
 (cd out_packages/console/usr/bin; ln -s mpkg buildpkg)
+(cd out_packages/console/usr/bin; ln -s mpkg buildsrcpkg)
 mkdir -p out_packages/console/usr/man/ru/man8
 mkdir -p out_packages/console/usr/man/man8
 cp mpkg.8.en out_packages/console/usr/man/man8/mpkg.8

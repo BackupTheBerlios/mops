@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.46 2007/10/31 01:52:38 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.47 2007/11/02 17:45:45 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -11,6 +11,27 @@
 #include <iostream>
 vector<string> temp_files;
 extern int errno;
+vector<string> getDirectoryList(string directory_name)
+{
+	vector<string> ret;
+	DIR *patchDir = opendir(directory_name.c_str());
+	if (!patchDir) {
+		mWarning("Folder doesn't exist");
+		return ret;
+	}
+	struct dirent *dEntry = readdir(patchDir);
+	string d;
+	while (dEntry != NULL) {
+		d = (string) dEntry->d_name;
+		if (d!="." && d!="..") {
+			printf("Entry: %s\n", d.c_str());
+			ret.push_back(d);
+		}
+		dEntry = readdir(patchDir);
+	}
+	closedir(patchDir);
+	return ret;
+}
 
 bool isProcessRunning(string pid)
 {
@@ -330,6 +351,16 @@ vector<string> ReadFileStrings(string filename)
 int extractFromTgz(string filename, string file_to_extract, string output)
 {
 	string cmd = "tar zxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
+	return system(cmd.c_str());
+}
+int extractFromTar(string filename, string file_to_extract, string output)
+{
+	string cmd = "tar xf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
+	return system(cmd.c_str());
+}
+int extractFromTbz2(string filename, string file_to_extract, string output)
+{
+	string cmd = "tar jxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
 	return system(cmd.c_str());
 }
 

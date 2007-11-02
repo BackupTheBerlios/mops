@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.36 2007/10/31 01:52:38 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.37 2007/11/02 17:45:45 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -16,6 +16,7 @@ using namespace std;
  */
 PackageConfig::PackageConfig(string _f)
 {
+	depCount=-1; suggestCount=-1;
     // new interface using libxml2
     this->errors = 0;
 
@@ -60,6 +61,8 @@ PackageConfig::PackageConfig(string _f)
 
 	if (this->errors == 0) {
 		this->parseOk = true;
+		buildDepDef();
+		buildSugDef();
 	}
 
 	if (this->doc == NULL) {
@@ -67,12 +70,13 @@ PackageConfig::PackageConfig(string _f)
 	} else {
 		mDebug("CENSORED 00-4");
 	}
-    
 
 }
 
 PackageConfig::PackageConfig(xmlChar * membuf, int bufsize)
 {
+	depCount = -1;
+	suggestCount=-1;
     // new interface using libxml2
     this->errors = 0;
 
@@ -119,6 +123,8 @@ PackageConfig::PackageConfig(xmlChar * membuf, int bufsize)
 
 	if (this->errors == 0) {
 		this->parseOk = true;
+		buildDepDef();
+		buildSugDef();
 	}
 
 	if (this->doc == NULL) {
@@ -150,6 +156,8 @@ bool PackageConfig::hasErrors() {
  */
 PackageConfig::PackageConfig(xmlNodePtr __rootXmlNodePtr)
 {
+	depCount = -1;
+	suggestCount = -1;
 	mDebug("INITIALIZATION");
 	parseOk = true;
 	//curNode = __rootXmlNodePtr;
@@ -174,6 +182,8 @@ PackageConfig::PackageConfig(xmlNodePtr __rootXmlNodePtr)
 		//	parseOk=false;
 		}
 	}
+	buildDepDef();
+	buildSugDef();
 }
 
 PackageConfig::~PackageConfig()
@@ -780,9 +790,163 @@ string PackageConfig::getShortDescription(string lang)
     }
 }
 
+void PackageConfig::buildSugDef()
+{
+	suggestTreeDef.clear();
+	xmlXPathObjectPtr res;
+	string path;
+	suggestCount=0;
+	for (unsigned int i=1; ; i++) {
+		//printf("Try %d\n", i);
+		path = "//package/suggests/suggest[" + IntToStr(i)+"]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) {
+			suggestCount++;
+		//	printf("suggestCount = %d\n", suggestCount);
+		}
+		else break;
+	}
+//	printf("Received %d suggestions\n", suggestCount);
+	suggestTreeDef.resize(suggestCount);
+	for (int i=1; i<=suggestCount; i++) {
+		path = "//suggests/suggest[" + IntToStr(i) + "]/name[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) {
+			suggestTreeDef[i-1].name=true;
+//			printf("found name in %d suggest\n", i);
+		}
+		else {
+//			printf("NOT FOUND name in %d suggest\n", i);
+			suggestTreeDef[i-1].name=false;
+		}
+	}
+	for (int i=1; i<=suggestCount; i++) {
+		path = "//suggests/suggest[" + IntToStr(i) + "]/condition[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) suggestTreeDef[i-1].condition=true;
+		else suggestTreeDef[i-1].condition=false;
+	}
+	for (int i=1; i<=suggestCount; i++) {
+		path = "//suggests/suggest[" + IntToStr(i) + "]/version[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) suggestTreeDef[i-1].version=true;
+		else suggestTreeDef[i-1].version=false;
+	}
+	for (int i=1; i<=suggestCount; i++) {
+		path = "//suggests/suggest[" + IntToStr(i) + "]/build_only[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) suggestTreeDef[i-1].build_only=true;
+		else suggestTreeDef[i-1].build_only=false;
+	}
+	for (unsigned int i=0; i<suggestTreeDef.size(); i++)
+	{
+		//printf("[%d] %d %d %d %d\n", i, suggestTreeDef[i].name, suggestTreeDef[i].condition, suggestTreeDef[i].version, suggestTreeDef[i].build_only);
+	}
+
+
+}
+
+
+
+void PackageConfig::buildDepDef()
+{
+	dependencyTreeDef.clear();
+	xmlXPathObjectPtr res;
+	string path;
+	depCount=0;
+	for (unsigned int i=1; ; i++) {
+		//printf("Try %d\n", i);
+		path = "//package/dependencies/dep[" + IntToStr(i)+"]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) {
+			depCount++;
+		//	printf("depCount = %d\n", depCount);
+		}
+		else break;
+	}
+//	printf("Received %d deps\n", depCount);
+	dependencyTreeDef.resize(depCount);
+	for (int i=1; i<=depCount; i++) {
+		path = "//dependencies/dep[" + IntToStr(i) + "]/name[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) {
+			dependencyTreeDef[i-1].name=true;
+//			printf("found name if %d dependency\n", i);
+		}
+		else {
+//			printf("NOT FOUND name in %d dependency\n", i);
+			dependencyTreeDef[i-1].name=false;
+		}
+	}
+	for (int i=1; i<=depCount; i++) {
+		path = "//dependencies/dep[" + IntToStr(i) + "]/condition[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) dependencyTreeDef[i-1].condition=true;
+		else dependencyTreeDef[i-1].condition=false;
+	}
+	for (int i=1; i<=depCount; i++) {
+		path = "//dependencies/dep[" + IntToStr(i) + "]/version[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) dependencyTreeDef[i-1].version=true;
+		else dependencyTreeDef[i-1].version=false;
+	}
+	for (int i=1; i<=depCount; i++) {
+		path = "//dependencies/dep[" + IntToStr(i) + "]/build_only[1]";
+		res = getNodeSet((const xmlChar *) path.c_str());
+		if (res) dependencyTreeDef[i-1].build_only=true;
+		else dependencyTreeDef[i-1].build_only=false;
+	}
+	for (unsigned int i=0; i<dependencyTreeDef.size(); i++)
+	{
+		//printf("[%d] %d %d %d %d\n", i, dependencyTreeDef[i].name, dependencyTreeDef[i].condition, dependencyTreeDef[i].version, dependencyTreeDef[i].build_only);
+	}
+
+
+}
+vector<bool> PackageConfig::getDepBuildOnlyFlags()
+{
+	//printf("Getting buildonly flags, deoCount = %d\n",depCount);
+	vector<bool> a;
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+	xmlNodePtr nPtr;
+    	res = getNodeSet(GET_PKG_DEP_BUILDONLY);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+		for (int i=0; i<depCount; i++) {
+			//printf("Try %d\n", i);
+			if (!dependencyTreeDef[i].build_only) {
+				//printf("zaglushka!\n");
+				a.push_back(false); 
+				continue;
+			}
+			//else printf("Hm... item exist!\n");
+
+			nPtr = nodeset->nodeTab[0]->xmlChildrenNode;
+			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+
+	        	const char * _result = (const char * )key;
+		        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        		mDebug("DEP BUILD_ONLY = '" +strim( __r) + "'");
+		        if (strim(__r)=="true") a.push_back(true);
+			else a.push_back(false);
+	    	}
+        	return a;
+    	}
+	else {
+		for (int i=0; i<depCount; i++)
+		{
+			a.push_back(false);
+		}
+	}
+	mWarning("No buildonly nodes!");
+	return a;
+}
 
 vector<string> PackageConfig::getDepNames()
 {
+	//printf("getting names. depcount = %d\n", depCount);
 	vector<string> a;
 	xmlNodeSetPtr nodeset;
 	xmlXPathObjectPtr res;
@@ -792,7 +956,11 @@ vector<string> PackageConfig::getDepNames()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < depCount; i++) {
+			if (!dependencyTreeDef[i].name) {
+				a.push_back(""); 
+				continue;
+			}
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
@@ -800,7 +968,14 @@ vector<string> PackageConfig::getDepNames()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
+	}
+	else {
+		for (int i=0; i<depCount; i++)
+		{
+			a.push_back("");
+		}
+	}
+	
 	return a;
 }
 vector<string> PackageConfig::getDepConditions()
@@ -814,7 +989,12 @@ vector<string> PackageConfig::getDepConditions()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < depCount; i++) {
+			if (!dependencyTreeDef[i].condition) {
+				a.push_back(""); 
+				continue;
+			}
+
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : "OMGWTF!!!!";
@@ -822,7 +1002,14 @@ vector<string> PackageConfig::getDepConditions()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
+	}
+	else {
+		for (int i=0; i<depCount; i++)
+		{
+			a.push_back("");
+		}
+	}
+
 	return a;
 }
 
@@ -837,7 +1024,12 @@ vector<string> PackageConfig::getDepVersions()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < depCount; i++) {
+			if (!dependencyTreeDef[i].version) {
+				a.push_back(""); 
+				continue;
+			}
+
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
@@ -846,6 +1038,13 @@ vector<string> PackageConfig::getDepVersions()
 		}
 		return a;
 	} 
+	else {
+		for (int i=0; i<depCount; i++)
+		{
+			a.push_back("");
+		}
+	}
+
 	return a;;
 }
 
@@ -860,7 +1059,11 @@ vector<string> PackageConfig::getSuggestNames()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < suggestCount; i++) {
+			if (!suggestTreeDef[i].name) {
+				a.push_back("");
+				continue;
+			}
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
@@ -868,8 +1071,11 @@ vector<string> PackageConfig::getSuggestNames()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
-	return a;;
+	}
+	else {
+		a.resize(suggestCount);
+		return a;
+	}
 }
 vector<string> PackageConfig::getSuggestConditions()
 {
@@ -882,7 +1088,12 @@ vector<string> PackageConfig::getSuggestConditions()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < suggestCount; i++) {
+			if (!suggestTreeDef[i].condition) {
+				a.push_back("");
+				continue;
+			}
+
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
@@ -890,8 +1101,11 @@ vector<string> PackageConfig::getSuggestConditions()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
-	return a;
+	}
+	else {
+		a.resize(suggestCount);
+		return a;
+	}
 }
 
 vector<string> PackageConfig::getSuggestVersions()
@@ -905,7 +1119,12 @@ vector<string> PackageConfig::getSuggestVersions()
 	if (res) {
 
 		nodeset = res->nodesetval;
-		for (i = 0; i < nodeset->nodeNr; i++) {
+		for (i = 0; i < suggestCount; i++) {
+			if (!suggestTreeDef[i].version) {
+				a.push_back("");
+				continue;
+			}
+
 			xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[i]->xmlChildrenNode,1);
 			const char * _result = (const char * )key;
 			std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
@@ -913,7 +1132,10 @@ vector<string> PackageConfig::getSuggestVersions()
 			a.push_back(strim(__r));
 		}
 		return a;
-	} 
+	}
+	else {
+		a.resize(suggestCount);
+	}
 	return a;
 }
 

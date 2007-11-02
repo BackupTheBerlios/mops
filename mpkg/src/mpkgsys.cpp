@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.56 2007/11/01 06:18:13 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.57 2007/11/02 17:45:45 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -335,7 +335,7 @@ int mpkgSys::emerge_package(string file_url, string *package_name, string march,
 	}
 	if (build_system=="scons")
 	{
-		printf("Sorry, SCons isn't supported yet. Please specify exact assembly instructions in build\n");
+		printf("Sorry, SCons isn't supported yet. Please specify script-based assembly instructions in build\n");
 		return -5;
 	}
 	if (build_system=="custom")

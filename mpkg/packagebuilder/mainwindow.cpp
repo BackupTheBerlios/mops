@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.40 2007/11/01 01:33:21 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.41 2007/11/02 17:45:45 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -13,6 +13,7 @@
 
 Form::Form(QWidget *parent, string arg)
 {
+	pBuilder_isStartup = true;
 	if (arg.empty()) dataType=DATATYPE_NEW;
 	_arg = arg;
 	modified=false;
@@ -23,8 +24,9 @@ Form::Form(QWidget *parent, string arg)
 	else ui.setupUi(parent);
 
 	ui.openDirectoryButton->hide();	
-	ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
-	ui.DepTableWidget->horizontalHeader()->hide();
+	//ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+	//ui.DepTableWidget->horizontalHeader()->hide();
+	ui.DepTableWidget->verticalHeader()->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 
@@ -129,7 +131,7 @@ void Form::loadData()
 	
 void Form::loadFile(QString filename)
 {
-	if (filename.isEmpty())
+	if (filename.isEmpty() && !pBuilder_isStartup)
 	{
 		filename = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
 		if (filename.isEmpty()) return;
@@ -371,6 +373,7 @@ void Form::loadFile(QString filename)
 		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
 		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
 		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
+		if (pkg.get_dependencies()->at(i).isBuildOnly()) ui.DepTableWidget->setItem(0,4,new QTableWidgetItem("build_only"));
 	}
 	string tag_tmp;
 	for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
@@ -515,6 +518,11 @@ void Form::saveFile()
 			}
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("version");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
+			if (ui.DepTableWidget->item(i,4)->text().toStdString()=="build_only")
+			{
+				node.getChildNode("dependencies").getChildNode("dep",dcurr).addChild("build_only");
+				node.getChildNode("dependencies").getChildNode("dep",dcurr).getChildNode("build_only").addText("true");
+			}
 			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
 			{
 				slack_required += ui.DepTableWidget->item(i,2)->text().toStdString() + "\n";
@@ -737,9 +745,14 @@ void Form::addDepsFromFiles()
 	if (dialog->exec()) files = dialog->selectedFiles();
 	PackageConfig *p;
 	string tmp_xml = get_tmp_file();
+	int e_res=-1;
 	for (int i=0; i<files.size(); i++)
 	{
-		if (extractFromTgz(files.at(i).toStdString(), "install/data.xml", tmp_xml)==0)
+		if (getExtension(files.at(i).toStdString())=="tgz")
+			e_res = extractFromTgz(files.at(i).toStdString(), "install/data.xml", tmp_xml);
+		if (getExtension(files.at(i).toStdString())=="spkg")
+			e_res = extractFromTar(files.at(i).toStdString(), "install/data.xml", tmp_xml);
+		if (e_res==0)
 		{
 			p = new PackageConfig(tmp_xml);
 			ui.DepNameEdit->setText(p->getName().c_str());
@@ -749,6 +762,7 @@ void Form::addDepsFromFiles()
 			delete p;
 			unlink(tmp_xml.c_str());
 		}
+		else QMessageBox::warning(this, tr("Error importing dependencies"), tr("Cannot import dependency from file ") + files.at(i), QMessageBox::Ok, QMessageBox::Ok);
 	}
 }
 
@@ -763,6 +777,8 @@ void Form::addDependency(){
 			ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(ui.DepNameEdit->text()));
 			ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(ui.DepConditionComboBox->currentText()));
 			ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(ui.DepVersionEdit->text()));
+			if (ui.buildDependencyCheckBox->isChecked()) ui.DepTableWidget->setItem(0,4, new QTableWidgetItem("build_only"));
+			else ui.DepTableWidget->setItem(0,4,new QTableWidgetItem(""));
 			ui.DepNameEdit->clear();
 			ui.DepVersionEdit->clear();
 			ui.DepSuggestComboBox->setCurrentIndex(0);

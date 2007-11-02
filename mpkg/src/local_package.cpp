@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.72 2007/10/31 01:52:38 i27249 Exp $
+$Id: local_package.cpp,v 1.73 2007/11/02 17:45:45 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -63,9 +63,19 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 	vector<string> vec_tmp_conditions;
 	vector<string> vec_tmp_versions;
 
+	vector<bool> vec_tmp_buildflags;
 	vec_tmp_names=p.getDepNames();
 	vec_tmp_conditions=p.getDepConditions();
 	vec_tmp_versions=p.getDepVersions();
+	vec_tmp_buildflags = p.getDepBuildOnlyFlags();
+	// Check sizes:
+	if (vec_tmp_names.size()!=vec_tmp_buildflags.size())
+	{
+		mError("Vector dimensions mismatch!");
+		printf("vec_tmp_names size: %d\nvec_tmp_buildflags.size: %d\n", vec_tmp_names.size(), vec_tmp_buildflags.size());
+		abort();
+	}
+
 
 	for (unsigned int i=0;i<vec_tmp_names.size();i++)
 	{
@@ -73,6 +83,7 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 		dep_tmp.set_package_version(&vec_tmp_versions[i]);
 		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
 		*dep_tmp.get_type()="DEPENDENCY";
+		dep_tmp.setBuildOnly(vec_tmp_buildflags[i]);
 		data->get_dependencies()->push_back(dep_tmp);
 		dep_tmp.clear();
 	}

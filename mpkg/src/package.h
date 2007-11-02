@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.4 2007/11/01 01:33:21 i27249 Exp $
+// $Id: package.h,v 1.5 2007/11/02 17:45:45 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -71,6 +71,9 @@ class SourcePackage: public BinaryPackage
 		bool isSourceEmbedded(string url);
 		bool isPatchEmbedded(string patch_name);
 		string readBuildScript();
+
+		vector<string> getEmbeddedPatchList();
+		vector<string> getSourceFilenames();
 
 };
 
