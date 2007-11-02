@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.77 2007/11/02 17:45:45 i27249 Exp $
+	$Id: dataunits.cpp,v 1.78 2007/11/02 20:19:45 i27249 Exp $
 */
 
 
@@ -376,7 +376,24 @@ void _sortLocations(vector<LOCATION>* locations)
 	}
 
 }
+void PACKAGE::set_installed_by_dependency(int value)
+{
+	package_installed_by_dependency = value;
+}
 
+int PACKAGE::get_installed_by_dependency()
+{
+	return package_installed_by_dependency;
+}
+int PACKAGE::get_type()
+{
+	return package_type;
+}
+void PACKAGE::set_type(int type)
+{
+	package_type = type;
+}
+	
 void PACKAGE::sortLocations()
 {
 	_sortLocations(&package_locations);
@@ -970,6 +987,8 @@ PACKAGE::PACKAGE()
 	package_action=ST_NONE;
 	newPackage = false;
 	package_err_type=DEP_OK;
+	package_type = PKGTYPE_BINARY;
+	package_installed_by_dependency = 0;
 }
 PACKAGE::~PACKAGE()
 {
@@ -1004,16 +1023,13 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 		if (packages[i].priority>min_priority) min_priority = packages[i].priority;
 	}
 
-//	printf("continue sorting, packages.size = %d, min_priority = %d...\n",packages.size(),min_priority);
 	vector<PACKAGE> sorted;
 	if (!reverse_order)
 	{	
 		for (int p=0; p<=min_priority; p++)
 		{
-			//printf("!rev_order, p=%d, min_priority=%d\n",p,min_priority);
 			for (unsigned int i=0; i<packages.size(); i++)
 			{
-			//	printf("pkg[%d]\n",i);
 				if (packages[i].priority==p) sorted.push_back(packages[i]);
 			}
 		}

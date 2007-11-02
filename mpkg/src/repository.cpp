@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.72 2007/10/20 14:03:42 i27249 Exp $
+ * $Id: repository.cpp,v 1.73 2007/11/02 20:19:45 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -343,21 +343,16 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	if (file_status->st_ino!=0) x=y;
 
 	mDebug("processing package "+ (string) filename);
-	string _package=filename;
-       	string ext;
-	for (unsigned int i=_package.length()-4;i<_package.length();i++)
-	{
-		ext+=_package[i];
-	}
+       	string ext = getExtension(filename);
 
-	if (filetype==FTW_F && ext==".tgz")
+	if (filetype==FTW_F && ext=="tgz")
 	{
 
 		pkgcounter++;
 		printf("[%d/%d] indexing file %s\n",pkgcounter,pkgcount_ftw, filename);
 //		cout<< "indexing file " << filename << "..."<<endl;
 		FILE *log=fopen("index.log", "a");
-		LocalPackage lp(_package);
+		LocalPackage lp(filename);
 		mDebug("PP 0-0");
 		int errCode = lp.injectFile(true);
 		//printf("injectFile returned %d\n", errCode);
@@ -472,14 +467,9 @@ int countPackage(const char *filename, const struct stat *file_status, int filet
 	if (file_status->st_ino!=0) x=y;
 
 	mDebug("processing package "+ (string) filename);
-	string _package=filename;
-       	string ext;
-	for (unsigned int i=_package.length()-4;i<_package.length();i++)
-	{
-		ext+=_package[i];
-	}
+       	string ext = getExtension(filename);
 
-	if (filetype==FTW_F && ext==".tgz")
+	if (filetype==FTW_F && ext=="tgz")
 	{
 		pkgcount_ftw++;
 	}

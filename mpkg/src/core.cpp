@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.76 2007/11/01 01:33:21 i27249 Exp $
+ *	$Id: core.cpp,v 1.77 2007/11/02 20:19:45 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -333,6 +333,7 @@ int mpkgDatabase::add_dependencylist_record(int package_id, vector<DEPENDENCY> *
 		sqlInsert.addField("dependency_type", deplist->at(i).get_type());
 		sqlInsert.addField("dependency_package_name", deplist->at(i).get_package_name());
 		sqlInsert.addField("dependency_package_version", deplist->at(i).get_package_version());
+		sqlInsert.addField("dependency_build_only", deplist->at(i).isBuildOnly());
 		sqlTable->addRecord(&sqlInsert);
 	}
 	int ret = db.sql_insert("dependencies", *sqlTable);
@@ -407,6 +408,8 @@ int mpkgDatabase::add_package_record (PACKAGE *package)
 	sqlInsert.addField("package_md5", package->get_md5());
 	sqlInsert.addField("package_filename", package->get_filename());
 	sqlInsert.addField("package_betarelease", package->get_betarelease());
+	sqlInsert.addField("package_installed_by_dependency", package->get_installed_by_dependency());
+	sqlInsert.addField("package_type", package->get_type());
 
 	db.sql_insert("packages", sqlInsert);
 	
@@ -556,6 +559,8 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 	int fPackage_md5 = sqlTable->getFieldIndex("package_md5");
 	int fPackage_filename = sqlTable->getFieldIndex("package_filename");
 	int fPackage_betarelease =sqlTable->getFieldIndex("package_betarelease");
+	int fPackage_installed_by_dependency = sqlTable->getFieldIndex("package_installed_by_dependency");
+	int fPackage_type = sqlTable->getFieldIndex("package_type");
 
 
 	for (int i=0; i<sqlTable->getRecordCount(); i++)
@@ -579,6 +584,8 @@ int mpkgDatabase::get_packagelist (SQLRecord *sqlSearch, PACKAGE_LIST *packageli
 		packagelist->get_package(i)->set_md5(sqlTable->getValue(i, fPackage_md5));
 		packagelist->get_package(i)->set_filename(sqlTable->getValue(i, fPackage_filename));
 		packagelist->get_package(i)->set_betarelease(sqlTable->getValue(i, fPackage_betarelease));
+		packagelist->get_package(i)->set_installed_by_dependency(atoi(sqlTable->getValue(i, fPackage_installed_by_dependency)->c_str()));
+		packagelist->get_package(i)->set_type(atoi(sqlTable->getValue(i, fPackage_type)->c_str()));
 #ifdef ENABLE_INTERNATIONAL
 		get_descriptionlist(packagelist->get_package(i)->get_id(), packagelist->get_package(i)->get_descriptions());
 #endif
@@ -702,30 +709,6 @@ void mpkgDatabase::get_full_filelist(PACKAGE_LIST *pkgList)
 
 
 
-int mpkgDatabase::get_dependencylist(int package_id, vector<DEPENDENCY> *deplist)
-{
-	SQLTable *sqlTable = new SQLTable;
-	SQLRecord sqlFields;
-	sqlFields.addField("dependency_condition");
-	sqlFields.addField("dependency_type");
-	sqlFields.addField("dependency_package_name");
-	sqlFields.addField("dependency_package_version");
-	SQLRecord sqlSearch;
-	sqlSearch.addField("packages_package_id", package_id);
-
-	db.get_sql_vtable(sqlTable, sqlFields, "dependencies", sqlSearch);
-
-	deplist->clear();
-	deplist->resize(sqlTable->getRecordCount());
-	for (int row=0; row<sqlTable->getRecordCount(); row++)
-	{
-		deplist->at(row).set_condition(sqlTable->getValue(row, "dependency_condition"));
-		deplist->at(row).set_type(sqlTable->getValue(row, "dependency_type"));
-		deplist->at(row).set_package_name(sqlTable->getValue(row, "dependency_package_name"));
-		deplist->at(row).set_package_version(sqlTable->getValue(row, "dependency_package_version"));
-	}
-	return 0;
-}
 
 void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomplete
 {
@@ -742,6 +725,7 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 	int fDependency_package_name = deplist.getFieldIndex("dependency_package_name");
 	int fDependency_type = deplist.getFieldIndex("dependency_type");
 	int fDependency_package_version = deplist.getFieldIndex("dependency_package_version");
+	int fDependency_build_only = deplist.getFieldIndex("dependency_build_only");
 	
 	// Processing
 	int currentDepID;
@@ -756,6 +740,7 @@ void mpkgDatabase::get_full_dependencylist(PACKAGE_LIST *pkgList) //TODO: incomp
 				dep_tmp.set_type(deplist.getValue(i, fDependency_type));
 				dep_tmp.set_package_name(deplist.getValue(i, fDependency_package_name));
 				dep_tmp.set_package_version(deplist.getValue(i, fDependency_package_version));
+				dep_tmp.setBuildOnly(atoi(deplist.getValue(i, fDependency_build_only)->c_str()));
 				pkgList->get_package(p)->get_dependencies()->push_back(dep_tmp);
 			}
 		}

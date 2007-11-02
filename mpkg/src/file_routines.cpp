@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.47 2007/11/02 17:45:45 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.48 2007/11/02 20:19:45 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -409,38 +409,15 @@ unsigned int CheckFileType(string fname)
 	}
 
 	// Checking extensions and (partially) contents
-	string ext;
-	for (unsigned int i=fname.length()-4; i<fname.length(); i++)
+	string ext = getExtension(fname);
+	if (ext=="tgz")
 	{
-		ext+=fname[i];
+		return PKGTYPE_BINARY;
 	}
-	if (ext==".tgz")
+	if (ext=="spkg")
 	{
-		// Is there a install/data.xml file?
-		string contCheck = get_tmp_file();
-		string check = "tar ztf "+fname+" install/data.xml > "+contCheck+" 2>/dev/null";
-		int tar_ret = system(check.c_str());
-		mDebug("Tar returns "+IntToStr(tar_ret));
-		if (FileNotEmpty(contCheck))
-		{
-			unlink(contCheck.c_str());
-			return PKGTYPE_MOPSLINUX;
-		}
-		else
-		{
-			unlink(contCheck.c_str());
-			return PKGTYPE_SLACKWARE;
-		}
-	}
-	if (ext==".deb")
-	{
-		mDebug("Debian package detected");
-		return PKGTYPE_DEBIAN;
-	}
-	if (ext ==".rpm")
-	{
-		mDebug("RPM package detected");
-		return PKGTYPE_RPM;
+		mDebug("Source MPKG package detected");
+		return PKGTYPE_SOURCE;
 	}
 	mDebug("Unknown package type "+ext);
 	return PKGTYPE_UNKNOWN;

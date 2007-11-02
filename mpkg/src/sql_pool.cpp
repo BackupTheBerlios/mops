@@ -3,12 +3,12 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.50 2007/10/31 01:52:38 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.51 2007/11/02 20:19:45 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
 #include "dbstruct.h"
-const string MPKGTableVersion="1.1";
+const string MPKGTableVersion="1.2";
 bool SQLiteDB::CheckDatabaseIntegrity()
 {
 	if (\
@@ -36,7 +36,7 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 		{
 			// Mean we have an old 1.0 table version. Have to update!
 			if (getuid()!=0) {
-				mError(_("Your database need to be upgraded to new version 1.1 (current version: 1.0).\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(" (current version: 1.0).\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
 				abort(); //return false;
 			}
 			sql_exec("create table mpkg_tableversion (version TEXT NOT NULL);");
@@ -46,8 +46,43 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 		}
 		if (sql_exec("select package_betarelease from packages limit 1;")!=0)
 		{
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(".\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+
 			sql_exec("alter table packages add package_betarelease TEXT NULL;");
 			say(_("Added field package_betarelease to table packages\n"));
+		}
+		if (sql_exec("select package_installed_by_dependency from packages limit 1;")!=0)
+		{
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(".\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+
+			sql_exec("alter table packages add package_installed_by_dependency INTEGER NOT NULL DEFAULT '0';");
+			say(_("Added field package_installed_by_dependency to table packages\n"));
+		}
+		if (sql_exec("select dependency_build_only from dependencies limit 1;")!=0)
+		{
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(".\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+
+			sql_exec("alter table dependencies add dependency_build_only INTEGER NOT NULL DEFAULT '0';");
+			say(_("Added field dependency_build_only to table dependencies\n"));
+		}
+		if (sql_exec("select package_type from packages limit 1;")!=0)
+		{
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(".\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+
+			sql_exec("alter table packages add package_type INTEGER NOT NULL DEFAULT '0';");
+			say(_("Added field package_type to table packages\n"));
 		}
 		return true;
 	}
@@ -285,6 +320,8 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("package_md5");// TEXT NOT NULL,
 		fieldNames.push_back("package_filename");// TEXT NOT NULL
 		fieldNames.push_back("package_betarelease");//TEXT NULL
+		fieldNames.push_back("package_installed_by_dependency"); // INTEGER NOT NULL DEFAULT '0'    (0 - user-requested install, 1 - dependency-requested install, 2 - installed to build something
+		fieldNames.push_back("package_type"); // INTEGER NOT NULL DEFAULT '0' 
 	}
 	
 	if(table_name=="files")
@@ -332,6 +369,7 @@ vector<string> SQLiteDB::getFieldNames(string table_name)
 		fieldNames.push_back("dependency_type");//  INTEGER NOT NULL DEFAULT '1',
 		fieldNames.push_back("dependency_package_name");//  TEXT NOT NULL,
 		fieldNames.push_back("dependency_package_version");//  TEXT NULL
+		fieldNames.push_back("dependency_build_only");// INTEGER NOT NULL DEFAULT '0'
 	}
 #ifdef ENABLE_INTERNATIONAL
 	if (table_name=="descriptions") {

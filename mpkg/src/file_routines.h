@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.24 2007/11/02 17:45:45 i27249 Exp $
+* $Id: file_routines.h,v 1.25 2007/11/02 20:19:45 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -11,12 +11,9 @@
 #include "dataunits.h"
 #include "string_operations.h"
 using namespace std;
-#define PKGTYPE_UNKNOWN 0
-#define PKGTYPE_SLACKWARE 1
-#define PKGTYPE_MOPSLINUX 2
-#define PKGTYPE_DEBIAN 3	// For future implementation
-#define PKGTYPE_RPM 4		// For future implementation
-
+#define PKGTYPE_UNKNOWN -1
+#define PKGTYPE_BINARY 0
+#define PKGTYPE_SOURCE 1
 
 
 #include <unistd.h>

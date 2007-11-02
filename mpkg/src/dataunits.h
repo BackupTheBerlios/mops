@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.51 2007/11/02 17:45:45 i27249 Exp $
+	$Id: dataunits.h,v 1.52 2007/11/02 20:19:45 i27249 Exp $
 */
 
 
@@ -197,6 +197,8 @@ class PACKAGE
 	string package_md5;
 	string package_filename;
 	string package_betarelease;
+	int package_installed_by_dependency;
+	int package_type;
 	int package_err_type;
 
 	// EXTERNAL DATA //
@@ -211,6 +213,8 @@ class PACKAGE
 #endif
     public:
 	string usedSource;
+	int get_type();
+	void set_type(int type);
 	bool isRemoveBlacklisted();
 	bool isUpdating;
 	versionData requiredVersion;
@@ -236,6 +240,7 @@ class PACKAGE
 	bool isItRequired(PACKAGE *testPackage);
 	bool isUpdate();
 	int get_id();
+	int get_installed_by_dependency();
 	string *get_name();
 	string *get_version();
 	string *get_arch();
@@ -274,6 +279,7 @@ class PACKAGE
 	string get_vstatus(bool color=false);
 
 	// Data writing
+	void set_installed_by_dependency(int value);
 	void set_broken(bool flag=true);
 	void set_requiredVersion(versionData *reqVersion);
 	void set_id(int id);

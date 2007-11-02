@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.73 2007/11/02 17:45:45 i27249 Exp $
+$Id: local_package.cpp,v 1.74 2007/11/02 20:19:45 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -233,12 +233,11 @@ int slack2xml(string filename, string xml_output)
 
 
 
-LocalPackage::LocalPackage(string _f, unsigned int pkgType)
+LocalPackage::LocalPackage(string _f)
 {
 	internal=false;
 	mDebug("LocalPackage created");
 	this->filename=_f;
-	this->packageType=pkgType;
 	//_packageFListNode=XMLNode::createXMLTopNode("filelist");
 }
 

@@ -5,7 +5,7 @@ string getDBStructure()
 --\n\
 --	MOPSLinux package system\n\
 --	Database creation script\n\
---	$Id: dbstruct.cpp,v 1.2 2007/10/31 01:52:38 i27249 Exp $\n\
+--	$Id: dbstruct.cpp,v 1.3 2007/11/02 20:19:45 i27249 Exp $\n\
 --\n\
 ----------------------------------------------------------------------\n\
 \n\
@@ -27,7 +27,9 @@ create table packages (\n\
 	package_action INTEGER NOT NULL,\n\
 	package_md5 TEXT NOT NULL,\n\
 	package_filename TEXT NOT NULL,\n\
-	package_betarelease TEXT NOT NULL\n\
+	package_betarelease TEXT NOT NULL,\n\
+	package_installed_by_dependency INTEGER NOT NULL DEFAULT '0',\n\
+	package_type INTEGER NOT NULL DEFAULT '0'\n\
 );\n\
 create index ppname on packages (package_id, package_name, package_version, package_action, package_installed, package_md5);\n\
 \n\
@@ -72,7 +74,8 @@ create table dependencies (\n\
 	dependency_condition INTEGER NOT NULL DEFAULT '1',\n\
 	dependency_type INTEGER NOT NULL DEFAULT '1',\n\
 	dependency_package_name TEXT NOT NULL,\n\
-	dependency_package_version TEXT NULL\n\
+	dependency_package_version TEXT NULL,\n\
+	dependency_build_only INTEGER NOT NULL DEFAULT '0' \
 );\n\
 \n\
 create index pdeps on dependencies (packages_package_id, dependency_id, dependency_package_name, dependency_package_version, dependency_condition);\n\

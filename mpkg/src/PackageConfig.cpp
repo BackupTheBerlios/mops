@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.37 2007/11/02 17:45:45 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.38 2007/11/02 20:19:45 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -940,7 +940,6 @@ vector<bool> PackageConfig::getDepBuildOnlyFlags()
 			a.push_back(false);
 		}
 	}
-	mWarning("No buildonly nodes!");
 	return a;
 }
 
