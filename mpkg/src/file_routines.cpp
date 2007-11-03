@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.48 2007/11/02 20:19:45 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.49 2007/11/03 01:08:15 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -348,15 +348,38 @@ vector<string> ReadFileStrings(string filename)
 	mDebug("Returning strings vector...");
 	return ret;
 }
-int extractFromTgz(string filename, string file_to_extract, string output)
+int extractFiles(string filename, string files_to_extract, string output_dir, string file_type)
 {
-	string cmd = "tar zxf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
-	return system(cmd.c_str());
+	if (!FileExists(output_dir)) {
+		mError("Cannot extract to %d: no such file or directory");
+		return -1;
+	}
+	string tar_cmd;
+	if (file_type.empty()) file_type = getExtension(filename);
+	if (file_type=="tgz" || file_type == "gz") tar_cmd = "tar zxf ";
+	if (file_type=="spkg" || file_type == "tar") tar_cmd = "tar xf ";
+	return system("(cd " + output_dir+"; " + tar_cmd + getAbsolutePath(filename) + " " + files_to_extract + " 2>/dev/null);");
+}
+
+
+int extractFromTgz(string filename, string file_to_extract, string output, string file_type)
+{
+	string tar_cmd;
+	if (file_type.empty()) file_type = getExtension(filename);
+	if (file_type=="tgz" || file_type == "gz") tar_cmd = "tar zxf ";
+	if (file_type=="spkg" || file_type == "tar") tar_cmd = "tar xf ";
+	if (file_type=="bz2") tar_cmd = "tar jxf ";
+	if (tar_cmd.empty()) {
+		mError("Unable to determine type of archive, trying default (tgz)...");
+		tar_cmd = "tar zxf ";
+	}
+	return system(tar_cmd + filename + " " + file_to_extract + " --to-stdout > " + output + " 2>/dev/null");
 }
 int extractFromTar(string filename, string file_to_extract, string output)
 {
-	string cmd = "tar xf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
-	return system(cmd.c_str());
+	return extractFromTgz(filename, file_to_extract, output, "tar");
+//	string cmd = "tar xf "+filename+" "+ file_to_extract + " --to-stdout > " + output + " 2>/dev/null";
+//	return system(cmd.c_str());
 }
 int extractFromTbz2(string filename, string file_to_extract, string output)
 {

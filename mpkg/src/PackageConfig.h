@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.21 2007/11/02 17:45:45 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.22 2007/11/03 01:08:15 i27249 Exp $
  *
  * **********************************************************/
 
@@ -49,6 +49,7 @@ typedef struct depTree { bool name, version, condition, build_only; } ;
 #define GET_PKG_COMP_SIZE ((const xmlChar *)"//package/compressed_size")
 #define GET_PKG_INST_SIZE ((const xmlChar *)"//package/installed_size")
 #define GET_PKG_TAGS ((const xmlChar *)"//package/tags/tag")
+#define GET_PKG_TYPE ((const xmlChar *)"//package/type")
 #define GET_PKG_FILE_LIST ((const xmlChar *)"//package/files/file")
 #define GET_PKG_SUG ((const xmlChar *) "//suggests/suggest")
 #define GET_PKG_SUG_COND ((const xmlChar *) "//suggests/suggest/condition")
@@ -105,6 +106,7 @@ public:
 	string getAuthorName(void);
 	string getAuthorEmail(void);
 	string getPackageFileName(void);
+	string getPackageType(void);
 
 	string getSuggestName(int suggest_num);
 	string getSuggestCondition(int suggest_num);

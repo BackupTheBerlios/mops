@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.25 2007/11/02 20:19:45 i27249 Exp $
+* $Id: file_routines.h,v 1.26 2007/11/03 01:08:15 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -22,7 +22,6 @@ using namespace std;
 #include <sys/types.h>
 #include <sys/param.h>
 vector<string> getDirectoryList(string directory_name);
-
 bool isDirectory(string dir_name);
 bool isMounted(string mountpoint);
 bool lockDatabase();
@@ -39,9 +38,10 @@ bool FileExists(string filename, bool *broken_symlink=NULL);
 bool FileNotEmpty(string filename);
 string ReadFile(string filename);
 int WriteFile(string filename, string data);
-int extractFromTgz(string filename, string file_to_extract, string output);
-int extractFromTar(string filename, string file_to_extract, string output);
-int extractFromTbz2(string filename, string file_to_extract, string output);
+int extractFiles(string filename, string files_to_extract, string output_dir, string file_type="");
+int extractFromTgz(string filename, string file_to_extract, string output, string file_type="");
+int extractFromTar(string filename, string file_to_extract, string output); // Should be replaced by extractFiles in most cases
+int extractFromTbz2(string filename, string file_to_extract, string output);// Should be replaced by extractFiles in most cases
 
 string getCdromVolname(string *rep_location=NULL);
 bool cacheCdromIndex(string vol_id, string rep_location);

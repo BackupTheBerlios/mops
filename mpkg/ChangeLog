@@ -1,3 +1,23 @@
+2007-11-02 23:19  i27249
+
+	* src/: PackageConfig.cpp, core.cpp, dataunits.cpp, dataunits.h,
+	  dbstruct.cpp, file_routines.cpp, file_routines.h,
+	  local_package.cpp, local_package.h, repository.cpp, sql_pool.cpp:
+	  Added some fields to database (so it have to be updated, again)
+	  New fields: package_installed_by_dependency, package_type,
+	  dependency_build_only
+
+2007-11-02 20:45  i27249
+
+	* ChangeLog, make_packages, packagebuilder/mainwindow.cpp,
+	  packagebuilder/mainwindow.h, packagebuilder/package_builder.ui,
+	  pkg_descriptions/console/data.xml, src/PackageConfig.cpp,
+	  src/PackageConfig.h, src/dataunits.cpp, src/dataunits.h,
+	  src/file_routines.cpp, src/file_routines.h,
+	  src/local_package.cpp, src/mpkgsys.cpp, src/package.cpp,
+	  src/package.h: build-only dependencies: implemented in XML fixed
+	  bug which can occur if not all fields in dependency record exists
+
 2007-11-01 15:43  i27249
 
 	* pkg_descriptions/lib/data.xml: 0.12.8 release

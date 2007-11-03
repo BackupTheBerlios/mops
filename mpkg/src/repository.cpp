@@ -1,6 +1,6 @@
 /******************************************************************
  * Repository class: build index, get index...etc.
- * $Id: repository.cpp,v 1.73 2007/11/02 20:19:45 i27249 Exp $
+ * $Id: repository.cpp,v 1.74 2007/11/03 01:08:15 i27249 Exp $
  * ****************************************************************/
 #include "repository.h"
 #include <iostream>
@@ -345,8 +345,9 @@ int ProcessPackage(const char *filename, const struct stat *file_status, int fil
 	mDebug("processing package "+ (string) filename);
        	string ext = getExtension(filename);
 
-	if (filetype==FTW_F && ext=="tgz")
+	if (filetype==FTW_F)
 	{
+		if (ext!="tgz" && ext!="spkg") return 0;
 
 		pkgcounter++;
 		printf("[%d/%d] indexing file %s\n",pkgcounter,pkgcount_ftw, filename);

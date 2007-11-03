@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.38 2007/11/02 20:19:45 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.39 2007/11/03 01:08:15 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -508,6 +508,24 @@ string PackageConfig::getBuildCmdConfigure()
         	return EMPTY;
     	}
 }
+string PackageConfig::getPackageType()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_TYPE);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+	        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("PKG TYPE = '" +strim( __r) + "'");
+	        return strim(__r);
+	    } else {
+        	return EMPTY;
+    	}
+}
+
 string PackageConfig::getBuildCmdMake()
 {
 	xmlNodeSetPtr nodeset;

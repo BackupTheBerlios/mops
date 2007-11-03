@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.74 2007/11/02 20:19:45 i27249 Exp $
+$Id: local_package.cpp,v 1.75 2007/11/03 01:08:15 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -58,6 +58,10 @@ int xml2package(xmlNodePtr pkgNode, PACKAGE *data)
 	mDebug("Retrieving data, part 2");
 	DEPENDENCY dep_tmp;
 	DEPENDENCY suggest_tmp;
+
+	string pkg_type = p.getPackageType();
+	if (pkg_type == "source") data->set_type(PKGTYPE_SOURCE);
+	else data->set_type(PKGTYPE_BINARY);
 
 	vector<string> vec_tmp_names;
 	vector<string> vec_tmp_conditions;
@@ -272,18 +276,23 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 	if (!simulate) system(mkdir_pkg);
 	string sys_cache=SYS_CACHE;
 	string filename=sys_cache + *package->get_filename();
-	string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
-	string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+ tmp_postinstall + " 2>/dev/null";
-	string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
-	string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+ tmp_postremove + " 2>/dev/null";
+	//string sys_preinstall = "tar zxf "+filename+" install/preinstall.sh --to-stdout > "+ tmp_preinstall + " 2>/dev/null";
+	//string sys_postinstall ="tar zxf "+filename+" install/doinst.sh --to-stdout > "+ tmp_postinstall + " 2>/dev/null";
+	//string sys_preremove =  "tar zxf "+filename+" install/preremove.sh --to-stdout > "+ tmp_preremove + " 2>/dev/null";
+	//string sys_postremove = "tar zxf "+filename+" install/postremove.sh --to-stdout > "+ tmp_postremove + " 2>/dev/null";
 
 	if (!simulate)
 	{
 		mDebug("extracting scripts");
-		system(sys_preinstall);
-		system(sys_postinstall);
-		system(sys_preremove);
-		system(sys_postremove);
+	//	system(sys_preinstall);
+	//	system(sys_postinstall);
+	//	system(sys_preremove);
+	//	system(sys_postremove);
+		extractFiles(filename, "install/preinstall.sh install/doinst.sh install/preremove.sh install/postremove.sh", scripts_dir);
+		if (FileExists(scripts_dir + "/install")) {
+			system("(cd " + scripts_dir + "/install; mv * ..; cd ..; rmdir install)");
+		}
+		else mWarning("No install scripts?");
 	}
 
 	return 0;
@@ -294,8 +303,9 @@ int LocalPackage::get_xml()
 	mDebug("get_xml start");
 	string tmp_xml=get_tmp_file();
 	mDebug("Extracting XML");
-	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
-	system(sys);
+	extractFromTgz(filename, "install/data.xml", tmp_xml);
+//	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
+//	system(sys);
 	
 	if (!FileNotEmpty(tmp_xml))
 	{
@@ -328,10 +338,6 @@ int LocalPackage::get_xml()
 		return -100;
 	}
 
-	// BEGIN: не до конца ясно зачем нужный кусок кода
-	/*
-	std::string __tmp_doc = p.getXMLNodeEx();
-	__doc = xmlReadFile(__tmp_doc.c_str(), "UTF-8", 0);*/
 	int bufsize;
 	xmlChar * membuff = p.getXMLNodeXPtr(&bufsize);
 	__doc = xmlParseMemory((const char *) membuff, bufsize);
@@ -346,92 +352,6 @@ int LocalPackage::get_xml()
 	}
 	xml2package(p.getXMLNode(), &data);
 	data.sync();
-	// END: не до конца ясно зачем нужный кусок кода
-
-	/*	Код закомментирован, поскольку идет дубляж кодовой базы с xml2package
-	 *
-	*data.get_name()=p.getName();
-	*data.get_version()=p.getVersion();
-	*data.get_arch()=p.getArch();
-	*data.get_build()=p.getBuild();
-	*data.get_packager()=p.getAuthorName();
-	*data.get_packager_email()=p.getAuthorEmail();
-	*data.get_description()=p.getDescription();
-	*data.get_short_description()=p.getShortDescription();
-	*data.get_changelog()=p.getChangelog();
-
-
-	if (__doc == NULL) {
-		mDebug("[get_xml2] xml document == NULL");
-	} else {
-		mDebug("[get_xml2] xml docuemtn != NULL");
-	}
-
-	DEPENDENCY dep_tmp;
-	DEPENDENCY suggest_tmp;
-
-	vector<string> vec_tmp_names;
-	vector<string> vec_tmp_conditions;
-	vector<string> vec_tmp_versions;
-
-	vec_tmp_names=p.getDepNames();
-	vec_tmp_conditions=p.getDepConditions();
-	vec_tmp_versions=p.getDepVersions();
-	mDebug("CENSORED 1, names.size = "+IntToStr(vec_tmp_names.size()) + ", versions.size = "+IntToStr(vec_tmp_versions.size())+", cond.size = " + IntToStr(vec_tmp_conditions.size()) );
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		mDebug("CENSORED 1-1: " + vec_tmp_names[i]);
-		dep_tmp.set_package_name(&vec_tmp_names[i]);
-		mDebug("CENSORED 1-2: '" + vec_tmp_versions[i] + "'");
-		dep_tmp.set_package_version(&vec_tmp_versions[i]);
-		mDebug("CENSORED 1-3: '" + vec_tmp_conditions[i] + "'");
-		*dep_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
-		*dep_tmp.get_type()=(string) "DEPENDENCY";
-		data.get_dependencies()->push_back(dep_tmp);
-		mDebug("CENSORED 1-4: EXIT");
-        dep_tmp.clear();
-		mDebug("CENSORED 1-5: OK");
-
-	}
-	vec_tmp_names=p.getSuggestNames();
-	vec_tmp_conditions=p.getSuggestConditions();
-	vec_tmp_versions=p.getSuggestVersions();
-	mDebug("CENSORED 2");
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{ 
-		suggest_tmp.set_package_name(&vec_tmp_names[i]);
-		suggest_tmp.set_package_version(&vec_tmp_versions[i]);
-		*suggest_tmp.get_condition()=IntToStr(condition2int(vec_tmp_conditions[i]));
-		*suggest_tmp.get_type()=(string) "SUGGEST";
-		data.get_dependencies()->push_back(suggest_tmp);
-		suggest_tmp.clear();
-	}
-	mDebug("CENSORED 3");
-	vec_tmp_names=p.getTags();
-	for (unsigned int i=0;i<vec_tmp_names.size();i++)
-	{
-		data.get_tags()->push_back(vec_tmp_names[i]);
-	}
-
-
-	if (__doc == NULL) {
-		mDebug("[get_xml3] xml document == NULL");
-	} else {
-		mDebug("[get_xml3] xml docuemtn != NULL");
-	}
-
-	vec_tmp_names=p.getConfigFilelist();
-	FILES configfile_tmp;
-	mDebug("CENSORED 4");
-	for (unsigned int i=0; i<vec_tmp_names.size(); i++)
-	{
-		configfile_tmp.set_name(&vec_tmp_names[i]);
-		configfile_tmp.set_type(FTYPE_CONFIG);
-		data.get_config_files()->push_back(configfile_tmp);
-	}
-	vec_tmp_names.clear();
-	vec_tmp_conditions.clear();
-	vec_tmp_versions.clear();*/
 	mDebug("get_xml end");
 	delete_tmp_files();
 	return 0;
@@ -490,6 +410,7 @@ int LocalPackage::get_filelist(bool index)
 	
 int LocalPackage::create_md5()
 {
+	
 	mDebug("create_md5 start");
 	string tmp_md5=get_tmp_file();
 
@@ -519,47 +440,59 @@ int LocalPackage::create_md5()
 
 int LocalPackage::get_size()
 {
-	mDebug("get_size start");
-	string tmp=get_tmp_file();
-	string sys="gzip -l "+filename+" > "+tmp + " 2>/dev/null";
-	if (system(sys)!=0)
-	{
-		delete_tmp_files();
-		mError("Zero-length package " + filename);
-		return -2;
-	}
-	FILE *zdata=fopen(tmp.c_str(), "r");
-	if (!zdata)
-	{
-		mError("Unable to extract size of package");
-		return -1;
-	}
-	char *c_size = (char *) malloc(40000); //FIXME: Overflow are possible here
-	char *i_size = (char *) malloc(40000); //FIXME: Same problem
-	mDebug("reading file...");
 
-	for (int i=1; i<=5; i++)
+	string csize, isize;
+	if (getExtension(filename)=="spkg")
 	{
-		if (fscanf(zdata, "%s", c_size)==EOF)
+		struct stat fstat;
+		stat(filename.c_str(), &fstat);
+		isize = "0";
+		data.set_installed_size(&isize);
+		csize = IntToStr(fstat.st_size/1024);
+		data.set_compressed_size(&csize);
+	}
+	else
+	{
+		mDebug("get_size start");
+		string tmp=get_tmp_file();
+		string sys="gzip -l "+filename+" > "+tmp + " 2>/dev/null";
+		if (system(sys)!=0)
 		{
 			delete_tmp_files();
-			mError("Unexcepted EOF while reading gzip data");
-			free(c_size);
-			free(i_size);
+			mError("Zero-length package " + filename);
+			return -2;
+		}
+		FILE *zdata=fopen(tmp.c_str(), "r");
+		if (!zdata)
+		{
+			mError("Unable to extract size of package");
 			return -1;
 		}
+		char *c_size = (char *) malloc(40000); //FIXME: Overflow are possible here
+		char *i_size = (char *) malloc(40000); //FIXME: Same problem
+		mDebug("reading file...");
+	
+		for (int i=1; i<=5; i++)
+		{
+			if (fscanf(zdata, "%s", c_size)==EOF)
+			{
+				delete_tmp_files();
+				mError("Unexcepted EOF while reading gzip data");
+				free(c_size);
+				free(i_size);
+				return -1;
+			}
+		}
+		fscanf(zdata, "%s", i_size);
+		fclose(zdata);
+		csize=c_size;
+		isize=i_size;
+		free(c_size);
+		free(i_size);
+		data.set_compressed_size(&csize);
+		data.set_installed_size(&isize);
+		mDebug(" Sizes: C: " + csize + ", I: " + isize);
 	}
-	fscanf(zdata, "%s", i_size);
-	fclose(zdata);
-	string csize;
-	csize=c_size;
-	string isize;
-	isize=i_size;
-	free(c_size);
-	free(i_size);
-	data.set_compressed_size(&csize);
-	data.set_installed_size(&isize);
-	mDebug(" Sizes: C: " + csize + ", I: " + isize);
 
 	if (_packageXMLNode == NULL) {
 		mDebug("FULL CENSORED!!!!");
@@ -713,8 +646,8 @@ int LocalPackage::set_additional_data()
 int LocalPackage::fill_configfiles(PACKAGE *package)
 {
 	string tmp_xml=get_tmp_file();
-	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
-	if (system(sys)!=0)
+//	string sys="tar zxf "+filename+" install/data.xml --to-stdout > "+tmp_xml+" 2>/dev/null";
+	if (extractFromTgz(filename, "install/data.xml", tmp_xml)!=0)
 	{
 		delete_tmp_files();
 		return 0;
@@ -764,6 +697,14 @@ int LocalPackage::injectFile(bool index)
 		mDebug("local_package.cpp: injectFile(): get_xml FAILED");
 		return -3;
 	}
+	if (getExtension(filename)=="spkg") {
+		xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"type", (const xmlChar *)"source");
+	}
+	if (getExtension(filename)=="tgz") {
+		xmlNewTextChild(_packageXMLNode, NULL, (const xmlChar *)"type", (const xmlChar *)"binary");
+	}
+
+
 	mDebug("get_size()\n");
 	if (get_size()!=0)
 	{
@@ -780,22 +721,6 @@ int LocalPackage::injectFile(bool index)
 	mDebug("local_packaige.cpp: injectFile(): filename is "+ filename);
 	data.set_filename(&filename);
 	
-	/*if (!index)
-	{
-		if (get_scripts()!=0)
-		{
-			mDebug("local_package.cpp: injectFile(): get_scripts FAILED");
-			return -4;
-		}
-	}
-	// NOT Building file list on server, build locally
-	*/
-	/*if (!index && fill_filelist(&data, index)!=0)
-	{
-		mDebug("local_package.cpp: injectFile(): get_filelist FAILED");
-		return -5;
-	}*/
-	
 	if (set_additional_data()!=0)
 	{
 		mDebug("local_package.cpp: injectFile(): set_additional_data FAILED");
@@ -808,10 +733,11 @@ int LocalPackage::injectFile(bool index)
 
 int LocalPackage::CreateFlistNode(string fname, string tmp_xml)
 {
+	if (getExtension(filename)=="spkg") return 0;
 	mDebug("local_package.cpp: CreateFlistNode(): begin");
 	string tar_cmd;
 	mDebug("flist tmpfile: "+fname);
-	tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
+	if (getExtension(filename)=="tgz") tar_cmd="tar ztf "+filename+" --exclude install " +" > "+fname;
 	if (system(tar_cmd)!=0)
 	{
 		mError("Unable to get file list");
