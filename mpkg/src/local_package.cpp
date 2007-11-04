@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.75 2007/11/03 01:08:15 i27249 Exp $
+$Id: local_package.cpp,v 1.76 2007/11/04 14:15:08 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -448,7 +448,7 @@ int LocalPackage::get_size()
 		stat(filename.c_str(), &fstat);
 		isize = "0";
 		data.set_installed_size(&isize);
-		csize = IntToStr(fstat.st_size/1024);
+		csize = IntToStr(fstat.st_size);
 		data.set_compressed_size(&csize);
 	}
 	else

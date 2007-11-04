@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.51 2007/10/21 01:45:31 i27249 Exp $
+$Id: dependencies.cpp,v 1.52 2007/11/04 14:15:08 i27249 Exp $
 */
 
 
@@ -617,12 +617,9 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 bool DependencyTracker::commitToDb()
 {
 	mDebug("Tracking and committing to database");
-	//if (installList.size()>0) say(_("Committing %d packages to install:\n"), installList.size());
-	//else say (_("No packages to install\n"));
 	int iC=0;
 	vector<int> i_ids;
 	bool alreadyThere;
-	//if (!dialogMode && installList.size()>0 ) say(_("Will be installed:\n"));
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
@@ -637,18 +634,14 @@ bool DependencyTracker::commitToDb()
 			}
 			if (!alreadyThere)
 			{
-				//if (!dialogMode) say("  [%d] %s %s\n", iC, installList.get_package(i)->get_name()->c_str(), installList.get_package(i)->get_fullversion().c_str());
 				iC++;
 				db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
 				i_ids.push_back(installList.get_package(i)->get_id());
 			}
 		}
 	}
-	//if (removeList.size()>0) say(_("Committing %d packages to remove\n"), removeList.size());
-	//else say (_("No packages to remove\n"));
 	int rC=0;
 	vector<int> r_ids;
-	//if (!dialogMode && removeList.size()>0) say(_("Will be removed:\n"));
 
 	bool essentialUpdating, essentialFound=false;
 	for (int i=0; i<removeList.size(); i++)
@@ -684,7 +677,6 @@ bool DependencyTracker::commitToDb()
 			}
 			if (!alreadyThere)
 			{
-				//if (!dialogMode) say("  [%d] %s %s\n", rC, removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
 				rC++;
 				db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 				r_ids.push_back(removeList.get_package(i)->get_id());
@@ -695,11 +687,6 @@ bool DependencyTracker::commitToDb()
 		mError(_("Found essential packages, cannot continue"));
 		return false;
 	}
-	//say(_("Summary: \n  to install: %d\n  to remove: %d\n"),iC, rC);
-	//int total_actions =  iC+rC;
-	/*if (total_actions == 0) say(_("No actions to proceed\n"));
-	else say(_("Total %d new actions to proceed\n\n"), total_actions);*/
-
 	mDebug("finished");
 	return true;
 }

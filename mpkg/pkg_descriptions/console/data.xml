@@ -4,13 +4,13 @@
 		mpkg-console
 	</name>
 	<version>
-		0.12.8
+		0.12.9
 	</version>
 	<arch>
 		i486
 	</arch>
 	<build>
-		2
+		1
 	</build>
 	<description lang="en">
 		Консольный интерфейс к mpkg
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.8
+				0.12.9
 			</version>
 		</dep>
 	</dependencies>

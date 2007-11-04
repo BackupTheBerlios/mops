@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.57 2007/11/02 17:45:45 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.58 2007/11/04 14:15:08 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -216,220 +216,6 @@ int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracke
 	if (!package->installedVersion.empty() && !package->installed()) requestUninstall(*package->get_name(), db, DepTracker); 
 	return requestInstall(package->get_id(), db, DepTracker);
 }
-int mpkgSys::emerge_package(string file_url, string *package_name, string march, string mtune, string olevel)
-{
-
-	*package_name="";
-	SourcePackage spkg;
-	if (!spkg.setInputFile(file_url))
-	{
-		mError("Source build: file not found");
-		return -1;
-	}
-	if (!spkg.unpackFile())
-	{
-		mError("Source build: error extracting package");
-		return -2;
-	}
-
-	PackageConfig p(spkg.getDataFilename());
-	if (!p.parseOk) {
-		printf("Source build: invalid XML data\n");
-		return -3;
-	}
-
-
-	bool canCustomize = p.getBuildOptimizationCustomizable();
-	// Setting input filename
-	
-	string url=p.getBuildUrl();
-	string filename=getFilename(url);//url.substr(url.find_last_of("/")+1);
-	string ext = getExtension(url);//url.substr(url.length()-3);
-	string tar_args;
-	if (ext=="bz2") tar_args="jxvf";
-	if (ext=="gz") tar_args="zxvf";
-	if (ext!="bz2" && ext!="gz" && ext!="zip" && ext!="rar") {
-		printf("Unknown file extension %s\n", ext.c_str());
-		return 2;
-	}
-	string extractCommand;
-       	if (ext=="zip") extractCommand = "unzip";
-	if (ext=="rar") extractCommand = "unrar e";
-	if (ext=="bz2" || ext=="gz") extractCommand = "tar " + tar_args;
-	// Directories
-	string currentdir=get_current_dir_name();	
-	string pkgdir = "/tmp/package-"+p.getName();
-	string dldir=spkg.getExtractedPath();
-	// Setting source directory
-	string srcdir=p.getBuildSourceRoot();
-	if (srcdir.empty()) {
-		if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
-		if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
-		if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
-		if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
-	}
-	else srcdir = dldir+"/"+srcdir;
-
-	// Setting output package name
-	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
-	string dl_command;
-	if (url.find("cvs ")==0 || url.find("svn ")==0 || url.find("git-clone ")==0) dl_command = url;
-	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
-	if (dl_command.empty()) {
-		if (url.find("/")==0) {
-			if (FileExists(url)) dl_command="cp -v " + url + " .";
-			else {
-				mError(_("Source file doesn't exist, aborting"));
-				return -5;
-			}
-		}
-		else {
-			if (FileExists(dldir+"/"+url)) dl_command="";
-			else {
-				mError(_("Source file doesn't exist"));
-				return -5;
-			}
-		}
-	}
-	vector<string> key_names = p.getBuildKeyNames();
-	vector<string> key_values = p.getBuildKeyValues();
-
-	string build_system = p.getBuildSystem();
-	int max_numjobs = atoi(p.getBuildMaxNumjobs().c_str());
-	string numjobs="6";
-	if (max_numjobs<6 && max_numjobs !=0) numjobs = IntToStr(max_numjobs); // Temp solution
-	if (!canCustomize) {
-		if (!march.empty() || !mtune.empty() || !olevel.empty()) mWarning(_("Custom tuning options is not allowed for this package"));
-	}
-	if (!canCustomize || march.empty()) march=p.getBuildOptimizationMarch();
-	if (!canCustomize || mtune.empty()) mtune=p.getBuildOptimizationMtune();
-	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
-	string gcc_options = p.getBuildOptimizationCustomGccOptions();
-
-	string configure_cmd = p.getBuildCmdConfigure();
-	string make_cmd = p.getBuildCmdMake();
-	string make_install_cmd = p.getBuildCmdMakeInstall();
-
-	if (build_system=="autotools")
-	{
-		configure_cmd="./configure";
-		make_cmd = "make";
-		make_install_cmd="make install DESTDIR=$DESTDIR";
-		for (unsigned int i=0; i<key_names.size(); i++)
-		{
-			configure_cmd += " " + key_names[i];
-			if (!key_values[i].empty()) configure_cmd += "="+key_values[i];
-		}
-	}
-	if (build_system=="cmake")
-	{
-		configure_cmd = "cmake ..";
-		for (unsigned int i=0; i<key_names.size(); i++)
-		{
-			configure_cmd += " " + key_names[i];
-			if (!key_values[i].empty()) configure_cmd += "="+key_values[i];
-		}
-
-		make_cmd = "make";
-		make_install_cmd="make install DESTDIR=$DESTDIR";
-	}
-	if (build_system=="scons")
-	{
-		printf("Sorry, SCons isn't supported yet. Please specify script-based assembly instructions in build\n");
-		return -5;
-	}
-	if (build_system=="custom")
-	{
-		printf("Using custom commands");
-	}
-	if (build_system=="script")
-	{
-		printf("Using script");
-		configure_cmd.clear();
-		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir;
-		make_install_cmd.clear();
-	}
-	if (make_install_cmd.find("$DESTDIR")!=std::string::npos)
-	{
-		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+pkgdir+make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
-	}
-
-	// Preparing environment. Clearing old directories
-	system("rm -rf " + pkgdir);	
-	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
-
-	if (FileExists(dldir+"/"+getFilename(url))) dl_command.clear();
-	// Downloading/copying sources
-	if (!dl_command.empty()) {
-		if (system("(cd " + dldir+"; "+dl_command+")")!=0) {
-			mError("Error retrieving sources, build failed");
-			return -6;
-		}
-	}
-	
-	// Extracting the sources
-	if (system("(cd " + dldir+"; " + extractCommand + " " + filename+")")!=0) {
-		mError(_("Tar was failed to extract the received source package"));
-		return -7;
-	}
-	string cflags="'";
-       	if (!march.empty()) cflags += " -march="+march;
-      	if (!mtune.empty()) cflags += " -mtune=" +mtune;
-        if (!olevel.empty()) cflags +=" -" + olevel;
-       	if (!gcc_options.empty()) cflags += " " + gcc_options;
-       	cflags +="'";
-	if (cflags.length()<4) cflags.clear();
-	else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
-
-	cflags = p.getBuildConfigureEnvOptions() + " " + cflags;
-
-	vector<string> patchList = p.getBuildPatchList();
-
-	string compile_cmd;
-
-	bool was_prev=false;
-	if (build_system!="cmake")
-	{
-		compile_cmd = "(cd " + srcdir + "; ";
-		if (!configure_cmd.empty()) 
-		{
-			compile_cmd += cflags + " " + configure_cmd;
-			was_prev=true;
-		}
-	}
-	else {
-		compile_cmd = "(cd " + srcdir + "; mkdir -p build; cd build; "+cflags + " cmake ..; ";
-	}
-	if (!make_cmd.empty())	{
-		if (was_prev) compile_cmd += " && ";
-		compile_cmd += make_cmd;
-		was_prev=true;
-	}
-	if (!make_cmd.empty() && !numjobs.empty()) compile_cmd += " -j" + numjobs;
-	if (!make_install_cmd.empty()) 
-	{
-		if (was_prev) compile_cmd += " && ";
-		compile_cmd += make_install_cmd;
-		was_prev=true;
-	}
-	compile_cmd+=")";
-
-	// Patching if any
-	for (unsigned int i=0; i<patchList.size(); i++)
-	{
-		system("(cd " + srcdir + "; zcat ../patches/" + patchList[i] + " | patch -p1 --verbose)");
-	}
-	// Compiling
-	if (system(compile_cmd)!=0) {
-		mError("Build failed. Check the build config");
-		return -7;
-	}
-	
-	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
-	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
-	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name);
-	return 0;
-}
 
 
 int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker)
@@ -468,13 +254,14 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 
 	else
 	{
+		/*
 		if (getExtension(package_name)=="spkg")
 		{
 			if (emerge_package(package_name, &package_name)!=0 || !FileExists(package_name)) {
 				mError(_("Cannot build this spkg"));
 				return MPKGERROR_NOPACKAGE;
 			}
-		}
+		}*/
 		say(_("Installing local package %s\n"), package_name.c_str());
 		LocalPackage _p(package_name);
 		_p.injectFile();

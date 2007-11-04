@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.62 2007/11/01 01:33:21 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.63 2007/11/04 14:15:08 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -310,8 +310,6 @@ int mpkg::commit()
 	}
 	else
 	{
-		//mpkgErrorReturn errRet = waitResponce(MPKG_DEPENDENCY_ERROR);
-		
 		mError(_("Error in dependencies: ") + IntToStr(errorCount) + _(" failures"));
 		if (dialogMode) d.execMsgBox(_("Error in dependencies: ") + IntToStr(errorCount) + _(" failures"));
 		currentStatus = _("Failed - depencency errors");

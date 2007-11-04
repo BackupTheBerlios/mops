@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.65 2007/10/24 22:00:12 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.66 2007/11/04 14:15:08 i27249 Exp $
 #
 
 # Project name
@@ -35,13 +35,13 @@ ENDIF(APPLE)
 # TARGET: building core library (libmpkg.so)
 ADD_LIBRARY(mpkg package dialog bus dbstruct faststl HttpDownload errorcodes DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 
-# TARGET: building static executable (installpkg-ng-static)
-#ADD_EXECUTABLE(installpkg-ng-static DownloadFactory DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines installpkg-ng libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
+# TARGET: building standalone executable (installpkg-ng-standalone)
+#ADD_EXECUTABLE(installpkg-ng-standalone package dialog bus dbstruct faststl HttpDownload errorcodes DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 # Linking...
 #IF(APPLE)
 #	TARGET_LINK_LIBRARIES(installpkg-ng-static intl mpkg sqlite3 dl)
 #ELSE(APPLE)
-#	TARGET_LINK_LIBRARIES(installpkg-ng-static mpkg sqlite3 dl)
+#	TARGET_LINK_LIBRARIES(installpkg-ng-standalone sqlite3 dl curl xml2)
 #ENDIF(APPLE)
 
 # TARGET: building shared executable (installpkg-ng)

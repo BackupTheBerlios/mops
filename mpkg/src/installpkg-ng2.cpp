@@ -1,10 +1,8 @@
 /**
  *	MOPSLinux packaging system    
- *	    installpkg-ng
- *	New generation of installpkg :-)
- *	This tool ONLY can install concrete local file, but in real it can do more :-) 
+ *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.77 2007/11/01 01:33:21 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.78 2007/11/04 14:15:08 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -30,7 +28,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.8";
+	char *version="0.12.9";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -481,7 +479,7 @@ int main (int argc, char **argv)
 
 
 			
-			if (mpkgSys::emerge_package(s_pkg, &s_pkg, march, mtune, olevel)!=0) {
+			if (emerge_package(s_pkg, &s_pkg, march, mtune, olevel)!=0) {
 				mError("One of the packages failed to build, stopping");
 				delete_tmp_files();
 				return 0;
@@ -1114,8 +1112,10 @@ void show_package_info(mpkg *core, string name)
 			say(_("%sDepends on:%s\n"), CL_GREEN, CL_WHITE);
 			for (unsigned int t=0; t<pkgList.get_package(i)->get_dependencies()->size(); t++)
 			{
-				say("\t\t    %s\n", pkgList.get_package(i)->get_dependencies()->at(t).getDepInfo().c_str());
+				say("%s", pkgList.get_package(i)->get_dependencies()->at(t).getDepInfo().c_str());
+				if (t<pkgList.get_package(i)->get_dependencies()->size()-1) say(", ");
 			}
+			say("\n");
 		}
 
 		say(_("%sChangelog:%s          \n%s\n"), CL_GREEN, CL_WHITE, pkgList.get_package(i)->get_changelog()->c_str());
@@ -1155,6 +1155,7 @@ void show_package_info(mpkg *core, string name)
 			else say (_("\tPackage is not installed\n"));
 		}
 
+	say("=============================================================================\n\n");
 	}
 
 

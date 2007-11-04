@@ -1,5 +1,5 @@
 /* Debugging output function(s)
- $Id: debug.cpp,v 1.22 2007/11/01 01:33:21 i27249 Exp $
+ $Id: debug.cpp,v 1.23 2007/11/04 14:15:08 i27249 Exp $
  */
  
 
@@ -18,8 +18,8 @@ void _mError(char* file, int line, const char *func, std::string message, bool w
 #ifndef RELEASE
 	fprintf(tty, "%s[ERROR]: %sin %s  (%s:%i):%s %s\n",CL_RED, CL_YELLOW, func, file, line, CL_WHITE, message.c_str());
 #else
-	if (!warn) fprintf(tty, "%s%s:%s %s\n",CL_RED, _("Error"), CL_WHITE, message.c_str());
-	else fprintf(tty, "%s%s:%s %s\n",CL_YELLOW, _("Warning"), CL_WHITE, message.c_str());
+	if (!warn) fprintf(tty, "%s%s:%s (%s) %s\n",CL_RED, _("Error"), CL_WHITE, func, message.c_str());
+	else fprintf(tty, "%s%s:%s (%s) %s\n",CL_YELLOW, _("Warning"), CL_WHITE, func, message.c_str());
 #endif
 #ifdef ENABLE_LOGGING
 	string logfile = log_directory + "mpkg-errors.log";

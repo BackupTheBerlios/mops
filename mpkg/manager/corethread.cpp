@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.78 2007/09/09 23:24:08 i27249 Exp $
+ * $Id: corethread.cpp,v 1.79 2007/11/04 14:15:08 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -261,6 +261,7 @@ void coreThread::insertPackageIntoTable(int tablePos, unsigned int package_num)
 	PACKAGE *_p = packageList->get_package(package_num);
 	string cloneHeader;
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
+	if (_p->get_type()==PKGTYPE_SOURCE) cloneHeader += "<b><font color=\"blue\">["+tr("source").toStdString()+"]</font></b>";
 	
 	//switch (_p->action())
 	switch(newStatus[package_num])

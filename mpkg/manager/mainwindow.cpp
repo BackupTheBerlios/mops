@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.128 2007/10/31 01:52:37 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.129 2007/11/04 14:15:08 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -992,6 +992,8 @@ void MainWindow::showPackageInfo()
 		       tr("Architecture:").toStdString()+"</b> "+*pkg->get_arch()+"<br><b>" + \
 		       tr("Build:").toStdString()+"</b> "+*pkg->get_build();
 
+	if (pkg->get_type()==PKGTYPE_SOURCE) info+="<br><b>" + tr("Type:").toStdString() + "</b>" + tr(" source").toStdString();
+	if (pkg->get_type()==PKGTYPE_BINARY) info+="<br><b>" + tr("Type:").toStdString() + "</b>" + tr(" binary").toStdString();
 	info += "<br><b>" + tr("Description:").toStdString()+" </b><br>"+*pkg->get_description()+"</p></html>";
 	mstring taglist;
 	for (unsigned int i=0; i< pkg->get_tags()->size(); i++)
@@ -1468,6 +1470,8 @@ waitUnlock();
 	}
 	string cloneHeader;
 	if (_p->isUpdate()) cloneHeader = "<b><font color=\"red\">["+tr("update").toStdString()+"]</font></b>";
+	if (_p->get_type()==PKGTYPE_SOURCE) cloneHeader += "<b><font color=\"blue\">["+tr("source").toStdString()+"]</font></b>";
+
 	if (_p->deprecated()) package_icon = (string) "deprecated_" + package_icon;
 
 	if (!FileExists("/usr/share/mpkg/icons/"+package_icon)) printf("Requested icon %s doesn't exist\n", package_icon.c_str());
