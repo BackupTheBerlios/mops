@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.16 2007/10/24 22:00:12 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.17 2007/11/06 20:25:18 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -30,6 +30,7 @@ void PrepareSql(string *str)
 string getAbsolutePath(string directory)
 {
 	string cwd = get_current_dir_name();
+	cwd+="/";
 	// Костыль-mode
 	if (directory.find("/")==0) return directory; // Already absolute
 	return cwd + directory;

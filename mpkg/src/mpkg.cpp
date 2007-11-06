@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.117 2007/11/04 14:15:08 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.118 2007/11/06 20:25:18 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -138,7 +138,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	{
 		printf("Using script");
 		configure_cmd.clear();
-		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir;
+		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
 		make_install_cmd.clear();
 	}
 	if (make_install_cmd.find("$DESTDIR")!=std::string::npos)
@@ -324,14 +324,14 @@ int mpkgDatabase::commit_actions()
 	sqlSearch.addField("package_action", ST_REMOVE);
 	sqlSearch.addField("package_action", ST_PURGE);
 	if (get_packagelist(&sqlSearch, &remove_list)!=0) return MPKGERROR_SQLQUERYERROR;
-	remove_list.sortByPriority(true);
+	if (!remove_list.IsEmpty()) remove_list.sortByPriority(true);
 	PACKAGE_LIST install_list;
 	sqlSearch.clear();
 	sqlSearch.setSearchMode(SEARCH_OR);
 	sqlSearch.addField("package_action", ST_INSTALL);
 	sqlSearch.addField("package_action", ST_REPAIR);
 	if (get_packagelist(&sqlSearch, &install_list)!=0) return MPKGERROR_SQLQUERYERROR;
-	//install_list.sortByPriority();
+	if (!install_list.IsEmpty()) install_list.sortByPriority();
 	if (dialogMode) dialogItem.execInfoBox("Подготовка к установке пакетов");
 	install_list.sortByLocations();
 	// Checking available space
@@ -759,6 +759,7 @@ installProcess:
 			pData.setItemProgress(installItemID, 0);
 			pData.setItemProgressMaximum(installItemID,8);
 		}
+		
 		for (int i=0;i<install_list.size();i++)
 		{
 			
@@ -784,6 +785,10 @@ installProcess:
 				installFailures++;
 				pData.setItemCurrentAction(install_list.get_package(i)->itemID, _("Installation failed"));
 				pData.setItemState(install_list.get_package(i)->itemID, ITEMSTATE_FAILED);
+				
+				// change in 0.12.9: will stop installation if previous brokes...
+				mError("Failed to install. Due to possible dependency issues, the installation procedure will stop now.");
+				return MPKGERROR_COMMITERROR;
 			}
 			else
 			{
@@ -800,6 +805,8 @@ installProcess:
 	{
 		if (!dialogMode) say(_("Executing ldconfig\n"));
 		system("ldconfig 2> /dev/null");
+		say(_("Syncing disks...\n"));
+		system("sync");
 	}
 	return 0;
 }
@@ -885,11 +892,17 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		say(_("Package was built. Filename: %s\n"), binary_out.c_str());
 		// Now we have a new binary package with filename stored in variable binary_out. Import him into database and create a link to cache.
 		
-		copyFile(binary_out, SYS_CACHE + getFilename(binary_out));
+		if (!copyFile(binary_out, SYS_CACHE + getFilename(binary_out))) {
+			mError("Error copying package, aborting...");
+			return -45;
+		}
 		printf("File copied to cache");
 		say(_("Importing to database\n"));
 		LocalPackage binpkg(SYS_CACHE + getFilename(binary_out));
-		binpkg.injectFile();
+		if (binpkg.injectFile()!=0) {
+			mError("Error injecting binary package, cannot continue");
+			return -45;
+		}
 		PACKAGE binary_package = binpkg.data;
 		emerge_to_db(&binary_package);
 		say(_("Processing to install binary\n"));

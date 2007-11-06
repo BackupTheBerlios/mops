@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.58 2007/11/04 14:15:08 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.59 2007/11/06 20:25:18 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -49,7 +49,7 @@ int mpkgSys::build_package(string out_directory, bool source)
 
 	string pkgname;
 	if (out_directory.empty()) out_directory = "./";
-	if (out_directory[out_directory.length()-1]!='/') out_directory+="/";
+	out_directory+="/";
 
 	    	//sysline = "tar czf "+pkgname+".tgz *"; // For macos
 	if (FileNotEmpty("install/data.xml"))

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.41 2007/11/02 17:45:45 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.42 2007/11/06 20:25:18 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -131,6 +131,7 @@ void Form::loadData()
 	
 void Form::loadFile(QString filename)
 {
+	if (filename.isEmpty() && pBuilder_isStartup) return;
 	if (filename.isEmpty() && !pBuilder_isStartup)
 	{
 		filename = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
@@ -167,6 +168,7 @@ void Form::loadFile(QString filename)
 				mError("Error while opening file: cannot extract");
 				return;
 			}
+			//ui.directoryPath->setText(binaryPackage.pkg_dir.c_str());
 			p = new PackageConfig(binaryPackage.getDataFilename());
 			if (!p->parseOk) {
 				mError("Error parsing XML data");
@@ -186,6 +188,7 @@ void Form::loadFile(QString filename)
 				mError("Error while opening file: cannot extract");
 				return;
 			}
+			//ui.directoryPath->setText(sourcePackage.pkg_dir.c_str());
 
 			p = new PackageConfig(sourcePackage.getDataFilename());
 			if (!p->parseOk) {
@@ -495,8 +498,10 @@ void Form::saveFile()
 	node.addChild("suggests");
 	int dcurr=0;
 	int scurr=0;
+	printf("Deps...\n");
 	for (int i=0; i<ui.DepTableWidget->rowCount(); i++)
 	{
+		printf("[%d] Starting\n", i);
 		if (ui.DepTableWidget->item(i,3)->text().toUpper()== "DEPENDENCY")
 		{
 			node.getChildNode("dependencies").addChild("dep");
@@ -518,11 +523,14 @@ void Form::saveFile()
 			}
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).addChild("version");
 			node.getChildNode("dependencies").getChildNode("dep", dcurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
-			if (ui.DepTableWidget->item(i,4)->text().toStdString()=="build_only")
+			printf("[%d] Name, condition, version done\n", i);
+			printf("SIZES: %dx%d\n", ui.DepTableWidget->rowCount(), ui.DepTableWidget->columnCount());
+			if (false) ///!ui.DepTableWidget->item(i,4)->text().isEmpty()/* == "build_only"*/)
 			{
 				node.getChildNode("dependencies").getChildNode("dep",dcurr).addChild("build_only");
 				node.getChildNode("dependencies").getChildNode("dep",dcurr).getChildNode("build_only").addText("true");
 			}
+			printf("[%d] build_only flag set\n",i);
 			if (ui.DepTableWidget->item(i,1)->text().toStdString()!="any")
 			{
 				slack_required += ui.DepTableWidget->item(i,2)->text().toStdString() + "\n";
@@ -541,8 +549,10 @@ void Form::saveFile()
 			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
 			scurr++;
 		}
+		printf("[%d] Done step\n", i);
 
 	}
+	printf("Deps OK\n");
 	node.addChild("tags");
 	node.addChild("changelog");
 
