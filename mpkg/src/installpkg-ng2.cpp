@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.78 2007/11/04 14:15:08 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.79 2007/11/10 10:26:40 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -580,31 +580,11 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		SourceFile sfile;
-		sfile.setUrl("/root/src/libelf-0.8.10.tar.gz");
-		sfile.download();
-		sfile.analyze();
-		printf("Type :%s\n", sfile.getType().c_str());
-		printf("Build type: %s\n", sfile.getBuildTypeS().c_str());
-		printf("Source directory: %s\n", sfile.getSourceDirectory().c_str());
+		printf("march=%s\n", mConfig.getValue("march").c_str());
 		return 0;
 #ifdef RELEASE
 		return print_usage(stderr,1);
 #else
-		
-		PACKAGE_LIST t;
-		SQLRecord a;
-		core.get_packagelist(&a, &t);
-		t.sortByLocations();
-		for (int i=0; i<t.size(); i++)
-		{
-			if (t.get_package(i)->get_locations()->size()>0)
-			printf("%s\n",t.get_package(i)->get_name()->c_str());
-		}
-
-		
-		
-
 		return 0;
 #endif
 	}

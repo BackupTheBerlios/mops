@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.47 2007/11/01 01:33:21 i27249 Exp $
+ * $Id: config.cpp,v 1.48 2007/11/10 10:26:39 i27249 Exp $
  *
  * ***************************************************/
 
@@ -49,7 +49,8 @@ string CDROM_DEVICENAME;
 string DL_CDROM_DEVICE;
 string DL_CDROM_MOUNTPOINT;
 #endif
-
+Config mConfig;
+string SYS_MPKG_VAR_DIRECTORY="/var/mpkg/";
 void initDirectoryStructure()
 {
 	string cmd;
@@ -156,7 +157,6 @@ int loadGlobalConfig(string config_file)
 		fileConflictChecking = CHECKFILES_POSTINSTALL;
 	if (check_files == "disable")
 		fileConflictChecking = CHECKFILES_DISABLE;
-	// sys_root
 	if (cdrom_device.empty())
 	{
 		mError("empty cd-rom, using default\n");
@@ -193,6 +193,7 @@ int loadGlobalConfig(string config_file)
 #endif
 	}
 
+	// sys_root
 	SYS_ROOT=sys_root;
 	//sys_cache
 	SYS_CACHE=sys_cache;
@@ -535,3 +536,57 @@ mpkgErrorReturn waitResponce(mpkgErrorCode errCode)
 	return callError(errCode);
 }
 
+
+Config::Config(string _configName)
+{
+	configName = _configName;
+}
+
+Config::~Config()
+{
+}
+
+string Config::getValue(string attribute, int value_id)
+{
+	if (!readXml()) {
+		return "";
+	}
+	if (node.nChildNode(attribute.c_str())<=value_id) return "";
+	return (string) node.getChildNode(attribute.c_str(),value_id).getText();
+}
+
+bool Config::setValue(string attribute, string value, int value_id)
+{
+	if (!readXml()) return false;
+	while (node.nChildNode(attribute.c_str())<=value_id) {
+		node.addChild(attribute.c_str());
+	}
+	node.getChildNode(attribute.c_str(), value_id).deleteNodeContent();
+	node.addChild(attribute.c_str());
+	node.getChildNode(attribute.c_str(), value_id).addText(value.c_str());
+	return writeXml();
+}
+
+bool Config::readXml()
+{
+	XMLResults xmlErrCode;
+	if (access(configName.c_str(), R_OK)!=0) {
+		mError("Config file doesn't exist");
+		return false;
+	}
+	node=XMLNode::parseFile(configName.c_str(), "mpkgconfig", &xmlErrCode);
+	if (xmlErrCode.error != eXMLErrorNone) {
+		mError("Configuration parse error\n");
+		return false;
+	}
+	return true;
+}
+
+bool Config::writeXml()
+{
+	if (node.writeToFile(configName.c_str())!=eXMLErrorNone) {
+		mError("Error writing configuration file");
+		return false;
+	}
+	return true;
+}

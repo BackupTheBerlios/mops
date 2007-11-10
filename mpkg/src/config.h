@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.52 2007/11/01 01:33:21 i27249 Exp $
+    $Id: config.h,v 1.53 2007/11/10 10:26:40 i27249 Exp $
 */
 
 
@@ -49,6 +49,7 @@ extern string log_directory;
 extern bool require_root;
 extern bool DO_NOT_RUN_SCRIPTS;	// Prevent executing of scripts - it may be dangerous
 extern unsigned int fileConflictChecking;
+extern string SYS_MPKG_VAR_DIRECTORY;
 extern string CDROM_DEVICE;
 extern string CDROM_MOUNTPOINT;
 extern string CDROM_VOLUMELABEL; // For QT GUI
@@ -110,6 +111,20 @@ namespace mpkgconfig
 	int set_checkFiles(unsigned int value);
 }
 
+class Config
+{
+	public:
+	Config(string _configName=CONFIG_FILE);
+	~Config();
+	string getValue(string attribute, int value_id = 0);
+	bool setValue(string attribute, string value, int value_id = 0);
+	private:
+	XMLNode node;
+	string configName;
+	bool readXml();
+	bool writeXml();
+};
 
 
+extern Config mConfig;
 #endif
