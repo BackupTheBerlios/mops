@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.63 2007/11/04 14:15:08 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.64 2007/11/12 21:35:45 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -609,7 +609,17 @@ void generateDeps(string tgz_filename)
 
 		tmp = tail.substr(0,tail.find_first_of("-"));
 		d.set_package_version(&tmp);
-		if (*d.get_package_name()!=*pkg.get_name()) pkg.get_dependencies()->push_back(d);
+		if (*d.get_package_name()!=*pkg.get_name()) {
+			// Checking existing dependencies
+			bool added=false;
+			for (unsigned int t=0; t<pkg.get_dependencies()->size(); t++) {
+				if (*d.get_package_name()==*pkg.get_dependencies()->at(t).get_package_name()) {
+					pkg.get_dependencies()->at(t) = d;
+					added=true;
+				}
+			}
+			if (!added) pkg.get_dependencies()->push_back(d);
+		}
 	}
 	printf("Got %d dependencies\n", pkg.get_dependencies()->size());
 	p = new PackageConfig(tmpdir+"/install/data.xml");

@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.118 2007/11/06 20:25:18 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.119 2007/11/12 21:35:45 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -33,21 +33,25 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 	bool canCustomize = p.getBuildOptimizationCustomizable();
 	// Setting input filename
-	
-	string url=p.getBuildUrl();
-	string filename=getFilename(url);//url.substr(url.find_last_of("/")+1);
-	string ext = getExtension(url);//url.substr(url.length()-3);
-	string tar_args;
-	if (ext=="bz2") tar_args="jxvf";
-	if (ext=="gz") tar_args="zxvf";
-	if (ext!="bz2" && ext!="gz" && ext!="zip" && ext!="rar") {
-		printf("Unknown file extension %s\n", ext.c_str());
-		return 2;
-	}
+	string filename, ext, tar_args;
+
 	string extractCommand;
-       	if (ext=="zip") extractCommand = "unzip";
-	if (ext=="rar") extractCommand = "unrar e";
-	if (ext=="bz2" || ext=="gz") extractCommand = "tar " + tar_args;
+	string url=p.getBuildUrl();
+	printf("url = [%s]\n", url.c_str());
+	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
+		filename=getFilename(url);
+		ext = getExtension(url);
+	
+		if (ext=="bz2") tar_args="jxvf";
+		if (ext=="gz") tar_args="zxvf";
+		if (ext!="bz2" && ext!="gz" && ext!="zip" && ext!="rar") {
+			mError("Unknown file extension " + ext);
+			return 2;
+		}
+		if (ext=="zip") extractCommand = "unzip";
+		if (ext=="rar") extractCommand = "unrar e";
+		if (ext=="bz2" || ext=="gz") extractCommand = "tar " + tar_args;
+	}
 	// Directories
 	string currentdir=get_current_dir_name();	
 	string pkgdir = "/tmp/package-"+p.getName();
@@ -96,6 +100,13 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	if (!canCustomize || march.empty()) march=p.getBuildOptimizationMarch();
 	if (!canCustomize || mtune.empty()) mtune=p.getBuildOptimizationMtune();
 	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
+	if (canCustomize || build_system == "script") {
+		// If we didn't receive an overrided architecture instructions, let's set defaults!
+		if (march.empty() || mConfig.getValue("override_buildflags")=="yes") march = mConfig.getValue("march");
+		if (mtune.empty() || mConfig.getValue("override_buildflags")=="yes") mtune = mConfig.getValue("mtune");
+		if (olevel.empty() || mConfig.getValue("override_buildflags")=="yes") olevel = mConfig.getValue("olevel");
+	}
+	printf("Build flags:\nArchitecture: %s, tuned for: %s, optimization level: %s\n", march.c_str(), mtune.c_str(), olevel.c_str());
 	string gcc_options = p.getBuildOptimizationCustomGccOptions();
 
 	string configure_cmd = p.getBuildCmdConfigure();
@@ -141,10 +152,16 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
 		make_install_cmd.clear();
 	}
-	if (make_install_cmd.find("$DESTDIR")!=std::string::npos)
+	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
 	{
-		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+pkgdir+make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
+		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+ pkgdir+ make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
 	}
+	while (make_install_cmd.find("$SRCDIR")!=std::string::npos)
+	{
+		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
+	}
+
+	printf("make install: %s\n", make_install_cmd.c_str());
 
 	// Preparing environment. Clearing old directories
 	system("rm -rf " + pkgdir);	
@@ -159,10 +176,12 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		}
 	}
 	
-	// Extracting the sources
-	if (system("(cd " + dldir+"; " + extractCommand + " " + filename+")")!=0) {
-		mError(_("Tar was failed to extract the received source package"));
-		return -7;
+	// Extracting the sources, if need so
+	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
+		if (system("(cd " + dldir+"; " + extractCommand + " " + filename+")")!=0) {
+			mError(_("Tar was failed to extract the received source package"));
+			return -7;
+		}
 	}
 	string cflags="'";
        	if (!march.empty()) cflags += " -march="+march;
@@ -212,10 +231,13 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		system("(cd " + srcdir + "; zcat ../patches/" + patchList[i] + " | patch -p1 --verbose)");
 	}
 	// Compiling
+	printf("Compile cmd: %s\n", compile_cmd.c_str());
 	if (system(compile_cmd)!=0) {
 		mError("Build failed. Check the build config");
 		return -7;
 	}
+	// Man compression and binary stripping
+	system("( cd " + pkgdir + "; find . | xargs file | grep \"executable\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; find . | xargs file | grep \"shared object\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; if [ -d usr/man ]; then gzip -9 usr/man/man?/*; fi )");
 	
 	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
 	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;

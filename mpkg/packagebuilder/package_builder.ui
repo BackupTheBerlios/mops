@@ -23,7 +23,7 @@
        <string>Package description and metadata</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -875,7 +875,7 @@
        <string>Building options</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
       </attribute>
       <layout class="QHBoxLayout" >
        <item>
@@ -898,7 +898,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="urlEdit" />
+                 <widget class="QLineEdit" name="urlEdit" >
+                  <property name="toolTip" >
+                   <string>Please enter an URL to the source file. It can be http://, ftp://, and even svn checkout or cvs (for last ones, just enter download command)</string>
+                  </property>
+                 </widget>
                 </item>
                </layout>
               </item>
@@ -906,6 +910,12 @@
                <layout class="QHBoxLayout" >
                 <item>
                  <widget class="QCheckBox" name="embedSourcesCheckBox" >
+                  <property name="toolTip" >
+                   <string>Import sources directly in package. Useful for offline distributing</string>
+                  </property>
+                  <property name="statusTip" >
+                   <string/>
+                  </property>
                   <property name="text" >
                    <string>Embed sources into ebuild</string>
                   </property>
@@ -917,7 +927,7 @@
                    <string>Download and analyze</string>
                   </property>
                   <property name="icon" >
-                   <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+                   <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1355,6 +1365,9 @@
                    <property name="text" >
                     <string>Allow user to change these settings</string>
                    </property>
+                   <property name="checked" >
+                    <bool>true</bool>
+                   </property>
                   </widget>
                  </item>
                 </layout>
@@ -1452,7 +1465,7 @@ p, li { white-space: pre-wrap; }
                      <string>Load from file...</string>
                     </property>
                     <property name="icon" >
-                     <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+                     <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -1462,7 +1475,7 @@ p, li { white-space: pre-wrap; }
                      <string>Edit with gvim</string>
                     </property>
                     <property name="icon" >
-                     <iconset>/usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
+                     <iconset>../../../usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -1549,7 +1562,7 @@ p, li { white-space: pre-wrap; }
        <string>Installation scripts</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
+       <iconset>../../../usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -1750,7 +1763,7 @@ p, li { white-space: pre-wrap; }
         <string>About...</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
        </property>
        <property name="shortcut" >
         <string>F1</string>
@@ -1763,7 +1776,7 @@ p, li { white-space: pre-wrap; }
         <string>Open...</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+O</string>
@@ -1776,7 +1789,7 @@ p, li { white-space: pre-wrap; }
         <string>Open directory...</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
        </property>
        <property name="flat" >
         <bool>false</bool>
@@ -1802,7 +1815,7 @@ p, li { white-space: pre-wrap; }
         <string>Save package</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+S</string>
@@ -1815,7 +1828,7 @@ p, li { white-space: pre-wrap; }
         <string>Save and quit</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -1825,7 +1838,7 @@ p, li { white-space: pre-wrap; }
         <string>Quit</string>
        </property>
        <property name="icon" >
-        <iconset>/usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+Q</string>

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.79 2007/11/06 20:25:18 i27249 Exp $
+	$Id: dataunits.cpp,v 1.80 2007/11/12 21:35:44 i27249 Exp $
 */
 
 
@@ -1020,7 +1020,6 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	int min_priority = 0;
 	for (unsigned int i=0; i<packages.size(); i++)
 	{
-		printf("[%d] Package %s: priority %d\n", i, packages[i].get_name()->c_str(), packages[i].priority);
 		if (packages[i].priority>min_priority) min_priority = packages[i].priority;
 	}
 
@@ -1047,12 +1046,6 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 	}
 	printf("sorting finished\n");
 	packages = sorted;
-	for (unsigned int i=0; i<packages.size(); i++)
-	{
-		printf("[%d] Package %s: priority %d\n", i, packages[i].get_name()->c_str(), packages[i].priority);
-	}
-	printf("Wait 4 sec or kill\n");
-	sleep(4);
 
 }
 void PACKAGE_LIST::sortByLocations()
