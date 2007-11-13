@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.42 2007/11/06 20:25:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.43 2007/11/13 19:11:44 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -131,7 +131,10 @@ void Form::loadData()
 	
 void Form::loadFile(QString filename)
 {
-	if (filename.isEmpty() && pBuilder_isStartup) return;
+	if (filename.isEmpty() && pBuilder_isStartup) {
+		pBuilder_isStartup=false;
+		return;
+	}
 	if (filename.isEmpty() && !pBuilder_isStartup)
 	{
 		filename = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
@@ -397,13 +400,18 @@ void Form::loadFile(QString filename)
 	}
 }
 
-void Form::saveFile()
+bool Form::saveFile()
 {
+	// Check if all required fields are filled in
+	if (ui.NameEdit->text().isEmpty() || ui.VersionEdit->text().isEmpty() || ui.BuildEdit->text().isEmpty()) {
+		QMessageBox::warning(this, "Some required fields are empty", "Please fill in all required fields (name, arch, version, build) first.");
+		return false;
+	}
 	QString out_dir;
 	if (dataType==DATATYPE_NEW)
 	{
 		out_dir = QFileDialog::getExistingDirectory(this, tr("Where to save the package:"), "./");
-		if (out_dir.isEmpty()) return;
+		if (out_dir.isEmpty()) return false;
 
 		if (ui.sourcePackageRadioButton->isChecked()) {
 			dataType = DATATYPE_SOURCEPACKAGE;
@@ -417,7 +425,7 @@ void Form::saveFile()
 		if (dataType == DATATYPE_NEW)
 		{
 			QMessageBox::warning(this, "No package type specified", "Please specify package data first");
-			return;
+			return false;
 		}
 	}
 
@@ -435,7 +443,7 @@ void Form::saveFile()
 			break;
 		default:
 			mError("This type of file isn't supported");
-			return;
+			return false;
 	}
 	QString currentWindowTitle = windowTitle();
 	setWindowTitle(windowTitle()+tr(": saving, please wait..."));
@@ -549,10 +557,8 @@ void Form::saveFile()
 			node.getChildNode("suggests").getChildNode("suggest", scurr).getChildNode("version").addText(ui.DepTableWidget->item(i,2)->text().toStdString().c_str());
 			scurr++;
 		}
-		printf("[%d] Done step\n", i);
 
 	}
-	printf("Deps OK\n");
 	node.addChild("tags");
 	node.addChild("changelog");
 
@@ -698,9 +704,13 @@ void Form::saveFile()
 			break;
 	}
 
-	WriteFile(xmlDir+"/slack-desc", slack_desc);
+	if (WriteFile(xmlDir+"/slack-desc", slack_desc)!=0) {
+		QMessageBox::critical(this, "Error saving package", "Error while saving package");
+		return false;
+	}
 
 	if (!slack_required.empty()) WriteFile(xmlDir+"/slack-required", slack_required);
+	return true;
 }
 void Form::showAbout()
 {

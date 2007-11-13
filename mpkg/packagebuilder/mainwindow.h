@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.21 2007/11/02 17:45:45 i27249 Exp $
+ * $Id: mainwindow.h,v 1.22 2007/11/13 19:11:44 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -30,7 +30,7 @@ class Form: public QWidget
 		void showAbout();
 		void loadData();
 		void loadFile(QString filename);
-		void saveFile();
+		bool saveFile();
 		void addConfigFile();
 		void deleteConfigFile();
 		void searchConfigFile();
