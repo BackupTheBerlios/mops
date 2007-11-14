@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.43 2007/11/13 19:11:44 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.44 2007/11/14 09:53:24 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -322,6 +322,11 @@ void Form::loadFile(QString filename)
 	}
 	if (p->getBuildOptimizationCustomizable()) ui.AllowUserToChangeCheckBox->setCheckState(Qt::Checked);
 	else ui.AllowUserToChangeCheckBox->setCheckState(Qt::Unchecked);
+
+	if (p->getBuildUseCflags()) ui.dontUseCflags->setCheckState(Qt::Unchecked);
+	else ui.dontUseCflags->setCheckState(Qt::Checked);
+
+	ui.maxNumjobsSpinBox->setValue(atoi(p->getBuildMaxNumjobs().c_str()));
 	keyList.clear();
 	keys key_tmp;
 	vector<string> key_names = p->getBuildKeyNames();
@@ -650,6 +655,13 @@ bool Form::saveFile()
 			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("true");
 		else   	
 			node.getChildNode("mbuild").getChildNode("optimization").getChildNode("allow_change").addText("false");
+	
+		node.getChildNode("mbuild").addChild("use_cflags");	
+		if (ui.dontUseCflags->isChecked())
+			node.getChildNode("mbuild").getChildNode("use_cflags").addText("false");
+		else
+			node.getChildNode("mbuild").getChildNode("use_cflags").addText("true");
+
 		if (ui.envOptionsCheckBox->checkState()==Qt::Checked)
 		{
 			node.getChildNode("mbuild").addChild("env_options");

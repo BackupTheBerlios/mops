@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.39 2007/11/03 01:08:15 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.40 2007/11/14 09:53:24 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -419,6 +419,26 @@ bool PackageConfig::getBuildOptimizationCustomizable()
         	return false;
     	}
 }
+bool PackageConfig::getBuildUseCflags()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_USE_CFLAGS);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD USE_CFLAGS = '" +strim( __r) + "'");
+	        if (strim(__r)=="false") return false;
+		else return true;
+	    } else {
+        	return true;
+    	}
+}
+
 string PackageConfig::getBuildOptimizationMarch()
 {
 	xmlNodeSetPtr nodeset;

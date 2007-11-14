@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.119 2007/11/12 21:35:45 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.120 2007/11/14 09:53:24 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -32,6 +32,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 
 	bool canCustomize = p.getBuildOptimizationCustomizable();
+	bool useCflags = p.getBuildUseCflags();
 	// Setting input filename
 	string filename, ext, tar_args;
 
@@ -183,15 +184,19 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			return -7;
 		}
 	}
-	string cflags="'";
-       	if (!march.empty()) cflags += " -march="+march;
-      	if (!mtune.empty()) cflags += " -mtune=" +mtune;
-        if (!olevel.empty()) cflags +=" -" + olevel;
-       	if (!gcc_options.empty()) cflags += " " + gcc_options;
-       	cflags +="'";
-	if (cflags.length()<4) cflags.clear();
-	else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
 
+	string cflags;
+	if (useCflags)
+	{
+		cflags="'";
+		if (!march.empty()) cflags += " -march="+march;
+		if (!mtune.empty()) cflags += " -mtune=" +mtune;
+		if (!olevel.empty()) cflags +=" -" + olevel;
+		if (!gcc_options.empty()) cflags += " " + gcc_options;
+		cflags +="'";
+		if (cflags.length()<4) cflags.clear();
+		else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
+	}
 	cflags = p.getBuildConfigureEnvOptions() + " " + cflags;
 
 	vector<string> patchList = p.getBuildPatchList();

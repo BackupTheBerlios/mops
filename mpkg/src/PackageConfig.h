@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.22 2007/11/03 01:08:15 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.23 2007/11/14 09:53:24 i27249 Exp $
  *
  * **********************************************************/
 
@@ -81,7 +81,7 @@ typedef struct depTree { bool name, version, condition, build_only; } ;
 #define GET_PKG_MBUILD_OPTIMIZATION_CUSTOM_GCC_OPTIONS ((const xmlChar *)"//mbuild/optimization/custom_gcc_options")
 #define GET_PKG_MBUILD_CONFIGURATION_KEY_NAME ((const xmlChar *)"//mbuild/configuration/key/name")
 #define GET_PKG_MBUILD_CONFIGURATION_KEY_VALUE ((const xmlChar *)"//mbuild/configuration/key/value")
-
+#define GET_PKG_MBUILD_USE_CFLAGS ((const xmlChar *)"//mbuild/use_cflags")
 #define GET_PKG_MBUILD_CMD_CONFIGURE ((const xmlChar *)"//mbuild/custom_commands/configure")
 #define GET_PKG_MBUILD_CMD_MAKE ((const xmlChar *)"//mbuild/custom_commands/make")
 #define GET_PKG_MBUILD_CMD_MAKEINSTALL ((const xmlChar *)"//mbuild/custom_commands/make_install")
@@ -152,6 +152,7 @@ public:
 	string getBuildCmdConfigure(void);
 	string getBuildCmdMake(void);
 	string getBuildCmdMakeInstall(void);
+	bool getBuildUseCflags(void);
 	vector<string> getBuildKeyNames(void);
 	vector<string> getBuildKeyValues(void);
 	vector<string> getBuildPatchList(void);
