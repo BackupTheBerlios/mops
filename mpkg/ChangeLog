@@ -1,3 +1,74 @@
+2007-11-14 18:38  i27249
+
+	* installer/clean, src/mpkg.cpp: commit 14.10.2007
+
+2007-11-14 17:05  i27249
+
+	* packagebuilder/mainwindow.cpp: packagebuilder fixes
+
+2007-11-14 16:48  i27249
+
+	* packagebuilder/mainwindow.cpp, packagebuilder/package_builder.ui,
+	  src/PackageConfig.cpp, src/PackageConfig.h, src/mpkg.cpp: Tru
+	  fixes
+
+2007-11-14 15:06  i27249
+
+	* packagebuilder/mainwindow.cpp, packagebuilder/mainwindow.h,
+	  packagebuilder/package_builder.ui,
+	  pkg_descriptions/console/data.xml, pkg_descriptions/gui/data.xml,
+	  pkg_descriptions/lib/data.xml, pkg_descriptions/tools/data.xml:
+	  Button!
+
+2007-11-14 12:53  i27249
+
+	* packagebuilder/mainwindow.cpp, packagebuilder/package_builder.ui,
+	  src/PackageConfig.cpp, src/PackageConfig.h, src/mpkg.cpp: last
+
+2007-11-13 22:11  i27249
+
+	* packagebuilder/: mainwindow.cpp, mainwindow.h: ХУЙ!
+
+2007-11-13 00:35  i27249
+
+	* packagebuilder/package_builder.ui, src/dataunits.cpp,
+	  src/dialog.cpp, src/libmpkg.cpp, src/mpkg.cpp: More spkg
+	  improvements.
+
+2007-11-10 13:26  i27249
+
+	* src/: config.cpp, config.h, installpkg-ng2.cpp: Config class:
+	  implements simple setValue/getValue interface to XML config.
+	  TODO: support for deep nodes
+
+2007-11-06 23:25  i27249
+
+	* packagebuilder/mainwindow.cpp, packagebuilder/package_builder.ui,
+	  src/dataunits.cpp, src/mpkg.cpp, src/mpkgsys.cpp,
+	  src/string_operations.cpp: Few minor fixes: getAbsolutePath fix
+	  now passing optimization options to build script (TODO: add
+	  support in GUI) installation error handling: handle more
+	  failures, and stop building/installing if at least one package
+	  installation was failed.
+
+2007-11-04 17:15  i27249
+
+	* manager/aboutbox.ui, manager/corethread.cpp,
+	  manager/mainwindow.cpp, pkg_descriptions/console/data.xml,
+	  pkg_descriptions/gui/data.xml, pkg_descriptions/lib/data.xml,
+	  pkg_descriptions/tools/data.xml, src/CMakeLists.txt,
+	  src/debug.cpp, src/dependencies.cpp, src/installpkg-ng2.cpp,
+	  src/libmpkg.cpp, src/local_package.cpp, src/mpkg.cpp, src/mpkg.h,
+	  src/mpkgsys.cpp, src/mpkgsys.h: Theoretically, full mpkg-src.
+	  TEST IT!
+
+2007-11-03 04:08  i27249
+
+	* ChangeLog, src/PackageConfig.cpp, src/PackageConfig.h,
+	  src/file_routines.cpp, src/file_routines.h,
+	  src/local_package.cpp, src/repository.cpp: Я -
+	  НОЖЫРАЮСЬ!
+
 2007-11-02 23:19  i27249
 
 	* src/: PackageConfig.cpp, core.cpp, dataunits.cpp, dataunits.h,

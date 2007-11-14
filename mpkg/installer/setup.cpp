@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.53 2007/10/27 15:09:46 i27249 Exp $
+ * $Id: setup.cpp,v 1.54 2007/11/14 15:49:23 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -550,8 +550,6 @@ int mountPartitions()
 	}
 	else mDebug("root mkdir and mount OK");
 
-	dialogItem.execInfoBox("Перемещение базы данных на жесткий диск");
-	moveDatabaseToHdd();
 	// Sorting mount points
 	vector<int> mountOrder, mountPriority;
 	for (unsigned int i=0; i<systemConfig.otherMounts.size(); i++)
@@ -607,6 +605,9 @@ int mountPartitions()
 		}
 		else mDebug("mount ok");
 	}
+	dialogItem.execInfoBox("Перемещение базы данных на жесткий диск");
+	moveDatabaseToHdd();
+
 	mDebug("end");
 	return 0;
 }
