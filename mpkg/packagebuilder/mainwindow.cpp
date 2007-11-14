@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.46 2007/11/14 13:48:07 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.47 2007/11/14 14:05:16 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -22,7 +22,7 @@ Form::Form(QWidget *parent, string arg)
 	description.resize(2);
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
-	if (getuid!=0) {
+	if (getuid()!=0) {
 		system("kdesu packagebuilder " + arg);
 		//QMessageBox::critical(this, tr("Error"), tr("This program should be run with the root privilegies"));
 		quitApp();
@@ -38,6 +38,7 @@ Form::Form(QWidget *parent, string arg)
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
 
 	connect(ui.aboutButton, SIGNAL(clicked()), this, SLOT(showAbout()));
+	connect(ui.browsePatchButton, SIGNAL(clicked()), this, SLOT(browsePatch()));
 // Build options UI switches
 
 	connect(ui.editWithGvimButton, SIGNAL(clicked()), this, SLOT(editBuildScriptWithGvim()));
@@ -229,7 +230,8 @@ void Form::loadFile(QString filename)
 		if (sourcePackage.isSourceEmbedded(ui.urlEdit->text().toStdString())) ui.embedSourcesCheckBox->setCheckState(Qt::Checked);
 		else ui.embedSourcesCheckBox->setCheckState(Qt::Unchecked);
 	}
-
+	if (p->getBuildNoSubfolder()) ui.noSubfolderCheckBox->setCheckState(Qt::Checked);
+	else ui.noSubfolderCheckBox->setCheckState(Qt::Unchecked);
 	if (p->getBuildSourceRoot().empty()) {
 		ui.sourcesRootDirectoryAutodetectCheckBox->setCheckState(Qt::Checked);
 		ui.sourcesRootDirectoryEdit->setText("");
