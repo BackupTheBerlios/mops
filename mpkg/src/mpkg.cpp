@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.121 2007/11/14 13:48:07 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.122 2007/11/14 15:38:47 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -121,33 +121,32 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	string make_cmd = p.getBuildCmdMake();
 	string make_install_cmd = p.getBuildCmdMakeInstall();
 
+	string configure_options;
+	for (unsigned int i=0; i<key_names.size(); i++)
+	{
+		configure_options += " " + key_names[i];
+		if (!key_values[i].empty()) {
+			configure_options += "=" + key_values[i];
+		}
+	}
+
 	if (build_system=="autotools")
 	{
-		configure_cmd="./configure";
+		configure_cmd="./configure " + configure_options;
 		make_cmd = "make";
 		make_install_cmd="make install DESTDIR=$DESTDIR";
-		for (unsigned int i=0; i<key_names.size(); i++)
-		{
-			configure_cmd += " " + key_names[i];
-			if (!key_values[i].empty()) configure_cmd += "="+key_values[i];
-		}
 	}
 	if (build_system=="cmake")
 	{
-		configure_cmd = "cmake ..";
-		for (unsigned int i=0; i<key_names.size(); i++)
-		{
-			configure_cmd += " " + key_names[i];
-			if (!key_values[i].empty()) configure_cmd += "="+key_values[i];
-		}
-
+		configure_cmd = "cmake .. " + configure_options;
 		make_cmd = "make";
 		make_install_cmd="make install DESTDIR=$DESTDIR";
 	}
 	if (build_system=="scons")
 	{
-		printf("Sorry, SCons isn't supported yet. Please specify script-based assembly instructions in build\n");
-		return -5;
+		configure_cmd = "scons " + configure_options;
+		make_cmd = "make";
+		make_install_cmd = "make install DESTDIR=$DESTDIR";
 	}
 	if (build_system=="custom")
 	{
@@ -195,7 +194,10 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			return -7;
 		}
 	}
-
+	// Fixing permissions (mozgmertv resistance)
+	
+	system("(cd " + srcdir+"; chown -R root:root .;	find . -perm 666 -exec chmod 644 {} \\;; find . -perm 664 -exec chmod 644 {} \\;; find . -perm 600 -exec chmod 644 {} \\;; find . -perm 444 -exec chmod 644 {} \\;; find . -perm 400 -exec chmod 644 {} \\;; find . -perm 440 -exec chmod 644 {} \\;; find . -perm 777 -exec chmod 755 {} \\;; find . -perm 775 -exec chmod 755 {} \\;; find . -perm 511 -exec chmod 755 {} \\;; find . -perm 711 -exec chmod 755 {} \\;; find . -perm 555 -exec chmod 755 {} \\;)");
+	
 	string cflags;
 	if (useCflags)
 	{
@@ -254,7 +256,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	}
 	// Man compression and binary stripping
 	system("( cd " + pkgdir + "; find . | xargs file | grep \"executable\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; find . | xargs file | grep \"shared object\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; if [ -d usr/man ]; then gzip -9 usr/man/man?/*; fi )");
-	
+	// Fixing permissions
 	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
 	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
 	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name);
