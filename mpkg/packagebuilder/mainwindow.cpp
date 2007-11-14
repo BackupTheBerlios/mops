@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.45 2007/11/14 12:06:18 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.46 2007/11/14 13:48:07 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -22,6 +22,13 @@ Form::Form(QWidget *parent, string arg)
 	description.resize(2);
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
+	if (getuid!=0) {
+		system("kdesu packagebuilder " + arg);
+		//QMessageBox::critical(this, tr("Error"), tr("This program should be run with the root privilegies"));
+		quitApp();
+	}
+	ui.MaintainerNameEdit->setText(mConfig.getValue("maintainer_name").c_str());
+	ui.MaintainerMailEdit->setText(mConfig.getValue("maintainer_email").c_str());
 
 	ui.openDirectoryButton->hide();	
 	//ui.DepTableWidget->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
@@ -583,7 +590,9 @@ bool Form::saveFile()
 		{
 			node.getChildNode("maintainer").addChild("email");
 			node.getChildNode("maintainer").getChildNode("email").addText(ui.MaintainerMailEdit->text().toStdString().c_str());
+			if (mConfig.getValue("maintainer_email").empty()) mConfig.setValue("maintainer_email", ui.MaintainerMailEdit->text().toStdString());
 		}
+		if (mConfig.getValue("maintainer_name").empty()) mConfig.setValue("maintainer_name", ui.MaintainerNameEdit->text().toStdString());
 	}
 	node.addChild("configfiles");
 	for (int i=0; i<ui.configFilesListWidget->count(); i++)
@@ -766,8 +775,7 @@ void Form::addTag(){
 
 void Form::saveAndExit()
 {
-	saveFile();
-	quitApp();
+	if (saveFile()) quitApp();
 }
 void Form::addDepsFromFiles()
 {

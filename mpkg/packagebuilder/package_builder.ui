@@ -968,6 +968,13 @@
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QCheckBox" name="noSubfolderCheckBox" >
+                  <property name="text" >
+                   <string>No subfolder</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -1822,6 +1829,16 @@ p, li { white-space: pre-wrap; }
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveAsButton" >
+       <property name="text" >
+        <string>Save as...</string>
+       </property>
+       <property name="icon" >
+        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="BuildButton" >

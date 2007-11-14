@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.23 2007/11/14 09:53:24 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.24 2007/11/14 13:48:07 i27249 Exp $
  *
  * **********************************************************/
 
@@ -85,7 +85,7 @@ typedef struct depTree { bool name, version, condition, build_only; } ;
 #define GET_PKG_MBUILD_CMD_CONFIGURE ((const xmlChar *)"//mbuild/custom_commands/configure")
 #define GET_PKG_MBUILD_CMD_MAKE ((const xmlChar *)"//mbuild/custom_commands/make")
 #define GET_PKG_MBUILD_CMD_MAKEINSTALL ((const xmlChar *)"//mbuild/custom_commands/make_install")
-
+#define GET_PKG_MBUILD_NO_SUBFOLDER ((const xmlChar *)"//mbuild/no_subfolder")
 #define GET_PKG_MBUILD_ENVOPTIONS ((const xmlChar *)"//mbuild/env_options")
 
 class PackageConfig
@@ -144,6 +144,7 @@ public:
 	string getBuildSystem(void);
 	string getBuildMaxNumjobs(void);
 	bool getBuildOptimizationCustomizable(void);
+	bool getBuildNoSubfolder(void);
 	string getBuildOptimizationMarch(void);
 	string getBuildOptimizationMtune(void);
 	string getBuildOptimizationLevel(void);

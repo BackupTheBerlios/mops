@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.120 2007/11/14 09:53:24 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.121 2007/11/14 13:48:07 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -58,14 +58,21 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	string pkgdir = "/tmp/package-"+p.getName();
 	string dldir=spkg.getExtractedPath();
 	// Setting source directory
-	string srcdir=p.getBuildSourceRoot();
-	if (srcdir.empty()) {
-		if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
-		if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
-		if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
-		if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
+	bool noSubfolder = p.getBuildNoSubfolder();
+	string srcdir;
+	if (!noSubfolder)
+	{
+
+		srcdir=p.getBuildSourceRoot();
+		if (srcdir.empty()) {
+			if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
+			if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
+			if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
+			if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
+		}
+		else srcdir = dldir+"/"+srcdir;
 	}
-	else srcdir = dldir+"/"+srcdir;
+	else srcdir = dldir+"/extracted_source/";
 
 	// Setting output package name
 	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
@@ -176,10 +183,14 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			return -6;
 		}
 	}
-	
+	string extraCmd;
+	if (noSubfolder)
+	{
+		extraCmd = "mkdir -p extracted_source; cd extracted_source; ";
+	}
 	// Extracting the sources, if need so
 	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
-		if (system("(cd " + dldir+"; " + extractCommand + " " + filename+")")!=0) {
+		if (system("(cd " + dldir+"; " + extraCmd + extractCommand + " " + filename+")")!=0) {
 			mError(_("Tar was failed to extract the received source package"));
 			return -7;
 		}

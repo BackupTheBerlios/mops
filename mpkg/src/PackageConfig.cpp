@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.40 2007/11/14 09:53:24 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.41 2007/11/14 13:48:07 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -419,6 +419,26 @@ bool PackageConfig::getBuildOptimizationCustomizable()
         	return false;
     	}
 }
+bool PackageConfig::getBuildNoSubfolder()
+{
+	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet(GET_PKG_MBUILD_NO_SUBFOLDER);
+    	if (res) {
+        
+        	nodeset = res->nodesetval;
+
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode, 1);
+        	const char * _result = (const char * )key;
+	        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+        	mDebug("MBUILD NO_SUBFOLDER = '" +strim( __r) + "'");
+	        if (strim(__r)=="true") return true;
+		else return false;
+	    } else {
+        	return false;
+    	}
+}
+
 bool PackageConfig::getBuildUseCflags()
 {
 	xmlNodeSetPtr nodeset;
