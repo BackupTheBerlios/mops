@@ -1419,6 +1419,13 @@
                  <widget class="QLineEdit" name="patchEdit" />
                 </item>
                 <item>
+                 <widget class="QToolButton" name="browsePatchButton" >
+                  <property name="text" >
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QPushButton" name="patchAddButton" >
                   <property name="text" >
                    <string>Add</string>

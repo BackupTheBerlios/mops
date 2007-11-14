@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.22 2007/11/13 19:11:44 i27249 Exp $
+ * $Id: mainwindow.h,v 1.23 2007/11/14 12:06:18 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -46,7 +46,7 @@ class Form: public QWidget
 		void storeCurrentDescription();
 		void addDepsFromFiles();
 		void quitApp();
-
+		void browsePatch();
 		void switchConfigureField(int state);
 		void switchEnvField(int state);
 		void switchCompilationField(int state);

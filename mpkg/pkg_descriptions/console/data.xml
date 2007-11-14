@@ -4,7 +4,7 @@
 		mpkg-console
 	</name>
 	<version>
-		0.12.9
+		0.12.10
 	</version>
 	<arch>
 		i486
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.9
+				0.12.10
 			</version>
 		</dep>
 	</dependencies>

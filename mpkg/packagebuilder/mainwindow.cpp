@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.44 2007/11/14 09:53:24 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.45 2007/11/14 12:06:18 i27249 Exp $
  * ***************************************************************/
 
 #include <QTextCodec>
@@ -1088,6 +1088,12 @@ void Form::displayPatches()
 		QListWidgetItem *__item = new QListWidgetItem(ui.patchListWidget);
 		__item->setText(patchList[i].c_str());
 	}
+}
+void Form::browsePatch()
+{
+	QString patchName = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
+	if (patchName.isEmpty()) return;
+	ui.patchEdit->setText(patchName);
 }
 
 void Form::addPatch()
