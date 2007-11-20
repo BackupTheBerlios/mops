@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.59 2007/11/06 20:25:18 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.60 2007/11/20 00:41:51 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -206,7 +206,7 @@ int mpkgSys::requestInstallGroup(string groupName, mpkgDatabase *db, DependencyT
 	mDebug("Requesting to install " + IntToStr(install_list.size()) + " packages from group " + groupName);
 	for (unsigned int i=0; i<install_list.size(); i++)
 	{
-		requestInstall(install_list[i], db, DepTracker);
+		requestInstall(install_list[i],(string) "",(string) "", db, DepTracker);
 	}
 	return 0;
 }
@@ -218,15 +218,21 @@ int mpkgSys::requestInstall(PACKAGE *package, mpkgDatabase *db, DependencyTracke
 }
 
 
-int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTracker *DepTracker)
+int mpkgSys::requestInstall(string package_name, string package_version, string package_build, mpkgDatabase *db, DependencyTracker *DepTracker)
 {
 	// Exclusion for here: package_name could be a filename of local placed package.
 	bool tryLocalInstall=false;
 	SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", &package_name);
+	if (!package_version.empty()) {
+		sqlSearch.addField("package_version", &package_version);
+		//printf("adding package version [%s] to search\n", package_version.c_str());
+	}
+	if (!package_build.empty()) sqlSearch.addField("package_build", &package_build);
 	PACKAGE_LIST candidates;
 	int ret = db->get_packagelist(&sqlSearch, &candidates);
 	mDebug("received " + IntToStr(candidates.size()) + " candidates for " + package_name);
+	// TODO: let user know if multiple packages with same name, version and build are available, and let him choose.
 	int id=-1;
 	if (ret == 0)
 	{
@@ -248,7 +254,10 @@ int mpkgSys::requestInstall(string package_name, mpkgDatabase *db, DependencyTra
 	
 	if (!tryLocalInstall || !FileExists(package_name))
 	{
-		mError(_("No such package: ") + package_name);
+		string error_package = package_name;
+		if (!package_version.empty()) error_package += _(" version ") + package_version;
+		if (!package_build.empty()) error_package += _(" build ") + package_build;
+		mError(_("No such package: ") + error_package);
 		return MPKGERROR_NOPACKAGE;
 	}
 

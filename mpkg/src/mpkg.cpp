@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.122 2007/11/14 15:38:47 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.123 2007/11/20 00:41:51 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -26,7 +26,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 	PackageConfig p(spkg.getDataFilename());
 	if (!p.parseOk) {
-		printf("Source build: invalid XML data\n");
+		mError("Source build: invalid XML data");
 		return -3;
 	}
 
@@ -38,20 +38,20 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 	string extractCommand;
 	string url=p.getBuildUrl();
-	printf("url = [%s]\n", url.c_str());
+	say(_("Source url: [%s]\n"), url.c_str());
 	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
 		filename=getFilename(url);
 		ext = getExtension(url);
 	
 		if (ext=="bz2") tar_args="jxvf";
-		if (ext=="gz") tar_args="zxvf";
-		if (ext!="bz2" && ext!="gz" && ext!="zip" && ext!="rar") {
+		if (ext=="gz" || ext == "tgz") tar_args="zxvf";
+		if (ext!="bz2" && ext!="gz" && ext!="tgz" && ext!="zip" && ext!="rar") {
 			mError("Unknown file extension " + ext);
 			return 2;
 		}
 		if (ext=="zip") extractCommand = "unzip";
 		if (ext=="rar") extractCommand = "unrar e";
-		if (ext=="bz2" || ext=="gz") extractCommand = "tar " + tar_args;
+		if (ext=="bz2" || ext=="gz" || ext=="tgz") extractCommand = "tar " + tar_args;
 	}
 	// Directories
 	string currentdir=get_current_dir_name();	
@@ -67,6 +67,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		if (srcdir.empty()) {
 			if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
 			if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
+			if (ext=="tgz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tgz"));
 			if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
 			if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
 		}
@@ -168,7 +169,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
 	}
 
-	printf("make install: %s\n", make_install_cmd.c_str());
+	//printf("make install: %s\n", make_install_cmd.c_str());
 
 	// Preparing environment. Clearing old directories
 	system("rm -rf " + pkgdir);	
@@ -249,7 +250,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		system("(cd " + srcdir + "; zcat ../patches/" + patchList[i] + " | patch -p1 --verbose)");
 	}
 	// Compiling
-	printf("Compile cmd: %s\n", compile_cmd.c_str());
+	printf("Compilation command: %s\n", compile_cmd.c_str());
 	if (system(compile_cmd)!=0) {
 		mError("Build failed. Check the build config");
 		return -7;
@@ -946,7 +947,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		PACKAGE binary_package = binpkg.data;
 		emerge_to_db(&binary_package);
 		say(_("Processing to install binary\n"));
-		return install_package(&binpkg.data);
+		return install_package(&binary_package);
 	}
 
 	// First of all: EXTRACT file list and scripts!!!
@@ -1171,6 +1172,7 @@ void mpkgDatabase::unexportPackage(string output_dir, PACKAGE *p)
 
 int mpkgDatabase::remove_package(PACKAGE* package)
 {
+	//printf("remove_package is in progress\n");
 	get_filelist(package->get_id(), package->get_files());
 	package->sync();
 	pData.setItemProgressMaximum(package->itemID, package->get_files()->size()+8);
@@ -1186,9 +1188,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
-		if (!package->isRemoveBlacklisted())
-		{
+//		if (!package->isRemoveBlacklisted())
+//		{
 			// Running pre-remove scripts
+			//printf("Processing\n");
 			mDebug("REMOVE PACKAGE::Preparing scripts");
 			if(!DO_NOT_RUN_SCRIPTS)
 			{
@@ -1221,7 +1224,10 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				if (removeThis && fname[fname.length()-1]!='/')
 				{
 					pData.increaseItemProgress(package->itemID);
-					if (!simulate) unlink (fname.c_str());
+					if (!simulate) {
+						unlink(fname.c_str());
+						//printf("[%d] Unlinking file %s\n", unlink(fname.c_str()), fname.c_str());
+					}
 				}
 			}
 
@@ -1290,7 +1296,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 					delete_conflict_record(package->get_id(), restore[i].get_backup_file());
 				}
 			}
-		}
+//		}
 		pData.increaseItemProgress(package->itemID);
 		set_installed(package->get_id(), ST_NOTINSTALLED);
 		if (package->action()==ST_PURGE) set_configexist(package->get_id(), 0);

@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.79 2007/11/10 10:26:40 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.80 2007/11/20 00:41:51 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -28,7 +28,7 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.9";
+	char *version="0.12.11";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
 	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
 }
@@ -267,7 +267,6 @@ int main (int argc, char **argv)
 		if (argc<=optind) return print_usage(stderr,1);
 		show_package_info(&core, argv[optind]);
 	}
-	vector<string> fname;
 	vector<string> pname;
 	if (action == ACT_COMMIT)
 	{
@@ -311,7 +310,7 @@ int main (int argc, char **argv)
 		core.get_packagelist(&sqlSearch, &packageList);
 		for (int i=0; i<packageList.size(); i++)
 		{
-			pkgList.push_back(TagPair(*packageList.get_package(i)->get_name(),\
+			pkgList.push_back(TagPair(*packageList.get_package(i)->get_name()+"="+*packageList.get_package(i)->get_version()+"="+*packageList.get_package(i)->get_build(),\
 					       *packageList.get_package(i)->get_short_description(),\
 					       packageList.get_package(i)->installed()));
 		}
@@ -319,13 +318,37 @@ int main (int argc, char **argv)
 		if (dialogItem.execCheckList("Отредактируйте состояние пакетов", 0,0,0, &pkgList))
 		{
 			vector<string> removeList;
-			vector<string> installList;
+			vector<string> installList_names, installList_versions, installList_builds, fname, p_version, p_build;
+			string name, version, build;
+			for (unsigned int i = 0; i < oldState.size(); i++)
+			{
+				name = pkgList[i].tag;
+				version.clear();
+				build.clear();
+				if (name.find_first_of("=")!=std::string::npos) {
+					version = name.substr(name.find_first_of("="));
+					if (version.length()>1) version=version.substr(1);
+					name = name.substr(0, name.find_first_of("="));
+					if (version.find_first_of("=")!=std::string::npos) {
+						build = version.substr(version.find_first_of("="));
+						if (build.length()>1) build=build.substr(1);
+					}
+				}
+				fname.push_back(name);
+				p_version.push_back(name);
+				p_build.push_back(build);
+			}
+
 			for (unsigned int i=0; i<oldState.size(); i++)
 			{
 				if (oldState[i].checkState!=pkgList[i].checkState)
 				{
-					if (pkgList[i].checkState) installList.push_back(pkgList[i].tag);
-					else removeList.push_back(pkgList[i].tag);
+					if (pkgList[i].checkState) {
+						installList_names.push_back(fname[i]);
+						installList_versions.push_back(p_version[i]);
+						installList_builds.push_back(p_build[i]);
+					}
+					else removeList.push_back(fname[i]);
 				}
 			}
 			/*printf("Install list:\n");
@@ -337,9 +360,9 @@ int main (int argc, char **argv)
 			{
 				printf("REMOVE: %s\n", removeList[i].c_str());
 			}*/
-
+			
 			core.uninstall(removeList);
-			core.install(installList);
+			core.install(installList_names, &installList_versions, &installList_builds);
 			core.commit();
 		}
 		else printf("Cancelled\n");
@@ -491,11 +514,29 @@ int main (int argc, char **argv)
 
 	if (action == ACT_INSTALL || action == ACT_UPGRADE || action == ACT_REINSTALL)
 	{
+
+		vector<string> fname, p_version, p_build;
+		string name, version, build;
 		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
 		for (int i = optind; i < argc; i++)
 		{
-			fname.push_back((string) argv[i]);
+			name = (string) argv[i];
+			version.clear();
+			build.clear();
+			if (name.find_first_of("=")!=std::string::npos) {
+				version = name.substr(name.find_first_of("="));
+				if (version.length()>1) version=version.substr(1);
+				name = name.substr(0, name.find_first_of("="));
+				if (version.find_first_of("=")!=std::string::npos) {
+					build = version.substr(version.find_first_of("="));
+					if (build.length()>1) build=build.substr(1);
+				}
+			}
+			printf("adding [%s]-[%s]-[%s]\n", name.c_str(), version.c_str(), build.c_str());
+			fname.push_back(name);
+			p_version.push_back(version);
+			p_build.push_back(build);
 		}
 		// Check for wildcards
 		bool hasWilds=false;
@@ -504,6 +545,7 @@ int main (int argc, char **argv)
 			if (fname[i].find("*")!=std::string::npos)
 			{
 				hasWilds=true;
+				break;
 			}
 		}
 		if (hasWilds)
@@ -529,7 +571,7 @@ int main (int argc, char **argv)
 			}
 		}
 
-		if (action != ACT_REINSTALL) core.install(fname);
+		if (action != ACT_REINSTALL) core.install(fname, &p_version, &p_build);
 		else {
 			for (unsigned int i=0; i<fname.size(); i++)
 			{

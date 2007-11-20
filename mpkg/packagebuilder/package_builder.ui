@@ -12,18 +12,21 @@
   <property name="windowTitle" >
    <string>MOPSLinux package builder</string>
   </property>
+  <property name="windowIcon" >
+   <iconset>/usr/share/icons/OS-K/128x128/apps/package.png</iconset>
+  </property>
   <layout class="QVBoxLayout" >
    <item>
     <widget class="QTabWidget" name="globalTabWidget" >
      <property name="currentIndex" >
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="packageMetadataTab" >
       <attribute name="title" >
        <string>Package description and metadata</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -870,12 +873,72 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab" >
+      <attribute name="title" >
+       <string>File-specific details</string>
+      </attribute>
+      <attribute name="icon" >
+       <iconset>/usr/share/icons/crystalsvg/32x32/actions/filenew.png</iconset>
+      </attribute>
+      <layout class="QHBoxLayout" >
+       <item>
+        <widget class="QListWidget" name="filelistWidget" />
+       </item>
+       <item>
+        <layout class="QVBoxLayout" >
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolButton" >
+           <property name="text" >
+            <string>&lt;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="toolButton_2" >
+           <property name="text" >
+            <string>></string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QListWidget" name="filelistWidget_2" />
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tab_2" >
       <attribute name="title" >
        <string>Building options</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
       </attribute>
       <layout class="QHBoxLayout" >
        <item>
@@ -927,7 +990,7 @@
                    <string>Download and analyze</string>
                   </property>
                   <property name="icon" >
-                   <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+                   <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1486,7 +1549,7 @@ p, li { white-space: pre-wrap; }
                      <string>Load from file...</string>
                     </property>
                     <property name="icon" >
-                     <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+                     <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -1496,7 +1559,7 @@ p, li { white-space: pre-wrap; }
                      <string>Edit with gvim</string>
                     </property>
                     <property name="icon" >
-                     <iconset>../../../usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
+                     <iconset>/usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -1583,7 +1646,7 @@ p, li { white-space: pre-wrap; }
        <string>Installation scripts</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
+       <iconset>/usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -1784,7 +1847,7 @@ p, li { white-space: pre-wrap; }
         <string>About...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
        </property>
        <property name="shortcut" >
         <string>F1</string>
@@ -1797,7 +1860,7 @@ p, li { white-space: pre-wrap; }
         <string>Open...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+O</string>
@@ -1810,10 +1873,17 @@ p, li { white-space: pre-wrap; }
         <string>Open directory...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
        </property>
        <property name="flat" >
         <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="debugMessages" >
+       <property name="text" >
+        <string/>
        </property>
       </widget>
      </item>
@@ -1836,7 +1906,7 @@ p, li { white-space: pre-wrap; }
         <string>Save as...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -1846,7 +1916,7 @@ p, li { white-space: pre-wrap; }
         <string>Save package</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+S</string>
@@ -1859,7 +1929,7 @@ p, li { white-space: pre-wrap; }
         <string>Save and quit</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -1869,7 +1939,7 @@ p, li { white-space: pre-wrap; }
         <string>Quit</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+Q</string>

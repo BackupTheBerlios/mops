@@ -4,7 +4,7 @@
 		mpkg-gui
 	</name>
 	<version>
-		0.12.10
+		0.12.11
 	</version>
 	<arch>
 		i486
@@ -31,7 +31,7 @@
 				atleast
 			</condition>
 			<version>
-				0.12.10
+				0.12.11
 			</version>
 		</dep>
 		<dep>

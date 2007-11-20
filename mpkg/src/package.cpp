@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.6 2007/11/02 17:45:45 i27249 Exp $
+// $Id: package.cpp,v 1.7 2007/11/20 00:41:51 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -18,8 +18,9 @@ BinaryPackage::BinaryPackage(string in_file)
 
 BinaryPackage::~BinaryPackage()
 {
-	if (extracted) printf("Warning! destroyed an package object without packing back. Probably you're lost your package...\n");
+	if (extracted) //printf("Warning! destroyed an package object without packing back. Probably you're lost your package...\n");
 	{
+		printf("Cleaning up [%s]...\n", pkg_dir.c_str());
 		system("rm -rf " + pkg_dir);
 	}
 }
@@ -37,9 +38,9 @@ bool BinaryPackage::fileOk()
 }
 bool BinaryPackage::createWorkingDirectory()
 {
-	printf("Creating working dir\n");
+	//printf("Creating working dir\n");
 	pkg_dir = get_tmp_file();
-	printf("dir created in %s\n", pkg_dir.c_str());
+	//printf("dir created in %s\n", pkg_dir.c_str());
 	unlink(pkg_dir.c_str());
 	if (mkdir(pkg_dir.c_str(), 755)!=0) {
 		extracted=false;
@@ -89,7 +90,7 @@ bool BinaryPackage::createNew()
 bool BinaryPackage::setInputFile(string in_file)
 {
 	if (extracted) {
-		printf("Warning: assigning a new filename while previous was extracted\n");
+		//printf("Warning: assigning a new filename while previous was extracted\n");
 	}
 	input_file = in_file;
 	return fileOk();
@@ -147,7 +148,7 @@ string BinaryPackage::getExtractedPath()
 }
 string BinaryPackage::getDataFilename()
 {
-	printf("pkg_dir=%s\n", pkg_dir.c_str());
+	//printf("pkg_dir=%s\n", pkg_dir.c_str());
 	return pkg_dir+"/install/data.xml";
 }
 
@@ -339,7 +340,7 @@ bool SourcePackage::isPatchEmbedded(string patch_name)
 }
 bool SourcePackage::removeSource(string filename)
 {
-	printf("Removing source\n");
+	//printf("Removing source\n");
 	if (extracted)
 	{
 		vector<string> sList = getSourceFilenames();
@@ -531,7 +532,7 @@ bool SourceFile::analyze()
 		printf("contains too much elements (%d), ambiguity\n", dir_containers.size());
 	}
 
-	if (dir_containers.size()==0) printf("no elements\n");
+	//if (dir_containers.size()==0) printf("no elements\n");
 	if (dir_containers.size()==1) sourceDirectory = dir_containers[0];
 
 	string sdir = getDirectory(filepath) +"/"+ sourceDirectory;

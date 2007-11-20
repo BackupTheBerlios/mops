@@ -1,13 +1,10 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.47 2007/11/14 14:05:16 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.48 2007/11/20 00:41:51 i27249 Exp $
  * ***************************************************************/
 
-#include <QTextCodec>
-#include <QtGui>
 #include "mainwindow.h"
-#include <QDir>
 
 
 
@@ -20,8 +17,14 @@ Form::Form(QWidget *parent, string arg)
 	QTextCodec::setCodecForCStrings(QTextCodec::codecForName("utf-8"));
 	short_description.resize(2);
 	description.resize(2);
+	packageDir = new QDir;
+	currentPackageDir = new QDir;
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
+
+	debugLabel = new QLabel;
+	debugLabel->setText("Debug window");
+	debugLabel->show();
 	if (getuid()!=0) {
 		system("kdesu packagebuilder " + arg);
 		//QMessageBox::critical(this, tr("Error"), tr("This program should be run with the root privilegies"));
@@ -73,6 +76,7 @@ Form::Form(QWidget *parent, string arg)
 	connect(ui.downloadAnalyzeButton, SIGNAL(clicked()), this, SLOT(analyzeSources()));
 
 
+	connect(ui.filelistWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(setNewPackageCurrentDirectory(QListWidgetItem *)));
 	this->show();
 	loadFile(arg.c_str());
 }
@@ -242,8 +246,31 @@ void Form::loadFile(QString filename)
 	}
 	patchList = p->getBuildPatchList();
 	displayPatches();
+// Directory listing
+	
+	QString path;
+	switch(dataType) {
+		case DATATYPE_NEW: debugLabel->setText("New package, no path still");
+				   return;
+				   break;
+		case DATATYPE_SOURCEPACKAGE:
+				   path = QString::fromStdString(sourcePackage.pkg_dir);
+				   debugLabel->setText("Source package, path: " + path);
+				   break;
+		case DATATYPE_BINARYPACKAGE:
+				   path = QString::fromStdString(binaryPackage.pkg_dir);
 
-			// stub for script path
+				   debugLabel->setText("Binary package, path: " + path);
+				   break;
+		default:
+				   debugLabel->setText("Unknown/no datatype");
+	}
+	ui.filelistWidget->clear();
+	packageDir->cd(path);
+	currentPackageDir->cd(path);
+	reloadPackageDirListing();
+
+	// stub for script path
 	if (p->getBuildSystem()=="autotools") ui.buildingSystemComboBox->setCurrentIndex(0);
 	if (p->getBuildSystem()=="scons") ui.buildingSystemComboBox->setCurrentIndex(1);
 	if (p->getBuildSystem()=="cmake") ui.buildingSystemComboBox->setCurrentIndex(2);
@@ -737,7 +764,7 @@ bool Form::saveFile()
 }
 void Form::showAbout()
 {
-	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.8\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
+	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.11\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
 }
 void Form::loadBuildScriptFromFile()
 {
@@ -1156,5 +1183,23 @@ void Form::deleteKey()
 		}
 		keyList=copy;
 		displayKeys();
+	}
+}
+void Form::setNewPackageCurrentDirectory(QListWidgetItem *item)
+{
+	QFileInfoList list = currentPackageDir->entryInfoList();
+	currentPackageDir->cd(list.at(ui.filelistWidget->row(item)).fileName());
+	reloadPackageDirListing();
+}
+void Form::reloadPackageDirListing() // Fills the list
+{
+	if (!currentPackageDir->exists()) return;
+	ui.filelistWidget->clear();
+	QFileInfoList list = currentPackageDir->entryInfoList();
+	for (int i=0; i<list.size(); i++) {
+		QListWidgetItem *__item = new QListWidgetItem(ui.filelistWidget);
+		__item->setText(list.at(i).fileName());
+		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/filesystems/folder.png"));
+		else __item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/apps/filetypes.png"));
 	}
 }

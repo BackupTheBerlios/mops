@@ -1,6 +1,6 @@
 /****************************************************
  * MOPSLinux: system setup (new generation)
- * $Id: setup.cpp,v 1.54 2007/11/14 15:49:23 i27249 Exp $
+ * $Id: setup.cpp,v 1.55 2007/11/20 00:41:50 i27249 Exp $
  *
  * Required libraries:
  * libparted
@@ -14,10 +14,9 @@
  * swapon/swapoff
  *
  * *************************************************/
-
+#define NTFS3G // We want to use NTFS-3G to handle NTFS volumes
 #include "setup.h"
-//#include "net-conf/libnetconf.h"
-string i_menuHead = "Установка MOPSLinux 6.0";
+string i_menuHead = "Установка MOPSLinux 6.01";
 SysConfig systemConfig;
 PACKAGE_LIST i_availablePackages;
 vector<string> i_tagList;
@@ -1559,7 +1558,7 @@ int main(int argc, char *argv[])
 		
 			if (strcmp(argv[i], "--help")==0 || !valid_opt) 
 			{
-				printf("Установка MOPSLinux 6.0\n");
+				printf("Установка MOPSLinux 6.01\n");
 				printf("Синтаксис:\n");
 				printf("\tsetup [ ОПЦИИ ]\nОпции:\n");
 	
@@ -1591,7 +1590,7 @@ int main(int argc, char *argv[])
 	system("killall tail 2> /dev/null");
 	system("tail -f /var/log/mkfs.log --retry >> /dev/tty4 2>/dev/null &");
 	system("tail -f /var/log/mpkg-lasterror.log --retry >> /dev/tty4 2>/dev/null &");
-	Dialog d ("Установка MOPSLinux 6.0");
+	Dialog d ("Установка MOPSLinux 6.01");
 	showGreeting();
 	if (!showLicense())
 	{

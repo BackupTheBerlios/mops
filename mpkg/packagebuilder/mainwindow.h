@@ -1,12 +1,15 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.23 2007/11/14 12:06:18 i27249 Exp $
+ * $Id: mainwindow.h,v 1.24 2007/11/20 00:41:51 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
 #define MV_H
+#include <QTextCodec>
+#include <QtGui>
 #include "ui_package_builder.h"
+#include <QDir>
 #include <mpkg/libmpkg.h>
 typedef enum {
        	TYPE_NONE=0,
@@ -19,7 +22,6 @@ typedef struct keys
 	string name;
 	string value;
 };
-
 
 class Form: public QWidget
 {
@@ -70,9 +72,14 @@ class Form: public QWidget
 
 		void editBuildScriptWithGvim();
 		void loadBuildScriptFromFile();
+		void reloadPackageDirListing();
+		void setNewPackageCurrentDirectory(QListWidgetItem *item);
 	public:
 		Ui::Form ui;
+		QLabel *debugLabel;
 	private:
+		QDir *packageDir;
+		QDir *currentPackageDir;
 		bool pBuilder_isStartup;
 		string tempScriptEditFile;
 		string _arg;

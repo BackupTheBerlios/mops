@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.64 2007/11/12 21:35:45 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.65 2007/11/20 00:41:51 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -66,13 +66,17 @@ void mpkg::get_available_tags(vector<string>* output)
 }
 	
 // Packages installation
-int mpkg::install(vector<string> fname)
+int mpkg::install(vector<string> fname, vector<string> *p_version, vector<string> *p_build)
 {
 	int ret=0;
+	string version, build;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
+		if (p_version!=NULL) version=p_version->at(i);
+		if (p_build!=NULL) build=p_build->at(i);
+
 		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
-		if (mpkgSys::requestInstall(fname[i], db, DepTracker)!=0) ret--;
+		if (mpkgSys::requestInstall(fname[i], version, build, db, DepTracker)!=0) ret--;
 	}
 	//currentStatus = "Installation complete";
 	return ret;
@@ -88,7 +92,7 @@ int mpkg::installGroups(vector<string> groupName)
 int mpkg::install(string fname)
 {
 	currentStatus = _("Building queue: ")+fname;
-	return mpkgSys::requestInstall(fname, db, DepTracker);
+	return mpkgSys::requestInstall(fname, (string) "",(string) "", db, DepTracker);
 }
 
 int mpkg::install(PACKAGE *pkg)
@@ -226,7 +230,59 @@ int mpkg::set_checkFiles(unsigned int value)
 	return mpkgconfig::set_checkFiles(value);
 }
 
+int mpkg::add_repository(string repository_url)
+{
+	vector<string> enabledRepositories, disabledRepositories, n1;
+	enabledRepositories = get_repositorylist();
+	disabledRepositories = get_disabled_repositorylist();
+	// Check if it is already there
+	for (unsigned int i=0; i<enabledRepositories.size(); i++) {
+		if (enabledRepositories[i]==repository_url) {
+			say(_("Repository %s is already in list\n"), repository_url.c_str());
+			return 0; // Already there
+		}
+	}
+	for (unsigned int i=0; i<disabledRepositories.size(); i++) {
+		if (disabledRepositories[i]==repository_url) {
+			enabledRepositories.push_back(repository_url);
+			for (unsigned int t=0; t<disabledRepositories.size(); t++) {
+				if (t!=i) n1.push_back(disabledRepositories[i]);
+			}
+			set_repositorylist(enabledRepositories, n1);
+			return 0;
+		}
+	}
+	enabledRepositories.push_back(repository_url);
+	return set_repositorylist(enabledRepositories, disabledRepositories);
+}
 
+int mpkg::remove_repository(int repository_num)
+{
+	vector<string> enabledRepositories, disabledRepositories, n1;
+	enabledRepositories = get_repositorylist();
+	disabledRepositories = get_disabled_repositorylist();
+	if (repository_num >= enabledRepositories.size())
+	{
+		repository_num = repository_num - enabledRepositories.size();
+		if (repository_num>=disabledRepositories.size()) {
+			say(_("No such repository\n"));
+			return -1;
+		}
+		for (unsigned int i=0; i<disabledRepositories.size(); i++)
+		{
+			if (i!=repository_num) n1.push_back(disabledRepositories[i]);
+		}
+		return set_repositorylist(enabledRepositories, n1);
+	}
+	else
+	{
+		for (unsigned int i=0; i<enabledRepositories.size(); i++)
+		{
+			if (i!=repository_num) n1.push_back(enabledRepositories[i]);
+		}
+		return set_repositorylist(n1, disabledRepositories);
+	}
+}
 // Configuration and settings: setting
 int mpkg::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)
 {
