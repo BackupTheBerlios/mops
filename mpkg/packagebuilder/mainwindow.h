@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.24 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: mainwindow.h,v 1.25 2007/11/21 01:57:54 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -11,11 +11,19 @@
 #include "ui_package_builder.h"
 #include <QDir>
 #include <mpkg/libmpkg.h>
+#include "querybox.h"
 typedef enum {
        	TYPE_NONE=0,
 	TYPE_TGZ,
 	TYPE_XML
 } TargetType;
+
+typedef enum {
+	FACT_COPY=0,
+	FACT_MOVE,
+	FACT_REMOVE
+} FileAction;
+
 using namespace std;
 typedef struct keys
 {
@@ -73,13 +81,36 @@ class Form: public QWidget
 		void editBuildScriptWithGvim();
 		void loadBuildScriptFromFile();
 		void reloadPackageDirListing();
+		void setCurrentPathLabel();
 		void setNewPackageCurrentDirectory(QListWidgetItem *item);
+		void goPackageHome();
+		void goPackageUp();
+		void reloadFilesystemDirListing();
+		void setNewFilesystemCurrentDirectory(QListWidgetItem *item);
+		void goFilesystemHome();
+		void goFilesystemUp();
+
+		void copyFiles();
+		void moveFiles();
+		void removeFiles();
+		void renameFile();
+		void viewFile();
+		void makeDirectory();
+		void editFile();
+		void manageFiles(FileAction action);
+		void setPanel1Focus();
+		void setPanel2Focus();
+		void execShellCommand();
+
 	public:
 		Ui::Form ui;
 		QLabel *debugLabel;
 	private:
+		int focusIndex;
 		QDir *packageDir;
 		QDir *currentPackageDir;
+		QDir *currentFilesystemDir;
+		QString prevPackageDirName, prevFilesystemDirName;
 		bool pBuilder_isStartup;
 		string tempScriptEditFile;
 		string _arg;

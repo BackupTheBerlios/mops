@@ -13,20 +13,20 @@
    <string>MOPSLinux package builder</string>
   </property>
   <property name="windowIcon" >
-   <iconset>/usr/share/icons/OS-K/128x128/apps/package.png</iconset>
+   <iconset>/usr/share/mpkg/packagebuilder/icons/package.png</iconset>
   </property>
   <layout class="QVBoxLayout" >
    <item>
     <widget class="QTabWidget" name="globalTabWidget" >
      <property name="currentIndex" >
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="packageMetadataTab" >
       <attribute name="title" >
        <string>Package description and metadata</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/smart.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/smart.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -875,53 +875,293 @@
      </widget>
      <widget class="QWidget" name="tab" >
       <attribute name="title" >
-       <string>File-specific details</string>
+       <string>File manager</string>
       </attribute>
       <attribute name="icon" >
        <iconset>/usr/share/icons/crystalsvg/32x32/actions/filenew.png</iconset>
       </attribute>
-      <layout class="QHBoxLayout" >
+      <layout class="QVBoxLayout" >
        <item>
-        <widget class="QListWidget" name="filelistWidget" />
+        <widget class="QSplitter" name="splitter_6" >
+         <property name="sizePolicy" >
+          <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="orientation" >
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <widget class="QWidget" name="layoutWidget" >
+          <layout class="QVBoxLayout" >
+           <item>
+            <widget class="QLabel" name="label_13" >
+             <property name="text" >
+              <string>Package contents</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" >
+             <item>
+              <widget class="QToolButton" name="goHomeButton" >
+               <property name="toolTip" >
+                <string>Go to package root</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+                <iconset>/usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="goUpButton" >
+               <property name="toolTip" >
+                <string>Directory up</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+                <iconset>/usr/share/mpkg/packagebuilder/icons/up.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="refreshButton" >
+               <property name="toolTip" >
+                <string>Refresh</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+                <iconset>/usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
+               </property>
+               <property name="shortcut" >
+                <string>Ctrl+R</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="filelistCurrentPath" >
+               <property name="text" >
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="FileListWidget" name="filelistWidget" >
+             <property name="selectionMode" >
+              <enum>QAbstractItemView::ExtendedSelection</enum>
+             </property>
+             <property name="selectionRectVisible" >
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="layoutWidget_2" >
+          <layout class="QVBoxLayout" >
+           <item>
+            <widget class="QLabel" name="label_14" >
+             <property name="text" >
+              <string>Filesystem</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" >
+             <item>
+              <widget class="QToolButton" name="goHomeButton_2" >
+               <property name="toolTip" >
+                <string>Go to home directory</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+		       <iconset>/usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="goUpButton_2" >
+               <property name="toolTip" >
+                <string>Directory up</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+                <iconset>/usr/share/mpkg/packagebuilder/icons/up.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QToolButton" name="refreshButton_2" >
+               <property name="toolTip" >
+                <string>Refresh</string>
+               </property>
+               <property name="text" >
+                <string>...</string>
+               </property>
+               <property name="icon" >
+                <iconset>/usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
+               </property>
+               <property name="shortcut" >
+                <string>Ctrl+R</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="filelistCurrentPath_2" >
+               <property name="text" >
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer>
+               <property name="orientation" >
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" >
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="FileListWidget" name="filelistWidget_2" >
+             <property name="editTriggers" >
+              <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed|QAbstractItemView::NoEditTriggers</set>
+             </property>
+             <property name="selectionMode" >
+              <enum>QAbstractItemView::ExtendedSelection</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
        </item>
        <item>
-        <layout class="QVBoxLayout" >
+        <layout class="QHBoxLayout" >
          <item>
           <spacer>
            <property name="orientation" >
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" >
             <size>
-             <width>20</width>
-             <height>40</height>
+             <width>40</width>
+             <height>20</height>
             </size>
            </property>
           </spacer>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton" >
+          <widget class="QPushButton" name="renameButton" >
            <property name="text" >
-            <string>&lt;</string>
+            <string>F2 Rename</string>
+           </property>
+           <property name="shortcut" >
+            <string>F2</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="toolButton_2" >
+          <widget class="QPushButton" name="viewButton" >
            <property name="text" >
-            <string>></string>
+            <string>F3 View</string>
+           </property>
+           <property name="shortcut" >
+            <string>F3</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="editButton" >
+           <property name="text" >
+            <string>F4 Edit</string>
+           </property>
+           <property name="shortcut" >
+            <string>F4</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="copyButton" >
+           <property name="text" >
+            <string>F5 Copy</string>
+           </property>
+           <property name="shortcut" >
+            <string>F5</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="moveButton" >
+           <property name="text" >
+            <string>F6 Move</string>
+           </property>
+           <property name="shortcut" >
+            <string>F6</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="mkdirButton" >
+           <property name="text" >
+            <string>F7 Mkdir</string>
+           </property>
+           <property name="shortcut" >
+            <string>F7</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="deleteButton" >
+           <property name="text" >
+            <string>F8 Delete</string>
+           </property>
+           <property name="shortcut" >
+            <string>F8</string>
            </property>
           </widget>
          </item>
          <item>
           <spacer>
            <property name="orientation" >
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Horizontal</enum>
            </property>
            <property name="sizeHint" >
             <size>
-             <width>20</width>
-             <height>40</height>
+             <width>40</width>
+             <height>20</height>
             </size>
            </property>
           </spacer>
@@ -929,7 +1169,34 @@
         </layout>
        </item>
        <item>
-        <widget class="QListWidget" name="filelistWidget_2" />
+        <layout class="QHBoxLayout" >
+         <item>
+          <widget class="QLabel" name="currentPath" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Preferred" hsizetype="Minimum" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text" >
+            <string>Execute command:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="CmdComboBox" name="cmdLine" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="editable" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -938,7 +1205,7 @@
        <string>Building options</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/system-config-services.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/system-config-services.png</iconset>
       </attribute>
       <layout class="QHBoxLayout" >
        <item>
@@ -1646,7 +1913,7 @@ p, li { white-space: pre-wrap; }
        <string>Installation scripts</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>/usr/share/icons/OS-K/128x128/apps/advancedsettings.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/advancedsettings.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -1950,6 +2217,18 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>FileListWidget</class>
+   <extends>QListWidget</extends>
+   <header location="global" >filelistwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CmdComboBox</class>
+   <extends>QComboBox</extends>
+   <header location="global" >filelistwidget.h</header>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>NameEdit</tabstop>
   <tabstop>VersionEdit</tabstop>

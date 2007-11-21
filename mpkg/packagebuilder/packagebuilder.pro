@@ -10,8 +10,8 @@ INCLUDEPATH += .
 
 # Input
 LIBS += -lmpkg
-HEADERS += mainwindow.h
+HEADERS += mainwindow.h filelistwidget.h querybox.h
 FORMS += package_builder.ui
-SOURCES += main.cpp mainwindow.cpp
+SOURCES += main.cpp mainwindow.cpp filelistwidget.cpp querybox.cpp
 INCPATH += /usr/include/libxml2
 

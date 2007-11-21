@@ -4,7 +4,7 @@
 		mpkg-core
 	</name>
 	<version>
-		0.12.11
+		0.12.12
 	</version>
 	<arch>
 		i486
@@ -13,7 +13,7 @@
 		1
 	</build>
 	<description lang="en">
-		Сердце системы пакетов mpkg.
+		Ядро системы пакетов mpkg.
 	</description>
 	<description lang="ru">
 	</description>

@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.48 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.49 2007/11/21 01:57:53 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -18,13 +18,19 @@ Form::Form(QWidget *parent, string arg)
 	short_description.resize(2);
 	description.resize(2);
 	packageDir = new QDir;
+	packageDir->setSorting(QDir::DirsFirst | QDir::IgnoreCase);
 	currentPackageDir = new QDir;
+	currentPackageDir->setSorting(QDir::DirsFirst | QDir::IgnoreCase);
+
+	currentFilesystemDir = new QDir(QDir::currentPath());
+	currentFilesystemDir->setSorting(QDir::DirsFirst | QDir::IgnoreCase);
+
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
 
 	debugLabel = new QLabel;
 	debugLabel->setText("Debug window");
-	debugLabel->show();
+	//debugLabel->show();
 	if (getuid()!=0) {
 		system("kdesu packagebuilder " + arg);
 		//QMessageBox::critical(this, tr("Error"), tr("This program should be run with the root privilegies"));
@@ -75,11 +81,79 @@ Form::Form(QWidget *parent, string arg)
 
 	connect(ui.downloadAnalyzeButton, SIGNAL(clicked()), this, SLOT(analyzeSources()));
 
+focusIndex=0;
+	//connect(ui.filelistWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(setNewPackageCurrentDirectory(QListWidgetItem *)));
+	connect(ui.filelistWidget, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(setNewPackageCurrentDirectory(QListWidgetItem *)));
+	connect(ui.filelistWidget_2, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(setNewFilesystemCurrentDirectory(QListWidgetItem *)));
 
-	connect(ui.filelistWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(setNewPackageCurrentDirectory(QListWidgetItem *)));
-	this->show();
+	connect(ui.goHomeButton, SIGNAL(clicked()), this, SLOT(goPackageHome()));
+	connect(ui.goHomeButton_2, SIGNAL(clicked()), this, SLOT(goFilesystemHome()));
+	connect(ui.goUpButton, SIGNAL(clicked()), this, SLOT(goPackageUp()));
+	connect(ui.goUpButton_2, SIGNAL(clicked()), this, SLOT(goFilesystemUp()));
+
+	connect(ui.copyButton, SIGNAL(clicked()), this, SLOT(copyFiles()));
+	connect(ui.moveButton, SIGNAL(clicked()), this, SLOT(moveFiles()));
+	connect(ui.deleteButton, SIGNAL(clicked()), this, SLOT(removeFiles()));
+	connect(ui.renameButton, SIGNAL(clicked()), this, SLOT(renameFile()));
+	connect(ui.viewButton, SIGNAL(clicked()), this, SLOT(viewFile()));
+	connect(ui.editButton, SIGNAL(clicked()), this, SLOT(editFile()));
+	connect(ui.mkdirButton, SIGNAL(clicked()), this, SLOT(makeDirectory()));
+	connect(ui.filelistWidget, SIGNAL(iGotFocus()), this, SLOT(setPanel1Focus()));
+	connect(ui.filelistWidget_2, SIGNAL(iGotFocus()), this, SLOT(setPanel2Focus()));
+	connect(ui.refreshButton, SIGNAL(clicked()), this, SLOT(reloadPackageDirListing()));
+	connect(ui.refreshButton_2, SIGNAL(clicked()), this, SLOT(reloadFilesystemDirListing()));
+	connect(ui.cmdLine, SIGNAL(execCmd()), this, SLOT(execShellCommand()));
+	
+	ui.cmdLine->addItem("");
+	reloadFilesystemDirListing();
+	ui.cmdLine->setEnabled(false);
+	this->showMaximized();
+	ui.filelistCurrentPath->setText(tr("Package should be saved before using this tool"));
+	//ui.filelistCurrentPath_2->setText(currentFilesystemDir->canonicalPath());
+
+
 	loadFile(arg.c_str());
 }
+void Form::execShellCommand()
+{
+	if (ui.cmdLine->currentText().isEmpty()) return;
+	QDir *curr;
+	switch(focusIndex) {
+		case 1:
+			curr = currentPackageDir;
+			break;
+		case 2:
+			curr = currentFilesystemDir;
+			break;
+		default: return;
+	}
+	QString cmd = "(cd " + curr->absolutePath() + "; " + ui.cmdLine->currentText() + ")";
+	system(cmd.toStdString());
+	reloadFilesystemDirListing();
+	reloadPackageDirListing();
+	ui.cmdLine->insertItem(1,cmd);
+}
+void Form::setCurrentPathLabel()
+{
+	if (focusIndex==1) ui.currentPath->setText("["+currentPackageDir->absolutePath()+"]# ");
+	else ui.currentPath->setText("["+currentFilesystemDir->absolutePath()+"]# ");
+}
+
+void Form::setPanel1Focus()
+{
+	reloadPackageDirListing();
+	printf("Got panel 1 focus\n");
+	focusIndex = 1;
+	setCurrentPathLabel();
+}
+void Form::setPanel2Focus()
+{
+	reloadFilesystemDirListing();
+	printf("Got panel 2 focus\n");
+	focusIndex = 2;
+	setCurrentPathLabel();
+}
+
 
 void Form::embedSources()
 {
@@ -143,6 +217,9 @@ void Form::loadData()
 	
 void Form::loadFile(QString filename)
 {
+	reloadFilesystemDirListing();
+	reloadPackageDirListing();
+
 	if (filename.isEmpty() && pBuilder_isStartup) {
 		pBuilder_isStartup=false;
 		return;
@@ -439,6 +516,8 @@ void Form::loadFile(QString filename)
 		QListWidgetItem *__item = new QListWidgetItem(ui.tempFilesListWidget);
 		__item->setText(pkg.get_temp_files()->at(i).get_name()->c_str());
 	}
+	reloadPackageDirListing();
+	reloadFilesystemDirListing();
 }
 
 bool Form::saveFile()
@@ -760,11 +839,13 @@ bool Form::saveFile()
 	}
 
 	if (!slack_required.empty()) WriteFile(xmlDir+"/slack-required", slack_required);
+	reloadPackageDirListing();
+	reloadFilesystemDirListing();
 	return true;
 }
 void Form::showAbout()
 {
-	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG 0.12.11\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
+	QMessageBox::information(this, tr("About packagebuilder"), tr("Package metadata builder for MPKG ") + (QString) mpkgVersion + " (build " + (QString) mpkgBuild + tr(")\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
 }
 void Form::loadBuildScriptFromFile()
 {
@@ -1187,19 +1268,227 @@ void Form::deleteKey()
 }
 void Form::setNewPackageCurrentDirectory(QListWidgetItem *item)
 {
+
+	prevPackageDirName = currentPackageDir->dirName();
 	QFileInfoList list = currentPackageDir->entryInfoList();
-	currentPackageDir->cd(list.at(ui.filelistWidget->row(item)).fileName());
+	currentPackageDir->cd(list.at(ui.filelistWidget->row(item)+1).fileName());
 	reloadPackageDirListing();
+	QList<QListWidgetItem *> items;
+	items = ui.filelistWidget->findItems(prevPackageDirName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+	if (items.size()>0) ui.filelistWidget->setCurrentItem(items[0]);
 }
 void Form::reloadPackageDirListing() // Fills the list
 {
-	if (!currentPackageDir->exists()) return;
+	setCurrentPathLabel();
+	if (!currentPackageDir->exists() || dataType == DATATYPE_NEW) {
+		return;
+	}
 	ui.filelistWidget->clear();
+	ui.filelistCurrentPath->setText(currentPackageDir->canonicalPath());
 	QFileInfoList list = currentPackageDir->entryInfoList();
-	for (int i=0; i<list.size(); i++) {
+	if (list.size()==0) return;
+	for (int i=1; i<list.size(); i++) {
 		QListWidgetItem *__item = new QListWidgetItem(ui.filelistWidget);
 		__item->setText(list.at(i).fileName());
 		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/filesystems/folder.png"));
 		else __item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/apps/filetypes.png"));
 	}
+	if (list.size()>0) ui.filelistWidget->setCurrentRow(0);
+}
+
+void Form::setNewFilesystemCurrentDirectory(QListWidgetItem *item)
+{
+
+	prevFilesystemDirName = currentFilesystemDir->dirName();
+	QFileInfoList list = currentFilesystemDir->entryInfoList();
+	currentFilesystemDir->cd(list.at(ui.filelistWidget_2->row(item)+1).fileName());
+	reloadFilesystemDirListing();
+	QList<QListWidgetItem *> items;
+	items = ui.filelistWidget_2->findItems(prevFilesystemDirName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+	if (items.size()>0) ui.filelistWidget_2->setCurrentItem(items[0]);
+
+}
+void Form::reloadFilesystemDirListing() // Fills the list
+{
+	setCurrentPathLabel();
+
+	if (!currentFilesystemDir->exists()) return;
+	ui.filelistWidget_2->clear();
+	ui.filelistCurrentPath_2->setText(currentFilesystemDir->canonicalPath());
+	QFileInfoList list = currentFilesystemDir->entryInfoList();
+	if (list.size()==0) return;
+	for (int i=1; i<list.size(); i++) {
+		QListWidgetItem *__item = new QListWidgetItem(ui.filelistWidget_2);
+		__item->setText(list.at(i).fileName());
+		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/filesystems/folder.png"));
+		else __item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/apps/filetypes.png"));
+	}
+	if (list.size()>1) ui.filelistWidget_2->setCurrentRow(0);
+}
+
+void Form::goPackageHome()
+{
+	*currentPackageDir = *packageDir;
+	reloadPackageDirListing();
+}
+
+void Form::goPackageUp()
+{
+	currentPackageDir->cdUp();
+	reloadPackageDirListing();
+}
+
+void Form::goFilesystemHome()
+{
+	*currentFilesystemDir = QDir::homePath();
+	reloadFilesystemDirListing();//DirListing();
+}
+
+void Form::goFilesystemUp()
+{
+	currentFilesystemDir->cdUp();
+	reloadFilesystemDirListing();
+}
+void Form::copyFiles()
+{
+	manageFiles(FACT_COPY);
+}
+void Form::manageFiles(FileAction action)
+{
+	//TODO: fix focus detection
+	int direction=focusIndex;
+	printf("Direction: %d\n", direction);
+	QFileInfo list;
+	QFile operatedFile;
+	int result=0;
+	QString source, dest;
+	QList<QListWidgetItem *> itemList;
+	QListWidget *widget;
+	QDir *curr;
+	switch(direction)
+	{
+		case 1: widget = ui.filelistWidget;
+			curr = currentPackageDir;
+			break;
+		case 2:
+			widget = ui.filelistWidget_2;
+			curr = currentFilesystemDir;
+			break;
+		default: return;
+	}
+	itemList = widget->selectedItems();
+	printf("itemList size = %d\n", itemList.size());
+	for (int i=0; i<itemList.size(); i++) {
+		list = curr->entryInfoList().at(widget->row(itemList[i])+1);
+		if (list.fileName()==".." || list.fileName()==".") continue;
+		source = list.absoluteFilePath();
+		dest = curr->absolutePath()+"/"+list.fileName();
+		printf("Source: [%s]\nDestination: [%s]\n\n", source.toStdString().c_str(), dest.toStdString().c_str());
+		if (action==FACT_COPY) {
+			dest = QInputDialog::getText(this, tr("Copy file"), tr("Copy \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
+			if (dest.isEmpty()) return;
+			result = copyFile(source.toStdString(), dest.toStdString());
+		}
+		if (action==FACT_MOVE) {
+			dest = QInputDialog::getText(this, tr("Move file"), tr("Move \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
+			if (dest.isEmpty()) return;
+
+			result = moveFile(source.toStdString(), dest.toStdString());
+		}
+		if (action==FACT_REMOVE) {
+			if (QMessageBox::question(this, tr("Remove file"), tr("Remove \"") + source + tr("\" ?"), QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok)!=QMessageBox::Ok) return;
+			result = removeFile(source.toStdString());
+		}
+		printf("Result: %d\n", result);
+	}
+	reloadFilesystemDirListing();
+	reloadPackageDirListing();
+}
+void Form::renameFile()
+{
+	QString newName;
+	QFileInfo fileInfo;
+	switch(focusIndex)
+	{
+		case 1:
+			fileInfo = currentPackageDir->entryInfoList().at(ui.filelistWidget->currentRow()+1);
+			if (fileInfo.fileName()==".." || fileInfo.fileName()==".") return;
+			newName = QInputDialog::getText(this, tr("Rename file"), tr("Enter a new file name"), QLineEdit::Normal, fileInfo.fileName());
+			if (!newName.isEmpty()) QFile::rename(fileInfo.absoluteFilePath(), currentPackageDir->absolutePath()+"/"+newName);
+			break;
+		case 2:
+			fileInfo = currentFilesystemDir->entryInfoList().at(ui.filelistWidget_2->currentRow()+1);
+			if (fileInfo.fileName()==".." || fileInfo.fileName()==".") return;
+			newName = QInputDialog::getText(this, tr("Rename file"), tr("Enter a new file name"), QLineEdit::Normal, fileInfo.fileName());
+			if (!newName.isEmpty()) QFile::rename(fileInfo.absoluteFilePath(), currentFilesystemDir->absolutePath()+"/"+newName);
+			break;
+	}
+	reloadPackageDirListing();
+	reloadFilesystemDirListing();
+}
+void Form::moveFiles()
+{
+	manageFiles(FACT_MOVE);
+}
+
+void Form::removeFiles()
+{
+	manageFiles(FACT_REMOVE);
+}
+
+void Form::viewFile()
+{
+	QTextBrowser *browser = new QTextBrowser;
+	QFileInfo fileInfo;
+	switch(focusIndex)
+	{
+		case 1:
+			fileInfo = currentPackageDir->entryInfoList().at(ui.filelistWidget->currentRow()+1);
+			break;
+		case 2:
+			fileInfo = currentFilesystemDir->entryInfoList().at(ui.filelistWidget_2->currentRow()+1);
+			break;
+	}
+	browser->setText(ReadFile(fileInfo.absoluteFilePath().toStdString()).c_str());
+	browser->showMaximized();
+
+}
+
+void Form::editFile()
+{
+	QFileInfo fileInfo;
+	switch(focusIndex)
+	{
+		case 1:
+			fileInfo = currentPackageDir->entryInfoList().at(ui.filelistWidget->currentRow()+1);
+			break;
+		case 2:
+			fileInfo = currentFilesystemDir->entryInfoList().at(ui.filelistWidget_2->currentRow()+1);
+			break;
+	}
+	system("gvim " + fileInfo.absoluteFilePath().toStdString());
+}
+
+void Form::makeDirectory()
+{
+	QString dirName = QInputDialog::getText(this, tr("Make new directory"), tr("Enter new directory name:"));
+	if (dirName.isEmpty()) return;
+	QDir *curr;
+	QListWidget *widget;
+	switch(focusIndex) {
+		case 1:
+			curr = currentPackageDir;
+			widget = ui.filelistWidget;
+			break;
+		case 2:
+			curr = currentFilesystemDir;
+			widget = ui.filelistWidget_2;
+			break;
+		default: return;
+	}
+	curr->mkdir(dirName);
+	reloadFilesystemDirListing();
+	reloadPackageDirListing();
+	QList <QListWidgetItem *> items = widget->findItems(dirName, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+	if (items.size()>0) widget->setCurrentItem(items[0]);
 }

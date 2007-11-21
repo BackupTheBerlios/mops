@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.35 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: libmpkg.h,v 1.36 2007/11/21 01:57:54 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -9,6 +9,7 @@
 #define LIBMPKG_H_
 
 // Includes: some overhead, but enough.
+#include "version.h"
 #include "config.h"
 #include "local_package.h"
 #include "debug.h"

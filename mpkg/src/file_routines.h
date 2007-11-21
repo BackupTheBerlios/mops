@@ -1,6 +1,6 @@
 /******************************************************
 * File operations
-* $Id: file_routines.h,v 1.26 2007/11/03 01:08:15 i27249 Exp $
+* $Id: file_routines.h,v 1.27 2007/11/21 01:57:54 i27249 Exp $
 * ****************************************************/
 #ifndef FILE_ROUTINES_H_
 #define FILE_ROUTINES_H_
@@ -49,5 +49,6 @@ bool cacheCdromIndex(string vol_id, string rep_location);
 vector<string>ReadFileStrings(string filename);
 unsigned int CheckFileType(string fname);
 bool copyFile(string source, string destination);
-
+bool moveFile(string source, string destination);
+bool removeFile(string source);
 #endif

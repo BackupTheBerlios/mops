@@ -1,4 +1,5 @@
-g++ -Wall -I/usr/include/libxml2 -W -march=i486 -mtune=i686 -pipe -lmpkg -lparted -o setup setup.cpp
+#!/bin/sh
+g++ -Wall -I/usr/include/libxml2 -W -march=i486 -mtune=i686 -pipe -lmpkg -lparted -o setup setup.cpp || exit 1
 strip setup
 echo Setup build complete
 

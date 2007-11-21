@@ -51,7 +51,10 @@ echo "Creating tools package"
 mkdir -p out_packages/tools/install
 cp  pkg_descriptions/tools/* out_packages/tools/install/
 mkdir -p out_packages/tools/usr/bin
+mkdir -p out_packages/tools/usr/share/mpkg
+cp /usr/share/mpkg/packagebuilder out_packages/tools/usr/share/mpkg/
 cp /usr/bin/packagebuilder out_packages/tools/usr/bin/
+
 cd out_packages/tools; buildpkg; mv *.tgz ..; cd ../..
 
 echo "All packages created successfully"

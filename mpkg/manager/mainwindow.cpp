@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.129 2007/11/04 14:15:08 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.130 2007/11/21 01:57:53 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -1065,9 +1065,7 @@ void MainWindow::showPreferences()
 
 void MainWindow::showAbout()
 {
-	AboutBox *abox = new AboutBox;
-	abox->show();
-
+	QMessageBox::information(this, tr("About mpkg package manager"), tr("GUI package manager (part of mpkg) ") + (QString) mpkgVersion + tr(" (build ") + (QString) mpkgBuild + tr("\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
 }
 
 void MainWindow::clearForm()

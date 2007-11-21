@@ -3,12 +3,12 @@
 #######################################################
 # Build script for manager
 # Just to simplify =)
-# $Id: build,v 1.8 2007/10/23 22:43:55 i27249 Exp $
+# $Id: build,v 1.9 2007/11/21 01:57:53 i27249 Exp $
 #######################################################
 export QTDIR=/opt/qt4
 export PATH=$QTDIR/bin:$PATH
 qmake
-make -j2
+make -j2 || exit 1
 strip manager
 cp manager /usr/bin/
 mkdir -p /usr/share/mpkg/
@@ -17,4 +17,4 @@ cp splash.png /usr/share/mpkg/
 cp *.qm /usr/share/mpkg/
 cp applink/* /usr/share/applications/
 echo "Manager: build complete"
-
+exit 0

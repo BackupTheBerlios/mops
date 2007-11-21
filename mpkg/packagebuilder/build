@@ -3,15 +3,18 @@
 ###########################################
 # Build script for package builder
 # Just for simplify! =)
-# $Id: build,v 1.4 2007/10/23 22:43:55 i27249 Exp $
+# $Id: build,v 1.5 2007/11/21 01:57:53 i27249 Exp $
 ###########################################
 export QTDIR=/opt/qt4
 export PATH=$QTDIR/bin:$PATH
 qmake
-make -j2
+make -j2 || exit 1
 echo "Stripping"
 strip packagebuilder
 cp -v packagebuilder /usr/bin/
 cp -v packagebuilder_ru.qm /usr/share/mpkg/
+mkdir -p /usr/share/mpkg/packagebuilder/icons
+cp -v icons/*.png /usr/share/mpkg/packagebuilder/icons/
 echo "Package builder: build complete"
 
+exit 0

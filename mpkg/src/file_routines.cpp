@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.49 2007/11/03 01:08:15 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.50 2007/11/21 01:57:54 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -538,6 +538,23 @@ bool cacheCdromIndex(string vol_id, string rep_location)
 
 bool copyFile(string source, string destination)
 {
-	if (system("cp -f " + source + " " + destination)==0) return true;
+	if (system("cp -Rf " + source + " " + destination)==0) return true;
 	else return false;
 }
+
+bool moveFile(string source, string destination)
+{
+	if (system("mv " + source + " " + destination)==0) return true;
+	else return false;
+}
+
+bool removeFile(string source)
+{
+	if (system("rm -rf " + source)==0) return true;
+	else return false;
+}
+/*bool copyDir(string source, string destination)
+{
+	if (system("cp -Rf " + source + " " + destination)==0) return true;
+	else return false;
+}*/

@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.80 2007/11/20 00:41:51 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.81 2007/11/21 01:57:54 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -28,9 +28,8 @@ bool showOnlyInstalled=false;
 bool showFilelist=false;
 void ShowBanner()
 {
-	char *version="0.12.11";
 	char *copyright="\(c) 2006-2007 RPUNet (http://www.rpunet.ru)";
-	say("MOPSLinux packaging system v.%s\n%s\n--\n", version, copyright);
+	say("MOPSLinux packaging system v.%s (build %s)\n%s\n--\n", mpkgVersion, mpkgBuild, copyright);
 }
 void cleanDebugFile()
 {
