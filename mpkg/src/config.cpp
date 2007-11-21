@@ -1,12 +1,13 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.49 2007/11/21 14:39:26 i27249 Exp $
+ * $Id: config.cpp,v 1.50 2007/11/21 21:08:28 i27249 Exp $
  *
  * ***************************************************/
 
 #include "config.h"
 #include "xmlParser.h"
 #include "file_routines.h"
+bool useBuildCache=true;
 bool enableDownloadResume=false;
 int autogenDepsMode=ADMODE_MOZGMERTV;
 mpkgErrorCode errorCode;

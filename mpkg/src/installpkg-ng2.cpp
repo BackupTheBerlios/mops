@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.82 2007/11/21 14:39:26 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.83 2007/11/21 21:08:29 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -107,7 +107,7 @@ int main (int argc, char **argv)
 		
 	bool do_reset=true;
 	int ich;
-	const char* short_opt = "hvpdzfmkDrailgyq!c";
+	const char* short_opt = "hvpdzfmkDrailgyq!cw";
 	const struct option long_options[] =  {
 		{ "help",		0, NULL,	'h'},
 		{ "verbose", 		0, NULL,	'v'},
@@ -203,6 +203,10 @@ int main (int argc, char **argv)
 					break;
 			case '!':
 					autogenDepsMode=ADMODE_OFF;
+					break;
+			case 'w':
+					useBuildCache = false;
+					break;
 			case '?':
 					return print_usage(stderr, 1);
 
@@ -1051,6 +1055,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-y    --noconfirm         don't ask confirmation\n"));
 	fprintf(stream,_("\t-q    --noreset           don't reset queue at start\n"));
 	fprintf(stream,_("\t-!    --nodepgen          don't generate dependencies on package building\n"));
+	fprintf(stream,_("\t-w    --no_buildcache     don't use source cache when building packages\n")); 
 	fprintf(stream,_("\t-c    --resume            enable download resuming (be aware of different files with same names!)\n"));
 
 	
@@ -1089,7 +1094,7 @@ int print_usage(FILE* stream, int exit_code)
 
 	fprintf(stream,_("\nInteractive options:\n"));
 	fprintf(stream,_("\tmenu                      shows the package selection menu\n"));
-	fprintf(stream,_("\tedit_rep                  edit repository list with menu\n"));
+//	fprintf(stream,_("\tedit_rep                  edit repository list with menu\n"));
 	
 	fprintf(stream,_("\nRepository maintaining functions:\n"));
 	fprintf(stream,_("\tindex                     create a repository index file \"packages.xml.gz\"\n"));
@@ -1270,18 +1275,35 @@ void searchByFile(mpkg *core, string filename, bool strict)
 	}
 	say(_("File %s found in %d package(s):\n"),filename_orig.c_str(), pkgList.size());
 	string pattern;
-	for (int i=0; i<results.size(); i++)
-	{
-		for (int t=0; t<pkgList.size(); t++)
-		{
-			if (*results.getValue(i,"packages_package_id")==IntToStr(pkgList.get_package(t)->get_id()))
-			{
-				pattern=*results.getValue(i,"file_name");
-				say(_("/%s: %s-%s\n"), pattern.c_str(), pkgList.get_package(t)->get_name()->c_str(), \
-				pkgList.get_package(t)->get_fullversion().c_str());
+	bool showIt;
+	vector<int> usedIDs;
+	for (int i=0; i<results.size(); i++) {
+		for (int t=0; t<pkgList.size(); t++) {
+			if (*results.getValue(i,"packages_package_id")==IntToStr(pkgList.get_package(t)->get_id())) {
+				if (verbose) {
+					pattern=*results.getValue(i,"file_name");
+					say(_("/%s: %s-%s\n"), pattern.c_str(), pkgList.get_package(t)->get_name()->c_str(), \
+					pkgList.get_package(t)->get_fullversion().c_str());
+				}
+				else {
+					showIt=true;
+					for (unsigned int u = 0; u < usedIDs.size(); u++) {
+						if (usedIDs[u]==pkgList.get_package(t)->get_id()) { 
+							showIt=false;
+							break;
+						}
+					}
+					if (showIt) say(_("%s-%s\n"), pkgList.get_package(t)->get_name()->c_str(), \
+					pkgList.get_package(t)->get_fullversion().c_str());
+
+				}
+				usedIDs.push_back(pkgList.get_package(t)->get_id());
+
 			}
 		}
 	}
+
+
 }
 
 void list_pkglist(PACKAGE_LIST *pkglist)
@@ -1400,7 +1422,7 @@ int check_action(char* act)
 		&& _act != "delete_rep"
 		&& _act != "enable_rep"
 		&& _act != "disable_rep"
-		&& _act != "edit_rep"
+		//&& _act != "edit_rep"
 		) {
 		res = -1;
 	}
@@ -1502,7 +1524,7 @@ int setup_action(char* act)
 	if (_act == "delete_rep") return ACT_REMOVE_REPOSITORY;
 	if (_act == "enable_rep") return ACT_ENABLE_REPOSITORY;
 	if (_act == "disable_rep") return ACT_DISABLE_REPOSITORY;
-	if (_act == "edit_rep") return ACT_EDIT_REPOSITORY;
+	//if (_act == "edit_rep") return ACT_EDIT_REPOSITORY;
 
 	return ACT_NONE;
 }

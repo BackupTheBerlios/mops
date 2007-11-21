@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.123 2007/11/20 00:41:51 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.124 2007/11/21 21:08:29 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -174,13 +174,31 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	// Preparing environment. Clearing old directories
 	system("rm -rf " + pkgdir);	
 	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
+	string srcCacheDir = mConfig.getValue("source_cache_dir");
+	if (srcCacheDir.empty()) {
+		mConfig.setValue("source_cache_dir", "/var/mpkg/source_cache/");
+		srcCacheDir = mConfig.getValue("source_cache_dir");
+	}
 
+	srcCacheDir = srcCacheDir+"/" + pkg_name;
 	if (FileExists(dldir+"/"+getFilename(url))) dl_command.clear();
+	if (!useBuildCache) system("rm -rf " + srcCacheDir);
+	if (useBuildCache && FileExists(srcCacheDir+"/"+getFilename(url))) dl_command.clear();
 	// Downloading/copying sources
+	// First, download in cache.
+	system("mkdir -p " + srcCacheDir);
 	if (!dl_command.empty()) {
-		if (system("(cd " + dldir+"; "+dl_command+")")!=0) {
+		if (system("(cd " + srcCacheDir+"; " + dl_command+")")!=0) {
 			mError("Error retrieving sources, build failed");
+			system("rm -rf " + srcCacheDir);
 			return -6;
+		}
+	}
+	if (!FileExists(dldir+"/"+getFilename(url))) {
+		// Copy everything to build directory
+		if (system("cp -R " + srcCacheDir+"/* " + dldir+"/")!=0) {
+			mError("Error getting sources from cache, failure");
+			return -112;
 		}
 	}
 	string extraCmd;
