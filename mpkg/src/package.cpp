@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.7 2007/11/20 00:41:51 i27249 Exp $
+// $Id: package.cpp,v 1.8 2007/11/21 14:39:26 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -506,7 +506,7 @@ vector<string> SourcePackage::getSourceFilenames()
 	return ret;
 }
 
-bool SourceFile::analyze()
+bool SourceFile::analyze(string *configure_help)
 {
 	type = getExtension(filepath);
 	string tar_args;
@@ -532,7 +532,6 @@ bool SourceFile::analyze()
 		printf("contains too much elements (%d), ambiguity\n", dir_containers.size());
 	}
 
-	//if (dir_containers.size()==0) printf("no elements\n");
 	if (dir_containers.size()==1) sourceDirectory = dir_containers[0];
 
 	string sdir = getDirectory(filepath) +"/"+ sourceDirectory;
@@ -552,10 +551,20 @@ bool SourceFile::analyze()
 		if (dir_containers[i].find("CMakeLists")!=std::string::npos)
 		{
 			buildType = BUILDTYPE_CMAKE;
+			break;
+		}
+		if (dir_containers[i].find("SConstruct")!=std::string::npos)
+		{
+			buildType = BUILDTYPE_SCONS;
+			break;
 		}
 		if (dir_containers[i].find("configure")!=std::string::npos)
 		{
 			buildType = BUILDTYPE_AUTOTOOLS;
+			string tmp = get_tmp_file();
+			system("(cd " + sdir + "; ./configure --help > " + tmp + " )");
+			if (configure_help!=NULL) *configure_help = ReadFile(tmp);
+			break;
 		}
 	}
 	return true;

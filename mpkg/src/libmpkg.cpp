@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.65 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.66 2007/11/21 14:39:26 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -258,19 +258,24 @@ int mpkg::add_repository(string repository_url)
 
 int mpkg::remove_repository(int repository_num)
 {
+	if (repository_num==0) {
+		mError("No such repository"); 
+		return -1;
+	}
+	repository_num--;
 	vector<string> enabledRepositories, disabledRepositories, n1;
 	enabledRepositories = get_repositorylist();
 	disabledRepositories = get_disabled_repositorylist();
-	if (repository_num >= enabledRepositories.size())
+	if (repository_num >= (int) enabledRepositories.size())
 	{
 		repository_num = repository_num - enabledRepositories.size();
-		if (repository_num>=disabledRepositories.size()) {
+		if (repository_num>=(int) disabledRepositories.size()) {
 			say(_("No such repository\n"));
 			return -1;
 		}
 		for (unsigned int i=0; i<disabledRepositories.size(); i++)
 		{
-			if (i!=repository_num) n1.push_back(disabledRepositories[i]);
+			if (i!=(unsigned int) repository_num) n1.push_back(disabledRepositories[i]);
 		}
 		return set_repositorylist(enabledRepositories, n1);
 	}
@@ -278,10 +283,75 @@ int mpkg::remove_repository(int repository_num)
 	{
 		for (unsigned int i=0; i<enabledRepositories.size(); i++)
 		{
-			if (i!=repository_num) n1.push_back(enabledRepositories[i]);
+			if (i!=(unsigned int) repository_num) n1.push_back(enabledRepositories[i]);
 		}
 		return set_repositorylist(n1, disabledRepositories);
 	}
+}
+int mpkg::enable_repository(vector<int> rep_nums)
+{
+	vector<string> enabledRepositories, disabledRepositories, n1;
+	enabledRepositories = get_repositorylist();
+	disabledRepositories = get_disabled_repositorylist();
+	for (unsigned int i=0; i<rep_nums.size(); i++)
+	{
+		if (rep_nums[i]==0 || rep_nums[i]>(int) enabledRepositories.size()+(int) disabledRepositories.size()) {
+			mError("No such disabled repository number " + IntToStr(rep_nums[i]));
+			return -1;
+		}
+		rep_nums[i]--;
+	}
+	for (unsigned int i=0; i<rep_nums.size(); i++)
+	{
+		enabledRepositories.push_back(disabledRepositories[rep_nums[i]-enabledRepositories.size()]);
+	}
+	bool skipIt=false;
+	for (unsigned int i=0; i<disabledRepositories.size(); i++)
+	{
+		skipIt=false;
+		for (unsigned int t=0; t<rep_nums.size(); t++) 
+		{
+			if (i==rep_nums[t]-enabledRepositories.size()+1) skipIt=true;
+		}
+		if (!skipIt) n1.push_back(disabledRepositories[i]);
+	}
+	set_repositorylist(enabledRepositories, n1);
+
+
+
+	return 0;
+}
+
+int mpkg::disable_repository(vector<int> rep_nums)
+{
+	vector<string> enabledRepositories, disabledRepositories, n1;
+	enabledRepositories = get_repositorylist();
+	disabledRepositories = get_disabled_repositorylist();
+	for (unsigned int i=0; i<rep_nums.size(); i++)
+	{
+		if (rep_nums[i]==0 || rep_nums[i]>(int) enabledRepositories.size()+(int) disabledRepositories.size()) {
+			mError("No such enabled repository number" + IntToStr(rep_nums[i]));
+			return -1;
+		}
+		rep_nums[i]--;
+	}
+	for (unsigned int i=0; i<rep_nums.size(); i++)
+	{
+		disabledRepositories.push_back(enabledRepositories[rep_nums[i]]);
+	}
+	bool skipIt=false;
+	for (unsigned int i=0; i<enabledRepositories.size(); i++)
+	{
+		skipIt=false;
+		for (unsigned int t=0; t<rep_nums.size(); t++) 
+		{
+			if ((int) i==rep_nums[t]) skipIt=true;
+		}
+		if (!skipIt) n1.push_back(enabledRepositories[i]);
+	}
+	set_repositorylist(n1, disabledRepositories);
+
+	return 0;
 }
 // Configuration and settings: setting
 int mpkg::set_repositorylist(vector<string> newrepositorylist, vector<string> drList)

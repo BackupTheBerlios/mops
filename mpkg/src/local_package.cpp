@@ -1,7 +1,7 @@
 /*
 Local package installation functions
 
-$Id: local_package.cpp,v 1.76 2007/11/04 14:15:08 i27249 Exp $
+$Id: local_package.cpp,v 1.77 2007/11/21 14:39:26 i27249 Exp $
 */
 
 #include "local_package.h"
@@ -292,7 +292,6 @@ int LocalPackage::fill_scripts(PACKAGE *package)
 		if (FileExists(scripts_dir + "/install")) {
 			system("(cd " + scripts_dir + "/install; mv * ..; cd ..; rmdir install)");
 		}
-		else mWarning("No install scripts?");
 	}
 
 	return 0;
@@ -380,21 +379,24 @@ int LocalPackage::fill_filelist(PACKAGE *package, bool index)
 	// Retrieving symlinks (from doinst.sh)
 	string lnfname=get_tmp_file();
 	string sed_cmd = "sed -n 's,^( *cd \\([^ ;][^ ;]*\\) *; *rm -rf \\([^ )][^ )]*\\) *) *$,\\1/\\2,p' < ";
+	string dt;
 	if (!index) sed_cmd += package->get_scriptdir() + "doinst.sh > "+lnfname;
 	else
 	{
-		string dt = get_tmp_file();
+		dt = get_tmp_file();
 		// Extracting file to the temp dir
 		extractFromTgz(filename, "install/doinst.sh", dt);
 		sed_cmd += dt + " > " + lnfname;
 	}
-	system(sed_cmd);
-	vector<string>link_names=ReadFileStrings(lnfname);
-	for (unsigned int i=0; i<link_names.size();i++)
-	{
-		if (!link_names[i].empty())
-		{	file_tmp.set_name(&link_names[i]);
-			package->get_files()->push_back(file_tmp);
+	if (FileExists(package->get_scriptdir() + "doinst.sh") || FileExists(dt)) {
+		system(sed_cmd);
+		vector<string>link_names=ReadFileStrings(lnfname);
+		for (unsigned int i=0; i<link_names.size();i++)
+		{
+			if (!link_names[i].empty())
+			{	file_tmp.set_name(&link_names[i]);
+				package->get_files()->push_back(file_tmp);
+			}
 		}
 	}
 

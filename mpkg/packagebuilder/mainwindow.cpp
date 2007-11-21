@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.49 2007/11/21 01:57:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.50 2007/11/21 14:39:26 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -176,8 +176,14 @@ void Form::analyzeSources()
 	SourceFile sFile;
 	sFile.setUrl(ui.urlEdit->text().toStdString());
 	sFile.download();
-	sFile.analyze();
+	string configHelp;
+	sFile.analyze(&configHelp);
 	ui.buildingSystemComboBox->setCurrentIndex(sFile.getBuildType());
+	if (sFile.getBuildType()==0) {
+		QTextBrowser *browser = new QTextBrowser;
+		browser->setText(configHelp.c_str());
+		browser->showMaximized();
+	}
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
 }
 

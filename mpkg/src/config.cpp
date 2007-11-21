@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.48 2007/11/10 10:26:39 i27249 Exp $
+ * $Id: config.cpp,v 1.49 2007/11/21 14:39:26 i27249 Exp $
  *
  * ***************************************************/
 
@@ -74,9 +74,9 @@ int loadGlobalConfig(string config_file)
 	string cdrom_device="/dev/cdrom";
 	string cdrom_mountpoint="/mnt/cdrom";
 	string check_files = "preinstall";
-	string sys_root="/root/development/sys_root/";
-	string sys_cache="/root/development/sys_cache/";
-	string db_url="sqlite://var/log/mpkg/packages.db";
+	string sys_root="/";
+	string sys_cache="/var/mpkg/cache/";
+	string db_url="sqlite:///var/log/mpkg/packages.db";
 	string scripts_dir="/var/log/mpkg/scripts/";
 	string sql_type;
 	vector<string> repository_list;
@@ -198,13 +198,16 @@ int loadGlobalConfig(string config_file)
 	//sys_cache
 	SYS_CACHE=sys_cache;
 	SCRIPTS_DIR=scripts_dir;	
-	if (db_url.find("sqlite://")!=std::string::npos)
+	if (db_url.find("sqlite://")==0)
 	{
 		sql_type="sqlite://";
 
 		DATABASE=DB_SQLITE_LOCAL;
-		db_url.erase(0,sql_type.length()-1);
-		DB_FILENAME=db_url;
+		DB_FILENAME=db_url.substr(strlen("sqlite://"));
+	}
+	else {
+		mError("CRITICAL: cannot find database, check config!");
+		abort();
 	}
 	REPOSITORY_LIST=repository_list;
 	DISABLED_REPOSITORY_LIST = disabled_repository_list;
@@ -351,7 +354,7 @@ vector<string> mpkgconfig::get_disabled_repositorylist()
 string mpkgconfig::get_dburl()
 {
 	mDebug("filename = " + DB_FILENAME);
-	return "sqlite://"+DB_FILENAME;
+	return "sqlite:/"+DB_FILENAME;
 }
 
 string mpkgconfig::get_scriptsdir()

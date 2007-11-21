@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.5 2007/11/02 17:45:45 i27249 Exp $
+// $Id: package.h,v 1.6 2007/11/21 14:39:26 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -92,7 +92,7 @@ class SourceFile
 		~SourceFile();
 		void setUrl(string _url);
 		bool download();
-		bool analyze();
+		bool analyze(string *configure_help=NULL);
 		
 		string getType();
 		int getBuildType();

@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.81 2007/11/21 01:57:54 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.82 2007/11/21 14:39:26 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -953,8 +953,49 @@ int main (int argc, char **argv)
 		delete_tmp_files();
 		return 0;
 	}
+	if ( action == ACT_ADD_REPOSITORY ) {
+		if (argc<=optind) return print_usage(stderr,1);
+		for (int i=optind; i < argc; i++) {
+			core.add_repository((string) argv[i]);
+		}
+		list_rep(&core);
+		return 0;
+	}
+	if (action == ACT_REMOVE_REPOSITORY ) {
+		if (argc<optind) return print_usage(stderr,1);
+		int shift = 0;
+		for (int i=optind; i<argc; i++) {
+			core.remove_repository(atoi(argv[i])-shift);
+			shift++;
+		}
+		list_rep(&core);
+		return 0;
+	}
+
+	if (action == ACT_ENABLE_REPOSITORY) {
+		if (argc<optind) return print_usage(stderr,1);
+		vector<int> en;
+		for (int i=optind; i<argc; i++) {
+			en.push_back(atoi(argv[i]));
+		}
+		core.enable_repository(en);
+		list_rep(&core);
+		return 0;
+	}
+	if (action == ACT_DISABLE_REPOSITORY) {
+		if (argc<optind) return print_usage(stderr,1);
+		vector<int> en;
+		for (int i=optind; i<argc; i++) {
+			en.push_back(atoi(argv[i]));
+		}
+		core.disable_repository(en);
+		list_rep(&core);
+		return 0;
+	}
+
 
 	// ACTION SUMMARY - NEED TO FIX!
+	printf("Doing action summary\n");
 	if (!core.DepTracker->get_install_list()->IsEmpty())
 	{
 		say(_("Next packages will be installed:\n"));
@@ -1034,6 +1075,10 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tfilesearch                look for owner of the file in installed packages (LIKE mode).\n"));
 	fprintf(stream,_("\twhich                     look for owner of the file in installed packages (EQUAL mode).\n"));
 	fprintf(stream,_("\tlist_rep                  list enabled repositories\n"));
+	fprintf(stream,_("\tadd_rep                   add repository\n"));
+	fprintf(stream,_("\tdelete_rep                delete Nth repository\n"));
+	fprintf(stream,_("\tenable_rep                enable Nth repository\n"));
+	fprintf(stream,_("\tdisable_rep               disable Nth repository\n"));
 	fprintf(stream,_("\tinstallfromlist           install using file with list of items\n"));
 	fprintf(stream,_("\treset                     reset queue\n"));
 	fprintf(stream,_("\tshow_queue                show queue\n"));
@@ -1044,6 +1089,7 @@ int print_usage(FILE* stream, int exit_code)
 
 	fprintf(stream,_("\nInteractive options:\n"));
 	fprintf(stream,_("\tmenu                      shows the package selection menu\n"));
+	fprintf(stream,_("\tedit_rep                  edit repository list with menu\n"));
 	
 	fprintf(stream,_("\nRepository maintaining functions:\n"));
 	fprintf(stream,_("\tindex                     create a repository index file \"packages.xml.gz\"\n"));
@@ -1070,10 +1116,16 @@ int list_rep(mpkg *core)
 {
 	say(_("Repository list:\n"));
 	vector <string> rlist=core->get_repositorylist();
+	vector<string> dlist = core->get_disabled_repositorylist();
 	for (unsigned int i=0; i<rlist.size(); i++)
 	{
-		say("[%d] %s\n", i+1, rlist[i].c_str());
+		say("* [%d] %s\n", i+1, rlist[i].c_str());
 	}
+	for (unsigned int i=0; i<dlist.size(); i++)
+	{
+		say("  [%d] %s (%s)\n", i+rlist.size()+1, dlist[i].c_str(), _("DISABLED"));
+	}
+	
 	return 0;
 }
 
@@ -1344,6 +1396,11 @@ int check_action(char* act)
 		&& _act != "upgradeall"
 		&& _act != "listgroups"
 		&& _act != "build"
+		&& _act != "add_rep"
+		&& _act != "delete_rep"
+		&& _act != "enable_rep"
+		&& _act != "disable_rep"
+		&& _act != "edit_rep"
 		) {
 		res = -1;
 	}
@@ -1441,6 +1498,11 @@ int setup_action(char* act)
 		return ACT_REMOVEGROUP;
 	if (_act == "build")
 		return ACT_BUILD;
+	if (_act == "add_rep") return ACT_ADD_REPOSITORY;
+	if (_act == "delete_rep") return ACT_REMOVE_REPOSITORY;
+	if (_act == "enable_rep") return ACT_ENABLE_REPOSITORY;
+	if (_act == "disable_rep") return ACT_DISABLE_REPOSITORY;
+	if (_act == "edit_rep") return ACT_EDIT_REPOSITORY;
 
 	return ACT_NONE;
 }

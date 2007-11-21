@@ -1,6 +1,6 @@
 /********************************************************************************
  * MOPSLinux packaging system: core API
- * $Id: libmpkg.h,v 1.36 2007/11/21 01:57:54 i27249 Exp $
+ * $Id: libmpkg.h,v 1.37 2007/11/21 14:39:26 i27249 Exp $
  *
  * Use this header to access the library. No other headers are needed :)
  * *****************************************************************************/
@@ -163,8 +163,8 @@ class mpkg
 		// Configuration and settings: setting
 		int add_repository(string repository_url);
 		int remove_repository(int repository_num);
-		int enable_repository(int repository_num);
-		int disable_repository(int repository_num);
+		int enable_repository(vector<int> repository_num);
+		int disable_repository(vector<int> repository_num);
 		int set_repositorylist(vector<string> newrepositorylist, vector<string> drList); // Sets new repository list to config
 		//int set_fullrepositorylist(SERVER_LIST newrepositorylist);
 		int set_sysroot(string newsysroot); // Sets new system root to config
