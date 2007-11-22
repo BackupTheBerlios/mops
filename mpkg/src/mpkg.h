@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.41 2007/11/04 14:15:08 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.42 2007/11/22 15:32:57 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -54,7 +54,8 @@ class mpkgDatabase
 		void clean_backup_directory();
 		int add_conflict_record(int conflicted_id, int overwritten_id, string *file_name);
 		int delete_conflict_record(int conflicted_id, string *file_name);
-		void get_conflict_records(int conflicted_id, vector<FILES> *ret);
+		void get_conflict_records(int conflicted_id, vector<FILES> *ret); // Returns list of files overwritten by conflicted_id
+		void get_backup_records(PACKAGE *package, vector<FILES> *ret); // Returns a list of files for package which has been overwritten
 
 
 

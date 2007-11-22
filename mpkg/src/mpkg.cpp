@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.124 2007/11/21 21:08:29 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.125 2007/11/22 15:32:56 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -111,9 +111,28 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
 	if (canCustomize || build_system == "script") {
 		// If we didn't receive an overrided architecture instructions, let's set defaults!
-		if (march.empty() || mConfig.getValue("override_buildflags")=="yes") march = mConfig.getValue("march");
-		if (mtune.empty() || mConfig.getValue("override_buildflags")=="yes") mtune = mConfig.getValue("mtune");
-		if (olevel.empty() || mConfig.getValue("override_buildflags")=="yes") olevel = mConfig.getValue("olevel");
+		if (march.empty() || mConfig.getValue("override_buildflags")=="yes") {
+			march = mConfig.getValue("march");
+			if (march.empty()) {
+				march="i486";
+				mConfig.setValue("march", "i486");
+			}
+		}
+		if (mtune.empty() || mConfig.getValue("override_buildflags")=="yes") {
+			mtune = mConfig.getValue("mtune");
+			if (mtune.empty()) {
+				mtune="i686";
+				mConfig.setValue("mtune", "i686");
+			}
+		}
+
+		if (olevel.empty() || mConfig.getValue("override_buildflags")=="yes") {
+			olevel = mConfig.getValue("olevel");
+			if (olevel.empty()) {
+				olevel="O2";
+				mConfig.setValue("olevel", "O2");
+			}
+		}
 	}
 	printf("Build flags:\nArchitecture: %s, tuned for: %s, optimization level: %s\n", march.c_str(), mtune.c_str(), olevel.c_str());
 	string gcc_options = p.getBuildOptimizationCustomGccOptions();
@@ -1206,115 +1225,130 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	
 	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
 	{
-//		if (!package->isRemoveBlacklisted())
-//		{
-			// Running pre-remove scripts
-			//printf("Processing\n");
-			mDebug("REMOVE PACKAGE::Preparing scripts");
-			if(!DO_NOT_RUN_SCRIPTS)
+		// Running pre-remove scripts
+		//printf("Processing\n");
+		mDebug("REMOVE PACKAGE::Preparing scripts");
+		if(!DO_NOT_RUN_SCRIPTS)
+		{
+			if (FileExists(package->get_scriptdir() + "preremove.sh"))
 			{
-				if (FileExists(package->get_scriptdir() + "preremove.sh"))
-				{
-					currentStatus = statusHeader + _("executing pre-remove scripts");
-					string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
-					if (!simulate) system(prerem.c_str());
-				}
+				currentStatus = statusHeader + _("executing pre-remove scripts");
+				string prerem="cd " + SYS_ROOT + " ; sh "+package->get_scriptdir() + "preremove.sh";
+				if (!simulate) system(prerem.c_str());
 			}
+		}
 		
-			pData.increaseItemProgress(package->itemID);
-			// removing package
-			mDebug("calling remove");
-			string sys_cache=SYS_CACHE;
-			string sys_root=SYS_ROOT;
-			string fname;
-			mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
+		pData.increaseItemProgress(package->itemID);
+		
+		// removing package
+		mDebug("calling remove");
+		string sys_cache=SYS_CACHE;
+		string sys_root=SYS_ROOT;
+		string fname;
+		mDebug("Package has "+IntToStr(package->get_files()->size())+" files");
 
-			// Purge is now implemented here; checking all
-			currentStatus = statusHeader + _("building file list");
-			vector<FILES> *remove_files=package->get_files();
-			currentStatus = statusHeader + _("removing files...");
-			bool removeThis;
-			for (unsigned int i=0; i<remove_files->size(); i++)
-			{
-				removeThis = false;
-				if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
-				fname=sys_root + *remove_files->at(i).get_name();
-				if (removeThis && fname[fname.length()-1]!='/')
-				{
-					pData.increaseItemProgress(package->itemID);
-					if (!simulate) {
-						unlink(fname.c_str());
-						//printf("[%d] Unlinking file %s\n", unlink(fname.c_str()), fname.c_str());
-					}
+		// Checking backups
+		vector<FILES> backups;
+		get_backup_records(package, &backups);
+		//printf("backups size: %d\n", backups.size());
+
+
+
+		// Purge is now implemented here; checking all
+		currentStatus = statusHeader + _("building file list");
+		vector<FILES> *remove_files=package->get_files();
+		currentStatus = statusHeader + _("removing files...");
+		bool removeThis;
+		for (unsigned int i=0; i<remove_files->size(); i++)
+		{
+			fname=sys_root + *remove_files->at(i).get_name();
+			for (unsigned int t=0; t<backups.size(); t++) {
+				if (*remove_files->at(i).get_name()==*backups[t].get_name()) {
+					fname = (string) SYS_BACKUP+"/"+*backups[t].get_backup_file();
+					//printf("backup file: %s\n", backups[t].get_backup_file()->c_str());
+					delete_conflict_record(backups[t].overwriter_id, backups[t].get_backup_file());
+					break;
 				}
 			}
 
-			currentStatus = statusHeader + _("removing empty directories...");
+
+			removeThis = false;
+			if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
+			if (removeThis && fname[fname.length()-1]!='/')
+			{
+				pData.increaseItemProgress(package->itemID);
+				if (!simulate) {
+					unlink(fname.c_str());
+					//printf("[%d] Unlinking file %s\n", i, fname.c_str());
+				}
+			}
+		}
+
+		currentStatus = statusHeader + _("removing empty directories...");
 	
-			// Run 2: clearing empty directories
-			vector<string>empty_dirs;
-			string edir;
+		// Run 2: clearing empty directories
+		vector<string>empty_dirs;
+		string edir;
 		
-			pData.increaseItemProgress(package->itemID);
+		pData.increaseItemProgress(package->itemID);
 			
-			for (unsigned int i=0; i<remove_files->size(); i++)
+		for (unsigned int i=0; i<remove_files->size(); i++)
+		{
+			fname=sys_root + *remove_files->at(i).get_name();
+			for (unsigned int d=0; d<fname.length(); d++)
 			{
-				fname=sys_root + *remove_files->at(i).get_name();
-				for (unsigned int d=0; d<fname.length(); d++)
+				edir+=fname[d];
+				if (fname[d]=='/')
 				{
-					edir+=fname[d];
-					if (fname[d]=='/')
-					{
-						empty_dirs.resize(empty_dirs.size()+1);
-						empty_dirs[empty_dirs.size()-1]=edir;
-					}
-				}
-	
-				for (int x=empty_dirs.size()-1;x>=0; x--)
-				{
-					if (!simulate) rmdir(empty_dirs[x].c_str());
-				}
-				edir.clear();
-				empty_dirs.clear();
-			}
-	
-			// Creating and running POST-REMOVE script
-			if (!DO_NOT_RUN_SCRIPTS)
-			{
-				if (FileExists(package->get_scriptdir() + "postremove.sh"))
-				{
-					currentStatus = statusHeader + _("executing post-removal scripts");
-					string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
-					if (!simulate) system(postrem.c_str());
+					empty_dirs.resize(empty_dirs.size()+1);
+					empty_dirs[empty_dirs.size()-1]=edir;
 				}
 			}
-		
-	
-			// Restoring backups
-			vector<FILES>restore;
-       			get_conflict_records(package->get_id(), &restore);
-			if (!restore.empty())
+
+			for (int x=empty_dirs.size()-1;x>=0; x--)
 			{
-				string cmd;
-				string tmpName;
-				for (unsigned int i=0; i<restore.size(); i++)
-				{
-					if (restore[i].get_name()->find_last_of("/")!=std::string::npos)
-					{
-						cmd = "mkdir -p ";
-						cmd += SYS_ROOT + restore[i].get_name()->substr(0, restore[i].get_name()->find_last_of("/"));
-						if (!simulate) system(cmd.c_str());
-					}
-					cmd = "mv ";
-				        cmd += SYS_BACKUP+*restore[i].get_backup_file() + " ";
-					tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
-					tmpName = tmpName.substr(tmpName.find("/"));
-				        cmd += SYS_ROOT + tmpName.substr(0,tmpName.find_last_of("/"))+"/";
-					if (!simulate) system(cmd);
-					delete_conflict_record(package->get_id(), restore[i].get_backup_file());
-				}
+				if (!simulate) rmdir(empty_dirs[x].c_str());
 			}
-//		}
+			edir.clear();
+			empty_dirs.clear();
+		}
+	
+		// Creating and running POST-REMOVE script
+		if (!DO_NOT_RUN_SCRIPTS)
+		{
+			if (FileExists(package->get_scriptdir() + "postremove.sh"))
+			{
+				currentStatus = statusHeader + _("executing post-removal scripts");
+				string postrem="cd " + SYS_ROOT + " ; sh " + package->get_scriptdir() + "postremove.sh";
+				if (!simulate) system(postrem.c_str());
+			}
+		}
+	
+		// Restoring backups
+		vector<FILES>restore;
+		get_conflict_records(package->get_id(), &restore);
+		if (!restore.empty())
+		{
+			string cmd;
+			string tmpName;
+			for (unsigned int i=0; i<restore.size(); i++)
+			{
+				if (restore[i].get_name()->find_last_of("/")!=std::string::npos)
+				{
+					cmd = "mkdir -p ";
+					cmd += SYS_ROOT + restore[i].get_name()->substr(0, restore[i].get_name()->find_last_of("/"));
+					if (!simulate) system(cmd.c_str());
+				}
+				cmd = "mv ";
+			        cmd += SYS_BACKUP+*restore[i].get_backup_file() + " ";
+				tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
+				tmpName = tmpName.substr(tmpName.find("/"));
+			        cmd += SYS_ROOT + tmpName.substr(0,tmpName.find_last_of("/"))+"/";
+				if (!simulate) system(cmd);
+				delete_conflict_record(package->get_id(), restore[i].get_backup_file());
+			}
+		}
+
 		pData.increaseItemProgress(package->itemID);
 		set_installed(package->get_id(), ST_NOTINSTALLED);
 		if (package->action()==ST_PURGE) set_configexist(package->get_id(), 0);

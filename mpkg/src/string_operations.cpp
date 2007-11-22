@@ -1,12 +1,13 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.17 2007/11/06 20:25:18 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.18 2007/11/22 15:32:57 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "debug.h"
 void PrepareSql(string *str)
 {
 	if (str->empty())

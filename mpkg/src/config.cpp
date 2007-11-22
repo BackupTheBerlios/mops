@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.50 2007/11/21 21:08:28 i27249 Exp $
+ * $Id: config.cpp,v 1.51 2007/11/22 15:32:56 i27249 Exp $
  *
  * ***************************************************/
 
@@ -204,7 +204,7 @@ int loadGlobalConfig(string config_file)
 		sql_type="sqlite://";
 
 		DATABASE=DB_SQLITE_LOCAL;
-		DB_FILENAME=db_url.substr(strlen("sqlite://"));
+		DB_FILENAME=db_url.substr(strlen("sqlite:/"));
 	}
 	else {
 		mError("CRITICAL: cannot find database, check config!");

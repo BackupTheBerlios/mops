@@ -3,7 +3,7 @@
  * 	SQL pool for MOPSLinux packaging system
  * 	Currently supports SQLite only. Planning support for other database servers
  * 	in future (including networked)
- *	$Id: sql_pool.cpp,v 1.51 2007/11/02 20:19:45 i27249 Exp $
+ *	$Id: sql_pool.cpp,v 1.52 2007/11/22 15:32:57 i27249 Exp $
  ************************************************************************************/
 
 #include "sql_pool.h"
@@ -84,6 +84,20 @@ bool SQLiteDB::CheckDatabaseIntegrity()
 			sql_exec("alter table packages add package_type INTEGER NOT NULL DEFAULT '0';");
 			say(_("Added field package_type to table packages\n"));
 		}
+		/*
+		if (sql_exec("select overwritten_package_id from conflicts limit 1;")!=0)
+		{
+			if (getuid()!=0) {
+				mError(_("Your database need to be upgraded to new version ") + MPKGTableVersion +_(".\nPlease run mpkg (e.g. 'mpkg list') as root to do this\nNote: it will be backward-compatible with all previous versions of mpkg"));
+				abort(); //return false;
+			}
+
+			sql_exec("alter table conflicts add overwritten_package_id INTEGER NOT NULL;");
+			say(_("Added field overwritten_package_id to table backups\n"));
+			// Also, we need to detect the existing situation, and fill in missing data.
+			
+		}*/
+
 		return true;
 	}
 }

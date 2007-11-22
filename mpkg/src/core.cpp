@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.77 2007/11/02 20:19:45 i27249 Exp $
+ *	$Id: core.cpp,v 1.78 2007/11/22 15:32:56 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -113,13 +113,9 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlFields.addField("packages_package_id");
 	sqlFields.addField("file_name");
 	PACKAGE tmpP;
-	if (package->get_files()->size()==0)
-	{
-		return 0; // If a package has no files, it cannot conflict =)
-	}
+	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
 	for (unsigned int i=0;i<package->get_files()->size();i++)
 	{
-
 		fname=*package->get_files()->at(i).get_name();
 		if (fname[fname.length()-1]!='/') 
 		{
@@ -129,6 +125,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	db.get_sql_vtable(sqlTable, sqlFields, "files", sqlSearch);
 	int fPackages_package_id = sqlTable->getFieldIndex("packages_package_id");
 	int fFile_name = sqlTable->getFieldIndex("file_name");
+	// TODO: Next: to be refactored to detect already backed up files, and some speedups (get queries together)
 	if (!sqlTable->empty())
 	{
 		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
@@ -177,6 +174,7 @@ void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 	SQLRecord sqlFields;
 	sqlFields.addField("backup_file");
 	sqlFields.addField("conflict_file_name");
+	//sqlFields.addField("overwritten_package_id");
 	SQLTable fTable;
 	db.get_sql_vtable(&fTable, sqlFields, "conflicts", sqlSearch);
 	ret->clear();
@@ -188,6 +186,36 @@ void mpkgDatabase::get_conflict_records(int conflicted_id, vector<FILES> *ret)
 	{
 		ret->at(i).set_name(fTable.getValue(i, fConflict_file_name));
 		ret->at(i).set_backup_file(fTable.getValue(i, fBackup_file));
+		ret->at(i).owner_id = -1;
+		//ret->at(i).owner_id = atoi(fTable.getValue(i, fOverwritten_id)->c_str());
+		ret->at(i).overwriter_id = conflicted_id;
+	}
+}
+void mpkgDatabase::get_backup_records(PACKAGE *package, vector<FILES> *ret)
+{
+	SQLRecord sqlSearch;
+	sqlSearch.setEqMode(EQ_CUSTOMLIKE);
+	string backupDir = *package->get_name() + "_" + *package->get_md5()+"%";
+	sqlSearch.addField("backup_file", &backupDir);
+	SQLRecord sqlFields;
+	sqlFields.addField("backup_file");
+	sqlFields.addField("conflict_file_name");
+	sqlFields.addField("conflicted_package_id");
+	SQLTable fTable;
+	db.get_sql_vtable(&fTable, sqlFields, "conflicts", sqlSearch);
+	ret->clear();
+	ret->resize(fTable.getRecordCount());
+
+	int fConflict_file_name = fTable.getFieldIndex("conflict_file_name");
+	int fBackup_file = fTable.getFieldIndex("backup_file");
+	int fOverwriter_id = fTable.getFieldIndex("conflicted_package_id");
+	for (int i=0; i<fTable.getRecordCount(); i++)
+	{
+		//printf("Found backup: %s\n", fTable.getValue(i, fBackup_file)->c_str());
+		ret->at(i).set_name(fTable.getValue(i, fConflict_file_name));
+		ret->at(i).set_backup_file(fTable.getValue(i, fBackup_file));
+		ret->at(i).owner_id = package->get_id();
+		ret->at(i).overwriter_id = atoi(fTable.getValue(i, fOverwriter_id)->c_str());
 	}
 }
 

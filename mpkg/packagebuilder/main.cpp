@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.15 2007/10/24 22:00:12 i27249 Exp $
+ *     $Id: main.cpp,v 1.16 2007/11/22 15:32:56 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -17,7 +17,15 @@ int main(int argc, char *argv[])
 	// Now we can pass as argument:
 	// 	package archive filename
 	// 	package index data.xml
-
+	if (getuid()!=0) {
+		string args;
+		for (unsigned int i=0; i<argc; i++)
+		{
+			args+=(string) argv[i] + " ";
+		}
+		return system("kdesu " + args);
+		
+	}
 	QApplication app(argc, argv);
 	QTranslator translator;
 	translator.load("/usr/share/mpkg/packagebuilder_ru");

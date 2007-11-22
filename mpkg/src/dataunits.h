@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.52 2007/11/02 20:19:45 i27249 Exp $
+	$Id: dataunits.h,v 1.53 2007/11/22 15:32:56 i27249 Exp $
 */
 
 
@@ -142,6 +142,10 @@ class FILES
 	// Empty, clear
 	bool IsEmpty();
 	void clear();
+
+	// Backup id's
+	int owner_id;
+	int overwriter_id;
 
 	// Constructor && destructor
 	FILES();

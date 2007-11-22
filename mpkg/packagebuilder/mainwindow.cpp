@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.50 2007/11/21 14:39:26 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.51 2007/11/22 15:32:56 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -30,12 +30,6 @@ Form::Form(QWidget *parent, string arg)
 
 	debugLabel = new QLabel;
 	debugLabel->setText("Debug window");
-	//debugLabel->show();
-	if (getuid()!=0) {
-		system("kdesu packagebuilder " + arg);
-		//QMessageBox::critical(this, tr("Error"), tr("This program should be run with the root privilegies"));
-		quitApp();
-	}
 	ui.MaintainerNameEdit->setText(mConfig.getValue("maintainer_name").c_str());
 	ui.MaintainerMailEdit->setText(mConfig.getValue("maintainer_email").c_str());
 
@@ -1296,8 +1290,8 @@ void Form::reloadPackageDirListing() // Fills the list
 	for (int i=1; i<list.size(); i++) {
 		QListWidgetItem *__item = new QListWidgetItem(ui.filelistWidget);
 		__item->setText(list.at(i).fileName());
-		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/filesystems/folder.png"));
-		else __item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/apps/filetypes.png"));
+		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/mpkg/packagebuilder/icons/folder.png"));
+		else __item->setIcon(QIcon("/usr/share/mpkg/packagebuilder/icons/source.png"));
 	}
 	if (list.size()>0) ui.filelistWidget->setCurrentRow(0);
 }
@@ -1326,8 +1320,8 @@ void Form::reloadFilesystemDirListing() // Fills the list
 	for (int i=1; i<list.size(); i++) {
 		QListWidgetItem *__item = new QListWidgetItem(ui.filelistWidget_2);
 		__item->setText(list.at(i).fileName());
-		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/filesystems/folder.png"));
-		else __item->setIcon(QIcon("/usr/share/icons/OS-K/48x48/apps/filetypes.png"));
+		if (list.at(i).isDir())	__item->setIcon(QIcon("/usr/share/mpkg/packagebuilder/icons/folder.png"));
+		else __item->setIcon(QIcon("/usr/share/mpkg/packagebuilder/icons/source.png"));
 	}
 	if (list.size()>1) ui.filelistWidget_2->setCurrentRow(0);
 }
@@ -1370,33 +1364,36 @@ void Form::manageFiles(FileAction action)
 	QString source, dest;
 	QList<QListWidgetItem *> itemList;
 	QListWidget *widget;
-	QDir *curr;
+	QDir *curr, *opposite;
 	switch(direction)
 	{
 		case 1: widget = ui.filelistWidget;
 			curr = currentPackageDir;
+			opposite = currentFilesystemDir;
 			break;
 		case 2:
 			widget = ui.filelistWidget_2;
 			curr = currentFilesystemDir;
+			opposite = currentPackageDir;
 			break;
 		default: return;
 	}
 	itemList = widget->selectedItems();
 	printf("itemList size = %d\n", itemList.size());
 	for (int i=0; i<itemList.size(); i++) {
+		printf("Processing element %d\n",i);
 		list = curr->entryInfoList().at(widget->row(itemList[i])+1);
 		if (list.fileName()==".." || list.fileName()==".") continue;
 		source = list.absoluteFilePath();
-		dest = curr->absolutePath()+"/"+list.fileName();
+		dest = opposite->absolutePath()+"/"+list.fileName();
 		printf("Source: [%s]\nDestination: [%s]\n\n", source.toStdString().c_str(), dest.toStdString().c_str());
 		if (action==FACT_COPY) {
-			dest = QInputDialog::getText(this, tr("Copy file"), tr("Copy \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
+			//dest = QInputDialog::getText(this, tr("Copy file"), tr("Copy \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
 			if (dest.isEmpty()) return;
 			result = copyFile(source.toStdString(), dest.toStdString());
 		}
 		if (action==FACT_MOVE) {
-			dest = QInputDialog::getText(this, tr("Move file"), tr("Move \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
+			//dest = QInputDialog::getText(this, tr("Move file"), tr("Move \"") + source + tr("\" to:"), QLineEdit::Normal, dest);
 			if (dest.isEmpty()) return;
 
 			result = moveFile(source.toStdString(), dest.toStdString());
