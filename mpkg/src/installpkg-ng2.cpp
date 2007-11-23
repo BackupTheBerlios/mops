@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.83 2007/11/21 21:08:29 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.84 2007/11/23 01:01:46 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -63,8 +63,8 @@ int main (int argc, char **argv)
 		if (argc==2) core.build_package((string) argv[1],false);
 		if (argc==1) core.build_package((string) "", false);
 		if (argc>2) {
-			printf(_("Too many arguments\n"));
-			printf(_("Usage: buildpkg [output_directory]\n"));
+			fprintf(stderr,_("Too many arguments\n"));
+			fprintf(stderr,_("Usage: buildpkg [output_directory]\n"));
 			return -1;
 		}
 	    	return 0;
@@ -74,8 +74,8 @@ int main (int argc, char **argv)
 		if (argc==2) core.build_package((string) argv[1],true);
 		if (argc==1) core.build_package((string) "", true);
 		if (argc>2) {
-			printf(_("Too many arguments\n"));
-			printf(_("Usage: buildsrcpkg [output_directory]\n"));
+			fprintf(stderr,_("Too many arguments\n"));
+			fprintf(stderr,_("Usage: buildsrcpkg [output_directory]\n"));
 			return -1;
 		}
 	    	return 0;
@@ -140,7 +140,7 @@ int main (int argc, char **argv)
 
 		switch (ich) {
 			case 'c':
-					enableDownloadResume=true;
+					enableDownloadResume=false;
 					break;
 			case 'q':
 					do_reset=false;
@@ -220,7 +220,6 @@ int main (int argc, char **argv)
 	
 	}  while ( ich != -1 );
 
-	//printf("optind = %d, argc = %d\n", optind, argc);
 	if ( optind < argc ) {
 		if ( check_action( argv[optind++] ) == -1 )
 		{
@@ -368,7 +367,7 @@ int main (int argc, char **argv)
 			core.install(installList_names, &installList_versions, &installList_builds);
 			core.commit();
 		}
-		else printf("Cancelled\n");
+		else say(_("Cancelled\n"));
 		unlockDatabase();
 		return 0;
 	}
@@ -518,13 +517,50 @@ int main (int argc, char **argv)
 	if (action == ACT_INSTALL || action == ACT_UPGRADE || action == ACT_REINSTALL)
 	{
 
-		vector<string> fname, p_version, p_build;
+		vector<string> r_name, fname, p_version, p_build;
 		string name, version, build;
 		if (argc<=optind) return print_usage(stderr,1);
 		lockDatabase();
-		for (int i = optind; i < argc; i++)
+		for (int i = optind; i < argc; i++) {
+			r_name.push_back((string) argv[i]);
+		}
+
+		// Check for wildcards
+		bool hasWilds=false;
+		for (unsigned int i=0; i<r_name.size(); i++)
 		{
-			name = (string) argv[i];
+			if (r_name[i].find("*")!=std::string::npos)
+			{
+				hasWilds=true;
+				break;
+			}
+		}
+		if (hasWilds)
+		{
+			SQLTable pl;
+			SQLRecord sqlr, sqlfields;
+			sqlr.setEqMode(EQ_CUSTOMLIKE);
+			vector<string> srch=r_name;
+			sqlfields.addField("package_name");
+			for (unsigned int i=0; i<srch.size(); i++)
+			{
+				while(srch[i].find_first_of("*")!=std::string::npos)
+				{
+					srch[i][srch[i].find_first_of("*")]='%';
+				}
+				sqlr.addField("package_name", &srch[i]);
+			}
+			core.db->get_sql_vtable(&pl, sqlfields, (string) "packages", sqlr);
+			r_name.clear();
+			for (int i=0; i<pl.size(); i++)
+			{
+				r_name.push_back(*pl.getValue(i,"package_name"));
+			}
+		}
+
+		for (int i = 0; i < r_name.size(); i++)
+		{
+			name = r_name[i];
 			version.clear();
 			build.clear();
 			if (name.find_first_of("=")!=std::string::npos) {
@@ -536,44 +572,12 @@ int main (int argc, char **argv)
 					if (build.length()>1) build=build.substr(1);
 				}
 			}
-			printf("adding [%s]-[%s]-[%s]\n", name.c_str(), version.c_str(), build.c_str());
+			//printf("adding [%s]-[%s]-[%s]\n", name.c_str(), version.c_str(), build.c_str());
 			fname.push_back(name);
 			p_version.push_back(version);
 			p_build.push_back(build);
 		}
-		// Check for wildcards
-		bool hasWilds=false;
-		for (unsigned int i=0; i<fname.size(); i++)
-		{
-			if (fname[i].find("*")!=std::string::npos)
-			{
-				hasWilds=true;
-				break;
-			}
-		}
-		if (hasWilds)
-		{
-			SQLTable pl;
-			SQLRecord sqlr, sqlfields;
-			sqlr.setEqMode(EQ_CUSTOMLIKE);
-			vector<string> srch=fname;
-			sqlfields.addField("package_name");
-			for (unsigned int i=0; i<srch.size(); i++)
-			{
-				while(srch[i].find_first_of("*")!=std::string::npos)
-				{
-					srch[i][srch[i].find_first_of("*")]='%';
-				}
-				sqlr.addField("package_name", &srch[i]);
-			}
-			core.db->get_sql_vtable(&pl, sqlfields, (string) "packages", sqlr);
-			fname.clear();
-			for (int i=0; i<pl.size(); i++)
-			{
-				fname.push_back(*pl.getValue(i,"package_name"));
-			}
-		}
-
+		
 		if (action != ACT_REINSTALL) core.install(fname, &p_version, &p_build);
 		else {
 			for (unsigned int i=0; i<fname.size(); i++)
@@ -619,7 +623,7 @@ int main (int argc, char **argv)
 		core.get_available_tags(&availableTags);
 		for (unsigned int i=0; i<availableTags.size(); i++)
 		{
-			printf("%s\n", availableTags[i].c_str());
+			say("%s\n", availableTags[i].c_str());
 		}
 		return 0;
 	}
@@ -1056,7 +1060,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\t-q    --noreset           don't reset queue at start\n"));
 	fprintf(stream,_("\t-!    --nodepgen          don't generate dependencies on package building\n"));
 	fprintf(stream,_("\t-w    --no_buildcache     don't use source cache when building packages\n")); 
-	fprintf(stream,_("\t-c    --resume            enable download resuming (be aware of different files with same names!)\n"));
+	fprintf(stream,_("\t-c    --no_resume         disable download resuming\n"));
 
 	
 	fprintf(stream,_("\nActions:\n"));

@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.67 2007/11/22 15:32:56 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.68 2007/11/23 01:01:46 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -68,27 +68,27 @@ void mpkg::get_available_tags(vector<string>* output)
 // Packages installation
 int mpkg::install(vector<string> fname, vector<string> *p_version, vector<string> *p_build)
 {
-	printf("fname size = %d\n", fname.size());
-	printf("p_version size = %d\n", p_version->size());
+	//printf("fname size = %d\n", fname.size());
+	//printf("p_version size = %d\n", p_version->size());
 	
-	for (unsigned int i=0; i<fname.size(); i++) {
+	/*for (unsigned int i=0; i<fname.size(); i++) {
 		printf("fname[%d]: %s\n", i, fname[i].c_str());
-	}
+	}*/
 	int ret=0;
 	string version, build;
 	for (unsigned int i = 0; i < fname.size(); i++)
 	{
-		printf("adding version %d %s\n", i, p_version->at(i).c_str());
+	//	printf("adding version %d %s\n", i, p_version->at(i).c_str());
 		if (p_version!=NULL) version=p_version->at(i);
-		printf("adding buidl %d\n", i);
+	//	printf("adding buidl %d\n", i);
 		if (p_build!=NULL) build=p_build->at(i);
-		printf("committing %d\n", i);
+	//	printf("committing %d\n", i);
 
 		currentStatus = _("Building queue: ")+IntToStr(i) + "/" +IntToStr(fname.size()) +" ["+fname[i]+"]";
 		if (mpkgSys::requestInstall(fname[i], version, build, db, DepTracker)!=0) ret--;
 	}
 	//currentStatus = "Installation complete";
-	printf("install done\n");
+	//printf("install done\n");
 	return ret;
 }
 int mpkg::installGroups(vector<string> groupName)
@@ -757,7 +757,7 @@ void generateDeps(string tgz_filename)
 			if (!added) pkg.get_dependencies()->push_back(d);
 		}
 	}
-	printf("Got %d dependencies\n", pkg.get_dependencies()->size());
+	say(_("Got %d dependencies\n"), pkg.get_dependencies()->size());
 	p = new PackageConfig(tmpdir+"/install/data.xml");
 	dumpPackage(&pkg, p, tmpdir+"/install/data.xml");
 	delete p;

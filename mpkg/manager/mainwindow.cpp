@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package manager - main code
- * $Id: mainwindow.cpp,v 1.130 2007/11/21 01:57:53 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.131 2007/11/23 01:01:45 i27249 Exp $
  *
  ****************************************************************/
 #define REALTIME_DEPTRACKER
@@ -660,6 +660,7 @@ void MainWindow::showProgressWindow(bool flag)
 			ui.deselectAllButton->hide();
 			ui.quickPackageSearchEdit->hide();
 			ui.clearSearchButton->hide();
+			ui.listWidget->setEnabled(false);
 		}
 	}
 	else
@@ -672,6 +673,7 @@ void MainWindow::showProgressWindow(bool flag)
 			ui.quickPackageSearchEdit->show();
 			ui.quickSearchLabel->show();
 			ui.clearSearchButton->show();
+			ui.listWidget->setEnabled(true);
 		}
 		ui.progressTable->hide();
 	}
@@ -1065,7 +1067,7 @@ void MainWindow::showPreferences()
 
 void MainWindow::showAbout()
 {
-	QMessageBox::information(this, tr("About mpkg package manager"), tr("GUI package manager (part of mpkg) ") + (QString) mpkgVersion + tr(" (build ") + (QString) mpkgBuild + tr("\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
+	QMessageBox::information(this, tr("About mpkg package manager"), tr("GUI package manager (part of mpkg) ") + (QString) mpkgVersion + tr(" (build ") + (QString) mpkgBuild + tr(")\n\n(c) RPU NET (www.rpunet.ru)\nLicensed under GPL"), QMessageBox::Ok, QMessageBox::Ok);
 }
 
 void MainWindow::clearForm()
@@ -1204,6 +1206,7 @@ void MainWindow::commitChanges()
 	if (msgBox.exec() == QMessageBox::Cancel) return;
 
 	emit commit(newStatus);
+	//ui.listWidget->setEnabled(false);
 }
 void MainWindow::resetChanges()
 {

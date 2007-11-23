@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.51 2007/11/22 15:32:56 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.52 2007/11/23 01:01:45 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -97,6 +97,7 @@ focusIndex=0;
 	connect(ui.refreshButton, SIGNAL(clicked()), this, SLOT(reloadPackageDirListing()));
 	connect(ui.refreshButton_2, SIGNAL(clicked()), this, SLOT(reloadFilesystemDirListing()));
 	connect(ui.cmdLine, SIGNAL(execCmd()), this, SLOT(execShellCommand()));
+	connect(ui.urlEdit, SIGNAL(editingFinished()), this, SLOT(analyzeName()));
 	
 	ui.cmdLine->addItem("");
 	reloadFilesystemDirListing();
@@ -168,9 +169,9 @@ void Form::embedPatches()
 void Form::analyzeSources()
 {
 	SourceFile sFile;
+	string configHelp;
 	sFile.setUrl(ui.urlEdit->text().toStdString());
 	sFile.download();
-	string configHelp;
 	sFile.analyze(&configHelp);
 	ui.buildingSystemComboBox->setCurrentIndex(sFile.getBuildType());
 	if (sFile.getBuildType()==0) {
@@ -179,8 +180,44 @@ void Form::analyzeSources()
 		browser->showMaximized();
 	}
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
+	analyzeName();
+	
 }
+void Form::analyzeName()
+{
+	// Try to analyze package name and version
+	string filename = getFilename(ui.urlEdit->text().toStdString());
+	if (getExtension(filename)=="gz") {
+		filename = filename.substr(0, filename.length()-strlen(".gz"));
+	}
+	if (getExtension(filename)=="bz2") {
+		filename = filename.substr(0,filename.length()-strlen(".bz2"));
+	}
+	if (getExtension(filename)=="zip") {
+		filename = filename.substr(0,filename.length()-strlen(".zip"));
+	}
+	if (getExtension(filename)=="rar") {
+		filename = filename.substr(0,filename.length()-strlen(".rar"));
+	}
+	if (getExtension(filename)=="tar") {
+		filename = filename.substr(0,filename.length()-strlen(".tar"));
+	}
+	if (getExtension(filename)=="tgz") {
+		filename = filename.substr(0,filename.length()-strlen(".tgz"));
+	}
 
+	string name, version;
+	printf("Filename: %s\n", filename.c_str());
+	if (filename.find("-")!=std::string::npos) {
+		name = filename.substr(0, filename.find_last_of("-"));
+		printf("Name: %s\n", name.c_str());
+		if (name.length()<filename.length()) version = filename.substr(filename.find_last_of("-")+1);
+	}
+	if (ui.NameEdit->text().isEmpty()) ui.NameEdit->setText(name.c_str());
+	if (ui.VersionEdit->text().isEmpty()) ui.VersionEdit->setText(version.c_str());
+	if (ui.BuildEdit->text().isEmpty()) ui.BuildEdit->setText("1");
+
+}
 string cleanDescr(string str)
 {
 	string ret;

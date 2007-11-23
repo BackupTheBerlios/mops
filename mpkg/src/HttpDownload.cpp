@@ -32,7 +32,7 @@ double *extDlNow;
 double *extDlTotal;
 double *extItemTotal;
 double *extItemNow;
-
+double resumePos;
 ProgressData *ppData;
 ActionBus *ppActionBus;
 int currentItemID;
@@ -51,7 +51,9 @@ static int downloadCallback(void *clientp,
 	void *t1;
 	t1= clientp;
 	
-	ppData->setItemProgress(currentItemID, dlnow);
+	ppData->setItemProgress(currentItemID, resumePos+dlnow);
+	//ppData->setItemProgressMaximum(currentItemID, dltotal);
+	ppData->setItemCurrentAction(currentItemID, _("Downloading: ") + IntToStr((unsigned int) round((resumePos+dlnow)/((resumePos+dltotal)/100)))+"% (" + IntToStr( (unsigned int) (resumePos+dlnow)/1024) + _(" of ") + IntToStr( (unsigned int) (resumePos+dltotal)/1024) + _(" kbytes)") );
 	if (prevDlValue==dlnow) downloadTimeout++;
 	else {
 		prevDlValue=dlnow;
@@ -67,7 +69,7 @@ static int downloadCallback(void *clientp,
 	}
 	else
 	{
-	if (!currentDownloadingString.empty()) say(_("\r%s: %d%% (%d of %d kb)"),currentDownloadingString.c_str(), (unsigned int) round(dlnow/(dltotal/100)), (unsigned int) dlnow/1024, (unsigned int) dltotal/1024);
+	if (!currentDownloadingString.empty()) say("\r%s: %d%% (%d %s %d %s)",currentDownloadingString.c_str(), (unsigned int) round(dlnow/(dltotal/100)), (unsigned int) dlnow/1024, _("of"), (unsigned int) dltotal/1024, _("kb"));
 		//zC++;
 		//printf("%d\n", zC);
 	}
@@ -459,6 +461,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 							prData->setItemProgress(item->itemID, 0);
 							unlink(item->file.c_str());
 						}
+						resumePos = 0;
 						out = fopen (item->file.c_str(), "ab");
 						if ( out == NULL )
 						{
@@ -472,7 +475,8 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 							fseek(out,0,SEEK_END);
 							if (enableDownloadResume) {
 								if (size!=0) say(_("Resuming download from %Li\n"), size);
-								curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);	
+								curl_easy_setopt(ch, CURLOPT_RESUME_FROM, size);
+								resumePos = (double) size;
 							}
 							curl_easy_setopt(ch, CURLOPT_WRITEDATA, out);
     							curl_easy_setopt(ch, CURLOPT_NOPROGRESS, false);

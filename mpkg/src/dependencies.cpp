@@ -1,5 +1,5 @@
 /* Dependency tracking
-$Id: dependencies.cpp,v 1.52 2007/11/04 14:15:08 i27249 Exp $
+$Id: dependencies.cpp,v 1.53 2007/11/23 01:01:46 i27249 Exp $
 */
 
 
@@ -94,6 +94,7 @@ void DependencyTracker::fillInstalledPackages()
 
 int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 {
+	printf("%s\n", __func__);
 	// A *very* special case: need to compute dependencies within single package list, with no access to database
 	packageCache = *pkgList;
 	cacheCreated=true;
@@ -125,6 +126,7 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 			if (removeStream.get_package(i)->equalTo(removeQueryList.get_package(t)))
 			{
 				requested=true;
+				break;
 			}
 		}
 		if (!requested && checkBrokenDeps(removeStream.get_package(i), fullWillBeList))
@@ -134,6 +136,7 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 		}
 	}
 	muxStreams(installStream, removeStream);
+
 	failureCounter = findBrokenPackages(installList, &failure_list);
 
 	// Summarize and push back
@@ -156,6 +159,7 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 				if (i_ids[v]==installList.get_package(i)->get_id())
 				{
 					alreadyThere=true;
+					break;
 				}
 			}
 			if (!alreadyThere)
@@ -170,10 +174,12 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 	}
 	int rC=0;
 	vector<int> r_ids;
-	bool essentialUpdating, essentialFound=false;
+	
+	//bool essentialUpdating, essentialFound=false;
 	for (int i=0; i<removeList.size(); i++)
 	{
-		essentialUpdating=false;
+		/*essentialUpdating=false;
+		
 		if (removeList.get_package(i)->isRemoveBlacklisted())
 		{
 			for (int c=0; c<installList.size(); c++)
@@ -193,13 +199,16 @@ int DependencyTracker::renderDependenciesInPackageList(PACKAGE_LIST *pkgList)
 						*removeList.get_package(i)->get_name());
 				if (!force_essential_remove) essentialFound=true;
 			}
-		}
+		}*/
 		if (removeList.get_package(i)->configexist())
 		{
 			alreadyThere=false;
 			for (unsigned int v=0; v<r_ids.size(); v++)
 			{
-				if (r_ids[v]==removeList.get_package(i)->get_id()) alreadyThere=true;
+				if (r_ids[v]==removeList.get_package(i)->get_id()) {
+					alreadyThere=true;
+					break;
+				}
 			}
 			if (!alreadyThere)
 			{
@@ -222,13 +231,6 @@ int DependencyTracker::renderData()
 {
 	createPackageCache();
 	fillInstalledPackages();
-	/*
-	printf("Retrieving data from SQL\n");
-	// Retrieving common package list from database - we will use C++ logic.
-	SQLRecord sqlSearch;
-	sqlSearch.addField("package_installed", 1);
-	db->get__packagelist(&sqlSearch, &installedPackages);
-	*/
 
 	mDebug("Rendering installations");
 	int failureCounter = 0;
@@ -267,6 +269,7 @@ int DependencyTracker::renderData()
 			{
 				// Package is requested to remove by user, we shouldn't roll back
 				requested=true;
+				break;
 			}
 		}
 		if (!requested && checkBrokenDeps(removeStream.get_package(i), fullWillBeList))
@@ -280,6 +283,7 @@ int DependencyTracker::renderData()
 			mDebug("Rolling back " + *removeStream.get_package(i)->get_name());
 			installStream.add(removeStream.get_package(i));
 		}
+
 	}
 	//printf("rollback end\n");
 	// END OF ROLLBACK MECHANISM
@@ -288,6 +292,61 @@ int DependencyTracker::renderData()
 	//printf("muxing streams\n");
 	currentStatus=_("Checking dependencies: muxing queues");
 	muxStreams(installStream, removeStream);
+	
+	// Имеем:
+	// installList
+	// removeList
+#ifndef NO_FIND_UPDATE
+	currentStatus=_("Advanced search for updates");
+	// Fill in fullWillBeList
+	fullWillBeList = installList;
+	bool skip;
+	for (int i=0; i<installedPackages.size(); i++) {
+		skip=false;
+		for (int t=0; t<removeList.size(); t++) {
+			if (removeList.get_package(t)->get_id()==installedPackages.get_package(i)->get_id()) {
+				skip=true;
+				break;
+			}
+		}
+		if (!skip) fullWillBeList.add(installedPackages.get_package(i));
+	}
+
+	PACKAGE checkPackage; // Temporary package, I don't wish to risk packageCache integrity
+	for (int i=0; i<removeList.size(); i++) {
+		requested=false;
+		for (int t=0; t<removeQueryList.size(); t++)
+		{
+			if (removeList.get_package(i)->equalTo(removeQueryList.get_package(t)))
+			{
+				// Package is requested to remove by user, we shouldn't roll back
+				requested=true;
+				break;
+			}
+		}
+
+		if (!requested) {
+			//printf("Not requested, but broken deps: %s\n", removeList.get_package(i)->get_name()->c_str());
+			// Here is a place to try to find replacement with new dependencies
+			// Поищем среди доступных версии пакета, способные заменить сломанный пакет. По нахождении добавляем в installList
+			for (int t=0; t<packageCache.size(); t++) {
+				checkPackage = *packageCache.get_package(t);
+				if (*checkPackage.get_name()==*removeList.get_package(i)->get_name()) { // Нашли пакет с таким же именем, смотрим что у него там с зависимостями
+					//printf("checking package %s-%s\n", checkPackage.get_name()->c_str(), checkPackage.get_fullversion().c_str() );
+					if (check_deps(&checkPackage, &fullWillBeList)) { // Подходит
+						installList.add(&checkPackage);
+						//printf("Added %s-%s for update broken package %s-%s\n", checkPackage.get_name()->c_str(), 
+								//checkPackage.get_fullversion().c_str(),
+								//removeList.get_package(i)->get_name()->c_str(), removeList.get_package(i)->get_fullversion().c_str());
+						break; // Раз нашли один подходящий, нафиг что-либо еще?
+					}
+				}
+			}
+		}
+	}
+
+#endif
+
 	currentStatus=_("Checking dependencies: searching for broken packages");
 	mDebug("Searching for broken packages");
 	//printf("Searching for broken packages\n");
@@ -355,16 +414,36 @@ PACKAGE_LIST DependencyTracker::get_required_packages(PACKAGE *package)
 	return requiredPackages;
 }
 
-void DependencyTracker::fillByName(string *name, PACKAGE_LIST *p)
+bool DependencyTracker::check_deps(PACKAGE *package, PACKAGE_LIST *pList) // Checks if package deps can be resolved using pList
 {
-	if (!cacheCreated) createPackageCache();
-	p->clear();
-	for (int i=0; i<packageCache.size(); i++)
+	// Returns a list of required packages. Broken ones is marked internally
+	PACKAGE tmpPackage;
+	for (unsigned int i=0; i<package->get_dependencies()->size(); i++)
 	{
-		if (*packageCache.get_package(i)->get_name()==*name) p->add(packageCache.get_package(i));
+		//printf("%s-%s: checking dependency %s\n", package->get_name()->c_str(), package->get_fullversion().c_str(), package->get_dependencies()->at(i).getDepInfo().c_str());
+		if (get_dep_package(&package->get_dependencies()->at(i), &tmpPackage, pList)!=0) {
+			return false;
+		}
+	}
+	//printf("Package %s-%s meets requirements\n", package->get_name()->c_str(), package->get_fullversion().c_str());
+	return true;
+}
+
+void DependencyTracker::fillByName(string *name, PACKAGE_LIST *p, PACKAGE_LIST *testPackages)
+{
+	PACKAGE_LIST *list;
+	if (testPackages==NULL) {
+		if (!cacheCreated) createPackageCache();
+		list = &packageCache;
+	}
+	else list = testPackages;
+	p->clear();
+	for (int i=0; i<list->size(); i++)
+	{
+		if (*list->get_package(i)->get_name()==*name) p->add(list->get_package(i));
 	}
 }
-int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
+int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage, PACKAGE_LIST *pList)
 {
 	returnPackage->clear();
 	returnPackage->isRequirement=true;
@@ -372,8 +451,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	returnPackage->set_broken(true);
 	returnPackage->set_requiredVersion(dep->get_version_data());
 	PACKAGE_LIST reachablePackages;
-	
-	fillByName(dep->get_package_name(), &reachablePackages);
+	fillByName(dep->get_package_name(), &reachablePackages, pList);
 	
 	/*SQLRecord sqlSearch;
 	sqlSearch.addField("package_name", dep->get_package_name());
@@ -381,7 +459,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	
 	if (reachablePackages.IsEmpty())
 	{
-		mError(_("Required package ") + *dep->get_package_name() + _(" not found"));
+		if (pList==NULL) mError(_("Required package ") + *dep->get_package_name() + _(" not found"));
 		return MPKGERROR_NOPACKAGE;
 	}
 	
@@ -395,7 +473,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	}
 	if (candidates.IsEmpty())
 	{
-		mError(dep->getDepInfo() + _(" is required, but no suitable version was found"));
+		if (pList==NULL) mError(dep->getDepInfo() + _(" is required, but no suitable version was found"));
 		return MPKGERROR_NOPACKAGE;
 	}
 	if (candidates.hasInstalledOnes()) *returnPackage = *candidates.getInstalledOne();
@@ -403,7 +481,7 @@ int DependencyTracker::get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage)
 	return MPKGERROR_OK;
 }
 
-PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
+PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue) // Построение очереди на удаление
 {
 	currentStatus=_("Checking dependencies: rendering remove queue");
 	// removeQueue - user-composed remove queue
@@ -415,7 +493,6 @@ PACKAGE_LIST DependencyTracker::renderRemoveQueue(PACKAGE_LIST *removeQueue)
 	for (int i=0; i<removeStream.size(); i++)
 	{
 		currentStatus=_("Checking dependencies: rendering remove queue") + (string) " (" + IntToStr(i) + "/" + IntToStr(removeStream.size())+")";
-
 
 		tmp = get_dependant_packages(removeStream.get_package(i));
 		//printf( "dependant for %s has %d items\n",removeStream.get_package(i)->get_name()->c_str(), tmp.size());
@@ -576,16 +653,6 @@ bool DependencyTracker::checkBrokenDeps(PACKAGE *pkg, PACKAGE_LIST searchList) /
 	// Returns true if it is required by someone in searchList, or it is already in searchList himself
 	// False if no package depends on it
 	bool hasdependant;
-	// Step 1. Check if it conflicts with someone in searchlist
-	/*for (int i=0; i<searchList.size(); i++)
-	{
-		if (pkg->equalTo(searchList.get_package(i))) 
-		{
-			printf("%s: equals to item in searchList, returning TRUE\n",__func__);
-			return true;
-		}
-		//if (*pkg->get_name() == *searchList.get_package(i)->get_name()) return true; // Temp solution - we should check if a version change can broke something.
-	}*/
 
 
 	for (int t=0; t<searchList.size(); t++)
@@ -620,6 +687,7 @@ bool DependencyTracker::commitToDb()
 	int iC=0;
 	vector<int> i_ids;
 	bool alreadyThere;
+	PACKAGE_LIST iList, rList;
 	for (int i=0; i<installList.size(); i++)
 	{
 		if (!installList.get_package(i)->installed())
@@ -630,63 +698,77 @@ bool DependencyTracker::commitToDb()
 				if (i_ids[v]==installList.get_package(i)->get_id())
 				{
 					alreadyThere=true;
+					break;
 				}
 			}
 			if (!alreadyThere)
 			{
 				iC++;
-				db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+				iList.add(installList.get_package(i));
 				i_ids.push_back(installList.get_package(i)->get_id());
 			}
 		}
 	}
+	installList = iList;
 	int rC=0;
 	vector<int> r_ids;
 
-	bool essentialUpdating, essentialFound=false;
+	bool essentialFound=false;
 	for (int i=0; i<removeList.size(); i++)
 	{
-		essentialUpdating=false;
-		if (removeList.get_package(i)->isRemoveBlacklisted())
-		{
-			// Check if it is updating
-			for (int c=0; c<installList.size(); c++)
-			{
-				if (*installList.get_package(c)->get_name() == *removeList.get_package(i)->get_name())
-				{
-					essentialUpdating = true;
-					break;
-				}
-			}
-			if (!essentialUpdating)
-			{
-				if (!force_essential_remove) mError(_("Cannot remove package ") + \
-						*removeList.get_package(i)->get_name() + \
-						_(", because it is an important system component."));
-				else mWarning(_("Removing essential package ") + \
-						*removeList.get_package(i)->get_name());
-				if (!force_essential_remove) essentialFound=true;
-			}
-		}
 		if (removeList.get_package(i)->configexist())
 		{
 			alreadyThere=false;
 			for (unsigned int v=0; v<r_ids.size(); v++)
 			{
-				if (r_ids[v]==removeList.get_package(i)->get_id()) alreadyThere=true;
+				if (r_ids[v]==removeList.get_package(i)->get_id()) {
+					alreadyThere=true;
+					break;
+				}
 			}
 			if (!alreadyThere)
 			{
 				rC++;
-				db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
+				rList.add(removeList.get_package(i));
 				r_ids.push_back(removeList.get_package(i)->get_id());
 			}
 		}
 	}
+	removeList = rList;
+
+	bool attemptRemoveEssential;
+	// Queue are fully formed, check for essentials
+	for (int i=0; i<removeList.size(); i++)
+	{
+		if (removeList.get_package(i)->isRemoveBlacklisted()) {
+			// Checking if it is replaced by something...
+			attemptRemoveEssential = true;
+			for (int t=0; t<installList.size(); t++) {
+				if (*installList.get_package(t)->get_name() == *removeList.get_package(i)->get_name()) {
+					attemptRemoveEssential = false; // It's updating, all ok
+					break;
+				}
+			}
+			if (attemptRemoveEssential) {
+				if (!force_essential_remove) {
+					mError(_("Cannot remove package ") + \
+						*removeList.get_package(i)->get_name() + \
+						_(", because it is an important system component."));
+					essentialFound = true;
+				}
+				else  mWarning(_("Removing essential package ") + \
+						*removeList.get_package(i)->get_name());
+			}
+		}
+	}
+
 	if (essentialFound) {
 		mError(_("Found essential packages, cannot continue"));
 		return false;
 	}
+	// Commit actions to database if all OK
+	for (int i=0; i<installList.size(); i++) db->set_action(installList.get_package(i)->get_id(), ST_INSTALL);
+	for (int i=0; i<removeList.size(); i++) db->set_action(removeList.get_package(i)->get_id(), removeList.get_package(i)->action());
 	mDebug("finished");
 	return true;
 }

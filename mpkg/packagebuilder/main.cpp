@@ -1,7 +1,7 @@
 /****************************************************************
  *     MOPSLinux packaging system
  *     Package builder - main file
- *     $Id: main.cpp,v 1.16 2007/11/22 15:32:56 i27249 Exp $
+ *     $Id: main.cpp,v 1.17 2007/11/23 01:01:45 i27249 Exp $
  ***************************************************************/
 
 #include <QApplication>
@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
 	// 	package index data.xml
 	if (getuid()!=0) {
 		string args;
-		for (unsigned int i=0; i<argc; i++)
+		for (int i=0; i<argc; i++)
 		{
 			args+=(string) argv[i] + " ";
 		}

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.60 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.61 2007/11/23 01:01:46 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -154,7 +154,7 @@ int mpkgSys::requestInstall(int package_id, mpkgDatabase *db, DependencyTracker 
 		mDebug("checking " + IntToStr(i));
 		if (candidates.get_package(i)->installed() && !candidates.get_package(i)->equalTo(&tmpPackage))
 		{
-			if (!dialogMode) say(_("Updating package %s\n"), candidates.get_package(i)->get_name()->c_str());
+			//if (!dialogMode) say(_("Updating package %s\n"), candidates.get_package(i)->get_name()->c_str());
 			requestUninstall(*candidates.get_package(i)->get_name(), db, DepTracker);
 		}
 	}

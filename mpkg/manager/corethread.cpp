@@ -1,7 +1,7 @@
 /****************************************************************************
  * MOPSLinux packaging system
  * Package manager - core functions thread
- * $Id: corethread.cpp,v 1.79 2007/11/04 14:15:08 i27249 Exp $
+ * $Id: corethread.cpp,v 1.80 2007/11/23 01:01:45 i27249 Exp $
  * *************************************************************************/
 #include "corethread.h"
 
@@ -382,9 +382,10 @@ void coreThread::_commitQueue()
 	currentStatus = tr("Committing changes...").toStdString();
 	int ret = database->commit();
 
-	if (ret==0) currentStatus = tr("All operations completed successfully").toStdString();
 	delete database;
 	database = new mpkg;
+	
+	if (ret==0) currentStatus = tr("All operations completed successfully").toStdString();
 	currentAction = CA_LoadDatabase;
 	actionBus.clear();
 	pData.clear();

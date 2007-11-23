@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.125 2007/11/22 15:32:56 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.126 2007/11/23 01:01:46 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -646,25 +646,27 @@ i_actInput:
 			if (CommonGetFileEx(downloadQueue, &currentItem) == DOWNLOAD_ERROR)
 			{
 				mError(_("Download failed"));
-				errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
-				switch(errRet)
-				{
-					case MPKG_RETURN_IGNORE:
-						say(_("Download errors ignored, continue installing\n"));
-						goto installProcess;
-						break;
+				if (!actionBus._abortActions) {
+					errRet = waitResponce (MPKG_DOWNLOAD_ERROR);
+					switch(errRet)
+					{
+						case MPKG_RETURN_IGNORE:
+							say(_("Download errors ignored, continue installing\n"));
+							goto installProcess;
+							break;
 				
-					case MPKG_RETURN_RETRY:
-						say(_("retrying...\n"));
-						do_download = true;
-						break;
-					case MPKG_RETURN_ABORT:
-						say(_("aborting...\n"));
-						return MPKGERROR_ABORTED;
-						break;
-					default:
-						mError(_("Unknown value, don't know what to do, aborting"));
-						return MPKGERROR_ABORTED;
+						case MPKG_RETURN_RETRY:
+							say(_("retrying...\n"));
+							do_download = true;
+							break;
+						case MPKG_RETURN_ABORT:
+							say(_("aborting...\n"));
+							return MPKGERROR_ABORTED;
+							break;
+						default:
+							mError(_("Unknown value, don't know what to do, aborting"));
+							return MPKGERROR_ABORTED;
+					}
 				}
 					
 			}
@@ -974,7 +976,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 			mError("Error copying package, aborting...");
 			return -45;
 		}
-		printf("File copied to cache");
+		//printf("File copied to cache");
 		say(_("Importing to database\n"));
 		LocalPackage binpkg(SYS_CACHE + getFilename(binary_out));
 		if (binpkg.injectFile()!=0) {

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.80 2007/11/12 21:35:44 i27249 Exp $
+	$Id: dataunits.cpp,v 1.81 2007/11/23 01:01:46 i27249 Exp $
 */
 
 
@@ -1014,7 +1014,7 @@ PACKAGE * PACKAGE_LIST::getPackageByID(int id)
 }
 void PACKAGE_LIST::sortByPriority(bool reverse_order)
 {
-	printf("Priority sorting\n");
+	//printf("Priority sorting\n");
 	
 	if (!priorityInitialized) buildDependencyOrder();
 	int min_priority = 0;
@@ -1044,7 +1044,7 @@ void PACKAGE_LIST::sortByPriority(bool reverse_order)
 			}
 		}
 	}
-	printf("sorting finished\n");
+	//printf("sorting finished\n");
 	packages = sorted;
 
 }

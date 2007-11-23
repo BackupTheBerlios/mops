@@ -1,5 +1,5 @@
 /* Dependency tracking - header
-$Id: dependencies.h,v 1.16 2007/09/06 09:07:47 i27249 Exp $
+$Id: dependencies.h,v 1.17 2007/11/23 01:01:46 i27249 Exp $
 */
 
 
@@ -38,7 +38,7 @@ class DependencyTracker
 
 		void createPackageCache();
 		void fillInstalledPackages();
-		void fillByName(string *name, PACKAGE_LIST *p);
+		void fillByName(string *name, PACKAGE_LIST *p, PACKAGE_LIST *testPackages=NULL);
 		void fillByAction(int ACTION, PACKAGE_LIST *p);
 		bool cacheCreated;
 		mpkgDatabase *db;
@@ -46,6 +46,7 @@ class DependencyTracker
 		PACKAGE_LIST *_tmpInstallStream;
 		PACKAGE_LIST *_tmpRemoveStream;
 	public:
+		bool check_deps(PACKAGE *package, PACKAGE_LIST *pList);
 		int renderDependenciesInPackageList(PACKAGE_LIST *pkgList);
 		void addToInstallQuery(PACKAGE *pkg);
 		void addToRemoveQuery(PACKAGE *pkg);
@@ -57,7 +58,7 @@ class DependencyTracker
 		
 		PACKAGE_LIST renderRequiredList(PACKAGE_LIST *installationQueue);
 		PACKAGE_LIST get_required_packages(PACKAGE *package);
-		int get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage);
+		int get_dep_package(DEPENDENCY *dep, PACKAGE *returnPackage, PACKAGE_LIST *pList=NULL);
 		PACKAGE_LIST renderRemoveQueue(PACKAGE_LIST *removeQueue);
 		PACKAGE_LIST get_dependant_packages(PACKAGE *package);
 		void muxStreams(PACKAGE_LIST installStream, PACKAGE_LIST removeStream);
