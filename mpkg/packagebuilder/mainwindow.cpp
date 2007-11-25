@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.52 2007/11/23 01:01:45 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.53 2007/11/25 15:24:11 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -38,7 +38,9 @@ Form::Form(QWidget *parent, string arg)
 	//ui.DepTableWidget->horizontalHeader()->hide();
 	ui.DepTableWidget->verticalHeader()->hide();
 	connect(ui.saveAndQuitButton, SIGNAL(clicked()), this, SLOT(saveAndExit()));
+	connect(ui.saveAsButton, SIGNAL(clicked()), this, SLOT(saveAs()));
 	connect(ui.addDepFromFilesBtn, SIGNAL(clicked()), this, SLOT(addDepsFromFiles()));
+	connect(ui.importDescriptionButton, SIGNAL(clicked()), this, SLOT(importMetaFromFile()));
 
 	connect(ui.aboutButton, SIGNAL(clicked()), this, SLOT(showAbout()));
 	connect(ui.browsePatchButton, SIGNAL(clicked()), this, SLOT(browsePatch()));
@@ -251,7 +253,7 @@ void Form::loadData()
 	loadFile("");
 }
 
-	
+
 void Form::loadFile(QString filename)
 {
 	reloadFilesystemDirListing();
@@ -272,6 +274,11 @@ void Form::loadFile(QString filename)
 	if (getExtension(filename.toStdString())=="spkg") dataType = DATATYPE_SOURCEPACKAGE;
 	if (getExtension(filename.toStdString())=="xml") dataType = DATATYPE_XML;
 	if (isDirectory(filename.toStdString())) dataType = DATATYPE_DIR;
+
+	if (dataType == DATATYPE_UNKNOWN) {
+		QMessageBox::critical(this, tr("Cannot open ") + filename, tr("Unable to open file/directory ") + filename + tr(", because it isn't a supported package type"));
+		return;
+	}
 	if (dataType == DATATYPE_DIR)
 	{
 		if (QMessageBox::question(this, tr("Cannot determine tree type"), tr("Is it a binary package tree?"), 
@@ -557,14 +564,109 @@ void Form::loadFile(QString filename)
 	reloadFilesystemDirListing();
 }
 
-bool Form::saveFile()
+void Form::importMetaFromFile()
+{
+	QString file, xmlFile;
+	string tmpfile;
+       	file = QFileDialog::getOpenFileName(this, tr("Choose a file to import"));
+	if (file.isEmpty()) return;
+	if (getExtension(file.toStdString())=="xml") {
+		// Pure XML
+		xmlFile = file;
+	}
+	if (getExtension(file.toStdString())=="tgz") {
+		// Binary package, need to extract XML first
+		tmpfile = get_tmp_file();
+		if (extractFromTgz(file.toStdString(), "install/data.xml", tmpfile)==0) xmlFile = tmpfile.c_str();
+		else {
+			unlink(tmpfile.c_str());
+			return;
+		}
+	}
+	if (getExtension(file.toStdString())=="spkg") {
+		// Source package, need to extract XML first
+		tmpfile = get_tmp_file();
+		if (extractFromTgz(file.toStdString(), "install/data.xml", tmpfile)==0) xmlFile = tmpfile.c_str();
+		else {
+			unlink(tmpfile.c_str());
+			return;
+		}
+	}
+	// Process xmlFile
+	if (!FileExists(xmlFile.toStdString())) {
+		QMessageBox::warning(this, tr("Cannot import metadata"), tr("Cannot import metadata: XML file doesn't exist"));
+		return;
+	}
+	
+	PackageConfig p(xmlFile.toStdString());
+	if (!p.parseOk) {
+		QMessageBox::critical(this, tr("Error parsing metadata"), tr("Error while parsing XML, possible malformed structure"));
+		return;
+	}
+	PACKAGE pkg;
+	xml2package(p.getXMLNode(), &pkg);
+	pkg.sync();
+
+	// Filling data
+	ui.NameEdit->setText(pkg.get_name()->c_str());
+	ui.VersionEdit->setText(pkg.get_version()->c_str());
+	ui.betaReleaseEdit->setText(pkg.get_betarelease()->c_str());
+	ui.ArchComboBox->setCurrentIndex(ui.ArchComboBox->findText(pkg.get_arch()->c_str()));
+	ui.BuildEdit->setText(pkg.get_build()->c_str());
+	ui.ShortDescriptionEdit->setText(pkg.get_short_description()->c_str());
+	short_description[0]=pkg.get_short_description()->c_str();
+	description[0]=cleanDescr(*pkg.get_description()).c_str();
+	ui.ShortDescriptionEdit->setText(short_description[0]);
+	ui.DescriptionEdit->setText(description[0]);
+	ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
+	ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
+	ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
+
+	for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
+	{
+		ui.DepTableWidget->insertRow(0);
+		ui.DepTableWidget->setItem(0,3, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_type()->c_str()));
+		ui.DepTableWidget->setItem(0,0, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_name()->c_str()));
+		ui.DepTableWidget->setItem(0,1, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_vcondition().c_str()));
+		ui.DepTableWidget->setItem(0,2, new QTableWidgetItem(pkg.get_dependencies()->at(i).get_package_version()->c_str()));
+		if (pkg.get_dependencies()->at(i).isBuildOnly()) ui.DepTableWidget->setItem(0,4,new QTableWidgetItem("build_only"));
+	}
+	string tag_tmp;
+	for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
+	{
+		tag_tmp=pkg.get_tags()->at(i);
+		ui.TagListWidget->addItem(tag_tmp.c_str());
+		tag_tmp.clear();
+	}
+	for (unsigned int i=0; i<pkg.get_config_files()->size(); i++)
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.configFilesListWidget);
+		__item->setText(pkg.get_config_files()->at(i).get_name()->c_str());
+	}
+	for (unsigned int i=0; i<pkg.get_temp_files()->size(); i++)
+	{
+		QListWidgetItem *__item = new QListWidgetItem(ui.tempFilesListWidget);
+		__item->setText(pkg.get_temp_files()->at(i).get_name()->c_str());
+	}
+}
+
+bool Form::saveAs()
+{
+	return saveFile(true);
+}
+bool Form::saveFile(bool saveAsMode)
 {
 	// Check if all required fields are filled in
 	if (ui.NameEdit->text().isEmpty() || ui.VersionEdit->text().isEmpty() || ui.BuildEdit->text().isEmpty()) {
-		QMessageBox::warning(this, "Some required fields are empty", "Please fill in all required fields (name, arch, version, build) first.");
+		QMessageBox::warning(this, tr("Some required fields are empty"), tr("Please fill in all required fields (name, arch, version, build) first."));
 		return false;
 	}
 	QString out_dir;
+	if (dataType!=DATATYPE_NEW && saveAsMode) {
+		out_dir = QFileDialog::getExistingDirectory(this, tr("Where to save the package:"), "./");
+		if (out_dir.isEmpty()) return false;
+	}
+
 	if (dataType==DATATYPE_NEW)
 	{
 		out_dir = QFileDialog::getExistingDirectory(this, tr("Where to save the package:"), "./");
@@ -585,6 +687,7 @@ bool Form::saveFile()
 			return false;
 		}
 	}
+	
 
 
 	string xmlDir, xmlFilename;
