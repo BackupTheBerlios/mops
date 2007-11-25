@@ -669,11 +669,6 @@ Please close another application that uses it</source>
         <translation>Бета релиз:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1050"/>
-        <source></source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1070"/>
         <source>About mpkg package manager</source>
         <translation>О программе mpkg package manager</translation>

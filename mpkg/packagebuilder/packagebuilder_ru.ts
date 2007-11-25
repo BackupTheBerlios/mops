@@ -29,7 +29,7 @@
         <translation type="obsolete">Укажите директорию, в которую следует сохранить информацию о пакете</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="856"/>
+        <location filename="mainwindow.cpp" line="959"/>
         <source> (saved)</source>
         <translation> (сохранено)</translation>
     </message>
@@ -39,7 +39,7 @@
         <translation>Генератор описаний пакетов MOPSLinux</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1125"/>
+        <location filename="mainwindow.cpp" line="1228"/>
         <source>The document has been modified.
 Do you want to save your changes?</source>
         <translation>Данные были изменены.
@@ -211,17 +211,17 @@ Do you want to save your changes?</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="606"/>
+        <location filename="mainwindow.cpp" line="709"/>
         <source>: saving, please wait...</source>
         <translation>: сохранение...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1018"/>
+        <location filename="mainwindow.cpp" line="1121"/>
         <source>Choose package root</source>
         <translation>Укажите корень пакета</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1022"/>
+        <location filename="mainwindow.cpp" line="1125"/>
         <source>Choose a config file</source>
         <translation>Выберите конфигурационный файл</translation>
     </message>
@@ -336,42 +336,42 @@ Do you want to save your changes?</source>
         <translation>Сохранить и выйти</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="106"/>
+        <location filename="mainwindow.cpp" line="108"/>
         <source>Package should be saved before using this tool</source>
         <translation>Пакет должен быть сохранен перед использованием файл-менеджера</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1249"/>
+        <location filename="mainwindow.cpp" line="1352"/>
         <source>Open a package (.tgz or .spkg)</source>
         <translation>Открыть пакет (.tgz или .spkg)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="277"/>
+        <location filename="mainwindow.cpp" line="284"/>
         <source>Cannot determine tree type</source>
         <translation>Не удается определить тип дерева</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="277"/>
+        <location filename="mainwindow.cpp" line="284"/>
         <source>Is it a binary package tree?</source>
         <translation>Это дерево бинарного пакета?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="570"/>
+        <location filename="mainwindow.cpp" line="672"/>
         <source>Where to save the package:</source>
         <translation>Где сохранить пакет:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="988"/>
         <source>About packagebuilder</source>
         <translation>О программе packagebuilder</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="988"/>
         <source>Package metadata builder for MPKG </source>
         <translation>Редактор метаданных пакетов для MPKG </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="988"/>
         <source>)
 
 (c) RPU NET (www.rpunet.ru)
@@ -382,12 +382,12 @@ Licensed under GPL</source>
 Лицензия: GPL</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="889"/>
+        <location filename="mainwindow.cpp" line="992"/>
         <source>Select a script file</source>
         <translation>Укажите файл скрипта</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="906"/>
+        <location filename="mainwindow.cpp" line="1009"/>
         <source>Finish editing with gvim</source>
         <translation>Закончить редактирование в gvim</translation>
     </message>
@@ -397,47 +397,47 @@ Licensed under GPL</source>
         <translation>Редактировать в gvim</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="952"/>
+        <location filename="mainwindow.cpp" line="1055"/>
         <source>Error importing dependencies</source>
         <translation>Ошибка при импортировании зависимостей</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="952"/>
+        <location filename="mainwindow.cpp" line="1055"/>
         <source>Cannot import dependency from file </source>
         <translation>Невозможно импортировать зависимости из файла </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1439"/>
+        <location filename="mainwindow.cpp" line="1542"/>
         <source>Remove file</source>
         <translation>Удалить файл</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1439"/>
+        <location filename="mainwindow.cpp" line="1542"/>
         <source>Remove &quot;</source>
         <translation>Удалить &quot;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1439"/>
+        <location filename="mainwindow.cpp" line="1542"/>
         <source>&quot; ?</source>
         <translation>&quot; ?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1462"/>
+        <location filename="mainwindow.cpp" line="1565"/>
         <source>Rename file</source>
         <translation>Переименовать файл</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1462"/>
+        <location filename="mainwindow.cpp" line="1565"/>
         <source>Enter a new file name</source>
         <translation>Введите новое имя файла</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1514"/>
+        <location filename="mainwindow.cpp" line="1617"/>
         <source>Make new directory</source>
         <translation>Создание новой директории</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1514"/>
+        <location filename="mainwindow.cpp" line="1617"/>
         <source>Enter new directory name:</source>
         <translation>Введите имя новой директории:</translation>
     </message>
@@ -1046,6 +1046,61 @@ p, li { white-space: pre-wrap; }
         <location filename="package_builder.ui" line="2222"/>
         <source>Ctrl+Q</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="279"/>
+        <source>Cannot open </source>
+        <translation>Невозможно открыть </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="279"/>
+        <source>Unable to open file/directory </source>
+        <translation>Невозможно открыть файл либо директорию </translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="279"/>
+        <source>, because it isn&apos;t a supported package type</source>
+        <translation>, ибо он(а) не является поддерживаемым типом пакета</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="571"/>
+        <source>Choose a file to import</source>
+        <translation>Выберите файл для импортирования</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="597"/>
+        <source>Cannot import metadata</source>
+        <translation>Невозможно импортировать мета-данные</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="597"/>
+        <source>Cannot import metadata: XML file doesn&apos;t exist</source>
+        <translation>Невозможно импортировать мета-данные: XML-файл не найден</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="603"/>
+        <source>Error parsing metadata</source>
+        <translation>Ошибка чтения мета-данных</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="603"/>
+        <source>Error while parsing XML, possible malformed structure</source>
+        <translation>При чтении XML произошла ошибка, скорее всего файл имеет неправильную структуру</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="661"/>
+        <source>Some required fields are empty</source>
+        <translation>Некоторые обязательные поля не заполнены</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="661"/>
+        <source>Please fill in all required fields (name, arch, version, build) first.</source>
+        <translation>Сначала заполните все необходимые поля (имя, архитектура, версия, билд).</translation>
+    </message>
+    <message>
+        <location filename="package_builder.ui" line="107"/>
+        <source>Beta release:</source>
+        <translation>Бета-версия:</translation>
     </message>
 </context>
 </TS>
