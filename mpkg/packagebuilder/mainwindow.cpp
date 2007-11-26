@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.53 2007/11/25 15:24:11 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.54 2007/11/26 00:31:28 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -10,6 +10,7 @@
 
 Form::Form(QWidget *parent, string arg)
 {
+
 	pBuilder_isStartup = true;
 	if (arg.empty()) dataType=DATATYPE_NEW;
 	_arg = arg;
@@ -28,6 +29,7 @@ Form::Form(QWidget *parent, string arg)
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
 
+	templateDirPath = QDir::homePath()+"/.packagebuilder/configure_templates/";
 	debugLabel = new QLabel;
 	debugLabel->setText("Debug window");
 	ui.MaintainerNameEdit->setText(mConfig.getValue("maintainer_name").c_str());
@@ -69,6 +71,7 @@ Form::Form(QWidget *parent, string arg)
 	connect(ui.customGccOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchGccOptionsField(int)));
 	switchGccOptionsField(ui.customGccOptionsCheckBox->checkState());
 
+	loadTemplateList();
 
 	connect(ui.patchAddButton, SIGNAL(clicked()), this, SLOT(addPatch()));
 	connect(ui.keyAddButton, SIGNAL(clicked()), this, SLOT(addKey()));
@@ -100,6 +103,9 @@ focusIndex=0;
 	connect(ui.refreshButton_2, SIGNAL(clicked()), this, SLOT(reloadFilesystemDirListing()));
 	connect(ui.cmdLine, SIGNAL(execCmd()), this, SLOT(execShellCommand()));
 	connect(ui.urlEdit, SIGNAL(editingFinished()), this, SLOT(analyzeName()));
+	connect(ui.setConfigTemplateButton, SIGNAL(clicked()), this, SLOT(applyTemplate()));
+	connect(ui.saveConfigTemplateButton, SIGNAL(clicked()), this, SLOT(saveTemplate()));
+
 	
 	ui.cmdLine->addItem("");
 	reloadFilesystemDirListing();
@@ -134,6 +140,63 @@ void Form::setCurrentPathLabel()
 {
 	if (focusIndex==1) ui.currentPath->setText("["+currentPackageDir->absolutePath()+"]# ");
 	else ui.currentPath->setText("["+currentFilesystemDir->absolutePath()+"]# ");
+}
+
+void Form::loadTemplateList()
+{
+	ui.configTemplateComboBox->clear();
+	QDir templateDir(templateDirPath);
+	printf("templateDir: %s\n", templateDirPath.toStdString().c_str());
+	if (!templateDir.exists()) return;
+	QFileInfoList templateList = templateDir.entryInfoList();
+	for (int i=0; i<templateList.size(); i++) {
+		if (templateList[i].fileName()!=".." && templateList[i].fileName()!="." && !templateList[i].isDir()) ui.configTemplateComboBox->addItem(templateList[i].fileName());
+	}
+}
+
+void Form::applyTemplate()
+{
+	QString filename = ui.configTemplateComboBox->currentText();
+	if (filename.isEmpty()) return;
+	if (!FileExists(templateDirPath.toStdString() + filename.toStdString())) {
+		QMessageBox::critical(this, tr("Error loading template"), tr("Template file doesn't exist"));
+		return;
+	}
+	vector<string> data = ReadFileStrings(templateDirPath.toStdString() + filename.toStdString());
+	if (data.empty()) {
+		QMessageBox::critical(this, tr("Error loading template"), tr("Template file is empty"));
+		return;
+	}
+	keyList.clear();
+	keys key_tmp;
+	for (unsigned int i=0; i<data.size(); i++) {
+		if (data[i]=="\n") continue;
+		key_tmp.name.clear();
+		key_tmp.value.clear();
+		if (data[i].find("=")!=std::string::npos) {
+			key_tmp.name = data[i].substr(0, data[i].find_first_of("="));
+			if (data[i].find_first_of("=") < data[i].length()-1) key_tmp.value = data[i].substr(data[i].find_first_of("=")+1);
+		}
+		else key_tmp.name = data[i];
+		keyList.push_back(key_tmp);
+	}
+	displayKeys();
+}
+
+void Form::saveTemplate()
+{
+	QString filename = QInputDialog::getText(this, tr("Save as new template"), tr("Enter a template name:"));
+	if (filename.isEmpty()) return;
+	system("mkdir -p " + templateDirPath.toStdString());
+	if (FileExists(templateDirPath.toStdString() + filename.toStdString()) && QMessageBox::question(this, tr("Confirm overwrite"), tr("This template already exists. Overwrite?"))!=QMessageBox::Ok) return;
+	string data;
+	for (unsigned int i=0; i<keyList.size(); i++) {
+		data+=keyList[i].name;
+		if (!keyList[i].value.empty()) data+="="+keyList[i].value;
+		data+="\n";
+	}
+	if (WriteFile(templateDirPath.toStdString() + filename.toStdString(), data)!=0) QMessageBox::critical(this, tr("Error saving template"), tr("Unable to write template file"));
+	loadTemplateList();
 }
 
 void Form::setPanel1Focus()
@@ -216,7 +279,7 @@ void Form::analyzeName()
 		if (name.length()<filename.length()) version = filename.substr(filename.find_last_of("-")+1);
 	}
 	if (ui.NameEdit->text().isEmpty()) ui.NameEdit->setText(name.c_str());
-	if (ui.VersionEdit->text().isEmpty()) ui.VersionEdit->setText(version.c_str());
+	/*if (ui.VersionEdit->text().isEmpty()) */ ui.VersionEdit->setText(version.c_str()); // Will always enter generated version
 	if (ui.BuildEdit->text().isEmpty()) ui.BuildEdit->setText("1");
 
 }
@@ -619,8 +682,8 @@ void Form::importMetaFromFile()
 	ui.ShortDescriptionEdit->setText(short_description[0]);
 	ui.DescriptionEdit->setText(description[0]);
 	ui.ChangelogEdit->setText(pkg.get_changelog()->c_str());
-	ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
-	ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
+	//ui.MaintainerNameEdit->setText(pkg.get_packager()->c_str());
+	//ui.MaintainerMailEdit->setText(pkg.get_packager_email()->c_str());
 
 	for (unsigned int i=0; i<pkg.get_dependencies()->size(); i++)
 	{
@@ -632,6 +695,7 @@ void Form::importMetaFromFile()
 		if (pkg.get_dependencies()->at(i).isBuildOnly()) ui.DepTableWidget->setItem(0,4,new QTableWidgetItem("build_only"));
 	}
 	string tag_tmp;
+	ui.TagListWidget->clear();
 	for (unsigned int i=0; i<pkg.get_tags()->size(); i++)
 	{
 		tag_tmp=pkg.get_tags()->at(i);
@@ -648,6 +712,7 @@ void Form::importMetaFromFile()
 		QListWidgetItem *__item = new QListWidgetItem(ui.tempFilesListWidget);
 		__item->setText(pkg.get_temp_files()->at(i).get_name()->c_str());
 	}
+
 }
 
 bool Form::saveAs()

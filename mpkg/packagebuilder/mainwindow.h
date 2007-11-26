@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.27 2007/11/25 15:24:11 i27249 Exp $
+ * $Id: mainwindow.h,v 1.28 2007/11/26 00:31:28 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -59,6 +59,9 @@ class Form: public QWidget
 		void addDepsFromFiles();
 		void quitApp();
 		void browsePatch();
+		void loadTemplateList();
+		void applyTemplate();
+		void saveTemplate();
 		void switchConfigureField(int state);
 		void switchEnvField(int state);
 		void switchCompilationField(int state);
@@ -110,6 +113,7 @@ class Form: public QWidget
 		QLabel *debugLabel;
 	private:
 		int focusIndex;
+		QString templateDirPath;
 		QDir *packageDir;
 		QDir *currentPackageDir;
 		QDir *currentFilesystemDir;

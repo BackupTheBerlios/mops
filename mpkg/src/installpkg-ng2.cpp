@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.84 2007/11/23 01:01:46 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.85 2007/11/26 00:31:28 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -241,8 +241,15 @@ int main (int argc, char **argv)
 		require_root=false;
 
 	if (require_root && uid != 0 ) {
-		mError(_("You must login as root to run this program"));
-		exit(1);
+		string arg_string;
+		for (int i=0; i<argc; i++) {
+			arg_string += (string) argv[i] + " ";
+		}
+		if (system("sudo " + arg_string)!=0) {
+			mError(_("You must login as root to run this program"));
+			exit(1);
+		}
+		return 0;
 	}
 	if (require_root && isDatabaseLocked())
 	{
@@ -558,7 +565,7 @@ int main (int argc, char **argv)
 			}
 		}
 
-		for (int i = 0; i < r_name.size(); i++)
+		for (unsigned int i = 0; i < r_name.size(); i++)
 		{
 			name = r_name[i];
 			version.clear();
