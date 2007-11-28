@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.85 2007/11/26 00:31:28 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.86 2007/11/28 02:24:25 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -127,7 +127,7 @@ int main (int argc, char **argv)
 		{ "noconfirm",		0, NULL,	'y'},
 		{ "noreset",		0, NULL,	'q'},
 		{ "nodepgen",		0, NULL,	'!'},
-		{ "resume",		0, NULL,	'c'},
+		{ "no-resume",		0, NULL,	'c'},
 		{ NULL, 		0, NULL, 	0}
 	};
 
@@ -234,6 +234,7 @@ int main (int argc, char **argv)
 			action == ACT_CONVERT || \
 			action == ACT_CONVERT_DIR || \
 			action == ACT_TAG || \
+			action == ACT_BUILDUP || \
 			action == ACT_LIST || \
 			action == ACT_INDEX || \
 			action == ACT_GENDEPS || \
@@ -892,6 +893,16 @@ int main (int argc, char **argv)
 		delete_tmp_files();
 		return 0;
 	}
+	if ( action == ACT_BUILDUP )
+	{
+		if (argc > optind)
+		{
+			say(_("increasing build of %s...\n"), argv[optind]);
+			buildup_package(argv[optind]);
+		}
+		delete_tmp_files();
+		return 0;
+	}
 
 	if ( action == ACT_CONVERT_DIR ) {
 		if (optind < argc )
@@ -1407,6 +1418,7 @@ int check_action(char* act)
 		&& _act != "convert_dir"
 		&& _act != "list_rep"
 		&& _act != "tag"
+		&& _act != "buildup"
 	  	&& _act != "clean"
 		&& _act != "reset"
 		&& _act != "commit"
@@ -1494,6 +1506,7 @@ int setup_action(char* act)
 
 	if (_act == "tag")
 		return ACT_TAG;
+	if (_act=="buildup") return ACT_BUILDUP;
 
 	if (_act == "convert_dir")
 		return ACT_CONVERT_DIR;

@@ -1,10 +1,10 @@
 /******************************************************
  * Data converter for legacy Slackware packages
- * $Id: converter.cpp,v 1.17 2007/08/23 23:28:17 i27249 Exp $
+ * $Id: converter.cpp,v 1.18 2007/11/28 02:24:25 i27249 Exp $
  * ***************************************************/
 
 #include "converter.h"
-
+#include "package.h"
 #define GET_TXT_DESC
 int slack_convert(string filename, string xml_output)
 {
@@ -189,7 +189,34 @@ int convert_package(string filename, string output_dir)
 	return 0;
 }
 
+int buildup_package(string filename)
+{
+	SourcePackage spkg;
+	spkg.setInputFile(filename);
+	spkg.unpackFile();
+	string xml_path = spkg.getDataFilename();
+	if (!FileExists(xml_path)) return -2;
+	XMLResults xmlErrCode;
+	XMLNode _node = XMLNode::parseFile(xml_path.c_str(), "package", &xmlErrCode);
+	if (xmlErrCode.error != eXMLErrorNone)
+	{
+		mError("parse error");
+		return -1;
+	}
+	mDebug("File opened");
+	if (_node.nChildNode("build")==0)
+	{
+		mError("Invalid package");
+		return -1;
+	}
+	int build_num = atoi(_node.getChildNode("build").getText());
+	_node.getChildNode("build").updateText(IntToStr(build_num+1).c_str());
+	_node.writeToFile(xml_path.c_str());
+	spkg.packFile();
+	//unlink(filename.c_str());
+	return 0;
 
+}
 int tag_package(string filename, string tag)
 {
 	string run = "mkdir -p "+filename.substr(0,filename.length()-4)+" && tar zxf " + filename + " -C " + filename.substr(0,filename.length()-4);

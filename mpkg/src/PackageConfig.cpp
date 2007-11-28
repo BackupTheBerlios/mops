@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.41 2007/11/14 13:48:07 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.42 2007/11/28 02:24:25 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -253,6 +253,7 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp)
  */
 string PackageConfig::getName()
 {
+	if (!pName.empty()) return pName;
 	mDebug("Start");
     xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
@@ -267,7 +268,8 @@ string PackageConfig::getName()
         const char * _result = (const char * )key;
 		std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
 		mDebug("NAME = '" + strim(__r) + "'");
-		return strim(__r);
+		pName = strim(__r);
+		return pName;
     } else {
         return EMPTY;
     }
@@ -280,36 +282,40 @@ string PackageConfig::getName()
  */
 string PackageConfig::getVersion()
 {
+	if (!pVersion.empty()) return pVersion;
 	xmlNodeSetPtr nodeset;
-    xmlXPathObjectPtr res;
-    res = getNodeSet(GET_PKG_VERSION);
-    if (res) {
+	xmlXPathObjectPtr res;
+	res = getNodeSet(GET_PKG_VERSION);
+	if (res) {
         
-        nodeset = res->nodesetval;
-        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
-        const char * _result = (const char * )key;
-        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
-        mDebug("VERSION = '" +strim( __r) + "'");
-        return strim(__r);
-    } else {
-        return EMPTY;
-    }
+		nodeset = res->nodesetval;
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+		const char * _result = (const char * )key;
+		std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+		mDebug("VERSION = '" +strim( __r) + "'");
+		pVersion = strim(__r);
+		return pVersion;
+	} else {
+		return EMPTY;
+	}
 }
 string PackageConfig::getBetarelease()
 {
+	if (!pBetarelease.empty()) return pBetarelease;
 	xmlNodeSetPtr nodeset;
-    xmlXPathObjectPtr res;
-    res = getNodeSet(GET_PKG_BETARELEASE);
-    if (res) {
-        
-        nodeset = res->nodesetval;
-        xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
-        const char * _result = (const char * )key;
-        std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
-        mDebug("VERSION = '" +strim( __r) + "'");
-        return strim(__r);
-    } else {
-        return EMPTY;
+	xmlXPathObjectPtr res;
+	res = getNodeSet(GET_PKG_BETARELEASE);
+	if (res) {
+
+		nodeset = res->nodesetval;
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+		const char * _result = (const char * )key;
+		std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+		mDebug("VERSION = '" +strim( __r) + "'");
+		pBetarelease = strim(__r);
+		return pBetarelease;
+	} else {
+		return EMPTY;
     }
 }
 
@@ -704,6 +710,7 @@ string PackageConfig::getArch()
  */
 string PackageConfig::getBuild()
 {
+	if (!pBuild.empty()) return pBuild;
 	xmlNodeSetPtr nodeset;
     xmlXPathObjectPtr res;
     res = getNodeSet(GET_PKG_BUILD);
@@ -715,7 +722,8 @@ string PackageConfig::getBuild()
         std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
         mDebug("BUILD= '" + strim(__r) + "'");
         //return (std::string)_result;
-	return strim(__r);
+	pBuild = strim(__r);
+	return pBuild;
 	//	return "1";
     } else {
         return EMPTY;

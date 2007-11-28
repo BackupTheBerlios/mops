@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.126 2007/11/23 01:01:46 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.127 2007/11/28 02:24:25 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -78,7 +78,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	// Setting output package name
 	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
 	string dl_command;
-	if (url.find("cvs ")==0 || url.find("svn ")==0 || url.find("git-clone ")==0) dl_command = url;
+	if (url.find("cvs")==0 || url.find("svn")==0 || url.find("git")==0) dl_command = url;
 	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
 	if (dl_command.empty()) {
 		if (url.find("/")==0) {
@@ -136,7 +136,6 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	}
 	printf("Build flags:\nArchitecture: %s, tuned for: %s, optimization level: %s\n", march.c_str(), mtune.c_str(), olevel.c_str());
 	string gcc_options = p.getBuildOptimizationCustomGccOptions();
-
 	string configure_cmd = p.getBuildCmdConfigure();
 	string make_cmd = p.getBuildCmdMake();
 	string make_install_cmd = p.getBuildCmdMakeInstall();
@@ -176,7 +175,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	{
 		printf("Using script");
 		configure_cmd.clear();
-		make_cmd = "sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+		make_cmd = "VERSION=" + p.getVersion()+ " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
 		make_install_cmd.clear();
 	}
 	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
@@ -253,7 +252,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	vector<string> patchList = p.getBuildPatchList();
 
 	string compile_cmd;
-
+	if (build_system=="script") make_cmd = cflags + " " + make_cmd;
 	bool was_prev=false;
 	if (build_system!="cmake")
 	{
@@ -674,6 +673,11 @@ i_actInput:
 		}
 		actionBus.setActionState(ACTIONID_DOWNLOAD);
 		pData.downloadAction=false;
+		if (download_only) {
+			say(_("Downloaded packages are stored in %s\n"), SYS_CACHE.c_str());
+			mpkgSys::clean_queue(this);
+			return 0;
+		}
 installProcess:
 	
 		actionBus.setCurrentAction(ACTIONID_MD5CHECK);
