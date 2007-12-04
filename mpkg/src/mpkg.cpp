@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.127 2007/11/28 02:24:25 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.128 2007/12/04 18:48:34 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -11,6 +11,11 @@
 int emerge_package(string file_url, string *package_name, string march, string mtune, string olevel)
 {
 
+	string PACKAGE_OUTPUT = mConfig.getValue("package_output");
+	if (PACKAGE_OUTPUT.empty()) {
+		mConfig.setValue("package_output", "/var/mpkg/packages");
+		PACKAGE_OUTPUT = mConfig.getValue("package_output");
+	}
 	*package_name="";
 	SourcePackage spkg;
 	if (!spkg.setInputFile(file_url))
@@ -192,6 +197,30 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	// Preparing environment. Clearing old directories
 	system("rm -rf " + pkgdir);	
 	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
+	if (march != p.getArch() && p.getArch()!="noarch") {
+		// Writing new XML data (fixing arch)
+		string xml_path = pkgdir+"/install/data.xml";
+		XMLResults xmlErrCode;
+		XMLNode _node = XMLNode::parseFile(xml_path.c_str(), "package", &xmlErrCode);
+		if (xmlErrCode.error != eXMLErrorNone)
+		{
+			mError("parse error");
+			system("echo " + p.getName() + " >> /tmp/failed_list");
+			return -1;
+		}
+		mDebug("File opened");
+		if (_node.nChildNode("arch")==0)
+		{
+			mError("Invalid package");
+			return -1;
+		}
+		_node.getChildNode("arch").updateText(march.c_str());
+		_node.writeToFile(xml_path.c_str());
+	}
+
+	
+	
+
 	string srcCacheDir = mConfig.getValue("source_cache_dir");
 	if (srcCacheDir.empty()) {
 		mConfig.setValue("source_cache_dir", "/var/mpkg/source_cache/");
@@ -295,8 +324,10 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	system("( cd " + pkgdir + "; find . | xargs file | grep \"executable\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; find . | xargs file | grep \"shared object\" | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null; if [ -d usr/man ]; then gzip -9 usr/man/man?/*; fi )");
 	// Fixing permissions
 	system("(cd " + pkgdir+"; mkdir -p " + (string) PACKAGE_OUTPUT + "; buildpkg " + (string) PACKAGE_OUTPUT +"/)");
+	if (p.getArch()=="noarch") march="noarch";
+	pkg_name = p.getName()+"-"+p.getVersion()+"-"+march+"-"+p.getBuild()+".tgz";
 	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
-	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name);
+	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name, true);
 	return 0;
 }
 
@@ -1347,7 +1378,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 				}
 				cmd = "mv ";
 			        cmd += SYS_BACKUP+*restore[i].get_backup_file() + " ";
-				tmpName = restore[i].get_backup_file()->substr(strlen(SYS_BACKUP));
+				tmpName = restore[i].get_backup_file()->substr(SYS_BACKUP.length());
 				tmpName = tmpName.substr(tmpName.find("/"));
 			        cmd += SYS_ROOT + tmpName.substr(0,tmpName.find_last_of("/"))+"/";
 				if (!simulate) system(cmd);

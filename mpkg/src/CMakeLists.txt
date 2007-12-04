@@ -1,6 +1,6 @@
 #
 # MOPSLinux packaging system core
-# $Id: CMakeLists.txt,v 1.67 2007/11/28 02:24:25 i27249 Exp $
+# $Id: CMakeLists.txt,v 1.68 2007/12/04 18:48:34 i27249 Exp $
 #
 
 # Project name
@@ -33,7 +33,7 @@ ENDIF(APPLE)
 #TARGET_LINK_LIBRARIES(mpkg-http dl curl)
 
 # TARGET: building core library (libmpkg.so)
-ADD_LIBRARY(mpkg package dialog bus dbstruct faststl HttpDownload errorcodes DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
+ADD_LIBRARY(mpkg terminal package dialog bus dbstruct faststl HttpDownload errorcodes DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)
 
 # TARGET: building standalone executable (installpkg-ng-standalone)
 #ADD_EXECUTABLE(installpkg-ng-standalone package dialog bus dbstruct faststl HttpDownload errorcodes DownloadManager PackageConfig conditions config constants converter core dataunits debug dependencies file_routines libmpkg local_package mpkg mpkgsys repository sql_pool string_operations syscommands xmlParser)

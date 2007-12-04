@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.25 2007/11/28 02:24:25 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.26 2007/12/04 18:48:34 i27249 Exp $
  *
  * **********************************************************/
 
@@ -108,20 +108,22 @@ public:
 	string pArch;
 	string getBuild(void);
 	string pBuild;
+	
 	string getAuthorName(void);
+	string pAuthorName;
 	string getAuthorEmail(void);
+	string pAuthorEmail;
 	string getPackageFileName(void);
+	string pPackageFileName;
 	string getPackageType(void);
-
-	string getSuggestName(int suggest_num);
-	string getSuggestCondition(int suggest_num);
-	string getSuggestVersion(int suggest_num);
-
+	string pPackageType;
 
 	string getDescription(string lang="");
-	string getDescriptionI(int num=0);
+	string pDescription;
+	//string getDescriptionI(int num=0);
 	string getShortDescription(string lang="");
-	string getShortDescriptionI(int num=0);
+	string pShortDescription;
+	//string getShortDescriptionI(int num=0);
 
 //	string getDependencyName(int dep_num);
 //	string getDependencyCondition(int dep_num);
@@ -129,6 +131,7 @@ public:
 	//string getTag(int tag_num);
 
 	string getChangelog(void);
+	string pChangelog;
 
 	//string getFile(int file_num);
 	//string getConfigFile(int file_num);

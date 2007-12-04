@@ -42,5 +42,6 @@
 #define ACT_DISABLE_REPOSITORY 0x28
 #define ACT_EDIT_REPOSITORY 0x29
 #define ACT_BUILDUP 0x2a
+#define ACT_LISTUPGRADE 0x2b
 #endif
 

@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions (header)
- * $Id: mpkgsys.h,v 1.15 2007/11/20 00:41:51 i27249 Exp $
+ * $Id: mpkgsys.h,v 1.16 2007/12/04 18:48:34 i27249 Exp $
  * ******************************************************/
 
 
@@ -60,5 +60,5 @@ namespace mpkgSys {
 	int build_package();
 
 }
-void generateDeps(string tgz_filename);
+//void generateDeps(string tgz_filename);
 #endif //MPKGSYS_H_

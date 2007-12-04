@@ -1,3 +1,10 @@
 #!/bin/sh
-cmake .. ; make -j2 && cp *.so /usr/lib/ && mkdir -p /usr/include/mpkg && cp ../*.h /usr/include/mpkg/ && cp installpkg-ng /usr/bin/mpkg && ln -sf /usr/bin/mpkg /usr/bin/buildpkg
+cmake ..
+make -j2 || exit 1
+cp *.so /usr/lib/
+mkdir -p /usr/include/mpkg 
+cp ../*.h /usr/include/mpkg/ 
+cp installpkg-ng /usr/bin/mpkg 
+ln -sf /usr/bin/mpkg /usr/bin/buildpkg
+ln -sf /usr/bin/mpkg /usr/bin/buildsrcpkg
 

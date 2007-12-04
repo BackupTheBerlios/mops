@@ -1,6 +1,6 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.52 2007/11/23 01:01:46 i27249 Exp $
+ * $Id: config.cpp,v 1.53 2007/12/04 18:48:34 i27249 Exp $
  *
  * ***************************************************/
 
@@ -34,7 +34,7 @@ string legacyPkgDir = "/var/log/packages/";
 string SYS_ROOT;
 string SYS_CACHE;
 string SCRIPTS_DIR;
-//string SYS_BACKUP; // TODO
+string SYS_BACKUP; // TODO
 unsigned int DATABASE;
 string DB_FILENAME;
 vector<string> REPOSITORY_LIST;
@@ -61,6 +61,7 @@ void initDirectoryStructure()
 	system(cmd.c_str());
 	cmd = "mkdir -p " + SCRIPTS_DIR;
 	system(cmd.c_str());
+	//system("mkdir -p " + SYS_BACKUP);
 }
 
 int loadGlobalConfig(string config_file)
@@ -198,7 +199,12 @@ int loadGlobalConfig(string config_file)
 	SYS_ROOT=sys_root;
 	//sys_cache
 	SYS_CACHE=sys_cache;
-	SCRIPTS_DIR=scripts_dir;	
+	SCRIPTS_DIR=scripts_dir;
+	SYS_BACKUP = mConfig.getValue("sys_backup");
+	if (SYS_BACKUP.empty()) { 
+		SYS_BACKUP = "/var/mpkg/backup/";
+		mConfig.setValue("sys_backup", SYS_BACKUP);
+	}
 	if (db_url.find("sqlite://")==0)
 	{
 		sql_type="sqlite://";

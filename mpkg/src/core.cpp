@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.78 2007/11/22 15:32:56 i27249 Exp $
+ *	$Id: core.cpp,v 1.79 2007/12/04 18:48:34 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -262,13 +262,13 @@ int _cleanBackupCallback(const char *filename, const struct stat *file_status, i
 	unsigned short x=0, y=0;
 
 	if (file_status->st_ino!=0) x=y;
-	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP)!=0 && !simulate ) rmdir(filename);
+	if (filetype == FTW_D && strcmp(filename, SYS_BACKUP.c_str())!=0 && !simulate ) rmdir(filename);
 	return 0;
 }
 
 void mpkgDatabase::clean_backup_directory()
 {
-	ftw(SYS_BACKUP, _cleanBackupCallback, 20);
+	ftw(SYS_BACKUP.c_str(), _cleanBackupCallback, 20);
 }
 
 int mpkgDatabase::clean_package_filelist (PACKAGE *package)

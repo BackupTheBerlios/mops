@@ -1,6 +1,6 @@
 /*
     Dependency and suggestions conditions conversion
-    $Id: conditions.cpp,v 1.12 2007/08/13 06:27:11 i27249 Exp $
+    $Id: conditions.cpp,v 1.13 2007/12/04 18:48:34 i27249 Exp $
 */
 
 
@@ -15,6 +15,7 @@ int condition2int(string condition)
 	if (condition==COND_XMORE) return VER_XMORE;
 	if (condition==COND_XLESS) return VER_XLESS;
 	if (condition==COND_ANY) return VER_ANY;
+	if (condition==COND_ANY2) return VER_ANY;
 	mError("error input (unknown condition): " + condition);
 	return -1; // SUPER_PUPER_ERROR
 }
@@ -41,7 +42,7 @@ string hcondition2xml(string condition)
 	if (condition == HCOND_XMORE || condition == HCOND_XMORE2) return COND_XMORE;
 	if (condition == HCOND_XLESS || condition == HCOND_XLESS2) return COND_XLESS;
 	if (condition == HCOND_EQUAL || condition == HCOND_EQUAL2) return COND_EQUAL;
-	if (condition == HCOND_ANY) return COND_ANY;
+	if (condition == HCOND_ANY || condition == HCOND_ANY2) return COND_ANY;
 	mError("Unknown condition " + condition);
 	return COND_ANY;
 }

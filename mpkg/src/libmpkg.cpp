@@ -1,6 +1,6 @@
 /*********************************************************************
  * MOPSLinux packaging system: library interface
- * $Id: libmpkg.cpp,v 1.68 2007/11/23 01:01:46 i27249 Exp $
+ * $Id: libmpkg.cpp,v 1.69 2007/12/04 18:48:34 i27249 Exp $
  * ******************************************************************/
 
 #include "libmpkg.h"
@@ -703,8 +703,9 @@ void dumpPackage(PACKAGE *p, PackageConfig *pc, string filename)
 	node.writeToFile(filename.c_str());
 }
 
-void generateDeps(string tgz_filename)
+void generateDeps(string tgz_filename, bool updateOnly)
 {
+	if (mConfig.getValue("add_deps_in_build")=="yes") updateOnly=false;
 	if (tgz_filename.empty()) {
 		mError("No filename specified");
 		return;
@@ -754,7 +755,10 @@ void generateDeps(string tgz_filename)
 					added=true;
 				}
 			}
-			if (!added) pkg.get_dependencies()->push_back(d);
+			if (!added) {
+				if (updateOnly) mWarning("Found (possible) missing dependencies: " + d.getDepInfo());
+				else pkg.get_dependencies()->push_back(d);
+			}
 		}
 	}
 	say(_("Got %d dependencies\n"), pkg.get_dependencies()->size());

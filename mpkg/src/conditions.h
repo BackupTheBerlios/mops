@@ -1,6 +1,6 @@
 /*
     Comparsion conditions constants and conversion functions
-    $Id: conditions.h,v 1.8 2007/08/13 06:27:11 i27249 Exp $
+    $Id: conditions.h,v 1.9 2007/12/04 18:48:34 i27249 Exp $
 */
 
 #ifndef CONDITIONS_H_
@@ -21,6 +21,7 @@
 #define COND_XMORE 	"atleast"	// >=	5
 #define COND_XLESS 	"notmore"	// <=	6
 #define COND_ANY	"any"		// any	7
+#define COND_ANY2	"(any)"		// (any) 8 // Workaround for broken packages
 
 #define HCOND_MORE 	">"
 #define HCOND_LESS 	"<"
@@ -32,6 +33,7 @@
 #define HCOND_XLESS 	"<="
 #define HCOND_XLESS2	"=<"
 #define HCOND_ANY	"any"
+#define HCOND_ANY2	"(any)"
 
 
 #include <string>

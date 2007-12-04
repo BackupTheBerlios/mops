@@ -372,6 +372,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 		if (list[i].status != DL_STATUS_OK) list[i].status = DL_STATUS_WAIT;
 	}
 
+	string downloadUrl_string;
 	CURLcode result=CURLE_OK;
 	DownloadItem *item;
 	FILE* out;
@@ -489,26 +490,20 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
  	   						curl_easy_setopt(ch, CURLOPT_PROGRESSDATA, NULL);
     							curl_easy_setopt(ch, CURLOPT_PROGRESSFUNCTION, downloadCallback);
     							curl_easy_setopt(ch, CURLOPT_URL, item->url_list.at(j).c_str());
-	    						
+	    						downloadUrl_string = item->url_list.at(j);
 							if (dialogMode) {
 								d.execGauge("["+IntToStr(i+1)+"/"+IntToStr(list.size())+_("] Downloading file ") + \
-									item->url_list.at(j), 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
+									downloadUrl_string, 10,80, (unsigned int) round(i_dlnow/(i_dltotal/100)));
 							}
 							else if (item->url_list.at(j).find("packages.xml.gz")==std::string::npos && 
 									item->url_list.at(j).find("PACKAGES.TXT")==std::string::npos &&
 							       		item->url_list.at(j).find("Packages.gz")==std::string::npos) {
-							       	//say(_("[%d/%d] Downloading file %s"),j+1, list.size(), item->url_list.at(j).c_str());
-								currentDownloadingString= "["+IntToStr(i+1) + "/" + IntToStr(list.size())+_("] Downloading file ") + item->url_list.at(j);
+								
+								currentDownloadingString= "["+IntToStr(i+1) + "/" + IntToStr(list.size())+_("] Downloading file ") + downloadUrl_string;
 							}
-							printf("\nPerforming curl_easy_perform\n");
-							//sleep(1);
 							result = curl_easy_perform(ch);
-
-							//curl_easy_cleanup(ch);
-							printf("\nPerform complete\n");
-							//sleep(1);
 							if (!currentDownloadingString.empty()) { 
-								printf("\n");
+								say("\n");
 								currentDownloadingString.clear();
 							}
     							fclose(out);
@@ -521,11 +516,7 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 						{
 							ppActionBus->_abortComplete=true;
 #ifdef DL_CLEANUP
-							printf("\n\nDownload OK, cleaning up curl\n");
-							//sleep(1);
 							curl_easy_cleanup(ch);
-							printf("\nDownload OK, Curl cleanup complete\n");
-						//	sleep(1);
 #endif
 							if (item->usedSource!=NULL) *item->usedSource = item->url_list.at(j);
 
@@ -534,31 +525,26 @@ DownloadResults HttpDownload::getFile(DownloadsList &list, std::string *itemname
 						item->status = DL_STATUS_OK;
 						if (prData->size()>0)
 						{
-							prData->setItemCurrentAction(item->itemID, "Downloading finished");
+							prData->setItemCurrentAction(item->itemID, _("Downloading finished"));
 							prData->setItemState(item->itemID, ITEMSTATE_FINISHED);
 						}
     						break;
 					}
 					else 
 					{
-						printf("Download error: %s\n", curl_easy_strerror(result));
+						mError(_("Download error: ") + (string) curl_easy_strerror(result));
 						if (ppActionBus->_abortActions)
 						{
 							ppActionBus->_abortComplete=true;
 #ifdef DL_CLEANUP
-							printf("\n\nDownload FAILED, cleaning up curl\n");
-							sleep(1);
-							//curl_easy_cleanup(ch);
-							printf("\nDownload FAILED, Curl cleanup complete\n");
-							sleep(1);
-
+							curl_easy_cleanup(ch);
 
 #endif
 							return DOWNLOAD_ERROR;
 						}
 						if (prData->size()>0) prData->setItemState(item->itemID, ITEMSTATE_FAILED);
 
-						mError("Downloading " + item->name + " is Failed: error while downloading");
+						mError(_("Downloading ") + item->name + _(" is failed: error while downloading"));
     			    			is_have_error = true;
     						item->status = DL_STATUS_FAILED;
     					}

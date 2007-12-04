@@ -2,12 +2,13 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.86 2007/11/28 02:24:25 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.87 2007/12/04 18:48:34 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
 #include "dialog.h"
 #include "mpkgsys.h"
+#include "terminal.h"
 const char* program_name;
 extern char* optarg;
 extern int optind, opterr, optopt;
@@ -428,11 +429,11 @@ int main (int argc, char **argv)
 		return 0;
 	}*/
 
-	if (action == ACT_UPDATEALL)
+	if (action == ACT_UPDATEALL || action == ACT_LISTUPGRADE)
 	{
 		lockDatabase();
 		PACKAGE_LIST pkgList;
-		vector<string> updates;
+		PACKAGE_LIST updates;
 		SQLRecord sqlSearch;
 		core.get_packagelist(&sqlSearch, &pkgList);
 		bool thisIsUpdate, already;
@@ -463,23 +464,32 @@ int main (int argc, char **argv)
 				}
 				if (thisIsUpdate) {
 					already=false;
-					for (unsigned int k=0; k<updates.size(); k++)
+					for (int k=0; k<updates.size(); k++)
 					{
-						if (updates[k]==*pkgList.get_package(t)->get_name())
+						if (*updates.get_package(k)->get_name()==*pkgList.get_package(t)->get_name())
 						{
 							already = true;
 							break;
 						}
 					}
-					if (!already) updates.push_back(*pkgList.get_package(t)->get_name());
+					if (!already) updates.add(pkgList.get_package(t));
 				}
 			}
 		}
 		if (updates.size()!=0)
 		{
-			core.install(updates);
-			core.commit();
-			core.clean_queue();
+			if (action==ACT_UPDATEALL) {
+				core.install(&updates);
+				core.commit();
+				core.clean_queue();
+			}
+			if (action==ACT_LISTUPGRADE) {
+				say(_("Available updates:\n"));
+				for (int i=0; i<updates.size(); i++) {
+					say("%s %s\n", updates.get_package(i)->get_name()->c_str(), updates.get_package(i)->get_fullversion().c_str());
+				}
+
+			}
 			delete_tmp_files();
 			unlockDatabase();
 		}
@@ -637,7 +647,7 @@ int main (int argc, char **argv)
 	}
 	if (action == ACT_TEST)
 	{
-		printf("march=%s\n", mConfig.getValue("march").c_str());
+		printf("width=%d\n", getTerminalWidth());
 		return 0;
 #ifdef RELEASE
 		return print_usage(stderr,1);
@@ -1092,6 +1102,7 @@ int print_usage(FILE* stream, int exit_code)
 	fprintf(stream,_("\tinstallgroup              install all the packages from group\n"));
 	fprintf(stream,_("\tremovegroup               remove all the packages from group\n"));
 
+	fprintf(stream,_("\tlistupdates               list available updates\n"));
 	fprintf(stream,_("\tshow                      show info about package\n"));
 	fprintf(stream,_("\tupdate                    update packages info\n"));
 	fprintf(stream,_("\tlist                      show the list of all packages in database\n"));
@@ -1445,6 +1456,7 @@ int check_action(char* act)
 		&& _act != "delete_rep"
 		&& _act != "enable_rep"
 		&& _act != "disable_rep"
+		&& _act != "listupdates"
 		//&& _act != "edit_rep"
 		) {
 		res = -1;
@@ -1458,6 +1470,7 @@ int check_action(char* act)
 int setup_action(char* act)
 {
 	std::string _act(act);
+	if ( _act == "listupdates") return ACT_LISTUPGRADE;
 	if ( _act == "listgroups")
 		return ACT_LISTGROUPS;
 	if ( _act == "upgradeall")
