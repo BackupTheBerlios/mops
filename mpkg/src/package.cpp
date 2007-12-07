@@ -1,4 +1,4 @@
-// $Id: package.cpp,v 1.8 2007/11/21 14:39:26 i27249 Exp $
+// $Id: package.cpp,v 1.9 2007/12/07 03:34:20 i27249 Exp $
 
 #include "package.h"
 BinaryPackage::BinaryPackage()
@@ -15,14 +15,17 @@ BinaryPackage::BinaryPackage(string in_file)
 
 	usingDirectory=false;
 }
-
-BinaryPackage::~BinaryPackage()
+void BinaryPackage::clean()
 {
-	if (extracted) //printf("Warning! destroyed an package object without packing back. Probably you're lost your package...\n");
+	if (extracted)
 	{
 		printf("Cleaning up [%s]...\n", pkg_dir.c_str());
 		system("rm -rf " + pkg_dir);
 	}
+
+}
+BinaryPackage::~BinaryPackage()
+{
 }
 
 bool BinaryPackage::isExtracted()
@@ -413,13 +416,46 @@ string SourcePackage::readBuildScript()
 {
 	return ReadFile(pkg_dir+"/build_data/build.sh");
 }
-
+string SourcePackage::getSourceDirectory()
+{
+	if (!extracted) {
+		if (!unpackFile()) 
+		{
+			mError("Failed to unpack!\n");
+			return "";
+		}
+	}
+	vector<string> dir_list = getDirectoryList(pkg_dir);
+	vector<string> candidates;
+/*	if (dir_list.size()>4) {
+		mWarning(_("Cannot determine source directory: ambiguity"));
+		return "";
+	}*/
+	if (dir_list.size()==3) {
+		mWarning("Can't find any directory!\n");
+	}
+	for (unsigned int i=0; i<dir_list.size(); i++) {
+		if (dir_list[i]!="install" &&
+				dir_list[i]!="patches" &&
+				dir_list[i]!="build_data" &&
+				isDirectory(pkg_dir+"/"+dir_list[i])) candidates.push_back(dir_list[i]);
+	}
+	if (candidates.size()==1) return candidates[0];
+	else {
+		say(_("Cannot determine which directory to use. Seems that you have a package without a subfolder\nCandidates are: \n"));
+		for (unsigned int i=0; i<candidates.size(); i++) {
+			say("  %s\n", candidates[i].c_str());
+		}
+		return "";
+	}
+}
+	
 bool SourcePackage::unpackFile()
 {
 	if (usingDirectory) return true;
 	if (extracted) {
-		mError("Unable to extract package, because it is already extracted\n");
-		return false;
+		mWarning("Already extracted\n");
+		return true;
 	}
 	if (!fileOk()) {
 		mError("Unable to extract package: cannot find or read the archive");

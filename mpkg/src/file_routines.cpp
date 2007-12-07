@@ -1,6 +1,6 @@
 /*******************************************************
  * File operations
- * $Id: file_routines.cpp,v 1.50 2007/11/21 01:57:54 i27249 Exp $
+ * $Id: file_routines.cpp,v 1.51 2007/12/07 03:34:20 i27249 Exp $
  * ****************************************************/
 
 #include "file_routines.h"
@@ -59,8 +59,13 @@ bool lockDatabase()
 bool isDirectory(string dir_name)
 {
 	struct stat fStat;
-	stat(dir_name.c_str(), &fStat);
-	if (S_ISDIR(fStat.st_mode)) return true;
+	int ret = stat(dir_name.c_str(), &fStat);
+	if (ret!=0) { perror(dir_name.c_str());
+		return false;
+	}
+	if (S_ISDIR(fStat.st_mode)) {
+		return true;
+	}
 	else return false;
 }
 

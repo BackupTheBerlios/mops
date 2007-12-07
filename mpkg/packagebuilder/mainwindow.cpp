@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.54 2007/11/26 00:31:28 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.55 2007/12/07 03:34:20 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -28,6 +28,10 @@ Form::Form(QWidget *parent, string arg)
 
 	if (parent==0) ui.setupUi(this);
 	else ui.setupUi(parent);
+	ui.preremoveEnabledCheckBox->hide();
+	ui.postremoveEnabledCheckBox->hide();
+	ui.preinstallEnabledCheckBox->hide();
+	ui.postinstallEnabledCheckBox->hide();
 
 	templateDirPath = QDir::homePath()+"/.packagebuilder/configure_templates/";
 	debugLabel = new QLabel;
@@ -568,10 +572,10 @@ void Form::loadFile(QString filename)
 			ui.postremoveScriptEdit->setText(binaryPackage.readPostremoveScript().c_str());
 			break;
 		case DATATYPE_SOURCEPACKAGE:
-			ui.preinstallScriptEdit->setText(sourcePackage.readPostinstallScript().c_str());
-			ui.postinstallScriptEdit->setText(binaryPackage.readPostinstallScript().c_str());
-			ui.preremoveScriptEdit->setText(binaryPackage.readPreremoveScript().c_str());
-			ui.postremoveScriptEdit->setText(binaryPackage.readPostremoveScript().c_str());
+			ui.preinstallScriptEdit->setText(sourcePackage.readPreinstallScript().c_str());
+			ui.postinstallScriptEdit->setText(sourcePackage.readPostinstallScript().c_str());
+			ui.preremoveScriptEdit->setText(sourcePackage.readPreremoveScript().c_str());
+			ui.postremoveScriptEdit->setText(sourcePackage.readPostremoveScript().c_str());
 			break;
 		default:
 			mWarning("This data type doesn't support scripts");
@@ -1020,15 +1024,27 @@ bool Form::saveFile(bool saveAsMode)
 	}
 
 	node.writeToFile(xmlFilename.c_str());
+	// Saving installation scripts
 
 	setWindowTitle(currentWindowTitle+tr(" (saved)"));
 	modified=false;
 	switch(dataType)
 	{
 		case DATATYPE_BINARYPACKAGE:
+			binaryPackage.setPostinstallScript(ui.postinstallScriptEdit->toPlainText().toStdString());
+			binaryPackage.setPostremoveScript(ui.postremoveScriptEdit->toPlainText().toStdString());
+			binaryPackage.setPreinstallScript(ui.preinstallScriptEdit->toPlainText().toStdString());
+			binaryPackage.setPreremoveScript(ui.preremoveScriptEdit->toPlainText().toStdString());
+
 			binaryPackage.packFile(out_dir.toStdString());
 			break;
 		case DATATYPE_SOURCEPACKAGE:
+			sourcePackage.setPostinstallScript(ui.postinstallScriptEdit->toPlainText().toStdString());
+			sourcePackage.setPostremoveScript(ui.postremoveScriptEdit->toPlainText().toStdString());
+			sourcePackage.setPreinstallScript(ui.preinstallScriptEdit->toPlainText().toStdString());
+			sourcePackage.setPreremoveScript(ui.preremoveScriptEdit->toPlainText().toStdString());
+
+
 			if (ui.embedSourcesCheckBox->isChecked()) embedSources();
 			else sourcePackage.removeSource();
 			if (patchList.empty()) sourcePackage.removeAllPatches();

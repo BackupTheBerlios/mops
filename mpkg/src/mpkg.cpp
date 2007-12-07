@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.128 2007/12/04 18:48:34 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.129 2007/12/07 03:34:20 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -8,7 +8,7 @@
 #include <iostream>
 #include "dialog.h"
 #include "package.h"
-int emerge_package(string file_url, string *package_name, string march, string mtune, string olevel)
+int emerge_package(string file_url, string *package_name, string march, string mtune, string olevel, string *builddir_name_ret)
 {
 
 	string PACKAGE_OUTPUT = mConfig.getValue("package_output");
@@ -35,85 +35,10 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		return -3;
 	}
 
-
 	bool canCustomize = p.getBuildOptimizationCustomizable();
 	bool useCflags = p.getBuildUseCflags();
-	// Setting input filename
-	string filename, ext, tar_args;
-
-	string extractCommand;
-	string url=p.getBuildUrl();
-	say(_("Source url: [%s]\n"), url.c_str());
-	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
-		filename=getFilename(url);
-		ext = getExtension(url);
-	
-		if (ext=="bz2") tar_args="jxvf";
-		if (ext=="gz" || ext == "tgz") tar_args="zxvf";
-		if (ext!="bz2" && ext!="gz" && ext!="tgz" && ext!="zip" && ext!="rar") {
-			mError("Unknown file extension " + ext);
-			return 2;
-		}
-		if (ext=="zip") extractCommand = "unzip";
-		if (ext=="rar") extractCommand = "unrar e";
-		if (ext=="bz2" || ext=="gz" || ext=="tgz") extractCommand = "tar " + tar_args;
-	}
-	// Directories
-	string currentdir=get_current_dir_name();	
-	string pkgdir = "/tmp/package-"+p.getName();
-	string dldir=spkg.getExtractedPath();
-	// Setting source directory
-	bool noSubfolder = p.getBuildNoSubfolder();
-	string srcdir;
-	if (!noSubfolder)
-	{
-
-		srcdir=p.getBuildSourceRoot();
-		if (srcdir.empty()) {
-			if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
-			if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
-			if (ext=="tgz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tgz"));
-			if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
-			if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
-		}
-		else srcdir = dldir+"/"+srcdir;
-	}
-	else srcdir = dldir+"/extracted_source/";
-
-	// Setting output package name
-	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
-	string dl_command;
-	if (url.find("cvs")==0 || url.find("svn")==0 || url.find("git")==0) dl_command = url;
-	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
-	if (dl_command.empty()) {
-		if (url.find("/")==0) {
-			if (FileExists(url)) dl_command="cp -v " + url + " .";
-			else {
-				mError(_("Source file doesn't exist, aborting"));
-				return -5;
-			}
-		}
-		else {
-			if (FileExists(dldir+"/"+url)) dl_command="";
-			else {
-				mError(_("Source file doesn't exist"));
-				return -5;
-			}
-		}
-	}
-	vector<string> key_names = p.getBuildKeyNames();
-	vector<string> key_values = p.getBuildKeyValues();
-
 	string build_system = p.getBuildSystem();
-	int max_numjobs = atoi(p.getBuildMaxNumjobs().c_str());
-	string numjobs="6";
-	if (max_numjobs<6 && max_numjobs !=0) numjobs = IntToStr(max_numjobs); // Temp solution
-	if (!canCustomize) {
-		if (!march.empty() || !mtune.empty() || !olevel.empty()) mWarning(_("Custom tuning options is not allowed for this package"));
-	}
-	if (!canCustomize || march.empty()) march=p.getBuildOptimizationMarch();
-	if (!canCustomize || mtune.empty()) mtune=p.getBuildOptimizationMtune();
-	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
+
 	if (canCustomize || build_system == "script") {
 		// If we didn't receive an overrided architecture instructions, let's set defaults!
 		if (march.empty() || mConfig.getValue("override_buildflags")=="yes") {
@@ -139,11 +64,89 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			}
 		}
 	}
+
 	printf("Build flags:\nArchitecture: %s, tuned for: %s, optimization level: %s\n", march.c_str(), mtune.c_str(), olevel.c_str());
 	string gcc_options = p.getBuildOptimizationCustomGccOptions();
 	string configure_cmd = p.getBuildCmdConfigure();
 	string make_cmd = p.getBuildCmdMake();
 	string make_install_cmd = p.getBuildCmdMakeInstall();
+
+	// Setting input filename
+	
+	string filename, ext, tar_args;
+	string cflags;
+	if (!canCustomize) {
+		if (!march.empty() || !mtune.empty() || !olevel.empty()) mWarning(_("Custom tuning options is not allowed for this package"));
+	}
+	if (!canCustomize || march.empty()) march=p.getBuildOptimizationMarch();
+	if (!canCustomize || mtune.empty()) mtune=p.getBuildOptimizationMtune();
+	if (!canCustomize || olevel.empty()) olevel=p.getBuildOptimizationLevel();
+	if (useCflags)
+	{
+		cflags="'";
+		if (!march.empty()) cflags += " -march="+march;
+		if (!mtune.empty()) cflags += " -mtune=" +mtune;
+		if (!olevel.empty()) cflags +=" -" + olevel;
+		if (!gcc_options.empty()) cflags += " " + gcc_options;
+		cflags +="'";
+		if (cflags.length()<4) cflags.clear();
+		else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
+	}
+	cflags = p.getBuildConfigureEnvOptions() + " " + cflags;
+	printf("CFLAGS: %s\n", cflags.c_str());
+
+	string extractCommand;
+	string url=p.getBuildUrl();
+	say(_("Source url: [%s]\n"), url.c_str());
+	if (url.find("cvs ")!=0 && url.find("svn ")!=0 && url.find("git-clone ")!=0) {
+		filename=getFilename(url);
+		ext = getExtension(url);
+	
+		if (ext=="bz2") tar_args="jxvf";
+		if (ext=="gz" || ext == "tgz") tar_args="zxvf";
+		if (ext!="bz2" && ext!="gz" && ext!="tgz" && ext!="zip" && ext!="rar") {
+			mError("Unknown file extension " + ext);
+			return 2;
+		}
+		if (ext=="zip") extractCommand = "unzip";
+		if (ext=="rar") extractCommand = "unrar e";
+		if (ext=="bz2" || ext=="gz" || ext=="tgz") extractCommand = "tar " + tar_args;
+	}
+	// Directories
+	string currentdir=get_current_dir_name();	
+	string pkgdir = "/tmp/package-"+p.getName();
+	string dldir=spkg.getExtractedPath();
+	// Setting source directory
+	bool noSubfolder = p.getBuildNoSubfolder();
+
+	// Setting output package name
+	string pkg_name = p.getName()+"-"+p.getVersion()+"-"+p.getArch()+"-"+p.getBuild()+".tgz";
+	string dl_command;
+	if (url.find("cvs")==0 || url.find("svn")==0 || url.find("git")==0) dl_command = url;
+	if (url.find("http://")==0 || url.find("ftp://")==0) dl_command = "wget " + url;
+	if (dl_command.empty()) {
+		if (url.find("/")==0) {
+			if (FileExists(url)) dl_command="cp -v " + url + " .";
+			else {
+				mError(_("Source file doesn't exist, aborting"));
+				return -5;
+			}
+		}
+		else {
+			if (FileExists(dldir+"/"+url)) dl_command="";
+			else {
+				mError(_("Source file doesn't exist"));
+				return -5;
+			}
+		}
+	}
+	vector<string> key_names = p.getBuildKeyNames();
+	vector<string> key_values = p.getBuildKeyValues();
+
+	int max_numjobs = atoi(p.getBuildMaxNumjobs().c_str());
+	string numjobs="4";
+	if (max_numjobs<4 && max_numjobs !=0) numjobs = IntToStr(max_numjobs); // Temp solution
+
 
 	string configure_options;
 	for (unsigned int i=0; i<key_names.size(); i++)
@@ -153,69 +156,23 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			configure_options += "=" + key_values[i];
 		}
 	}
-
-	if (build_system=="autotools")
-	{
-		configure_cmd="./configure " + configure_options;
-		make_cmd = "make";
-		make_install_cmd="make install DESTDIR=$DESTDIR";
-	}
-	if (build_system=="cmake")
-	{
-		configure_cmd = "cmake .. " + configure_options;
-		make_cmd = "make";
-		make_install_cmd="make install DESTDIR=$DESTDIR";
-	}
-	if (build_system=="scons")
-	{
-		configure_cmd = "scons " + configure_options;
-		make_cmd = "make";
-		make_install_cmd = "make install DESTDIR=$DESTDIR";
-	}
-	if (build_system=="custom")
-	{
-		printf("Using custom commands");
-	}
-	if (build_system=="script")
-	{
-		printf("Using script");
-		configure_cmd.clear();
-		make_cmd = "VERSION=" + p.getVersion()+ " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
-		make_install_cmd.clear();
-	}
-	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
-	{
-		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+ pkgdir+ make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
-	}
-	while (make_install_cmd.find("$SRCDIR")!=std::string::npos)
-	{
-		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
-	}
-
-	//printf("make install: %s\n", make_install_cmd.c_str());
-
 	// Preparing environment. Clearing old directories
 	system("rm -rf " + pkgdir);	
 	system("mkdir " + pkgdir + "; cp -R " + dldir+"/install " + pkgdir+"/");
 	if (march != p.getArch() && p.getArch()!="noarch") {
 		// Writing new XML data (fixing arch)
 		string xml_path = pkgdir+"/install/data.xml";
-		XMLResults xmlErrCode;
-		XMLNode _node = XMLNode::parseFile(xml_path.c_str(), "package", &xmlErrCode);
-		if (xmlErrCode.error != eXMLErrorNone)
-		{
+		string xmldata = ReadFile(xml_path);
+		if (xmldata.find("<arch>")==std::string::npos || xmldata.find("</arch>")==std::string::npos) {
 			mError("parse error");
 			system("echo " + p.getName() + " >> /tmp/failed_list");
 			return -1;
 		}
-		mDebug("File opened");
-		if (_node.nChildNode("arch")==0)
-		{
-			mError("Invalid package");
-			return -1;
-		}
-		_node.getChildNode("arch").updateText(march.c_str());
-		_node.writeToFile(xml_path.c_str());
+		xmldata = xmldata.substr(0,xmldata.find("<arch>")+strlen("<arch>")) + march + xmldata.substr(xmldata.find("</arch>"));
+		WriteFile(xml_path, xmldata);
+		printf("%s\n", xmldata.c_str());
+		sleep(5);
+		xmldata.clear();
 	}
 
 	
@@ -260,23 +217,77 @@ int emerge_package(string file_url, string *package_name, string march, string m
 			return -7;
 		}
 	}
+
+	string srcdir;
+	if (!noSubfolder)
+	{
+
+		srcdir=p.getBuildSourceRoot(); // Trying to get source directory from config
+		if (srcdir.empty()) srcdir = spkg.getSourceDirectory(); // Trying to auto-detect directory by analyzing directory tree
+		if (srcdir.empty()) { // If all of above was failed, try to determine directory name by package name
+			if (ext=="bz2") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.bz2"));
+			if (ext=="gz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tar.gz"));
+			if (ext=="tgz") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".tgz"));
+			if (ext=="zip") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".zip"));
+			if (ext=="rar") srcdir=dldir+"/"+filename.substr(0,filename.length()-strlen(".rar"));
+		}
+		else srcdir = dldir+"/"+srcdir;
+	}
+	else srcdir = dldir+"/extracted_source/";
+
+	if (builddir_name_ret!=NULL) *builddir_name_ret = srcdir;
+
+	if (build_system=="autotools")
+	{
+		configure_cmd="./configure " + configure_options;
+		make_cmd = "make";
+		make_install_cmd="make install DESTDIR=$DESTDIR";
+	}
+	if (build_system=="cmake")
+	{
+		configure_cmd = "cmake .. " + configure_options;
+		make_cmd = "make";
+		make_install_cmd="make install DESTDIR=$DESTDIR";
+	}
+	if (build_system=="scons")
+	{
+		configure_cmd = "scons " + configure_options;
+		make_cmd = "make";
+		make_install_cmd = "make install DESTDIR=$DESTDIR";
+	}
+	if (build_system=="custom")
+	{
+		if (configure_cmd.find("$OPTIONS")!=std::string::npos) 
+			configure_cmd=configure_cmd.substr(0,configure_cmd.find("$OPTIONS"))+ " " +configure_options + " " + configure_cmd.substr(configure_cmd.find("$OPTIONS")+strlen("$OPTIONS"));
+		if (configure_cmd.find("$ENV")!=std::string::npos) 
+			configure_cmd=configure_cmd.substr(0,configure_cmd.find("$ENV"))+ " " +cflags + " " + configure_cmd.substr(configure_cmd.find("$ENV")+strlen("$ENV"));
+
+		printf("Using custom commands");
+	}
+	if (build_system=="script")
+	{
+		printf("Using script");
+		configure_cmd.clear();
+		make_cmd = "VERSION=" + p.getVersion()+ " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+		make_install_cmd.clear();
+	}
+	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
+	{
+		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+ pkgdir+ make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
+	}
+	while (make_install_cmd.find("$SRCDIR")!=std::string::npos)
+	{
+		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
+	}
+
+	//printf("make install: %s\n", make_install_cmd.c_str());
+
+
+	// Here was a download
 	// Fixing permissions (mozgmertv resistance)
-	
+	say(_("\nChecking and fixing permissions...\n"));
 	system("(cd " + srcdir+"; chown -R root:root .;	find . -perm 666 -exec chmod 644 {} \\;; find . -perm 664 -exec chmod 644 {} \\;; find . -perm 600 -exec chmod 644 {} \\;; find . -perm 444 -exec chmod 644 {} \\;; find . -perm 400 -exec chmod 644 {} \\;; find . -perm 440 -exec chmod 644 {} \\;; find . -perm 777 -exec chmod 755 {} \\;; find . -perm 775 -exec chmod 755 {} \\;; find . -perm 511 -exec chmod 755 {} \\;; find . -perm 711 -exec chmod 755 {} \\;; find . -perm 555 -exec chmod 755 {} \\;)");
 	
-	string cflags;
-	if (useCflags)
-	{
-		cflags="'";
-		if (!march.empty()) cflags += " -march="+march;
-		if (!mtune.empty()) cflags += " -mtune=" +mtune;
-		if (!olevel.empty()) cflags +=" -" + olevel;
-		if (!gcc_options.empty()) cflags += " " + gcc_options;
-		cflags +="'";
-		if (cflags.length()<4) cflags.clear();
-		else cflags = "CFLAGS=" + cflags + " CXXFLAGS=" + cflags;
-	}
-	cflags = p.getBuildConfigureEnvOptions() + " " + cflags;
 
 	vector<string> patchList = p.getBuildPatchList();
 
@@ -288,7 +299,8 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		compile_cmd = "(cd " + srcdir + "; ";
 		if (!configure_cmd.empty()) 
 		{
-			compile_cmd += cflags + " " + configure_cmd;
+			if (build_system!="custom") compile_cmd += cflags + " " + configure_cmd;
+			else compile_cmd += configure_cmd;
 			was_prev=true;
 		}
 	}
@@ -328,6 +340,8 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	pkg_name = p.getName()+"-"+p.getVersion()+"-"+march+"-"+p.getBuild()+".tgz";
 	*package_name=(string) PACKAGE_OUTPUT+"/"+pkg_name;
 	if (autogenDepsMode == ADMODE_MOZGMERTV) generateDeps(*package_name, true);
+	// If all OK, clean up
+	spkg.clean();
 	return 0;
 }
 

@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.79 2007/12/04 18:48:34 i27249 Exp $
+ *	$Id: core.cpp,v 1.80 2007/12/07 03:34:20 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -113,6 +113,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	sqlFields.addField("packages_package_id");
 	sqlFields.addField("file_name");
 	PACKAGE tmpP;
+	bool hasBackups=false;
 	if (package->get_files()->size()==0) return 0; // If a package has no files, it cannot conflict =)
 	for (unsigned int i=0;i<package->get_files()->size();i++)
 	{
@@ -126,6 +127,7 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 	int fPackages_package_id = sqlTable->getFieldIndex("packages_package_id");
 	int fFile_name = sqlTable->getFieldIndex("file_name");
 	// TODO: Next: to be refactored to detect already backed up files, and some speedups (get queries together)
+	// TODO 2: REWRITE ALL CODE ABOUT BACKUP! Sometimes it's action destroys the whole system. Will disable backups for now...
 	if (!sqlTable->empty())
 	{
 		for (int k=0;k<sqlTable->getRecordCount() ;k++) // Excluding from check packages who are already installed
@@ -137,12 +139,18 @@ int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 				{
 					get_package(package_id, &tmpP);
 					//say("File %s conflicts with package %s, backing up\n", sqlTable->getValue(k, "file_name")->c_str(), tmpP.get_name()->c_str());
+					printf("Warning: overlapped file %s\n", sqlTable->getValue(k, fFile_name)->c_str());
+					hasBackups=true;
 					backupFile(sqlTable->getValue(k, fFile_name), package_id, package->get_id());
 				}
 			}
 		}
 	}
 	delete sqlTable;
+	if (hasBackups) {
+		say("An overlapped files detected. Break the operation within 3 seconds if you not sure\n");
+		sleep(3);
+	}
 	return 0; // End of check_file_conflicts
 }
 

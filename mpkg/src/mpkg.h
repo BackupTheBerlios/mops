@@ -1,5 +1,5 @@
 /***********************************************************************************
- * 	$Id: mpkg.h,v 1.42 2007/11/22 15:32:57 i27249 Exp $
+ * 	$Id: mpkg.h,v 1.43 2007/12/07 03:34:20 i27249 Exp $
  * 	MOPSLinux Package System
  * ********************************************************************************/
 
@@ -105,7 +105,7 @@ class mpkgDatabase
 		~mpkgDatabase();
 };
 
-int emerge_package(string file_url, string *package_name, string march="", string mtune="", string olevel=""); // Assembly from source
+int emerge_package(string file_url, string *package_name, string march="", string mtune="", string olevel="", string *builddir_name_ret=NULL); // Assembly from source
 #include "local_package.h"
 #include "core.h"
 #include "dependencies.h"

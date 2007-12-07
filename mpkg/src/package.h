@@ -1,4 +1,4 @@
-// $Id: package.h,v 1.6 2007/11/21 14:39:26 i27249 Exp $
+// $Id: package.h,v 1.7 2007/12/07 03:34:20 i27249 Exp $
 
 #ifndef PACKAGE_H_
 #define PACKAGE_H_
@@ -35,6 +35,8 @@ class BinaryPackage
 		string pkg_dir; // Extracted package root (some tmp if new
 		bool unpackFile(); // Extract contents to a temp directory
 	       	bool packFile(string output_directory=""); // Pack a structure.
+
+		void clean();
 
 		string getExtractedPath();
 		
@@ -74,6 +76,7 @@ class SourcePackage: public BinaryPackage
 
 		vector<string> getEmbeddedPatchList();
 		vector<string> getSourceFilenames();
+		string getSourceDirectory();
 
 };
 

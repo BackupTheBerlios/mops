@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.87 2007/12/04 18:48:34 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.88 2007/12/07 03:34:20 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -362,16 +362,7 @@ int main (int argc, char **argv)
 					else removeList.push_back(fname[i]);
 				}
 			}
-			/*printf("Install list:\n");
-			for (unsigned int i=0; i<installList.size(); i++)
-			{
-				printf("INSTALL: %s\n", installList[i].c_str());
-			}
-			for (unsigned int i=0; i<removeList.size(); i++)
-			{
-				printf("REMOVE: %s\n", removeList[i].c_str());
-			}*/
-			
+				
 			core.uninstall(removeList);
 			core.install(installList_names, &installList_versions, &installList_builds);
 			core.commit();
@@ -501,7 +492,7 @@ int main (int argc, char **argv)
 	if (action == ACT_BUILD)
 	{
 		if (argc<=optind) return print_usage(stderr,1);
-		string s_pkg;
+		string s_pkg, build_dir_name;
 		string march, mtune, olevel;
 		for (int i=optind; i < argc; i++)
 		{
@@ -520,11 +511,9 @@ int main (int argc, char **argv)
 				continue;
 			}
 
-
-			
-			if (emerge_package(s_pkg, &s_pkg, march, mtune, olevel)!=0) {
-				mError("One of the packages failed to build, stopping");
-				delete_tmp_files();
+			if (emerge_package(s_pkg, &s_pkg, march, mtune, olevel, &build_dir_name)!=0) {
+				mError("Building of " + s_pkg + " was failed. Look into "+ build_dir_name + " for details");
+				//delete_tmp_files();
 				return 0;
 			}
 		}
