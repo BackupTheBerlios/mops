@@ -4,7 +4,7 @@
  *	XML parsing helper: reads XML, creates XML for
  *	packages and whole repository
  *
- *	$Id: PackageConfig.h,v 1.26 2007/12/04 18:48:34 i27249 Exp $
+ *	$Id: PackageConfig.h,v 1.27 2007/12/10 03:12:58 i27249 Exp $
  *
  * **********************************************************/
 
@@ -93,9 +93,10 @@ class PackageConfig
 public:
 	PackageConfig(string _f);
 	PackageConfig(xmlChar * membuf, int bufsize);
-
+	StringMap dataCache;
 	PackageConfig(xmlNodePtr __rootXmlNodePtr);
 	~PackageConfig();
+	string getValue(string data_xpath);
 	void buildDepDef(void);
 	void buildSugDef(void);
 	string getName(void);

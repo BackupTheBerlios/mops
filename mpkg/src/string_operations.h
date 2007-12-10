@@ -1,6 +1,6 @@
 /**********************************************************
  * Standard C String helpful functions - header file
- * $Id: string_operations.h,v 1.15 2007/10/24 22:00:12 i27249 Exp $
+ * $Id: string_operations.h,v 1.16 2007/12/10 03:12:59 i27249 Exp $
  * ********************************************************/
 #ifndef _STRING_OPERATIONS_H_
 #define _STRING_OPERATIONS_H_
@@ -21,7 +21,19 @@ string adjustStringWide(string input, unsigned int char_width, string prefix="")
 string getExtension(string filename);
 string getFilename(string fullpath);
 string getDirectory(string fullpath);
+class StringMap {
+	public:
+		StringMap();
+		~StringMap();
+		string getValue(string keyName);
+		int keyNum(string keyName);
+		void setValue(string keyName, string keyValue);
+		bool getValue(string keyName, string *keyValue); // More complex function, returns false if key not found
 
+	private:
+		vector<string> value;
+		vector<string> key;
+};
 class mstring
 {
 	public:

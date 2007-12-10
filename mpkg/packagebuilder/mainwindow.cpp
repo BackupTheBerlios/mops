@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.55 2007/12/07 03:34:20 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.56 2007/12/10 03:12:58 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -1430,9 +1430,14 @@ void Form::displayPatches()
 }
 void Form::browsePatch()
 {
-	QString patchName = QFileDialog::getOpenFileName(this, tr("Open a package (.tgz or .spkg)"), "");
-	if (patchName.isEmpty()) return;
-	ui.patchEdit->setText(patchName);
+	QStringList files;
+	QFileDialog *dialog = new QFileDialog;
+	dialog->setFileMode(QFileDialog::ExistingFiles);
+	if (dialog->exec()) files = dialog->selectedFiles();
+	for (int i=0; i<files.size(); i++) {
+		ui.patchEdit->setText(files[i]);
+		addPatch();
+	}
 }
 
 void Form::addPatch()

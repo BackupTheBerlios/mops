@@ -13,7 +13,7 @@
    <string>MOPSLinux package builder</string>
   </property>
   <property name="windowIcon" >
-   <iconset>../../../usr/share/mpkg/packagebuilder/icons/package.png</iconset>
+   <iconset>/usr/share/mpkg/packagebuilder/icons/package.png</iconset>
   </property>
   <layout class="QVBoxLayout" >
    <item>
@@ -26,7 +26,7 @@
        <string>Package description and metadata</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/mpkg/packagebuilder/icons/smart.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/smart.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -61,8 +61,11 @@
               </item>
               <item row="0" column="5" >
                <widget class="QComboBox" name="ArchComboBox" >
+                <property name="editable" >
+                 <bool>true</bool>
+                </property>
                 <property name="currentIndex" >
-                 <number>1</number>
+                 <number>3</number>
                 </property>
                 <item>
                  <property name="text" >
@@ -82,6 +85,11 @@
                 <item>
                  <property name="text" >
                   <string>i686</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text" >
+                  <string>prescott</string>
                  </property>
                 </item>
                 <item>
@@ -615,7 +623,7 @@
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="" >
+         <widget class="QWidget" name="layoutWidget" >
           <layout class="QVBoxLayout" >
            <item>
             <layout class="QHBoxLayout" >
@@ -958,7 +966,7 @@
        <string>File manager</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/filenew.png</iconset>
+       <iconset>/usr/share/icons/crystalsvg/32x32/actions/filenew.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -992,7 +1000,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
                </property>
               </widget>
              </item>
@@ -1005,7 +1013,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/up.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/up.png</iconset>
                </property>
               </widget>
              </item>
@@ -1018,7 +1026,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
                </property>
                <property name="shortcut" >
                 <string>Ctrl+R</string>
@@ -1079,7 +1087,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/gohome.png</iconset>
                </property>
               </widget>
              </item>
@@ -1092,7 +1100,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/up.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/up.png</iconset>
                </property>
               </widget>
              </item>
@@ -1105,7 +1113,7 @@
                 <string>...</string>
                </property>
                <property name="icon" >
-                <iconset>../../../usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
+                <iconset>/usr/share/mpkg/packagebuilder/icons/reload.png</iconset>
                </property>
                <property name="shortcut" >
                 <string>Ctrl+R</string>
@@ -1285,7 +1293,7 @@
        <string>Building options</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/mpkg/packagebuilder/icons/system-config-services.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/system-config-services.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -1340,7 +1348,7 @@
                    <string>Download and analyze</string>
                   </property>
                   <property name="icon" >
-                   <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+                   <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
                   </property>
                  </widget>
                 </item>
@@ -1899,7 +1907,7 @@ p, li { white-space: pre-wrap; }
                      <string>Load from file...</string>
                     </property>
                     <property name="icon" >
-                     <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+                     <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -1909,7 +1917,7 @@ p, li { white-space: pre-wrap; }
                      <string>Edit with gvim</string>
                     </property>
                     <property name="icon" >
-                     <iconset>../../../usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
+                     <iconset>/usr/share/icons/crystalsvg/32x32/apps/gvim.png</iconset>
                     </property>
                    </widget>
                   </item>
@@ -2024,7 +2032,7 @@ p, li { white-space: pre-wrap; }
        <string>Installation scripts</string>
       </attribute>
       <attribute name="icon" >
-       <iconset>../../../usr/share/mpkg/packagebuilder/icons/advancedsettings.png</iconset>
+       <iconset>/usr/share/mpkg/packagebuilder/icons/advancedsettings.png</iconset>
       </attribute>
       <layout class="QVBoxLayout" >
        <item>
@@ -2225,7 +2233,7 @@ p, li { white-space: pre-wrap; }
         <string>About...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/svn_status.png</iconset>
        </property>
        <property name="shortcut" >
         <string>F1</string>
@@ -2238,7 +2246,7 @@ p, li { white-space: pre-wrap; }
         <string>Open...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileopen.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+O</string>
@@ -2251,7 +2259,7 @@ p, li { white-space: pre-wrap; }
         <string>Open directory...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/fileimport.png</iconset>
        </property>
        <property name="flat" >
         <bool>false</bool>
@@ -2271,7 +2279,7 @@ p, li { white-space: pre-wrap; }
         <string>Import meta...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/mpkg/packagebuilder/icons/advancedsettings.png</iconset>
+        <iconset>/usr/share/mpkg/packagebuilder/icons/advancedsettings.png</iconset>
        </property>
       </widget>
      </item>
@@ -2294,7 +2302,7 @@ p, li { white-space: pre-wrap; }
         <string>Save as...</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -2304,7 +2312,7 @@ p, li { white-space: pre-wrap; }
         <string>Save package</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+S</string>
@@ -2317,7 +2325,7 @@ p, li { white-space: pre-wrap; }
         <string>Save and quit</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/save_all.png</iconset>
        </property>
       </widget>
      </item>
@@ -2327,7 +2335,7 @@ p, li { white-space: pre-wrap; }
         <string>Quit</string>
        </property>
        <property name="icon" >
-        <iconset>../../../usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
+        <iconset>/usr/share/icons/crystalsvg/32x32/actions/exit.png</iconset>
        </property>
        <property name="shortcut" >
         <string>Ctrl+Q</string>

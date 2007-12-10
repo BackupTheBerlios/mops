@@ -1,6 +1,6 @@
 /*
 * XML parser of package config
-* $Id: PackageConfig.cpp,v 1.42 2007/11/28 02:24:25 i27249 Exp $
+* $Id: PackageConfig.cpp,v 1.43 2007/12/10 03:12:58 i27249 Exp $
 */
 #include "file_routines.h"
 #include "PackageConfig.h"
@@ -243,6 +243,26 @@ xmlXPathObjectPtr PackageConfig::getNodeSet(const xmlChar * exp)
 		xmlXPathFreeContext(context);
 		mDebug("Returning result");
 		return result;
+	}
+}
+string PackageConfig::getValue(string data_xpath) // Returns data from data_xpath
+{
+	string ret;
+	if (dataCache.getValue(data_xpath, &ret)) return ret;
+    	xmlNodeSetPtr nodeset;
+    	xmlXPathObjectPtr res;
+    	res = getNodeSet((const xmlChar *) data_xpath.c_str());
+    	if (res) {
+		nodeset = res->nodesetval;
+		xmlChar * key = xmlNodeListGetString(doc, nodeset->nodeTab[0]->xmlChildrenNode,1);
+		const char * _result = (const char * )key;
+		std::string __r = (_result != NULL) ? ((std::string)_result) : EMPTY;
+		mDebug("NAME = '" + strim(__r) + "'");
+		ret = strim(__r);
+		dataCache.setValue(data_xpath, ret);
+		return ret;
+	} else {
+		return EMPTY;
 	}
 }
 

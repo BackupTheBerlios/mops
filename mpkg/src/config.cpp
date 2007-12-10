@@ -1,12 +1,13 @@
 /******************************************************
  * MOPSLinux packaging system - global configuration
- * $Id: config.cpp,v 1.53 2007/12/04 18:48:34 i27249 Exp $
+ * $Id: config.cpp,v 1.54 2007/12/10 03:12:58 i27249 Exp $
  *
  * ***************************************************/
 
 #include "config.h"
 #include "xmlParser.h"
 #include "file_routines.h"
+bool verbose=false;
 bool useBuildCache=true;
 bool enableDownloadResume=true;
 int autogenDepsMode=ADMODE_MOZGMERTV;

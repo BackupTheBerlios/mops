@@ -2,7 +2,7 @@
  *
  * 			Central core for MOPSLinux package system
  *			TODO: Should be reorganized to objects
- *	$Id: core.cpp,v 1.80 2007/12/07 03:34:20 i27249 Exp $
+ *	$Id: core.cpp,v 1.81 2007/12/10 03:12:58 i27249 Exp $
  *
  ********************************************************************************/
 
@@ -102,6 +102,7 @@ PACKAGE* mpkgDatabase::get_max_version(PACKAGE_LIST *pkgList, DEPENDENCY *dep)
 
 int mpkgDatabase::check_file_conflicts(PACKAGE *package)
 {
+	if (verbose) say(_("Checking file conflicts for package %s\n"), package->get_name()->c_str());
 	mDebug("start");
 	int package_id;
 	int prev_package_id=package->get_id();
@@ -239,6 +240,7 @@ int mpkgDatabase::backupFile(string *filename, int overwritten_package_id, int c
 		
 		string mv = "mv ";
 	        mv += SYS_ROOT + *filename + " " + bkpDir2 + "/";
+		if (verbose) say("%s\n", mv.c_str());
 		if (!simulate)
 		{
 			if (system(mkd.c_str())!=0 ||  system(mv.c_str())!=0)

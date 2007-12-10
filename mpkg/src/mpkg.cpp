@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.129 2007/12/07 03:34:20 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.130 2007/12/10 03:12:58 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -170,8 +170,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		}
 		xmldata = xmldata.substr(0,xmldata.find("<arch>")+strlen("<arch>")) + march + xmldata.substr(xmldata.find("</arch>"));
 		WriteFile(xml_path, xmldata);
-		printf("%s\n", xmldata.c_str());
-		sleep(5);
+		//printf("%s\n", xmldata.c_str());
 		xmldata.clear();
 	}
 
@@ -264,11 +263,11 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 		printf("Using custom commands");
 	}
-	if (build_system=="script")
+	if (FileExists(dldir+"/build_data/build.sh"))
 	{
-		printf("Using script");
+		printf("Running script\n");
 		configure_cmd.clear();
-		make_cmd = "VERSION=" + p.getVersion()+ " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+		make_cmd = "VERSION=" + p.getVersion()+ "DATADIR=" + dldir+"/build_data/" + " PKG="+pkgdir + " SRC=" + srcdir + " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
 		make_install_cmd.clear();
 	}
 	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
@@ -280,10 +279,6 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
 	}
 
-	//printf("make install: %s\n", make_install_cmd.c_str());
-
-
-	// Here was a download
 	// Fixing permissions (mozgmertv resistance)
 	say(_("\nChecking and fixing permissions...\n"));
 	system("(cd " + srcdir+"; chown -R root:root .;	find . -perm 666 -exec chmod 644 {} \\;; find . -perm 664 -exec chmod 644 {} \\;; find . -perm 600 -exec chmod 644 {} \\;; find . -perm 444 -exec chmod 644 {} \\;; find . -perm 400 -exec chmod 644 {} \\;; find . -perm 440 -exec chmod 644 {} \\;; find . -perm 777 -exec chmod 755 {} \\;; find . -perm 775 -exec chmod 755 {} \\;; find . -perm 511 -exec chmod 755 {} \\;; find . -perm 711 -exec chmod 755 {} \\;; find . -perm 555 -exec chmod 755 {} \\;)");
@@ -465,7 +460,15 @@ int mpkgDatabase::commit_actions()
 	{
 		remove_list.get_package(i)->itemID = pData.addItem(*remove_list.get_package(i)->get_name(), 10);
 		rem_size+=strtod(remove_list.get_package(i)->get_installed_size()->c_str(), NULL);
+		// Also, checking for update
+		for (int t=0; t<install_list.size(); t++) {
+			if (*install_list.get_package(t)->get_name() == *remove_list.get_package(t)->get_name()) {
+				remove_list.get_package(t)->set_action(ST_UPDATE);
+				remove_list.get_package(t)->updatingBy=install_list.get_package(t);
+			}
+		}
 	}
+	// From now on, all packages in remove group who will be updated, has action ST_UPDATE
 	for (int i=0; i<install_list.size(); i++)
 	{
 		install_list.get_package(i)->itemID = pData.addItem(*install_list.get_package(i)->get_name(), atoi(install_list.get_package(i)->get_compressed_size()->c_str()));
@@ -492,13 +495,13 @@ int mpkgDatabase::commit_actions()
 	// Let's show the summary for console and dialog users and ask for confirmation
 	if (consoleMode && !dialogMode)
 	{
-		unsigned int installCount = 0, removeCount = 0, purgeCount = 0, repairCount = 0;
+		unsigned int installCount = 0, removeCount = 0, purgeCount = 0, repairCount = 0, updateCount = 0;
 		say("Action summary:\n");
 
 		// Install
 		for (int i=0; i<install_list.size(); i++) {
 			if (install_list.get_package(i)->action()==ST_INSTALL) {
-				if (installCount==0) say("Will be installed:\n");
+				if (installCount==0) say(_("Will be installed:\n"));
 				installCount++;
 				say("  [%d] %s %s\n", installCount, \
 						install_list.get_package(i)->get_name()->c_str(), \
@@ -508,7 +511,7 @@ int mpkgDatabase::commit_actions()
 		// Remove
 		for (int i=0; i<remove_list.size(); i++) {
 			if (remove_list.get_package(i)->action()==ST_REMOVE) {
-				if (removeCount==0) say("Will be removed:\n");
+				if (removeCount==0) say(_("Will be removed:\n"));
 				removeCount++;
 				say("  [%d] %s %s\n", removeCount, \
 						remove_list.get_package(i)->get_name()->c_str(), \
@@ -518,28 +521,27 @@ int mpkgDatabase::commit_actions()
 		// Purge
 		for (int i=0; i<remove_list.size(); i++) {
 			if (remove_list.get_package(i)->action()==ST_PURGE) {
-				if (purgeCount==0) say("Will be purged:\n");
+				if (purgeCount==0) say(_("Will be purged:\n"));
 				purgeCount++;
 				say("  [%d] %s %s\n", purgeCount, \
 						remove_list.get_package(i)->get_name()->c_str(), \
 						remove_list.get_package(i)->get_fullversion().c_str());
 			}
 		}
-		/*     Disabled because no package has status ST_UPDATE at this moment. Will extract data from install & remove lists later. Maybe :)
 		// Update
-		for (int i=0; i<install_list.size(); i++) {
-			if (install_list.get_package(i)->action()==ST_UPDATE) {
-				if (updateCount==0) say("Will be updated:\n");
+		for (int i=0; i<remove_list.size(); i++) {
+			if (remove_list.get_package(i)->action()==ST_UPDATE) {
+				if (updateCount==0) say(_("Will be updated:\n"));
 				updateCount++;
 				say("  [%d] %s %s\n", updateCount, \
-						install_list.get_package(i)->get_name()->c_str(), \
-						install_list.get_package(i)->get_fullversion().c_str());
+						remove_list.get_package(i)->get_name()->c_str(), \
+						remove_list.get_package(i)->get_fullversion().c_str());
 			}
-		} */
+		}
 		// Repair
 		for (int i=0; i<install_list.size(); i++) {
 			if (install_list.get_package(i)->action()==ST_REPAIR) {
-				if (repairCount==0) say("Will be repaired:\n");
+				if (repairCount==0) say(_("Will be repaired:\n"));
 				repairCount++;
 				say("  [%d] %s %s\n", repairCount, \
 						install_list.get_package(i)->get_name()->c_str(), \
@@ -817,12 +819,15 @@ installProcess:
 			pData.setItemProgress(removeItemID, 0);
 			pData.setItemProgressMaximum(removeItemID,8);
 		}
-	
+		string _actionName;
 		for (int i=0;i<remove_list.size();i++)
 		{
+			if (remove_list.get_package(i)->action()==ST_UPDATE) _actionName = _("Updating package");
+			else _actionName = _("Removing package");
+			
 			if (dialogMode)
 			{
-				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + _("] Removing package ") + \
+				dialogItem.execGauge("[" + IntToStr(i+1) + "/" + IntToStr(remove_list.size()) + "] " + _actionName + " " + \
 						*remove_list.get_package(i)->get_name() + "-" + \
 						remove_list.get_package(i)->get_fullversion(), 10,80, \
 						(unsigned int) round((double)(i)/(double)((double)(remove_list.size())/(double) (100))));
@@ -837,16 +842,8 @@ installProcess:
 				return MPKGERROR_ABORTED;
 			}
 			pData.setItemState(remove_list.get_package(i)->itemID, ITEMSTATE_INPROGRESS);
-			for (int t=0; t<install_list.size(); t++)
-			{
-				if (*install_list.get_package(t)->get_name() == *remove_list.get_package(i)->get_name())
-				{
-					say(_("Updating package %s\n"), remove_list.get_package(i)->get_name()->c_str()); 
-					remove_list.get_package(i)->isUpdating=true;
-					break;
-				}
-			}
-			currentStatus = _("Removing package ") + *remove_list.get_package(i)->get_name();
+
+			currentStatus = _actionName+" " + *remove_list.get_package(i)->get_name();
 			if (remove_package(remove_list.get_package(i))!=0)
 			{
 				removeFailures++;
@@ -1071,7 +1068,7 @@ int mpkgDatabase::install_package(PACKAGE* package)
 		actionBus.setActionState(ACTIONID_INSTALL, ITEMSTATE_ABORTED);
 		return MPKGERROR_ABORTED;
 	}
-	lp.fill_filelist(package);
+	if (package->get_files()->empty()) lp.fill_filelist(package);
 	currentStatus = statusHeader + _("detecting configuration files");
 	pData.increaseItemProgress(package->itemID);
 	if (actionBus._abortActions)
@@ -1267,15 +1264,25 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 	pData.setItemCurrentAction(package->itemID, "removing");
 	if (!dialogMode)
 	{
-		if (package->isUpdating) say(_("Updating package %s %s...\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
+		if (package->action()==ST_UPDATE) say(_("Updating package %s %s by %s...\n"),package->get_name()->c_str(), 
+				package->get_fullversion().c_str(),
+				package->updatingBy->get_fullversion().c_str());
 		else say(_("Removing package %s %s...\n"),package->get_name()->c_str(), package->get_fullversion().c_str());
 	}
 
 	string statusHeader = "["+IntToStr((int)actionBus.progress())+"/"+IntToStr((int)actionBus.progressMaximum()) + "] " + _("Removing package ") + *package->get_name()+": ";
 	currentStatus = statusHeader + _("initialization");
 	
-	if (package->action()==ST_REMOVE || package->action()==ST_PURGE)
+	if (package->action()==ST_REMOVE || package->action()==ST_PURGE || package->action()==ST_UPDATE)
 	{
+		// Checking if package is updating, if so, get the files of new package already
+		if (package->action()==ST_UPDATE) {
+			LocalPackage *lp = new LocalPackage(SYS_CACHE + *package->updatingBy->get_filename());
+			lp->fill_filelist(package->updatingBy);
+			delete lp;
+		}
+
+
 		// Running pre-remove scripts
 		//printf("Processing\n");
 		mDebug("REMOVE PACKAGE::Preparing scripts");
@@ -1307,9 +1314,12 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 		// Purge is now implemented here; checking all
 		currentStatus = statusHeader + _("building file list");
-		vector<FILES> *remove_files=package->get_files();
+		vector<FILES> *remove_files = package->get_files(); // Note: no need to delete remove_files, because it will be deleted together with package object
+		vector<FILES> *new_files = package->updatingBy->get_files();
+
 		currentStatus = statusHeader + _("removing files...");
 		bool removeThis;
+		int unlink_ret;
 		for (unsigned int i=0; i<remove_files->size(); i++)
 		{
 			fname=sys_root + *remove_files->at(i).get_name();
@@ -1321,16 +1331,38 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 					break;
 				}
 			}
+		
 
-
+			// Checking for: 
+			// - if file is a configuration file
+			// - if file will be overwritten by new package
+			//
 			removeThis = false;
-			if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
+			if (package->action()!=ST_UPDATE) {
+					if (package->action()==ST_PURGE || remove_files->at(i).get_type()==FTYPE_PLAIN) removeThis = true;
+			}
+			else {
+				if (remove_files->at(i).get_type()==FTYPE_PLAIN) { // Don't touch config files at all
+					removeThis=true;
+					for (unsigned int t=0; t<new_files->size(); t++) {
+						if (*new_files->at(t).get_name()==*remove_files->at(i).get_name()) {
+							removeThis=false;
+							break;
+						}
+					}
+				}
+			}
+			// Actually removing files
 			if (removeThis && fname[fname.length()-1]!='/')
 			{
 				pData.increaseItemProgress(package->itemID);
 				if (!simulate) {
-					unlink(fname.c_str());
-					//printf("[%d] Unlinking file %s\n", i, fname.c_str());
+					if (verbose) say("[%d] %s %s: ", i, _("Removing file"), fname.c_str());
+					unlink_ret = unlink(fname.c_str());
+					if (verbose) {
+						if (unlink_ret==0) say("OK\n");
+						else say(_("FAILED\n"));
+					}
 				}
 			}
 		}
@@ -1342,7 +1374,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 		string edir;
 		
 		pData.increaseItemProgress(package->itemID);
-			
+		
 		for (unsigned int i=0; i<remove_files->size(); i++)
 		{
 			fname=sys_root + *remove_files->at(i).get_name();
@@ -1358,7 +1390,13 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 
 			for (int x=empty_dirs.size()-1;x>=0; x--)
 			{
-				if (!simulate) rmdir(empty_dirs[x].c_str());
+				if (!simulate) {
+					unlink_ret = rmdir(empty_dirs[x].c_str());
+					if (verbose) {
+						if (unlink_ret == 0) say("[%d] %s %s", i, _("Removing empty directory"), fname.c_str());
+					}
+
+				}
 			}
 			edir.clear();
 			empty_dirs.clear();
@@ -1375,7 +1413,7 @@ int mpkgDatabase::remove_package(PACKAGE* package)
 			}
 		}
 	
-		// Restoring backups
+		// Restoring backups. NOTE: if there is an updating package, manage backups anyway. TODO: minimize file operation by processing more data
 		vector<FILES>restore;
 		get_conflict_records(package->get_id(), &restore);
 		if (!restore.empty())

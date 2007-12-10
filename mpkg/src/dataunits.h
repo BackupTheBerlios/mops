@@ -2,7 +2,7 @@
 	MOPSLinux packaging system
 	Basic data types descriptions
 	Second edition: RISC architecture =)
-	$Id: dataunits.h,v 1.53 2007/11/22 15:32:56 i27249 Exp $
+	$Id: dataunits.h,v 1.54 2007/12/10 03:12:58 i27249 Exp $
 */
 
 
@@ -220,7 +220,7 @@ class PACKAGE
 	int get_type();
 	void set_type(int type);
 	bool isRemoveBlacklisted();
-	bool isUpdating;
+	PACKAGE * updatingBy;
 	versionData requiredVersion;
 	int priority;
 	int itemID;	// For status purposes only, means the number in PackageData vector

@@ -1,7 +1,7 @@
 /*
 	MOPSLinux packaging system
 	Data types descriptions
-	$Id: dataunits.cpp,v 1.81 2007/11/23 01:01:46 i27249 Exp $
+	$Id: dataunits.cpp,v 1.82 2007/12/10 03:12:58 i27249 Exp $
 */
 
 
@@ -978,7 +978,7 @@ bool PACKAGE::isRemoveBlacklisted()
 
 PACKAGE::PACKAGE()
 {
-	isUpdating=false;
+	updatingBy=NULL;
 	isBroken = false;
 	isRequirement = false;
 	package_id=-1;

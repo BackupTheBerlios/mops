@@ -2,7 +2,7 @@
  *	MOPSLinux packaging system    
  *	CLI interface
  *	
- *	$Id: installpkg-ng2.cpp,v 1.88 2007/12/07 03:34:20 i27249 Exp $
+ *	$Id: installpkg-ng2.cpp,v 1.89 2007/12/10 03:12:58 i27249 Exp $
  */
 #include "libmpkg.h"
 #include "converter.h"
@@ -48,7 +48,6 @@ void cleanDebugFile()
 
 }
 
-int verbose = 0;
 int main (int argc, char **argv)
 {
 	cleanDebugFile();
@@ -151,7 +150,7 @@ int main (int argc, char **argv)
 					return 0;
 
 			case 'v':
-					verbose = 1;
+					verbose = true;
 					break;
 
 			case 'p':

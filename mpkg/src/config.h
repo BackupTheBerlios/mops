@@ -1,5 +1,5 @@
 /* Temporary config - until a full-functional config will be implemented
-    $Id: config.h,v 1.55 2007/12/04 18:48:34 i27249 Exp $
+    $Id: config.h,v 1.56 2007/12/10 03:12:58 i27249 Exp $
 */
 
 
@@ -33,6 +33,7 @@ enum adModes {
 	ADMODE_ADD
 };
 // Global configuration and message bus
+extern bool verbose;
 extern bool useBuildCache;
 extern int autogenDepsMode;
 extern bool enableDownloadResume;

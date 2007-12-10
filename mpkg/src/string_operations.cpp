@@ -1,6 +1,6 @@
 /***********************************************************
  * Standard C String helpful functions
- * $Id: string_operations.cpp,v 1.18 2007/11/22 15:32:57 i27249 Exp $
+ * $Id: string_operations.cpp,v 1.19 2007/12/10 03:12:59 i27249 Exp $
  * ********************************************************/
 
 #include "string_operations.h"
@@ -8,6 +8,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "debug.h"
+StringMap::StringMap() {}
+StringMap::~StringMap() {}
+string StringMap::getValue(string keyName) {
+	for (unsigned int i=0; i<key.size(); i++) {
+		if (key[i]==keyName) return value[i];
+	}
+	return "";
+}
+
+int StringMap::keyNum(string keyName) {
+	for (unsigned int i=0; i<keyName.size(); i++) {
+		if (key[i]==keyName) return i;
+	}
+	return -1;
+}
+bool StringMap::getValue(string keyName, string *keyValue) {
+	for (unsigned int i=0; i<key.size(); i++) {
+		if (key[i]==keyName) {
+			*keyValue = value[i];
+			return true;
+		}
+	}
+	keyValue->clear();
+	return false;
+}
+
+void StringMap::setValue(string keyName, string keyValue) {
+	for (unsigned int i=0; i<key.size(); i++) {
+		if (key[i]==keyName) {
+			value[i]=keyValue;
+			return;
+		}
+	}
+	key.push_back(keyName);
+	value.push_back(keyValue);
+	return;
+}
+
 void PrepareSql(string *str)
 {
 	if (str->empty())
