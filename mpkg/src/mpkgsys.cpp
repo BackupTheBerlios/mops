@@ -1,6 +1,6 @@
 /*********************************************************
  * MOPSLinux packaging system: general functions
- * $Id: mpkgsys.cpp,v 1.61 2007/11/23 01:01:46 i27249 Exp $
+ * $Id: mpkgsys.cpp,v 1.62 2007/12/11 11:52:59 i27249 Exp $
  * ******************************************************/
 
 #include "mpkgsys.h"
@@ -431,7 +431,7 @@ int mpkgSys::_conv_dir(const char *filename, const struct stat *file_status, int
 
 int mpkgSys::convert_directory(string out_dir)
 {
-	output_dir=out_dir;
+	output_dir=getAbsolutePath(out_dir);
 	ftw("./", _conv_dir, 100);
 	return 0;
 }
