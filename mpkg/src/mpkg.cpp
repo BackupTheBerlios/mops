@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.130 2007/12/10 03:12:58 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.131 2007/12/11 00:57:19 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -267,7 +267,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	{
 		printf("Running script\n");
 		configure_cmd.clear();
-		make_cmd = "VERSION=" + p.getVersion()+ "DATADIR=" + dldir+"/build_data/" + " PKG="+pkgdir + " SRC=" + srcdir + " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+		make_cmd = "VERSION=" + p.getVersion()+ " DATADIR=" + dldir+"/build_data/" + " PKG="+pkgdir + " SRC=" + srcdir + " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
 		make_install_cmd.clear();
 	}
 	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
@@ -278,6 +278,11 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	{
 		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$SRCDIR"))+ srcdir+ make_install_cmd.substr(make_install_cmd.find("$SRCDIR")+strlen("$SRCDIR"));
 	}
+	while (make_install_cmd.find("$DATADIR")!=std::string::npos)
+	{
+		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DATADIR")) + dldir+"/build_data/"+ make_install_cmd.substr(make_install_cmd.find("$DATADIR")+strlen("$DATADIR"));
+	}
+
 
 	// Fixing permissions (mozgmertv resistance)
 	say(_("\nChecking and fixing permissions...\n"));

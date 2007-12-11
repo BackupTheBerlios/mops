@@ -1,7 +1,7 @@
 /*****************************************************
  * MOPSLinux packaging system
  * Package builder - header
- * $Id: mainwindow.h,v 1.28 2007/11/26 00:31:28 i27249 Exp $
+ * $Id: mainwindow.h,v 1.29 2007/12/11 00:57:19 i27249 Exp $
  * ***************************************************/
 
 #ifndef MV_H
@@ -72,6 +72,7 @@ class Form: public QWidget
 		void switchCpuTuneField(int state);
 		void switchOptimizationField(int state);
 		void switchGccOptionsField(int state);
+		void switchScript(int state);
 		void displayKeys();
 		void displayPatches();
 		void addKey();
@@ -82,7 +83,9 @@ class Form: public QWidget
 		void embedSources();
 		void embedPatches();
 		void analyzeSources();
-		void analyzeName();
+		void analyzeName(bool force);
+		void analyzeName_auto();
+		void analyzeName_forced();
 
 		void editBuildScriptWithGvim();
 		void loadBuildScriptFromFile();

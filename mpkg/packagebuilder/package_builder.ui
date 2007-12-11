@@ -1295,7 +1295,7 @@
       <attribute name="icon" >
        <iconset>/usr/share/mpkg/packagebuilder/icons/system-config-services.png</iconset>
       </attribute>
-      <layout class="QVBoxLayout" >
+      <layout class="QHBoxLayout" >
        <item>
         <widget class="QSplitter" name="splitter_7" >
          <property name="orientation" >
@@ -1325,6 +1325,13 @@
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="nameDetectButton" >
+                  <property name="text" >
+                   <string>Detect name/version</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -1341,6 +1348,19 @@
                    <string>Embed sources into ebuild</string>
                   </property>
                  </widget>
+                </item>
+                <item>
+                 <spacer>
+                  <property name="orientation" >
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" >
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
                 </item>
                 <item>
                  <widget class="QPushButton" name="downloadAnalyzeButton" >
@@ -1436,6 +1456,13 @@
                   </item>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QCheckBox" name="runScriptCheckBox" >
+                  <property name="text" >
+                   <string>Run script after build</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
               <item>
@@ -1460,6 +1487,9 @@
                 <layout class="QGridLayout" >
                  <item row="0" column="0" >
                   <widget class="QCheckBox" name="configureCheckBox" >
+                   <property name="toolTip" >
+                    <string>Check this if compilation requires configure script</string>
+                   </property>
                    <property name="text" >
                     <string>Configure:</string>
                    </property>
@@ -1470,6 +1500,9 @@
                  </item>
                  <item row="1" column="0" >
                   <widget class="QCheckBox" name="compilationCheckBox" >
+                   <property name="toolTip" >
+                    <string>Check this if compilation requires make</string>
+                   </property>
                    <property name="text" >
                     <string>Compilation:</string>
                    </property>
@@ -1480,8 +1513,11 @@
                  </item>
                  <item row="2" column="0" >
                   <widget class="QCheckBox" name="installationCheckBox" >
+                   <property name="toolTip" >
+                    <string>Check this if compilation requires make install script</string>
+                   </property>
                    <property name="text" >
-                    <string>Can install in subdirectory:</string>
+                    <string>Install in subdirectory:</string>
                    </property>
                   </widget>
                  </item>
@@ -1881,7 +1917,7 @@
            <item>
             <widget class="QGroupBox" name="customScriptGroupBox" >
              <property name="title" >
-              <string>Custom build script</string>
+              <string>Script</string>
              </property>
              <layout class="QVBoxLayout" >
               <item>
@@ -1934,7 +1970,7 @@ p, li { white-space: pre-wrap; }
            <item>
             <widget class="QGroupBox" name="compilationGroupBox" >
              <property name="title" >
-              <string>Compilation options</string>
+              <string>Configure options</string>
              </property>
              <layout class="QVBoxLayout" >
               <item>
@@ -1947,7 +1983,14 @@ p, li { white-space: pre-wrap; }
                  </widget>
                 </item>
                 <item>
-                 <widget class="QComboBox" name="configTemplateComboBox" />
+                 <widget class="QComboBox" name="configTemplateComboBox" >
+                  <property name="sizePolicy" >
+                   <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                 </widget>
                 </item>
                 <item>
                  <widget class="QPushButton" name="setConfigTemplateButton" >

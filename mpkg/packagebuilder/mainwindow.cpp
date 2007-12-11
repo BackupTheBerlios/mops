@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.56 2007/12/10 03:12:58 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.57 2007/12/11 00:57:19 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -74,6 +74,9 @@ Form::Form(QWidget *parent, string arg)
 	switchOptimizationField(ui.optimizationCheckBox->checkState());
 	connect(ui.customGccOptionsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchGccOptionsField(int)));
 	switchGccOptionsField(ui.customGccOptionsCheckBox->checkState());
+	connect(ui.runScriptCheckBox, SIGNAL(stateChanged(int)), this, SLOT(switchScript(int)));
+	switchScript(ui.runScriptCheckBox->checkState());
+
 
 	loadTemplateList();
 
@@ -106,7 +109,8 @@ focusIndex=0;
 	connect(ui.refreshButton, SIGNAL(clicked()), this, SLOT(reloadPackageDirListing()));
 	connect(ui.refreshButton_2, SIGNAL(clicked()), this, SLOT(reloadFilesystemDirListing()));
 	connect(ui.cmdLine, SIGNAL(execCmd()), this, SLOT(execShellCommand()));
-	connect(ui.urlEdit, SIGNAL(editingFinished()), this, SLOT(analyzeName()));
+	connect(ui.urlEdit, SIGNAL(editingFinished()), this, SLOT(analyzeName_auto()));
+	connect(ui.nameDetectButton, SIGNAL(clicked()), this, SLOT(analyzeName_forced()));
 	connect(ui.setConfigTemplateButton, SIGNAL(clicked()), this, SLOT(applyTemplate()));
 	connect(ui.saveConfigTemplateButton, SIGNAL(clicked()), this, SLOT(saveTemplate()));
 
@@ -249,10 +253,18 @@ void Form::analyzeSources()
 		browser->showMaximized();
 	}
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
-	analyzeName();
+	analyzeName(false);
 	
 }
-void Form::analyzeName()
+void Form::analyzeName_auto()
+{
+	analyzeName(false);
+}
+void Form::analyzeName_forced()
+{
+	analyzeName(true);
+}
+void Form::analyzeName(bool force)
 {
 	// Try to analyze package name and version
 	string filename = getFilename(ui.urlEdit->text().toStdString());
@@ -282,9 +294,9 @@ void Form::analyzeName()
 		printf("Name: %s\n", name.c_str());
 		if (name.length()<filename.length()) version = filename.substr(filename.find_last_of("-")+1);
 	}
-	if (ui.NameEdit->text().isEmpty()) ui.NameEdit->setText(name.c_str());
-	/*if (ui.VersionEdit->text().isEmpty()) */ ui.VersionEdit->setText(version.c_str()); // Will always enter generated version
-	if (ui.BuildEdit->text().isEmpty()) ui.BuildEdit->setText("1");
+	if (ui.NameEdit->text().isEmpty() || force) ui.NameEdit->setText(name.c_str());
+	if (ui.VersionEdit->text().isEmpty() || force)  ui.VersionEdit->setText(version.c_str()); // Will always enter generated version
+	if (ui.BuildEdit->text().isEmpty() || force) ui.BuildEdit->setText("1");
 
 }
 string cleanDescr(string str)
@@ -465,8 +477,11 @@ void Form::loadFile(QString filename)
 	if (p->getBuildSystem()=="custom") ui.buildingSystemComboBox->setCurrentIndex(3);
 	if (p->getBuildSystem()=="script") {
 		ui.buildingSystemComboBox->setCurrentIndex(4);
-		ui.customScriptTextEdit->setText(sourcePackage.readBuildScript().c_str());
 	}
+	if (!sourcePackage.readBuildScript().empty()) ui.runScriptCheckBox->setChecked(true);
+	else ui.runScriptCheckBox->setChecked(false);
+	switchScript(ui.runScriptCheckBox->checkState());
+	ui.customScriptTextEdit->setText(sourcePackage.readBuildScript().c_str());
 	switchBuildSystem(ui.buildingSystemComboBox->currentIndex());
 
 	if (p->getBuildConfigureEnvOptions().empty())
@@ -1049,7 +1064,8 @@ bool Form::saveFile(bool saveAsMode)
 			else sourcePackage.removeSource();
 			if (patchList.empty()) sourcePackage.removeAllPatches();
 			embedPatches();
-			sourcePackage.setBuildScript(ui.customScriptTextEdit->toPlainText().toStdString());
+			if (ui.buildingSystemComboBox->currentIndex()==4 || ui.runScriptCheckBox->isChecked()) sourcePackage.setBuildScript(ui.customScriptTextEdit->toPlainText().toStdString());
+			else sourcePackage.setBuildScript("");
 			sourcePackage.packFile(out_dir.toStdString());
 			break;
 	}
@@ -1357,6 +1373,7 @@ void Form::switchSourceDirectoryField(int state)
 void Form::switchBuildSystem(int index)
 {
 	if (index<3) {
+		ui.runScriptCheckBox->setVisible(true);
 		ui.optimizationGroupBox->setVisible(true);
 		ui.customScriptGroupBox->setVisible(false);
 		ui.customCommandsGroupBox->setVisible(false);
@@ -1365,6 +1382,7 @@ void Form::switchBuildSystem(int index)
 	}
 	if (index==4)
 	{
+		ui.runScriptCheckBox->setVisible(false);
 		ui.optimizationGroupBox->setVisible(false);
 		ui.customScriptGroupBox->setVisible(true);
 		ui.customCommandsGroupBox->setVisible(false);
@@ -1373,6 +1391,7 @@ void Form::switchBuildSystem(int index)
 	}
 	if (index==3)
 	{
+		ui.runScriptCheckBox->setVisible(true);
 		ui.optimizationGroupBox->setVisible(true);
 		ui.customScriptGroupBox->setVisible(false);
 		ui.customCommandsGroupBox->setVisible(true);
@@ -1405,7 +1424,11 @@ void Form::switchGccOptionsField(int state)
 	else ui.customGccOptionsEdit->setEnabled(false);
 
 }
-
+void Form::switchScript(int state)
+{
+	if (state==Qt::Checked) ui.customScriptGroupBox->setVisible(true);
+	else ui.customScriptGroupBox->setVisible(false);
+}
 void Form::displayKeys()
 {
 	ui.compilationOptionsTableWidget->clear();
