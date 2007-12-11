@@ -1,7 +1,7 @@
 /*******************************************************************
  * MOPSLinux packaging system
  * Package builder
- * $Id: mainwindow.cpp,v 1.57 2007/12/11 00:57:19 i27249 Exp $
+ * $Id: mainwindow.cpp,v 1.58 2007/12/11 05:38:29 i27249 Exp $
  * ***************************************************************/
 
 #include "mainwindow.h"
@@ -1375,7 +1375,8 @@ void Form::switchBuildSystem(int index)
 	if (index<3) {
 		ui.runScriptCheckBox->setVisible(true);
 		ui.optimizationGroupBox->setVisible(true);
-		ui.customScriptGroupBox->setVisible(false);
+		if (!ui.runScriptCheckBox->isChecked()) ui.customScriptGroupBox->setVisible(false);
+		else ui.customScriptGroupBox->setVisible(true);
 		ui.customCommandsGroupBox->setVisible(false);
 		ui.compilationGroupBox->setVisible(true);
 
@@ -1393,7 +1394,8 @@ void Form::switchBuildSystem(int index)
 	{
 		ui.runScriptCheckBox->setVisible(true);
 		ui.optimizationGroupBox->setVisible(true);
-		ui.customScriptGroupBox->setVisible(false);
+		if (ui.runScriptCheckBox->isChecked()) ui.customScriptGroupBox->setVisible(false);
+		else ui.customScriptGroupBox->setVisible(true);
 		ui.customCommandsGroupBox->setVisible(true);
 		ui.compilationGroupBox->setVisible(true);
 	}

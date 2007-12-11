@@ -1,5 +1,5 @@
 /***********************************************************************
- * 	$Id: mpkg.cpp,v 1.131 2007/12/11 00:57:19 i27249 Exp $
+ * 	$Id: mpkg.cpp,v 1.132 2007/12/11 05:38:29 i27249 Exp $
  * 	MOPSLinux packaging system
  * ********************************************************************/
 #include "mpkg.h"
@@ -70,6 +70,7 @@ int emerge_package(string file_url, string *package_name, string march, string m
 	string configure_cmd = p.getBuildCmdConfigure();
 	string make_cmd = p.getBuildCmdMake();
 	string make_install_cmd = p.getBuildCmdMakeInstall();
+	string script_cmd;
 
 	// Setting input filename
 	
@@ -236,6 +237,11 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 	if (builddir_name_ret!=NULL) *builddir_name_ret = srcdir;
 
+	if (FileExists(dldir+"/build_data/build.sh")) {
+
+		script_cmd = "VERSION=" + p.getVersion()+ " DATADIR=" + dldir+"/build_data/" + " PKG="+pkgdir + " SRC=" + srcdir + " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+	}
+
 	if (build_system=="autotools")
 	{
 		configure_cmd="./configure " + configure_options;
@@ -263,13 +269,23 @@ int emerge_package(string file_url, string *package_name, string march, string m
 
 		printf("Using custom commands");
 	}
-	if (FileExists(dldir+"/build_data/build.sh"))
+	if (build_system=="script")
 	{
 		printf("Running script\n");
 		configure_cmd.clear();
-		make_cmd = "VERSION=" + p.getVersion()+ " DATADIR=" + dldir+"/build_data/" + " PKG="+pkgdir + " SRC=" + srcdir + " sh " + dldir+"/build_data/build.sh " + srcdir + " " + pkgdir + " " + march + " " + mtune + " " + olevel;
+		make_cmd.clear();
 		make_install_cmd.clear();
 	}
+
+	if (!make_cmd.find("make")!=std::string::npos && !numjobs.empty()) make_cmd += " -j" + numjobs;
+	if (!script_cmd.empty()) {
+		if (!make_cmd.empty()) {
+			make_cmd += " && " + script_cmd;
+		}
+		else make_cmd = script_cmd;
+	}
+	
+
 	while (make_install_cmd.find("$DESTDIR")!=std::string::npos)
 	{
 		make_install_cmd=make_install_cmd.substr(0,make_install_cmd.find("$DESTDIR"))+ pkgdir+ make_install_cmd.substr(make_install_cmd.find("$DESTDIR")+strlen("$DESTDIR"));
@@ -312,7 +328,6 @@ int emerge_package(string file_url, string *package_name, string march, string m
 		compile_cmd += make_cmd;
 		was_prev=true;
 	}
-	if (!make_cmd.empty() && !numjobs.empty()) compile_cmd += " -j" + numjobs;
 	if (!make_install_cmd.empty()) 
 	{
 		if (was_prev) compile_cmd += " && ";
